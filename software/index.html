@@ -8,9 +8,18 @@
     <link href="https://fonts.googleapis.com/css?family=Oxygen:300" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Raleway"rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Inconsolata" rel="stylesheet">
-    <link rel="stylesheet" media="all" href="/res/screen.css?v=20171025213603" type="text/css">
+    <link rel="stylesheet" media="all" href="/res/screen.css?v=20180322212404" type="text/css">
     <link rel="alternate" type="application/atom+xml" title="Julia Fukuyama" href="/atom.xml">
-    <link rel="shortcut icon" href="/tree-round.png?v=20171025213603">
+    <link rel="shortcut icon" href="/tree-round.png?v=20180322212404">
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-110259368-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-110259368-1');
+</script>
   </head>
   <body>
     <header class="main">
@@ -29,7 +38,10 @@
 <div class=left>
   <h2>adaptiveGPCA</h2>
   
-  <p><code>adaptiveGPCA</code> is an R package for structured dimensionality reduction.</p>
+  <p><code>adaptiveGPCA</code> is an R package for dimensionality reduction when the variables measured are related to each other.
+The primary use case so far has been in microbiome data.
+In that case, the variables measured are bacterial species and they are related to each other by a phylogenetic tree.
+It can also be used to provide a “guided tour” of the data, an example of which can be seen <a href="/research/agpca_guided_tour">here</a>.</p>
 
 <p>The package is available on CRAN, and can be installed using</p>
 <pre><code>install.packages("adaptiveGPCA")
