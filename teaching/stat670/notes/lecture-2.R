@@ -14,7 +14,8 @@ library(stringr)
 ggplot(singer, aes(x = height))
 
 ## ----ecdf-ggplot---------------------------------------------------------
-## we need to tell it not just that we want to plot height, but how to plot it. here we're saying to plot height as an ecdf
+## we need to tell it not just that we want to plot height, but how to plot it.
+## here we're saying to plot height as an ecdf
 ggplot(singer, aes(x = height)) + stat_ecdf()
 
 ## ----ecdf-ggplot-take-2--------------------------------------------------
@@ -27,7 +28,13 @@ singer.gg + stat_ecdf()
 singer.gg + stat_ecdf() +
     xlab("This is the x-axis") +
     ylab("This is the y-axis") + 
-    ggtitle("Here's a title")
+        ggtitle("Here's a title")
+
+ggplot(singer, aes(x = height, color = voice.part)) + stat_ecdf()
+ggplot(singer, aes(x = height)) +
+    stat_ecdf() +
+    facet_wrap(~ voice.part, ncol = 2)
+
 
 ## ----quantile-plot-setup-------------------------------------------------
 ## quantile plots by hand
