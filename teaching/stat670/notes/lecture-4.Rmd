@@ -1,0 +1,433 @@
+% Stat 470/670 Lecture 4
+% Julia Fukuyama, with thanks to Brad Luen
+% August 30, 2018
+
+```{r setup, echo = FALSE}
+library(knitr)
+opts_chunk$set(fig.cap="", fig.width = 4, fig.height = 2.5, dpi=200, fig.path="lecture-4-fig/")
+```
+
+## Today
+
+- Review some of the computational tools
+
+- Transformations
+
+## Computational Interlude: Data structures in R
+
+Three main ways to store data
+
+- Matrix: Requires all the elements to be of the same type (e.g. numeric or character)
+
+- Data frame: Allows for mixed types of variables
+
+- Tibble: Like a data frame, but works more consistently
+
+## Tibbles
+
+Tibbles are a better version of data frames.
+
+The [documentation](https://tibble.tidyverse.org/) describes them as "data.frames for the lazy and surly: they do less (i.e. they don’t change variable names or types, and don’t do partial matching) and complain more (e.g. when a variable does not exist)."
+
+Two other advantages:
+
+- They subset more consistently: when you use square brackets to subset a tibble, you always get another tibble. With data frames you sometimes get a vector and sometimes get a data frame.
+
+- They print more elegantly.
+
+Base R functions, including those for data frames, try to guess what you want to do.
+
+This sometimes leads to unexpected outcomes, so tibbles have done away with most of that.
+
+
+## Tibbles don't change names
+
+. . .
+
+```{r}
+library(tidyverse)
+(df = data.frame("a" = 1:5, "b 2" = 5:1))
+(ti = tibble("a" = 1:5, "b 2" = 5:1))
+```
+
+## Tibbles complain about bad column names
+
+. . .
+```{r}
+df$c
+ti$c
+```
+
+## Tibbles subset consistently
+
+. . .
+```{r}
+df[,1]
+ti[,1]
+```
+
+## Tibbles don't do partial matching
+
+. . .
+```{r}
+df$b
+ti$b
+```
+
+## Tibbles don't coerce strings to factors
+
+The most annoying thing about data frames:
+```{r}
+## arrrgh so inconsistent!
+df = data.frame(l1 = letters[1:5])
+df$l2 = letters[1:5]
+class(df$l1)
+class(df$l2)
+```
+
+Tibbles don't have this problem
+```{r}
+## but with tibbles it's all the same
+ti = tibble(l1 = letters[1:5])
+ti$l2 = letters[1:5]
+class(ti$l1)
+class(ti$l2)
+```
+
+## Example
+
+Let's read in a .csv file on lengths of Billboard Hot 100 songs in 2000:
+
+. . .
+```{r}
+billboard_tidy = read_csv("https://github.com/hadley/tidy-data/raw/master/data/billboard.csv")
+billboard_standard = read.csv("https://github.com/hadley/tidy-data/raw/master/data/billboard.csv", stringsAsFactors = FALSE)
+billboard_tidy
+billboard_standard[1:10, 1:8]
+summary(billboard_tidy$date.entered)
+summary(billboard_standard$date.entered)
+```
+
+
+## How long are songs?
+
+How long were the songs on the 2000 Hot 100?
+The display shows that `time` is formatted as time.
+This seems great, but unfortunately there's been a mistake:
+
+. . .
+```{r}
+billboard_tidy$time[1]
+billboard_tidy$time[2]
+billboard_tidy$time[2] - billboard_tidy$time[1]
+```
+
+-----
+
+We'll have to go back and fix this: we can specify the type for a certain column by using the col_types argument.
+We'll read the times in as characters and parse them ourselves.
+
+```{r}
+billboard_tidy = read_csv("https://github.com/hadley/tidy-data/raw/master/data/billboard.csv",
+                          col_types = cols(time = col_character()))
+```
+
+. . .
+
+I'll show you how to do this two ways, with and without pipes (the `%>%` function in the `magrittr` package).
+
+----
+
+First let's try without pipes.
+
+We need to separate the time into minutes and seconds.
+For this we can use separate:
+```{r}
+billboard_min_sec = separate(billboard_tidy, time,
+    into = c("minutes", "seconds"), sep = ":", remove = FALSE)
+```
+
+. . .
+
+We can look the columns we have created, plus the original column, to make sure the operation was performed correctly.
+To look at just a couple of columns, we can use select:
+```{r}
+select(billboard_min_sec, time, minutes, seconds)
+```
+
+-----
+
+Then we need to add minutes and seconds together to get time in minutes.
+For this we can use mutate:
+```{r}
+billboard_time_in_sec = mutate(billboard_min_sec,
+    time_in_seconds = as.numeric(minutes) * 60 + as.numeric(seconds))
+```
+
+. . .
+
+Again, let's look at the tibble to make sure the operation was done right:
+```{r}
+select(billboard_time_in_sec, time, minutes, seconds, time_in_seconds)
+```
+
+## Pipes
+
+The operations above motivate the use of pipes.
+
+The pipe operation, %>%, simply allows you to lay out your code in a different way.
+
+When you use a pipe, whatever is to the left of the pipe becomes the first argument to the function on the right of the pipe.
+
+So: `x %>% function(y)` is the same as `function(x, y)`.
+
+## Repeating the code from before with pipes
+
+Let's see how this changes the code we used above.
+
+Remember that we had
+```{r, eval = FALSE}
+billboard_min_sec = separate(billboard_tidy, time,
+    into = c("minutes", "seconds"), sep = ":", remove = FALSE)
+billboard_time_in_sec = mutate(billboard_min_sec,
+    time_in_seconds = as.numeric(minutes) * 60 + as.numeric(seconds))
+```
+
+. . .
+
+Or equivalently, without making an intermediate tibble:
+```{r, eval = FALSE}
+billboard_time_in_sec = mutate(
+    separate(billboard_tidy, time, into = c("minutes", "seconds"), sep = ":", remove = FALSE),
+    time_in_seconds = as.numeric(minutes) * 60 + as.numeric(seconds))
+```
+. . .
+
+With pipes, the same operations are:
+```{r}
+billboard = billboard_tidy %>%
+    separate(time, into = c("minutes", "seconds"), sep = ":", remove = FALSE) %>%
+    mutate(time_in_seconds = as.numeric(minutes) * 60 + as.numeric(seconds))
+```
+
+
+
+## Back to data analysis: how long are the songs?
+
+Now that we have our dataset in a nice format, let's try looking at the distribution of song lengths:
+
+. . .
+```{r}
+ggplot(billboard, aes(x=time_in_seconds / 60)) +
+    geom_histogram(breaks=seq(2.5, 8, by = .2)) +
+    xlab("Time in Minutes")
+
+ggplot(billboard, aes(x = time_in_seconds / 60)) + stat_ecdf() +
+    scale_x_continuous(breaks = seq(2.5, 8, by = .5)) +
+    scale_y_continuous(breaks = seq(0, 1, by = .1)) + xlab("Time in Minutes")
+```
+
+The majority of Hot 100 songs (about three quarters) are between 3:15 and 4:30.
+
+----
+
+But maybe we're unfairly penalizing songs that are on the charts for a long time: they're only represented once in our histogram even though they are in the top 100 for multiple weeks.
+
+. . .
+
+If we want to investigate this, we need to make one row in our tibble for each week:
+
+```{r}
+billboard_long = billboard %>% gather(week, rank, x1st.week:x76th.week, na.rm = TRUE)
+billboard_long
+## why are there 5307 observations? Shouldn't there be 5200 (52 weeks times 100 songs)?
+
+ggplot(billboard_long, aes(x=time_in_seconds / 60)) +
+    geom_histogram(breaks=seq(2.5, 8, by = .2)) +
+    xlab("Time in Minutes")
+ggplot(billboard_long, aes(x = time_in_seconds / 60)) + stat_ecdf() +
+    scale_x_continuous(breaks = seq(2.5, 8, by = .5)) +
+    scale_y_continuous(breaks = seq(0, 1, by = .1)) + xlab("Time in Minutes")
+```
+
+. . .
+
+The $y$-axis scale has changed (since there are more observations.)
+However, the shape of the distributions are pretty much the same, suggesting that weighting by number of weeks on the chart doesn't make much difference.
+
+## Does chart position change by rank?
+
+Another question we might be interested in is whether the length of the songs changes with rank.
+As a first stab at this, we can facet by chart position.
+To avoid drawing 100 graphs, we use `subset()` to only consider the top 10 chart positions:
+
+. . .
+
+```{r, fig.width = 8, fig.height=4, dpi=150}
+top10 = billboard_long %>%
+    mutate(rank_numeric = as.numeric(rank)) %>%
+    subset(rank_numeric <= 10)
+ggplot(top10, aes(x = time_in_seconds / 60)) +
+    geom_density() +  geom_rug() +
+    facet_wrap(~ rank_numeric, ncol = 4)
+ggplot(top10, aes(x = time_in_seconds / 60)) +
+    geom_histogram() + 
+    facet_wrap(~ rank_numeric, ncol = 4)
+ggplot(top10, aes(x = time_in_seconds / 60)) +
+    stat_ecdf(aes(color = rank))
+ggplot(top10, aes(x = time_in_seconds / 60)) +
+    stat_ecdf() + facet_wrap(~ rank_numeric)
+```
+
+Which plot do you think makes it the easiest to compare the distributions?
+
+## Using simpler summaries to visualize length by chart position
+
+Finally, let's find mean song length by chart position.
+
+This will allow us to compare all 100 chart positions instead of just the first 10.
+
+. . .
+
+```{r}
+mean_times = billboard_long %>%
+    group_by(rank = as.numeric(rank)) %>%
+    summarise(avg_time_in_minutes = mean(time_in_seconds) / 60)
+## remember this is the same as
+mean_times_alt = summarise(group_by(billboard_long, rank = as.numeric(rank)),
+    avg_time_in_minutes = mean(time_in_seconds) / 60)
+```
+
+```{r, fig.width=6}
+ggplot(mean_times, aes(x = rank, y = avg_time_in_minutes)) +
+  geom_point()
+```
+
+There is enough noise here that it's hard to see if there's a relationship between rank and song length.
+Later on we'll learn a bit about *smoothing*, which would help a lot here.
+
+## Transformations
+
+Reading: Cleveland pp. 42--67.
+
+
+### Log transformation
+
+In an intro course like S320/520, you learned to use the most common transformation, the log.
+
+The main reason we gave was that it often made positive data more normal.
+
+But there's another and perhaps more fundamental reason: It often leads to differences between samples that we can interpret as a *multiplicative shift*.
+
+Some statisticians will go as far as to recommend log transforming positive data by default, though by the end of Cleveland's chapter 2, we'll see an example where that backfires.
+
+## Power transformations
+
+
+The log transformation doesn't always work -- for a start, you can't log zero or a negative number.
+
+**Power transformations** allow a wider range of options.
+
+Define a power transformation with parameter $\tau$ to be $x^\tau$.
+
+Where practical, we'll hugely prefer $\tau = 1$ (no transformation), $\tau = 0$, or possibly $\tau = -1$ (inverse transformation) because they're much easier to interpret.
+
+
+## Box-Cox transformation
+
+You might also see Box-Cox transformations: these are really just power transformations, but re-scaled so that they go continuously to the log transform as $\tau \to 0$ on either side:
+
+$$
+x^{\tau} = \begin{cases}
+\frac{x^{\tau} - 1}{\tau} & \tau \ne 0\\
+\log x & \tau = 0
+\end{cases}
+$$
+
+-----
+
+Here's a little picture of the transformations, note how the log transformation floats nicely in between the negative and positive values of $\tau$.
+
+```{r}
+x = seq(0, 5, length.out = 100)[-1]
+bc_trans = function(x, tau) {
+    if(tau == 0){
+        return(log(x))
+    }
+    return((x^tau - 1) / tau)
+}
+tau_vec = seq(-.4, 1.4, by = .2)
+transforms = sapply(tau_vec, function(tau) bc_trans(x, tau))
+transforms_melted = melt(transforms)
+transforms_for_plotting = transforms_melted %>% mutate(x = x[Var1], tau = tau_vec[Var2])
+ggplot(transforms_for_plotting) +
+    geom_line(aes(x = x, y = value, color = as.factor(tau))) +
+    xlab("Original Data Value") + ylab("Transformed Value")
+```
+
+
+## Let's see how these work on real data
+
+Load `ggplot2`:
+
+```{r}
+library(ggplot2)
+```
+
+We'll also use an R workspace prepared by Cleveland to use in conjunction with the book. Among other things, this contains the data sets used in the book.
+
+```{r}
+load("lattice.RData")
+```
+
+
+
+We'll use the stereogram fusion time data in `fusion.time`, which contains the group variable `nv.vv` (where "NV" means no visual information and "VV" means visual information) and the quantitative variable `time` (a positive number.)
+
+
+## Power transformations on fusion time data
+
+Let's try some of the power transformations on the fusion time data --- we would like to see which gives a distribution closest to normal.
+
+We'll just look at the VV times for now.
+
+```{r, fig.width = 10, fig.height = 4, dpi = 150}
+vv = fusion.time %>% subset(nv.vv == "VV")
+tau_vec = seq(-1, 1, by = .25)
+transforms = sapply(tau_vec, function(tau) bc_trans(vv$time, tau))
+transforms_melted = melt(transforms)
+transforms_for_plotting = transforms_melted %>% mutate(tau = tau_vec[Var2])
+
+ggplot(transforms_for_plotting) +
+    stat_qq(aes(sample = value)) +
+    facet_wrap(~ tau, scales = "free", ncol = 5)
+```
+
+Here $\tau$-values of $0$ (the log transformation) and $-0.25$ give the straightest normal QQ plots.
+
+Since it's much, much easier to interpret $\log(x)$ than $x^{-0.25}$, we strongly prefer the log transformation.
+
+## Theoretical reasons for transformations
+
+In your more theoretical statistics courses, you might come across _variance-stabilizing transformations_.
+
+In real data, we often see that the variance depends on the mean.
+
+. . .
+
+For example, if $X$ is distributed $\text{Poisson}(\lambda)$, $E_\lambda(X) = \lambda$, and $\text{Var}_\lambda(X) = \lambda$.
+
+For Poisson random variables, the square root transformation ($\tau = 1/2$) is approximately variance stabilizing, that is, $X^{1/2}$ will have variance that is about the same no matter what $\lambda$ is.
+
+. . .
+
+If we have random variables $X_i$, with $E(X_i) = \mu$ and $\text{Var}(X_i) = s^2 \mu^2$ (the standard deviation is proportional to the mean), then the log transformation ($\tau = 0$) is approximately variance stabilizing.
+
+. . .
+
+
+
+
+## Next time
+
+Putting everything together to build simple models.
