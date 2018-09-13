@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <meta name="author" content="Julia Fukuyama" />
+  <meta name="date" content="2018-09-13" />
+  <title>Stat 470/670 Lecture 8: Smoothing bivariate data</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="http://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+  <script src="http://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div class="slide titlepage">
+  <h1 class="title">Stat 470/670 Lecture 8: Smoothing bivariate data</h1>
+  <p class="author">
+Julia Fukuyama
+  </p>
+  <p class="date">September 13, 2018</p>
+</div>
+<div id="today" class="slide section level2">
+<h1>Today</h1>
+<ul>
+<li><p>Review linear regression</p></li>
+<li><p>Smoothers</p></li>
+</ul>
+</div>
+<div id="regression-review" class="slide section level2">
+<h1>Regression review</h1>
+<p>Task 1: How do we use multiple regression to fit non-linear functions of predictors?</p>
+<p>Task 2: How can we use weights in regression to do local fits?</p>
+</div>
+<div id="transformations-of-the-predictor-variables-polynomial-regression" class="slide section level2">
+<h1>Transformations of the predictor variables: Polynomial regression</h1>
+<p>One example of multiple regression to fit a non-linear mean, where we use as predictors carat plus the second and third powers of carat.</p>
+<p>This gives us the best-fitting third-degree polynomial.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tidyverse)</code></pre>
+<pre><code>## ── Attaching packages ────────────────────────────────── tidyverse 1.2.1 ──</code></pre>
+<pre><code>## ✔ tibble  1.4.2     ✔ purrr   0.2.5
+## ✔ tidyr   0.8.1     ✔ dplyr   0.7.6
+## ✔ readr   1.1.1     ✔ stringr 1.3.1
+## ✔ tibble  1.4.2     ✔ forcats 0.3.0</code></pre>
+<pre><code>## ── Conflicts ───────────────────────────────────── tidyverse_conflicts() ──
+## ✖ dplyr::filter() masks stats::filter()
+## ✖ dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(broom)
+lm.poly =<span class="st"> </span><span class="kw">lm</span>(
+    price ~<span class="st"> </span>carat +<span class="st"> </span><span class="kw">I</span>(carat^<span class="dv">2</span>) +<span class="st"> </span><span class="kw">I</span>(carat^<span class="dv">3</span>),
+    <span class="dt">data =</span> diamonds, <span class="dt">subset =</span> clarity ==<span class="st"> &quot;VS1&quot;</span>)
+<span class="kw">ggplot</span>(<span class="kw">augment</span>(lm.poly)) +
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> carat, <span class="dt">y =</span> price)) +
+<span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">x =</span> carat, <span class="dt">y =</span> .fitted), <span class="dt">color =</span> <span class="st">&quot;red&quot;</span>)</code></pre>
+<div class="figure">
+<img src="lecture-8-fig/unnamed-chunk-1-1.png" />
+</div>
+</div>
+<div id="transformations-of-the-predictor-variables-non-smooth-functions-of-the-predictors" class="slide section level2">
+<h1>Transformations of the predictor variables: Non-smooth functions of the predictors</h1>
+<p>Here we augment our initial predictors with several step functions of the predictors:</p>
+<p><span class="math">\[
+f_a(x) = \begin{cases}
+1 &amp; x \ge a\\
+0 &amp; x &lt; a
+\end{cases}
+\]</span></p>
+<div class="incremental">
+<pre class="sourceCode r"><code class="sourceCode r">step =<span class="st"> </span>function(x, step_position) {
+    <span class="kw">return</span>(<span class="kw">ifelse</span>(x &gt;=<span class="st"> </span>step_position, <span class="dv">0</span>, <span class="dv">1</span>))
+}
+lm.steps =<span class="st"> </span><span class="kw">lm</span>(price ~
+<span class="st">    </span>carat +<span class="st"> </span><span class="kw">I</span>(<span class="kw">step</span>(carat, .<span class="dv">5</span>)) +<span class="st"> </span><span class="kw">I</span>(<span class="kw">step</span>(carat, <span class="dv">1</span>)) +
+<span class="st">    </span><span class="kw">I</span>(<span class="kw">step</span>(carat, <span class="fl">1.5</span>)) +<span class="st"> </span><span class="kw">I</span>(<span class="kw">step</span>(carat, <span class="dv">2</span>)),
+    <span class="dt">data =</span> diamonds, <span class="dt">subset =</span> clarity ==<span class="st"> &quot;VS1&quot;</span>)
+<span class="kw">ggplot</span>(<span class="kw">augment</span>(lm.steps)) +
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> carat, <span class="dt">y =</span> price)) +
+<span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">x =</span> carat, <span class="dt">y =</span> .fitted), <span class="dt">color =</span> <span class="st">&quot;red&quot;</span>)</code></pre>
+<div class="figure">
+<img src="lecture-8-fig/unnamed-chunk-2-1.png" />
+</div>
+</div>
+</div>
+<div id="transformations-of-the-predictor-variables-dummy-variables-for-factors" class="slide section level2">
+<h1>Transformations of the predictor variables: Dummy variables for factors</h1>
+<p>The dummy or indicator function, <span class="math">\(\mathbf I_a\)</span> can be used to transform factor variables into numeric predictors:</p>
+<p><span class="math">\[
+\mathbf I_a(x) = \begin{cases}
+1 &amp; x = a \\
+0 &amp; x \ne a
+\end{cases}
+\]</span></p>
+<div class="incremental">
+<p>This is what R is doing behind the scenes when you use a factor variable in a linear model.</p>
+<p>We can inspect the transformation it uses with <code>model.matrix</code>:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(<span class="kw">model.matrix</span>(~<span class="st"> </span><span class="dv">0</span> +<span class="st"> </span>color, <span class="dt">data =</span> diamonds))</code></pre>
+<pre><code>##   colorD colorE colorF colorG colorH colorI colorJ
+## 1      0      1      0      0      0      0      0
+## 2      0      1      0      0      0      0      0
+## 3      0      1      0      0      0      0      0
+## 4      0      0      0      0      0      1      0
+## 5      0      0      0      0      0      0      1
+## 6      0      0      0      0      0      0      1</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(diamonds$color)</code></pre>
+<pre><code>## [1] E E E I J J
+## Levels: D &lt; E &lt; F &lt; G &lt; H &lt; I &lt; J</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">lm</span>(price ~<span class="st"> </span><span class="dv">0</span> +<span class="st"> </span>color, <span class="dt">data =</span> diamonds)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = price ~ 0 + color, data = diamonds)
+## 
+## Coefficients:
+## colorD  colorE  colorF  colorG  colorH  colorI  colorJ  
+##   3170    3077    3725    3999    4487    5092    5324</code></pre>
+</div>
+</div>
+<div id="generalizations-of-the-regression-problem-weighted-least-squares" class="slide section level2">
+<h1>Generalizations of the regression problem: Weighted least squares</h1>
+<p>If we have more faith in some points than others, or if we simply want to exclude some points, we can perform weighted linear regression.</p>
+<p>Let <span class="math">\(w_i\)</span>, <span class="math">\(i = 1,\ldots, n\)</span> be non-negative values.</p>
+<p>In weighted regression, we find <span class="math">\(\beta_0, \ldots, \beta_p\)</span> to minimize</p>
+<p><span class="math">\[
+\sum_{i=1}^n w_i (y_i - \beta_0 + \beta_1 x_{i1} + \cdots + \beta_p x_{ip})^2
+\]</span></p>
+<p>Or, in matrix notation: <span class="math">\[
+\|\mathbf W^{1/2} (\mathbf y - \mathbf X \mathbf \beta)\|_2^2
+\]</span> where <span class="math">\(\mathbf W^{1/2}\)</span> is an <span class="math">\(n \times n\)</span> diagonal matrix with <span class="math">\(w_i^{1/2}\)</span> as the <span class="math">\(i\)</span>th diagonal element.</p>
+<div class="incremental">
+<p>Properties:</p>
+<ul>
+<li><p>Setting <span class="math">\(w_i = 0\)</span> is equivalent to omitting the <span class="math">\(i\)</span>th data point from the analysis.</p></li>
+<li><p>Setting all of the <span class="math">\(w_i\)</span>'s equal to <span class="math">\(1\)</span>, or all the equal to the same positive value, leads to the same coefficient estimates as standard linear regression.</p></li>
+<li><p>Heuristically, points with higher values of <span class="math">\(w_i\)</span> have higher &quot;weight&quot; in the regression estimation: the line is penalized more for deviating from those points, and so the fitted line will tend to track points with high weights more closely than points with low weights.</p></li>
+</ul>
+</div>
+</div>
+<div id="references" class="slide section level2">
+<h1>References</h1>
+<p>If you feel like you need to brush up on this, a good reference is Weisberg, Applied Linear Regression.</p>
+<ul>
+<li><p>Section 3.4 of Weisberg describes the matrix notation version of multiple regression.</p></li>
+<li><p>Chapter 6 of Weisberg describes polynomial regression and indicator matrices for factor variables.</p></li>
+</ul>
+</div>
+<div id="smoothing" class="slide section level2">
+<h1>Smoothing</h1>
+<p>Reading: Cleveland pp. 91-110</p>
+<p>Why do we want to smooth?</p>
+<ul>
+<li><p>If we have a lot of data/noise, the smoother allows us to see what we can't in a scatterplot of the raw data.</p></li>
+<li><p>If we want to compare multiple sets of points, the smoother simplifies the description and allows us to make the comparison between the &quot;main effects&quot; in the data without our eye being distracted by the noise.</p></li>
+<li><p>Non-EDA: If we want to predict or estimate true underlying values from noisy data, smoothers often help. Remember though, if this is your purpose, you should still do the exploratory analysis to decide what type of smoother to use, whether there should be breaks or jumps in the smoother, or if any other weird things are happening.</p></li>
+</ul>
+</div>
+<div id="loess" class="slide section level2">
+<h1>LOESS</h1>
+<p>LOESS, or local regression, builds on standard regression. The setup is:</p>
+<ul>
+<li><p>We have bivariate data, so pairs <span class="math">\((y_i, x_i)\)</span>, <span class="math">\(i = 1,\ldots, n\)</span>.</p></li>
+<li><p>We want to estimate the mean <span class="math">\(E(Y \mid X)\)</span>. We think this is a smooth function of <span class="math">\(X\)</span>, but we don't know what the form of that function is.</p></li>
+</ul>
+<p>The idea is that since the mean function is smooth, it can be approximated with a linear or low-order polynomial function in small regions.</p>
+</div>
+<div id="loess-details" class="slide section level2">
+<h1>LOESS: details</h1>
+<p>The way we transform this intuition into a concrete procedure is to use weighted least squares.</p>
+<p>LOESS has two parameters, <span class="math">\(\alpha\)</span> (the span), and <span class="math">\(\lambda\)</span>, the degree of the local polynomial.</p>
+<p>To find the value of the LOESS smoother at a point <span class="math">\(x_0\)</span>, we first define weights for all of the samples: <span class="math">\[
+w_i(x_0) = T(\Delta_i(x_0) / \Delta_{(q)}(x_0))
+\]</span> where <span class="math">\(\Delta_i(x_0) = |x_i - x_0|\)</span>, <span class="math">\(\Delta_{(i)}(x_0)\)</span> are the ordered values of <span class="math">\(\Delta_{i}(x_0)\)</span>, and <span class="math">\(q = \alpha n\)</span>, rounded to the nearest integer.</p>
+<p><span class="math">\(T\)</span> is the tricube weight function (inverted by Tukey!): <span class="math">\[
+T(u) = \begin{cases}
+(1 - |u|^3)^3 &amp; |u| \le 1 \\
+0 &amp; |u| &gt; 1
+\end{cases}
+\]</span></p>
+</div>
+<div class="slide section level2">
+
+<p>These weights are then used in a local regression.</p>
+<p>If <span class="math">\(\lambda = 1\)</span>, we find <span class="math">\(\hat \beta_0\)</span>, <span class="math">\(\hat \beta_1\)</span> to minimize the weighted least squares criterion, <span class="math">\[
+\sum_{i=1}^n w_i (y_i - (\beta_0 + \beta_1 x_i))^2,
+\]</span></p>
+<p>and the fitted value for the LOESS smoother at <span class="math">\(x_0\)</span> is <span class="math">\(\hat \beta_0 + \hat \beta_1 x_0\)</span>.</p>
+<div class="incremental">
+<p>If <span class="math">\(\lambda = 2\)</span>, we use quadratic regression, e.g. find <span class="math">\(\hat \beta_0\)</span>, <span class="math">\(\hat \beta_1\)</span>, <span class="math">\(\hat \beta_2\)</span> to minimize the weighted least squares criterion, <span class="math">\[
+\sum_{i=1}^n w_i (y_i - (\beta_0 + \beta_1 x_i + \beta_2 x_i^2))^2,
+\]</span></p>
+<p>and the fitted value for the LOESS smoother at <span class="math">\(x_0\)</span> is <span class="math">\(\hat \beta_0 + \hat \beta_1 x_0 + \hat \beta_2 x_0^2\)</span>.</p>
+</div>
+<div class="incremental">
+<p>The analogous procedure works for any integer value of <span class="math">\(\lambda\)</span>.</p>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>The procedure described above gives a fitted value of the smoother at one point; and we need to do all the weight and coefficient computations for every point at which we want to evaluate the smoother.</p>
+</div>
+<div id="loess-in-r" class="slide section level2">
+<h1>LOESS in R</h1>
+<p>We'll look at the <code>economics</code> dataset (in ggplot2).</p>
+<p>It looks like this:</p>
+<pre class="sourceCode r"><code class="sourceCode r">economics</code></pre>
+<pre><code>## # A tibble: 574 x 6
+##    date         pce    pop psavert uempmed unemploy
+##    &lt;date&gt;     &lt;dbl&gt;  &lt;int&gt;   &lt;dbl&gt;   &lt;dbl&gt;    &lt;int&gt;
+##  1 1967-07-01  507. 198712    12.5     4.5     2944
+##  2 1967-08-01  510. 198911    12.5     4.7     2945
+##  3 1967-09-01  516. 199113    11.7     4.6     2958
+##  4 1967-10-01  513. 199311    12.5     4.9     3143
+##  5 1967-11-01  518. 199498    12.5     4.7     3066
+##  6 1967-12-01  526. 199657    12.1     4.8     3018
+##  7 1968-01-01  532. 199808    11.7     5.1     2878
+##  8 1968-02-01  534. 199920    12.2     4.5     3001
+##  9 1968-03-01  545. 200056    11.6     4.1     2877
+## 10 1968-04-01  545. 200208    12.2     4.6     2709
+## # ... with 564 more rows</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>Let's look at how <code>psavert</code> changes over time using a scatterplot:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(economics) +<span class="st"> </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> date, <span class="dt">y =</span> psavert))</code></pre>
+<div class="figure">
+<img src="lecture-8-fig/unnamed-chunk-5-1.png" />
+</div>
+</div>
+<div class="slide section level2">
+
+<p>We'll try smoothing here, but first note two tricky things about this particular example:</p>
+<ul>
+<li><p>The <code>loess</code> function doesn't work well with <code>date</code> class predictors, so we need to change date to numeric.</p></li>
+<li><p>When we plot the output, we want to plot the original date on the x-axis, but <code>augment</code> by default only gives us the variables that were used in the model (<code>date_numeric</code> and <code>psavert</code>). To get a data frame with all the original variables, we need to pass <code>augment</code> the extra argument <code>data = economics</code>.</p></li>
+</ul>
+<div class="incremental">
+<pre class="sourceCode r"><code class="sourceCode r">economics =<span class="st"> </span>economics %&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="dt">date_numeric =</span> <span class="kw">as.numeric</span>(date))
+l.out =<span class="st"> </span><span class="kw">loess</span>(psavert ~<span class="st"> </span>date_numeric, <span class="dt">data =</span> economics)
+<span class="kw">ggplot</span>(<span class="kw">augment</span>(l.out, <span class="dt">data =</span> economics), <span class="kw">aes</span>(<span class="dt">x =</span> date, <span class="dt">y =</span> .fitted)) +
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">y =</span> psavert)) +<span class="st"> </span><span class="kw">geom_line</span>(<span class="dt">color =</span> <span class="st">&quot;red&quot;</span>)</code></pre>
+<div class="figure">
+<img src="lecture-8-fig/unnamed-chunk-6-1.png" />
+</div>
+</div>
+</div>
+<div id="exercises" class="slide section level2">
+<h1>Exercises</h1>
+<ul>
+<li><p>Try out different values of <span class="math">\(\alpha\)</span> and <span class="math">\(\lambda\)</span> in the loess smooth of the (hint: <span class="math">\(\lambda\)</span> corresponds to the <code>degree</code> argument in the loess function, <span class="math">\(\alpha\)</span> corresponds to the <code>span</code> argument). What do you think are good values? What do they tell you about the data?</p></li>
+<li><p>Try using a loess smooth on the diamonds data that we looked at at the beginning of class. Do you like loess for this application?</p></li>
+</ul>
+</div>
+</body>
+</html>
