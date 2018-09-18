@@ -1,0 +1,372 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <meta name="author" content="Julia Fukuyama" />
+  <meta name="date" content="2018-09-18" />
+  <title>Stat 470/670 Lecture 9: Smoothing bivariate data</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="http://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+  <script src="http://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div class="slide titlepage">
+  <h1 class="title">Stat 470/670 Lecture 9: Smoothing bivariate data</h1>
+  <p class="author">
+Julia Fukuyama
+  </p>
+  <p class="date">September 18, 2018</p>
+</div>
+<div id="today" class="slide section level2">
+<h1>Today</h1>
+<ul>
+<li><p>Finish up LOESS</p></li>
+<li><p>Introduce robust regression</p></li>
+</ul>
+</div>
+<div id="loess" class="slide section level2">
+<h1>LOESS</h1>
+<p>LOESS, or local regression, builds on standard regression. The setup is:</p>
+<ul>
+<li><p>We have bivariate data, so pairs <span class="math">\((y_i, x_i)\)</span>, <span class="math">\(i = 1,\ldots, n\)</span>.</p></li>
+<li><p>We want to estimate the mean <span class="math">\(E(Y \mid X)\)</span>. We think this is a smooth function of <span class="math">\(X\)</span>, but we don't know what the form of that function is.</p></li>
+</ul>
+<p>The idea is that since the mean function is smooth, it can be approximated with a linear or low-order polynomial function in small regions.</p>
+</div>
+<div id="loess-weights" class="slide section level2">
+<h1>LOESS weights</h1>
+<p>The way we transform this intuition into a concrete procedure is to use weighted least squares.</p>
+<p>LOESS has two parameters, <span class="math">\(\alpha\)</span> (the span), and <span class="math">\(\lambda\)</span>, the degree of the local polynomial.</p>
+<p>To find the value of the LOESS smoother at a point <span class="math">\(x_0\)</span>, we first define weights for all of the samples: <span class="math">\[
+w_i(x_0) = T(\Delta_i(x_0) / \Delta_{(q)}(x_0))
+\]</span> where <span class="math">\(\Delta_i(x_0) = |x_i - x_0|\)</span>, <span class="math">\(\Delta_{(i)}(x_0)\)</span> are the ordered values of <span class="math">\(\Delta_{i}(x_0)\)</span>, and <span class="math">\(q = \alpha n\)</span>, rounded to the nearest integer.</p>
+<p><span class="math">\(T\)</span> is the tricube weight function (inverted by Tukey!): <span class="math">\[
+T(u) = \begin{cases}
+(1 - |u|^3)^3 &amp; |u| \le 1 \\
+0 &amp; |u| &gt; 1
+\end{cases}
+\]</span></p>
+</div>
+<div class="slide section level2">
+
+<p>Let's see what this looks like. We'll compute and plot weights, so first we need to define the tricube function:</p>
+<pre class="sourceCode r"><code class="sourceCode r">tricube &lt;-<span class="st"> </span>function(u) {
+    if(<span class="kw">abs</span>(u) &gt;<span class="st"> </span><span class="dv">1</span>) {
+        <span class="kw">return</span>(<span class="dv">0</span>)
+    } else {
+        <span class="kw">return</span>((<span class="dv">1</span> -<span class="st"> </span><span class="kw">abs</span>(u)^<span class="dv">3</span>)^<span class="dv">3</span>)
+    }
+}</code></pre>
+<p>Then we can define a function that computes the weights used by LOESS:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co">#&#39; @param x0 The point</span>
+<span class="co">#&#39; @param x A vector containing all of the weights</span>
+<span class="co">#&#39; @param alpha The span argument in LOESS</span>
+loess_weights &lt;-<span class="st"> </span>function(x0, x, alpha) {
+    ## x is a vector, x0 is a single number, so deltas
+    ## is a vector the same length as x with elements |x_i - x0|
+    deltas =<span class="st"> </span><span class="kw">abs</span>(x -<span class="st"> </span>x0)
+    ## this is a more parsimonious way of getting the
+    ## delta_{(q)} value we defined on the previous slide
+    delta_q =<span class="st"> </span><span class="kw">quantile</span>(deltas, <span class="dt">probs =</span> alpha)
+    weights =<span class="st"> </span><span class="kw">sapply</span>(deltas /<span class="st"> </span>delta_q, tricube)
+    <span class="kw">return</span>(weights)
+}</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>Let's compute the weights on the economics data. We'll first see what it looks like for the default value of <span class="math">\(\alpha\)</span>, <span class="math">\(\alpha = .75\)</span>:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tidyverse)
+<span class="kw">library</span>(ggplot2)
+<span class="kw">library</span>(broom)
+<span class="kw">library</span>(viridis)
+economics =<span class="st"> </span><span class="kw">mutate</span>(economics, <span class="dt">date_numeric =</span> <span class="kw">as.numeric</span>(date))
+<span class="kw">summary</span>(economics$date_numeric)
+## let&#39;s calculate the weights at date_numeric = 3446
+weights =<span class="st"> </span><span class="kw">loess_weights</span>(<span class="dt">x0 =</span> <span class="dv">3446</span>, <span class="dt">x =</span> economics$date_numeric, <span class="dt">alpha =</span> .<span class="dv">75</span>)
+economics$weights =<span class="st"> </span>weights
+<span class="kw">ggplot</span>(economics) +<span class="st"> </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> date, <span class="dt">y =</span> weights))</code></pre>
+<div class="figure">
+<img src="lecture-9-fig/unnamed-chunk-3-1.png" />
+</div>
+</div>
+<div class="slide section level2">
+
+<p>What if we decrease <span class="math">\(\alpha\)</span>?</p>
+<pre class="sourceCode r"><code class="sourceCode r">weights =<span class="st"> </span><span class="kw">loess_weights</span>(<span class="dt">x0 =</span> <span class="dv">3446</span>, <span class="dt">x =</span> economics$date_numeric, <span class="dt">alpha =</span> .<span class="dv">1</span>)
+economics$weights =<span class="st"> </span>weights
+<span class="kw">ggplot</span>(economics) +<span class="st"> </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> date, <span class="dt">y =</span> weights))</code></pre>
+<div class="figure">
+<img src="lecture-9-fig/unnamed-chunk-4-1.png" />
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Notice that we have approximately <span class="math">\(\alpha n\)</span> non-zero weights, and these are going to be the only points that contribute to the LOESS fit.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(weights !=<span class="st"> </span><span class="dv">0</span>)</code></pre>
+<pre><code>## [1] 58</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">## weights was computed wih alpha = .1, so we have approximately n * .1 non-zero weights
+<span class="kw">length</span>(weights) *<span class="st"> </span>.<span class="dv">1</span></code></pre>
+<pre><code>## [1] 57.4</code></pre>
+</div>
+<div id="loess-fits" class="slide section level2">
+<h1>LOESS fits</h1>
+<p>These weights are then used in a local regression.</p>
+<p>If <span class="math">\(\lambda = 1\)</span>, we find <span class="math">\(\hat \beta_0\)</span>, <span class="math">\(\hat \beta_1\)</span> to minimize the weighted least squares criterion, <span class="math">\[
+\sum_{i=1}^n w_i (y_i - (\beta_0 + \beta_1 x_i))^2,
+\]</span></p>
+<p>and the fitted value for the LOESS smoother at <span class="math">\(x_0\)</span> is <span class="math">\(\hat \beta_0 + \hat \beta_1 x_0\)</span>.</p>
+<div class="incremental">
+<p>If <span class="math">\(\lambda = 2\)</span>, we use quadratic regression, e.g. find <span class="math">\(\hat \beta_0\)</span>, <span class="math">\(\hat \beta_1\)</span>, <span class="math">\(\hat \beta_2\)</span> to minimize the weighted least squares criterion, <span class="math">\[
+\sum_{i=1}^n w_i (y_i - (\beta_0 + \beta_1 x_i + \beta_2 x_i^2))^2,
+\]</span></p>
+<p>and the fitted value for the LOESS smoother at <span class="math">\(x_0\)</span> is <span class="math">\(\hat \beta_0 + \hat \beta_1 x_0 + \hat \beta_2 x_0^2\)</span>.</p>
+</div>
+<div class="incremental">
+<p>The analogous procedure works for any integer value of <span class="math">\(\lambda\)</span>.</p>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Let's use our weights function to do the LOESS fit manually. We'll go back to <span class="math">\(\alpha = .75\)</span></p>
+<pre class="sourceCode r"><code class="sourceCode r">weights =<span class="st"> </span><span class="kw">loess_weights</span>(<span class="dt">x0 =</span> <span class="dv">3446</span>, <span class="dt">x =</span> economics$date_numeric, <span class="dt">alpha =</span> .<span class="dv">75</span>)
+economics$weights =<span class="st"> </span>weights
+econlm =<span class="st"> </span><span class="kw">lm</span>(psavert ~<span class="st"> </span>date_numeric,
+    <span class="dt">weights =</span> economics$weights, <span class="dt">data =</span> economics)
+## normally we would use &#39;augment&#39; in &#39;broom&#39; to get the fitted values,
+## but there&#39;s a bug there with zero weights
+economics$loess.fits =<span class="st"> </span>econlm$fitted.values
+<span class="kw">ggplot</span>(economics) +
+<span class="st">    </span>## first we&#39;ll plot the raw data
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> date, <span class="dt">y =</span> psavert)) +
+<span class="st">    </span>## then we&#39;ll plot the local linear regression +
+<span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">x =</span> date, <span class="dt">y =</span> loess.fits, <span class="dt">color =</span> weights),
+              <span class="dt">size =</span> <span class="dv">2</span>, <span class="dt">data =</span> <span class="kw">subset</span>(economics, weights &gt;<span class="st"> </span><span class="dv">0</span>)) +
+<span class="st">    </span><span class="kw">scale_color_viridis</span>()</code></pre>
+<div class="figure">
+<img src="lecture-9-fig/unnamed-chunk-6-1.png" />
+</div>
+</div>
+<div class="slide section level2">
+
+<pre class="sourceCode r"><code class="sourceCode r">weights =<span class="st"> </span><span class="kw">loess_weights</span>(<span class="dt">x0 =</span> <span class="dv">3446</span>, <span class="dt">x =</span> economics$date_numeric, <span class="dt">alpha =</span> .<span class="dv">1</span>)
+economics$weights =<span class="st"> </span>weights
+econlm =<span class="st"> </span><span class="kw">lm</span>(psavert ~<span class="st"> </span>date_numeric +<span class="st"> </span><span class="kw">I</span>(date_numeric^<span class="dv">2</span>),
+    <span class="dt">weights =</span> economics$weights, <span class="dt">data =</span> economics)
+## normally we would use &#39;augment&#39; in &#39;broom&#39; to get the fitted values,
+## but there&#39;s a bug there with zero weights
+economics$loess.fits =<span class="st"> </span>econlm$fitted.values
+<span class="kw">ggplot</span>(economics) +
+<span class="st">    </span>## first we&#39;ll plot the raw data
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> date, <span class="dt">y =</span> psavert)) +
+<span class="st">    </span>## then we&#39;ll plot the local linear regression +
+<span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">x =</span> date, <span class="dt">y =</span> loess.fits, <span class="dt">color =</span> weights),
+              <span class="dt">size =</span> <span class="dv">2</span>, <span class="dt">data =</span> <span class="kw">subset</span>(economics, weights &gt;<span class="st"> </span><span class="dv">0</span>)) +
+<span class="st">    </span><span class="kw">scale_color_viridis</span>()</code></pre>
+<div class="figure">
+<img src="lecture-9-fig/unnamed-chunk-7-1.png" />
+</div>
+</div>
+<div class="slide section level2">
+
+<pre class="sourceCode r"><code class="sourceCode r">loess.smoother =<span class="st"> </span><span class="kw">loess</span>(psavert ~<span class="st"> </span>date_numeric, <span class="dt">data =</span> economics)
+loess.rougher =<span class="st"> </span><span class="kw">loess</span>(psavert ~<span class="st"> </span>date_numeric, <span class="dt">span =</span> .<span class="dv">1</span>, <span class="dt">degree =</span> <span class="dv">2</span>, <span class="dt">data =</span> economics)
+<span class="kw">ggplot</span>(economics) +
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> date, <span class="dt">y =</span> psavert)) +
+<span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">x =</span> date, <span class="dt">y =</span> .fitted),
+              <span class="dt">data =</span> <span class="kw">augment</span>(loess.smoother, <span class="dt">data =</span> economics), <span class="dt">size =</span> <span class="dv">1</span>, <span class="dt">color =</span> <span class="st">&quot;red&quot;</span>) +
+<span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">x =</span> date, <span class="dt">y =</span> .fitted),
+              <span class="dt">data =</span> <span class="kw">augment</span>(loess.rougher, <span class="dt">data =</span> economics), <span class="dt">size =</span> <span class="dv">1</span>, <span class="dt">color =</span> <span class="st">&quot;orange&quot;</span>)</code></pre>
+<div class="figure">
+<img src="lecture-9-fig/unnamed-chunk-8-1.png" />
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Note that we can also do this with <code>stat_smooth</code> in ggplot:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(economics, <span class="kw">aes</span>(<span class="dt">x =</span> date, <span class="dt">y =</span> psavert)) +
+<span class="st">    </span><span class="kw">geom_point</span>() +
+<span class="st">    </span><span class="kw">stat_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="dt">span =</span> .<span class="dv">1</span>, <span class="dt">method.args =</span> <span class="kw">list</span>(<span class="dt">degree =</span> <span class="dv">2</span>), <span class="dt">se =</span> <span class="ot">FALSE</span>) +
+<span class="st">    </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="dt">span =</span> .<span class="dv">75</span>, <span class="dt">method.args =</span> <span class="kw">list</span>(<span class="dt">degree =</span> <span class="dv">2</span>), <span class="dt">se =</span> <span class="ot">FALSE</span>)</code></pre>
+<div class="figure">
+<img src="lecture-9-fig/unnamed-chunk-9-1.png" />
+</div>
+</div>
+<div id="checking-loess-fits" class="slide section level2">
+<h1>Checking LOESS fits</h1>
+<p>As before, it's useful to do residual plots to check LOESS fits. The residual plots can tell us if we need to to allow for a more flexible fit.</p>
+<p>When we check the fit for the LOESS fit with <span class="math">\(\alpha = .75\)</span>, we see that there is a lot of structure in the residuals, suggesting a smaller value of <span class="math">\(\alpha\)</span> is needed.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(<span class="kw">augment</span>(loess.smoother, <span class="dt">data =</span> economics)) +
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> date, <span class="dt">y =</span> .resid))</code></pre>
+<div class="figure">
+<img src="lecture-9-fig/unnamed-chunk-10-1.png" />
+</div>
+</div>
+<div class="slide section level2">
+
+<p>When we check the residuals for the model with <span class="math">\(\alpha = .1\)</span>, there is less structure (although some remains, and since this is time series data we really should be using time series specific models).</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(<span class="kw">augment</span>(loess.rougher, <span class="dt">data =</span> economics)) +
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> date, <span class="dt">y =</span> .resid))</code></pre>
+<div class="figure">
+<img src="lecture-9-fig/unnamed-chunk-11-1.png" />
+</div>
+</div>
+<div class="slide section level2">
+
+<p>As a second example, let's look at the LOESS fit and residuals on the diamonds dataset.</p>
+<p>First the fits:</p>
+<pre class="sourceCode r"><code class="sourceCode r">diamonds =<span class="st"> </span><span class="kw">mutate</span>(diamonds, <span class="dt">logprice =</span> <span class="kw">log10</span>(price))
+loess.diamonds =<span class="st"> </span><span class="kw">loess</span>(logprice ~<span class="st"> </span>carat, <span class="dt">subset =</span> clarity ==<span class="st"> &quot;VS1&quot;</span>, <span class="dt">data =</span> diamonds)
+<span class="kw">ggplot</span>(<span class="kw">augment</span>(loess.diamonds)) +
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> carat, <span class="dt">y =</span> logprice), <span class="dt">alpha =</span> .<span class="dv">1</span>) +
+<span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">x =</span> carat, <span class="dt">y =</span> .fitted), <span class="dt">size =</span> <span class="dv">1</span>, <span class="dt">color =</span> <span class="st">&quot;red&quot;</span>)</code></pre>
+<div class="figure">
+<img src="lecture-9-fig/unnamed-chunk-12-1.png" />
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Then the residuals:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(<span class="kw">augment</span>(loess.diamonds)) +
+<span class="st">        </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> carat, <span class="dt">y =</span> logprice -<span class="st"> </span>.fitted), <span class="dt">alpha =</span> .<span class="dv">1</span>)</code></pre>
+<div class="figure">
+<img src="lecture-9-fig/unnamed-chunk-13-1.png" />
+</div>
+<p>The fact that the residuals still show structure suggests that we should decrease the span.</p>
+</div>
+<div class="slide section level2">
+
+<p>We can try decreasing the span even more, but the fit still isn't flexible enough and some structure in the residuals remains:</p>
+<pre class="sourceCode r"><code class="sourceCode r">loess.diamonds.rougher =
+<span class="st">    </span><span class="kw">loess</span>(logprice ~<span class="st"> </span>carat, <span class="dt">subset =</span> clarity ==<span class="st"> &quot;VS1&quot;</span>,
+          <span class="dt">data =</span> diamonds, <span class="dt">span =</span> .<span class="dv">2</span>, <span class="dt">degree =</span> <span class="dv">2</span>)
+<span class="kw">ggplot</span>(<span class="kw">augment</span>(loess.diamonds.rougher)) +
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> carat, <span class="dt">y =</span> logprice), <span class="dt">alpha =</span> .<span class="dv">1</span>) +
+<span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">x =</span> carat, <span class="dt">y =</span> .fitted), <span class="dt">size =</span> <span class="dv">1</span>, <span class="dt">color =</span> <span class="st">&quot;red&quot;</span>)</code></pre>
+<div class="figure">
+<img src="lecture-9-fig/unnamed-chunk-14-1.png" />
+</div>
+</div>
+<div class="slide section level2">
+
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(<span class="kw">augment</span>(loess.diamonds.rougher)) +
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> carat, <span class="dt">y =</span> logprice -<span class="st"> </span>.fitted), <span class="dt">alpha =</span> .<span class="dv">1</span>)</code></pre>
+<div class="figure">
+<img src="lecture-9-fig/unnamed-chunk-15-1.png" />
+</div>
+</div>
+<div id="summing-up" class="slide section level2">
+<h1>Summing up</h1>
+<p>Once we understand that LOESS is a weighted regression, we have some guidance about how to choose the parameters.</p>
+<ul>
+<li><p><span class="math">\(\alpha\)</span> and <span class="math">\(\lambda\)</span> (span and degree) should be chosen so that the local regressions fit the data well.</p></li>
+<li><p>Very wiggly functions will require larger <span class="math">\(\lambda\)</span> and smaller <span class="math">\(\alpha\)</span>.</p></li>
+<li><p>With smooth functions we can use smaller <span class="math">\(\lambda\)</span> and larger <span class="math">\(\alpha\)</span>.</p></li>
+</ul>
+<div class="incremental">
+<p>When will LOESS be helpful?</p>
+<ul>
+<li><p>We expect the mean function, <span class="math">\(E(Y \mid X)\)</span>, to be smooth.</p></li>
+<li><p>When we don't have that many data points, LOESS can help visualize the mean function. However, this requires you to believe in your smoother, and you might be skeptical.</p></li>
+<li><p>When we have so many data points that it's hard to see the mean (diamonds dataset)</p></li>
+<li><p>With an intermediate number of data points (like in the economics dataset) we do the smoothing by eye automatically and it doesn't seem as helpful, but it can still help if you have many sets of points that you want to compare.</p></li>
+</ul>
+</div>
+</div>
+<div id="robust-regression" class="slide section level2">
+<h1>Robust regression</h1>
+<p>The data set <code>dating</code> (in <code>lattice.RData</code>) contains paired observations giving the estimated ages of 19 coral samples in thousands of years using both carbon dating (the traditional method) and thorium dating (a modern and purportedly more accurate method.) What’s the difference between these two methods?</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">load</span>(<span class="st">&quot;../../datasets/lattice.RData&quot;</span>)
+<span class="kw">ggplot</span>(dating, <span class="kw">aes</span>(<span class="dt">x =</span> carbon, <span class="dt">y =</span> thorium -<span class="st"> </span>carbon)) +
+<span class="st">    </span><span class="kw">geom_point</span>()</code></pre>
+<div class="figure">
+<img src="lecture-9-fig/unnamed-chunk-16-1.png" />
+</div>
+<p>We notice a couple of things: thorium dating is always greater than carbon dating, and the increase gets bigger for larger values of carbon.</p>
+<p>We could try to describe this relation with a linear fit.</p>
+</div>
+<div class="slide section level2">
+
+<p>Let's fit the model and plot the fitted values and the residuals:</p>
+<pre class="sourceCode r"><code class="sourceCode r">dating =<span class="st"> </span><span class="kw">mutate</span>(dating, <span class="dt">diff =</span> thorium -<span class="st"> </span>carbon)
+dating.lm =<span class="st"> </span><span class="kw">lm</span>(diff ~<span class="st"> </span>carbon, <span class="dt">data =</span> dating)
+<span class="kw">ggplot</span>(<span class="kw">augment</span>(dating.lm)) +
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> carbon, <span class="dt">y =</span> diff)) +
+<span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">x =</span> carbon, <span class="dt">y =</span> .fitted))</code></pre>
+<div class="figure">
+<img src="lecture-9-fig/unnamed-chunk-17-1.png" />
+</div>
+<div class="incremental">
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(<span class="kw">augment</span>(dating.lm, <span class="dt">data =</span> dating)) +
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> carbon, <span class="dt">y =</span> diff -<span class="st"> </span>.fitted)) +
+<span class="st">    </span><span class="kw">ylab</span>(<span class="st">&quot;residuals&quot;</span>)</code></pre>
+<div class="figure">
+<img src="lecture-9-fig/unnamed-chunk-18-1.png" />
+</div>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>The problem is that the couple of outliers with high <code>carbon</code> values are dragging the line down.</p>
+<p>It seems that there is a linear relationship in most of the data, with a couple of outliers that need to be explained separately.</p>
+<p>We could solve this problem by excluding the outliers and fitting a linear model to the remainder, but there is another solution in robust regression.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(MASS)
+dating.rlm.huber =<span class="st"> </span><span class="kw">rlm</span>(diff ~<span class="st"> </span>carbon, <span class="dt">data =</span> dating, <span class="dt">psi =</span> psi.huber, <span class="dt">maxit =</span> <span class="dv">100</span>)
+dating.rlm.bisquare =<span class="st"> </span><span class="kw">rlm</span>(diff ~<span class="st"> </span>carbon, <span class="dt">data =</span> dating, <span class="dt">psi =</span> psi.bisquare)
+<span class="kw">ggplot</span>(dating) +
+<span class="st">    </span>## raw data
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> carbon, <span class="dt">y =</span> diff)) +
+<span class="st">    </span>## rlm bisquare fit
+<span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">x =</span> carbon, <span class="dt">y =</span> dating.rlm.bisquare$fitted.values), <span class="dt">color =</span> <span class="st">&#39;red&#39;</span>) +
+<span class="st">    </span>## rlm huber fit
+<span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">x =</span> carbon, <span class="dt">y =</span> .fitted), <span class="dt">color =</span> <span class="st">&#39;orange&#39;</span>, <span class="dt">data =</span> <span class="kw">augment</span>(dating.rlm.huber)) +
+<span class="st">    </span>## lm fit
+<span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">x =</span> carbon, <span class="dt">y =</span> .fitted), <span class="dt">data =</span> <span class="kw">augment</span>(dating.lm), <span class="dt">color =</span> <span class="st">&#39;blue&#39;</span>)</code></pre>
+<div class="figure">
+<img src="lecture-9-fig/unnamed-chunk-19-1.png" />
+</div>
+</div>
+<div class="slide section level2">
+
+<p>A residual plot shows us that the bisquare robust fit does a really good job at explaining most of the data and almost completely ignores the couple of points with high values of <code>carbon</code>.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(dating) +
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> carbon, <span class="dt">y =</span> dating.rlm.bisquare$resid)) +
+<span class="st">    </span><span class="kw">ylab</span>(<span class="st">&quot;residuals from bisquare fit&quot;</span>)</code></pre>
+<div class="figure">
+<img src="lecture-9-fig/unnamed-chunk-20-1.png" />
+</div>
+</div>
+<div id="next-time" class="slide section level2">
+<h1>Next time</h1>
+<ul>
+<li><p>How robust fits work</p></li>
+<li><p>Comparing bivariate data</p></li>
+</ul>
+</div>
+</body>
+</html>
