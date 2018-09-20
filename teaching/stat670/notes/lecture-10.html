@@ -1,0 +1,408 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <meta name="author" content="Julia Fukuyama" />
+  <meta name="date" content="2018-09-20" />
+  <title>Stat 470/670 Lecture 10: Robust regression</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="http://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+  <script src="http://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div class="slide titlepage">
+  <h1 class="title">Stat 470/670 Lecture 10: Robust regression</h1>
+  <p class="author">
+Julia Fukuyama
+  </p>
+  <p class="date">September 20, 2018</p>
+</div>
+<div id="robust-regression" class="slide section level2">
+<h1>Robust regression</h1>
+<p>Reading: Cleveland pp. 110-119.</p>
+<p><a href="http://users.stat.umn.edu/~sandy/courses/8053/handouts/robust.pdf">Supplemental reading</a></p>
+<p>The data set <code>dating</code> (in <code>lattice.RData</code>) contains paired observations giving the estimated ages of 19 coral samples in thousands of years using both carbon dating (the traditional method) and thorium dating (a modern and purportedly more accurate method.) What’s the difference between these two methods?</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tidyverse)
+<span class="kw">library</span>(ggplot2)
+<span class="kw">library</span>(broom)
+<span class="kw">library</span>(viridis)
+<span class="kw">load</span>(<span class="st">&quot;../../datasets/lattice.RData&quot;</span>)
+<span class="kw">ggplot</span>(dating, <span class="kw">aes</span>(<span class="dt">x =</span> carbon, <span class="dt">y =</span> thorium -<span class="st"> </span>carbon)) +
+<span class="st">    </span><span class="kw">geom_point</span>()</code></pre>
+<div class="figure">
+<img src="lecture-10-fig/unnamed-chunk-1-1.png" />
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Last time, we saw that the linear regression line doesn't follow the data well, seemingly because the couple of outliers with high <code>carbon</code> values are dragging the line down. We also saw that robust regression fixes this problem.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(MASS)
+dating =<span class="st"> </span>dating %&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="dt">diff =</span> thorium -<span class="st"> </span>carbon)
+dating.lm =<span class="st"> </span><span class="kw">lm</span>(diff ~<span class="st"> </span>carbon, <span class="dt">data =</span> dating)
+dating.rlm.huber =<span class="st"> </span><span class="kw">rlm</span>(diff ~<span class="st"> </span>carbon, <span class="dt">data =</span> dating, <span class="dt">psi =</span> psi.huber, <span class="dt">maxit =</span> <span class="dv">100</span>)
+dating.rlm.bisquare =<span class="st"> </span><span class="kw">rlm</span>(diff ~<span class="st"> </span>carbon, <span class="dt">data =</span> dating, <span class="dt">psi =</span> psi.bisquare)
+
+<span class="kw">ggplot</span>(dating) +
+<span class="st">    </span>## raw data
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> carbon, <span class="dt">y =</span> diff)) +
+<span class="st">    </span>## rlm bisquare fit
+<span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">x =</span> carbon, <span class="dt">y =</span> dating.rlm.bisquare$fitted.values), <span class="dt">color =</span> <span class="st">&#39;red&#39;</span>) +
+<span class="st">    </span>## rlm huber fit
+<span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">x =</span> carbon, <span class="dt">y =</span> .fitted), <span class="dt">color =</span> <span class="st">&#39;orange&#39;</span>, <span class="dt">data =</span> <span class="kw">augment</span>(dating.rlm.huber)) +
+<span class="st">    </span>## lm fit
+<span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">x =</span> carbon, <span class="dt">y =</span> .fitted), <span class="dt">data =</span> <span class="kw">augment</span>(dating.lm), <span class="dt">color =</span> <span class="st">&#39;blue&#39;</span>)</code></pre>
+<div class="figure">
+<img src="lecture-10-fig/unnamed-chunk-2-1.png" />
+</div>
+</div>
+<div id="robust-regression-details-for-tukeys-bisquare" class="slide section level2">
+<h1>Robust regression: Details for Tukey's Bisquare</h1>
+<p>Overall idea: use weighted regression and down-weight the outliers.</p>
+<div class="incremental">
+<p>We use the bisquare weight function to down-weight the outliers:</p>
+<p><span class="math">\[
+B(u) = \begin{cases}
+(1 - u^2)^2 &amp; |u| &lt; 1\\
+0 &amp; |u| &gt;= 1
+\end{cases}
+\]</span></p>
+</div>
+<div class="incremental">
+<p>The robustness weights are then defined as</p>
+<p><span class="math">\[
+r_i = B\left(\frac{\hat \varepsilon_i}{ks}\right)
+\]</span></p>
+<p>where <span class="math">\(s = \text{median}(|\hat \varepsilon_i|)\)</span> and <span class="math">\(k\)</span> is a parameter that you can choose. Standard according to Cleveland is 6, but in R the default is 4.685.</p>
+</div>
+<div class="incremental">
+<p>Notes:</p>
+<ul>
+<li><p>If the errors are actually normal, <span class="math">\(6s\)</span> corresponds to about <span class="math">\(4 \sigma\)</span>, and <span class="math">\(4.685s\)</span> corresponds to about <span class="math">\(3 \sigma\)</span> (the standard deviation of a normal distribution is 1.48 times the MAD).</p></li>
+<li><p>The <span class="math">\(ks\)</span> in the denominator is a tunable parameter that you can change, but the standard values are chosen because they lead to good efficiency when the errors are normally distributed.</p></li>
+</ul>
+</div>
+</div>
+<div id="iteratively-re-weighted-least-squares" class="slide section level2">
+<h1>Iteratively re-weighted least squares</h1>
+<p>Algorithm for robust regression:</p>
+<ol start="0" style="list-style-type: decimal">
+<li>Start with an estimate of the regression line, e.g. standard least squares</li>
+</ol>
+<p>Repeat until convergence:</p>
+<ol style="list-style-type: decimal">
+<li><p>Compute robustness weights based on the estimated regression line.</p></li>
+<li><p>Perform weighted least squares with the robustness weights to get a new estimate of the regression line.</p></li>
+</ol>
+</div>
+<div id="example" class="slide section level2">
+<h1>Example</h1>
+</div>
+<div class="slide section level2">
+
+<pre class="sourceCode r"><code class="sourceCode r">dating.rlm<span class="fl">.0</span> =<span class="st"> </span><span class="kw">lm</span>(diff ~<span class="st"> </span>carbon, <span class="dt">data =</span> dating)
+<span class="kw">ggplot</span>(dating) +
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> carbon, <span class="dt">y =</span> diff)) +
+<span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">x =</span> carbon, <span class="dt">y =</span> dating.rlm<span class="fl">.0</span>$fitted.values), <span class="dt">color =</span> <span class="st">&#39;red&#39;</span>) +
+<span class="st">    </span><span class="kw">ylim</span>(<span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">7</span>))</code></pre>
+<div class="figure">
+<img src="lecture-10-fig/unnamed-chunk-3-1.png" />
+</div>
+</div>
+<div class="slide section level2">
+
+<pre class="sourceCode r"><code class="sourceCode r">dating.rlm<span class="fl">.1</span> =<span class="st"> </span><span class="kw">rlm</span>(diff ~<span class="st"> </span>carbon, <span class="dt">data =</span> dating, <span class="dt">maxit =</span> <span class="dv">1</span>, <span class="dt">psi =</span> psi.bisquare)
+<span class="kw">ggplot</span>(dating) +
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> carbon, <span class="dt">y =</span> diff)) +
+<span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">x =</span> carbon, <span class="dt">y =</span> dating.rlm<span class="fl">.1</span>$fitted.values), <span class="dt">color =</span> <span class="st">&#39;red&#39;</span>) +
+<span class="st">    </span><span class="kw">ylim</span>(<span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">7</span>))</code></pre>
+<div class="figure">
+<img src="lecture-10-fig/unnamed-chunk-4-1.png" />
+</div>
+</div>
+<div class="slide section level2">
+
+<pre class="sourceCode r"><code class="sourceCode r">dating.rlm<span class="fl">.2</span> =<span class="st"> </span><span class="kw">rlm</span>(diff ~<span class="st"> </span>carbon, <span class="dt">data =</span> dating, <span class="dt">maxit =</span> <span class="dv">2</span>, <span class="dt">psi =</span> psi.bisquare)
+<span class="kw">ggplot</span>(dating) +
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> carbon, <span class="dt">y =</span> diff)) +
+<span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">x =</span> carbon, <span class="dt">y =</span> dating.rlm<span class="fl">.2</span>$fitted.values), <span class="dt">color =</span> <span class="st">&#39;red&#39;</span>) +
+<span class="st">    </span><span class="kw">ylim</span>(<span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">7</span>))</code></pre>
+<div class="figure">
+<img src="lecture-10-fig/unnamed-chunk-5-1.png" />
+</div>
+</div>
+<div class="slide section level2">
+
+<pre class="sourceCode r"><code class="sourceCode r">dating.rlm<span class="fl">.3</span> =<span class="st"> </span><span class="kw">rlm</span>(diff ~<span class="st"> </span>carbon, <span class="dt">data =</span> dating, <span class="dt">maxit =</span> <span class="dv">3</span>, <span class="dt">psi =</span> psi.bisquare)
+<span class="kw">ggplot</span>(dating) +
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> carbon, <span class="dt">y =</span> diff)) +
+<span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">x =</span> carbon, <span class="dt">y =</span> dating.rlm<span class="fl">.3</span>$fitted.values), <span class="dt">color =</span> <span class="st">&#39;red&#39;</span>) +
+<span class="st">    </span><span class="kw">ylim</span>(<span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">7</span>))</code></pre>
+<div class="figure">
+<img src="lecture-10-fig/unnamed-chunk-6-1.png" />
+</div>
+</div>
+<div class="slide section level2">
+
+<pre class="sourceCode r"><code class="sourceCode r">dating.rlm<span class="fl">.11</span> =<span class="st"> </span><span class="kw">rlm</span>(diff ~<span class="st"> </span>carbon, <span class="dt">data =</span> dating, <span class="dt">maxit =</span> <span class="dv">11</span>, <span class="dt">psi =</span> psi.bisquare)
+<span class="kw">ggplot</span>(dating) +
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> carbon, <span class="dt">y =</span> diff)) +
+<span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">x =</span> carbon, <span class="dt">y =</span> dating.rlm<span class="fl">.11</span>$fitted.values), <span class="dt">color =</span> <span class="st">&#39;red&#39;</span>) +
+<span class="st">    </span><span class="kw">ylim</span>(<span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">7</span>))</code></pre>
+<div class="figure">
+<img src="lecture-10-fig/unnamed-chunk-7-1.png" />
+</div>
+</div>
+<div class="slide section level2">
+
+<pre class="sourceCode r"><code class="sourceCode r">dating.rlm<span class="fl">.12</span> =<span class="st"> </span><span class="kw">rlm</span>(diff ~<span class="st"> </span>carbon, <span class="dt">data =</span> dating, <span class="dt">maxit =</span> <span class="dv">12</span>, <span class="dt">psi =</span> psi.bisquare)
+<span class="kw">ggplot</span>(dating) +
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> carbon, <span class="dt">y =</span> diff)) +
+<span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">x =</span> carbon, <span class="dt">y =</span> dating.rlm<span class="fl">.12</span>$fitted.values), <span class="dt">color =</span> <span class="st">&#39;red&#39;</span>) +
+<span class="st">    </span><span class="kw">ylim</span>(<span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">7</span>))</code></pre>
+<div class="figure">
+<img src="lecture-10-fig/unnamed-chunk-8-1.png" />
+</div>
+</div>
+<div class="slide section level2">
+
+<p>To see how the algorithm gets to the final fit, we can solve for the fits for all iterations between 1 and 15 and plot them:</p>
+<div class="figure">
+<img src="lecture-10-fig/unnamed-chunk-9-1.png" />
+</div>
+</div>
+<div id="huber-version-of-robust-regression" class="slide section level2">
+<h1>Huber version of robust regression</h1>
+<p>Same idea as Tukey's bisquare, but with a different definition of robustness weights.</p>
+<div class="incremental">
+<p>For Huber, we use robustness weights</p>
+<p><span class="math">\[
+r_i = \begin{cases}
+1 &amp; \hat \varepsilon_i &lt; k \\
+k / |\hat \varepsilon_i|  &amp; \hat \varepsilon_i \ge k
+\end{cases}
+\]</span></p>
+</div>
+<div class="incremental">
+<p>Note that these robustness weights are never exactly equal to zero.</p>
+</div>
+</div>
+<div id="penalty-interpretation" class="slide section level2">
+<h1>Penalty interpretation</h1>
+<p>The presentation here and in Cleveland has been in terms of down-weighting outliers.</p>
+<p>We can also think of the robust regression techniques as being modifications of least squares where the penalty changes.</p>
+<p>For least squares, we find <span class="math">\(\beta_0\)</span> and <span class="math">\(\beta_1\)</span> to minimize</p>
+<p><span class="math">\[
+\sum_{i=1}^n (y_i - (\beta_0 + \beta_1 x_i))^2
+\]</span></p>
+<div class="incremental">
+<p>For the robust methods, we change the square to something else, finding <span class="math">\(\beta_0\)</span> and <span class="math">\(\beta_1\)</span> to minimize</p>
+<p><span class="math">\[
+\sum_{i=1}^n p(y_i - (\beta_0 + \beta_1 x_i))
+\]</span></p>
+<p>For robust regression with Tukey's bisquare, we take <span class="math">\[
+p_B(e) = \begin{cases}
+\frac{k^2}{6} \left[ 1 - (1 - (e/k)^2)^3 \right] &amp; |e| &lt; k \\
+k^2 / 6 &amp; |e| \ge k
+\end{cases}
+\]</span></p>
+<p>For the Huber version of robust regression, we take <span class="math">\[
+p_H(e) = \begin{cases}
+\frac{1}{2} e^2 &amp; |e| &lt; k \\
+k |e|  - \frac{1}{2} k^2  &amp; |e| \ge k
+\end{cases}
+\]</span></p>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>More useful is to look at the penalty functions:</p>
+<div class="figure">
+<img src="lecture-10-fig/unnamed-chunk-10-1.png" />
+</div>
+</div>
+<div id="comparison-of-the-two-methods" class="slide section level2">
+<h1>Comparison of the two methods</h1>
+<p>Bisquare:</p>
+<ul>
+<li><p>Can completely remove the influnce of outliers from the regression line (the weight function is equal to <span class="math">\(0\)</span> for outliers more than <span class="math">\(3\)</span> or <span class="math">\(4\)</span> standard deviations).</p></li>
+<li><p>Doesn't have a unique solution, can get stuck in local optima, sometimes helps to give it a good initialization point.</p></li>
+</ul>
+<p>Huber:</p>
+<ul>
+<li><p>Never completely removes the influence of outliers from the regression line (weight function is never equal to <span class="math">\(0\)</span>).</p></li>
+<li><p>Has a unique solution, no need to worry about local optima or good starting points.</p></li>
+</ul>
+<p>Other methods have other definitions of the weight function and allow you to make different tradeoffs between tractability and outlier removal.</p>
+</div>
+<div id="finishing-up-the-dating-example" class="slide section level2">
+<h1>Finishing up the dating example</h1>
+<p>We wanted to know about the relationship between the two dating methods. We have a robust fit, but we still need to check whether it fits the main part of the data well. We saw the residual plot last time, and we can check normality of the residuals with a Q-Normal plot.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(<span class="kw">augment</span>(dating.rlm.bisquare)) +
+<span class="st">    </span><span class="kw">stat_qq</span>(<span class="kw">aes</span>(<span class="dt">sample =</span> .resid)) +
+<span class="st">    </span><span class="kw">geom_abline</span>(<span class="kw">aes</span>(<span class="dt">intercept =</span> <span class="kw">median</span>(.resid), <span class="dt">slope =</span> <span class="kw">mad</span>(.resid)))</code></pre>
+<div class="figure">
+<img src="lecture-10-fig/unnamed-chunk-11-1.png" />
+</div>
+<p>We see that, apart from the outliers, the residuals follow a line. That means that the majority of the data seem to follow a normal distribution, and we're happy with the fit.</p>
+<pre class="sourceCode r"><code class="sourceCode r">dating.rlm.bisquare</code></pre>
+<pre><code>## Call:
+## rlm(formula = diff ~ carbon, data = dating, psi = psi.bisquare)
+## Converged in 15 iterations
+## 
+## Coefficients:
+## (Intercept)      carbon 
+##  -1.3373450   0.3010268 
+## 
+## Degrees of freedom: 19 total; 17 residual
+## Scale estimate: 0.394</code></pre>
+</div>
+<div id="examples-of-smoothers-to-support-visualization" class="slide section level2">
+<h1>Examples of smoothers to support visualization</h1>
+<p>Smoothers can be very helpful visualization tools for comparing bivariate models.</p>
+<p>As an example, consider the <code>ethanol</code> dataset in <code>lattice.RData</code>. The data are from an experiment studying exhaust from a one-cylinder engine fueled by ethanol. The variables in the dataset are</p>
+<ul>
+<li><p><code>NOx</code>: Concentration of NO plus NO2 (NOx), divided by the amount of work the engine did.</p></li>
+<li><p><code>E</code>: The equivalence ratio at which the engine was run, measuring the richness of the mixture of air and fuel (morue fuel = higher E).</p></li>
+<li><p><code>C</code>: The compression ratio to which the engine was set, that is, the maximum volume inside the cylinder (volume with piston retracted) divided by the minimum volume inside the cylinder (volume with piston at maximal penetration).</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>We'll look at this more when we start trivariate data in earnest, but for now, note that there are only five values of <code>C</code> in this experiment:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">table</span>(ethanol$C)</code></pre>
+<pre><code>## 
+## 7.5   9  12  15  18 
+##  22  17  14  19  16</code></pre>
+<p>Because of this, we are going to treat C as a factor variable for now. Let's make it into an ordered factor:</p>
+<pre class="sourceCode r"><code class="sourceCode r">ethanol =<span class="st"> </span>ethanol %&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="dt">Cfac =</span> <span class="kw">factor</span>(C, <span class="dt">levels =</span> <span class="kw">sort</span>(<span class="kw">unique</span>(C)), <span class="dt">ordered =</span> <span class="ot">TRUE</span>))</code></pre>
+<p>Therefore, we can treat C as a factor variable and ask what the relationship is between NOx and E for different values of C.</p>
+<p>How would we investigate this?</p>
+</div>
+<div class="slide section level2">
+
+<p>We've seen faceting already:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(ethanol) +<span class="st"> </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> E, <span class="dt">y =</span> NOx)) +<span class="st"> </span><span class="kw">facet_wrap</span>(~<span class="st"> </span>Cfac)</code></pre>
+<div class="figure">
+<img src="lecture-10-fig/unnamed-chunk-15-1.png" />
+</div>
+</div>
+<div class="slide section level2">
+
+<p>With the faceting it's hard to see differences between the curves. What if we remove the faceting and label the different values of C by color?</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(ethanol, <span class="kw">aes</span>(<span class="dt">x =</span> E, <span class="dt">y =</span> NOx, <span class="dt">color =</span> Cfac)) +
+<span class="st">    </span><span class="kw">geom_point</span>()</code></pre>
+<div class="figure">
+<img src="lecture-10-fig/unnamed-chunk-16-1.png" />
+</div>
+</div>
+<div class="slide section level2">
+
+<p>What about if we add smoothers?</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(ethanol, <span class="kw">aes</span>(<span class="dt">x =</span> E, <span class="dt">y =</span> NOx, <span class="dt">color =</span> Cfac)) +
+<span class="st">    </span><span class="kw">geom_point</span>() +
+<span class="st">    </span><span class="kw">stat_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>)</code></pre>
+<div class="figure">
+<img src="lecture-10-fig/unnamed-chunk-17-1.png" />
+</div>
+</div>
+<div id="example-diamonds-data" class="slide section level2">
+<h1>Example: Diamonds data</h1>
+<p>Remember our good friend the diamonds dataset. The variables we'll be interested in for now are:</p>
+<ul>
+<li><p><code>price</code>: How much the diamond sold for.</p></li>
+<li><p><code>carat</code>: How big the diamond is.</p></li>
+<li><p><code>clarity</code>: How clear it is. This is coded is an ordered factor (this is what <code>&lt;ord&gt;</code> at the top of the <code>clarity</code> column means when you print out the diamonds tibble) , higher clarities tend to be more rare and expensive.</p></li>
+</ul>
+<p>We've already looked at the relationship between price and carat, and we'd like to see how the relationship varies with clarity. Let's try investigating in a couple of ways.</p>
+</div>
+<div class="slide section level2">
+
+<p>First try faceting out by clarity:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(diamonds, <span class="kw">aes</span>(<span class="dt">x =</span> carat, <span class="dt">y =</span> price)) +<span class="st"> </span><span class="kw">geom_point</span>() +<span class="st"> </span><span class="kw">facet_wrap</span>(~<span class="st"> </span>clarity)</code></pre>
+<div class="figure">
+<img src="lecture-10-fig/unnamed-chunk-18-1.png" />
+</div>
+<p>We notice that the relationship is hollow up, and so we remember what we learned about straightening out relationships and try log-transforming price.</p>
+</div>
+<div class="slide section level2">
+
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(diamonds, <span class="kw">aes</span>(<span class="dt">x =</span> carat, <span class="dt">y =</span> <span class="kw">log10</span>(price))) +<span class="st"> </span><span class="kw">geom_point</span>() +<span class="st"> </span><span class="kw">facet_wrap</span>(~<span class="st"> </span>clarity)</code></pre>
+<div class="figure">
+<img src="lecture-10-fig/unnamed-chunk-19-1.png" />
+</div>
+<p>log-transform is too much (now it's hollow down), so we try an intermediate transform, the square root.</p>
+</div>
+<div class="slide section level2">
+
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(diamonds, <span class="kw">aes</span>(<span class="dt">x =</span> carat, <span class="dt">y =</span> <span class="kw">sqrt</span>(price))) +
+<span class="st">    </span><span class="kw">geom_point</span>() +<span class="st"> </span><span class="kw">facet_wrap</span>(~<span class="st"> </span>clarity)</code></pre>
+<div class="figure">
+<img src="lecture-10-fig/unnamed-chunk-20-1.png" />
+</div>
+<p>The square root does a good job at straightening out the relationship. Note that we could also have used the square of carat to predict price, which would have also straightened out the relationship and which might be more interpretable. We'll stick with square root of price for now though.</p>
+<p>The problem with faceting out is that it's hard to compare the slopes. We can try plotting everything together and using color to indicate clarity.</p>
+</div>
+<div class="slide section level2">
+
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(diamonds, <span class="kw">aes</span>(<span class="dt">x =</span> carat, <span class="dt">y =</span> <span class="kw">sqrt</span>(price), <span class="dt">color =</span> clarity)) +<span class="st"> </span><span class="kw">geom_point</span>()</code></pre>
+<div class="figure">
+<img src="lecture-10-fig/unnamed-chunk-21-1.png" />
+</div>
+<p>This helps a bit, and we see the general trend that the slope increases with clarity, but there's still a lot of overplotting and it is hard to compare the relationships. Let's try adding a linear smoother.</p>
+</div>
+<div class="slide section level2">
+
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(diamonds, <span class="kw">aes</span>(<span class="dt">x =</span> carat, <span class="dt">y =</span> <span class="kw">sqrt</span>(price), <span class="dt">color =</span> clarity)) +
+<span class="st">    </span><span class="kw">geom_point</span>() +
+<span class="st">    </span><span class="kw">stat_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>)</code></pre>
+<div class="figure">
+<img src="lecture-10-fig/unnamed-chunk-22-1.png" />
+</div>
+<p>There seemed to be some outliers, particularly in the low clarities, so we might want to try a robust linear smoother. This changes the slopes slightly.</p>
+</div>
+<div class="slide section level2">
+
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(diamonds, <span class="kw">aes</span>(<span class="dt">x =</span> carat, <span class="dt">y =</span> <span class="kw">sqrt</span>(price), <span class="dt">color =</span> clarity)) +
+<span class="st">    </span><span class="kw">geom_point</span>() +
+<span class="st">    </span><span class="kw">stat_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;rlm&quot;</span>, <span class="dt">method.args =</span> <span class="kw">list</span>(<span class="dt">psi =</span> psi.bisquare, <span class="dt">maxit =</span> <span class="dv">40</span>), <span class="dt">se =</span> <span class="ot">FALSE</span>)</code></pre>
+<div class="figure">
+<img src="lecture-10-fig/unnamed-chunk-23-1.png" />
+</div>
+<p>With either of the smoothers, we can see much more clearly how the relationship changes with clarity. The slopes for the top three levels of clarity are virtually identical, the lowest clarity has the lowest slope, and the intermediate levels have approximately equally spaced slopes. We see this more clearly if we take away the points.</p>
+</div>
+<div class="slide section level2">
+
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(diamonds, <span class="kw">aes</span>(<span class="dt">x =</span> carat, <span class="dt">y =</span> <span class="kw">sqrt</span>(price), <span class="dt">color =</span> clarity)) +
+<span class="st">    </span><span class="kw">stat_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;rlm&quot;</span>, <span class="dt">method.args =</span> <span class="kw">list</span>(<span class="dt">psi =</span> psi.bisquare, <span class="dt">maxit =</span> <span class="dv">40</span>), <span class="dt">se =</span> <span class="ot">FALSE</span>)</code></pre>
+<div class="figure">
+<img src="lecture-10-fig/unnamed-chunk-24-1.png" />
+</div>
+</div>
+</body>
+</html>
