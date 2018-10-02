@@ -1,0 +1,391 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <meta name="author" content="Julia Fukuyama" />
+  <title>Stat 470/670 Lecture 13: Level plots and contour plots for trivariate data</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="http://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+  <script src="http://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div class="slide titlepage">
+  <h1 class="title">Stat 470/670 Lecture 13: Level plots and contour plots for trivariate data</h1>
+  <p class="author">
+Julia Fukuyama
+  </p>
+  <p class="date">October 2, 2018</p>
+</div>
+<div class="slide section level2">
+
+<pre><code>## ── Attaching packages ────────────────────────────────── tidyverse 1.2.1 ──</code></pre>
+<pre><code>## ✔ tibble  1.4.2     ✔ purrr   0.2.5
+## ✔ tidyr   0.8.1     ✔ dplyr   0.7.6
+## ✔ readr   1.1.1     ✔ stringr 1.3.1
+## ✔ tibble  1.4.2     ✔ forcats 0.3.0</code></pre>
+<pre><code>## ── Conflicts ───────────────────────────────────── tidyverse_conflicts() ──
+## ✖ tidyr::extract()   masks magrittr::extract()
+## ✖ dplyr::filter()    masks stats::filter()
+## ✖ dplyr::lag()       masks stats::lag()
+## ✖ purrr::set_names() masks magrittr::set_names()</code></pre>
+</div>
+<div id="level-plots-and-contour-plots" class="slide section level2">
+<h1>Level plots and contour plots</h1>
+<p>Reading: Cleveland pp. 228-241, 245-248, 257-266, 270</p>
+<p>Today: Two new kinds of plots</p>
+<ul>
+<li><p>Level plots</p></li>
+<li><p>Contour plots</p></li>
+</ul>
+<p>We'll use them to plot</p>
+<ul>
+<li><p>Data</p></li>
+<li><p>Surfaces (e.g. output from a smoother)</p></li>
+</ul>
+<p>Another theme that runs through the examples today: data is not collected at even intervals, and it helps to look in places where you have data.</p>
+</div>
+<div id="level-plots" class="slide section level2">
+<h1>Level plots</h1>
+<p>We still have three continuous variables, two &quot;explanatory&quot; variables, <span class="math">\(u\)</span> and <span class="math">\(v\)</span>, and one &quot;response&quot; variable, <span class="math">\(y\)</span>.</p>
+<p>Last week, we made coplots, with</p>
+<ul>
+<li><p><span class="math">\(y\)</span> on the vertical axis,</p></li>
+<li><p><span class="math">\(u\)</span> on the horizontal axis,</p></li>
+<li><p>Facets defined by cuts of <span class="math">\(v\)</span>.</p></li>
+</ul>
+<p>These are useful for finding interactions, and particularly useful when the interactions you find are simple.</p>
+</div>
+<div id="level-plot-definition" class="slide section level2">
+<h1>Level plot definition</h1>
+<p>A <em>level plot</em> is very similar in form to a coplot, but the purpose is to visualize the response variable given both predictors at once.</p>
+<p>In a level plot, we put</p>
+<ul>
+<li><p><span class="math">\(u\)</span> on the vertical axis,</p></li>
+<li><p><span class="math">\(v\)</span> on the horizontal axis,</p></li>
+<li><p>Define facets by cuts of <span class="math">\(y\)</span>.</p></li>
+</ul>
+<p>This allows us to see which regions of the explanatory variables correspond to similar values of the response variable.</p>
+</div>
+<div id="galaxy-data" class="slide section level2">
+<h1>Galaxy data</h1>
+<p>Velocities of the NGC 7531 galaxy.</p>
+<p>The data frame galaxy contains 323 measurements of velocity for locations in galaxy NGC 7531.</p>
+<p>Variables are:</p>
+<ul>
+<li><p><code>east.west</code>: Relative position on the east/west axis.</p></li>
+<li><p><code>north.south</code>: Relative position on the north/south axis.</p></li>
+<li><p><code>velocity</code>: Velocity of the galaxy in km/s.</p></li>
+</ul>
+<p>We would like to model <code>velocity</code> as a function of position.</p>
+</div>
+<div class="slide section level2">
+
+<p>Let's start out just plotting the explanatory variables to see where we have measurements.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(viridis)</code></pre>
+<pre><code>## Loading required package: viridisLite</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">load</span>(<span class="st">&quot;../../datasets/lattice.RData&quot;</span>)
+<span class="kw">summary</span>(galaxy)</code></pre>
+<pre><code>##    east.west          north.south          angle        radial.position   
+##  Min.   :-29.66693   Min.   :-49.108   Min.   : 12.50   Min.   :-52.4000  
+##  1st Qu.: -7.91688   1st Qu.:-13.554   1st Qu.: 63.50   1st Qu.:-21.3500  
+##  Median : -0.06493   Median :  0.671   Median : 92.50   Median : -0.8000  
+##  Mean   : -0.33237   Mean   :  1.521   Mean   : 80.89   Mean   : -0.8427  
+##  3rd Qu.:  6.95053   3rd Qu.: 18.014   3rd Qu.:102.50   3rd Qu.: 19.6500  
+##  Max.   : 29.48414   Max.   : 49.889   Max.   :133.00   Max.   : 55.7000  
+##     velocity   
+##  Min.   :1409  
+##  1st Qu.:1523  
+##  Median :1586  
+##  Mean   :1594  
+##  3rd Qu.:1669  
+##  Max.   :1775</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(galaxy, <span class="kw">aes</span>(<span class="dt">x =</span> east.west, <span class="dt">y =</span> north.south)) +<span class="st"> </span><span class="kw">geom_point</span>(<span class="dt">alpha=</span>.<span class="dv">5</span>) +<span class="st"> </span><span class="kw">coord_fixed</span>()</code></pre>
+<div class="figure">
+<img src="lecture-13-fig/unnamed-chunk-1-1.png" />
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Next, let's try a level plot of the data.</p>
+<p>Remember that in a level plot, we plot the two explanatory variables on the horizontal and vertical axes, and we facet on intervals of the response variable.</p>
+<pre class="sourceCode r"><code class="sourceCode r">## the cut_number command divides the range of a variable into
+## intervals such that each interval has approximately the same
+## number of observations
+<span class="kw">table</span>(<span class="kw">cut_number</span>(galaxy$velocity, <span class="dt">n =</span> <span class="dv">10</span>))</code></pre>
+<pre><code>## 
+## [1.41e+03,1.47e+03]  (1.47e+03,1.5e+03]  (1.5e+03,1.54e+03] 
+##                  33                  32                  33 
+## (1.54e+03,1.57e+03] (1.57e+03,1.59e+03] (1.59e+03,1.61e+03] 
+##                  31                  35                  30 
+## (1.61e+03,1.64e+03] (1.64e+03,1.69e+03] (1.69e+03,1.74e+03] 
+##                  32                  32                  33 
+## (1.74e+03,1.78e+03] 
+##                  32</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">## we use cut_number to make the level plot/coplot: 
+<span class="kw">ggplot</span>(galaxy, <span class="kw">aes</span>(<span class="dt">x =</span> east.west, <span class="dt">y =</span> north.south, <span class="dt">color =</span> velocity *<span class="st"> </span><span class="dv">10</span>^(-<span class="dv">3</span>))) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_jitter</span>(<span class="dt">width =</span> <span class="fl">0.5</span>,  <span class="dt">height =</span> <span class="fl">0.5</span>) +
+<span class="st">    </span><span class="kw">facet_wrap</span>(~<span class="st"> </span><span class="kw">cut_number</span>(velocity *<span class="st"> </span><span class="dv">10</span>^(-<span class="dv">3</span>), <span class="dt">n =</span> <span class="dv">10</span>), <span class="dt">ncol =</span> <span class="dv">5</span>) +
+<span class="st">    </span><span class="kw">coord_fixed</span>() +
+<span class="st">    </span><span class="kw">scale_color_viridis</span>(<span class="st">&quot;Velocity, 10^3 km/s&quot;</span>) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Level plot of galaxy locations, faceted by velocity (expressed in 10^3 km/s)&quot;</span>)</code></pre>
+<div class="figure">
+<img src="lecture-13-fig/unnamed-chunk-2-1.png" />
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Compare the level plot with a plot in which velocity is indicated solely by color:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(galaxy, <span class="kw">aes</span>(<span class="dt">x =</span> east.west, <span class="dt">y =</span> north.south, <span class="dt">color =</span> velocity *<span class="st"> </span><span class="dv">10</span>^(-<span class="dv">3</span>))) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_jitter</span>(<span class="dt">width =</span> <span class="fl">0.5</span>,  <span class="dt">height =</span> <span class="fl">0.5</span>) +
+<span class="st">    </span><span class="kw">coord_fixed</span>() +
+<span class="st">    </span><span class="kw">scale_color_viridis</span>(<span class="st">&quot;Velocity, 10^3 km/s&quot;</span>) +
+<span class="st">    </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Galaxy locations and velocity&quot;</span>)</code></pre>
+<div class="figure">
+<img src="lecture-13-fig/unnamed-chunk-3-1.png" />
+</div>
+</div>
+<div id="reviewing-coplots-and-variable-transformations" class="slide section level2">
+<h1>Reviewing coplots and variable transformations</h1>
+<p>The galaxy dataset already has radial position and angle computed for us, but it's a useful exercise to do it yourself as well.</p>
+<pre class="sourceCode r"><code class="sourceCode r">galaxy %&gt;%
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">theta =</span> <span class="kw">atan</span>(north.south /<span class="st"> </span>east.west) /<span class="st"> </span>(<span class="dv">2</span> *<span class="st"> </span>pi) *<span class="st"> </span><span class="dv">360</span>) %&gt;%
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">rotation_to_horizontal =</span> theta +<span class="st"> </span><span class="dv">180</span> *<span class="st"> </span>(theta &lt;<span class="st"> </span><span class="dv">0</span>)) %&gt;%
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">radial_position_recomputed =</span> <span class="kw">sqrt</span>(north.south^<span class="dv">2</span> +<span class="st"> </span>east.west^<span class="dv">2</span>)) %&gt;%
+<span class="st">    </span>head</code></pre>
+<pre><code>##   east.west north.south angle radial.position velocity theta
+## 1  8.462789   -38.17317 102.5            39.1     1769 -77.5
+## 2  7.964978   -35.92769 102.5            36.8     1749 -77.5
+## 3  7.467167   -33.68221 102.5            34.5     1749 -77.5
+## 4  6.969356   -31.43673 102.5            32.2     1758 -77.5
+## 5  6.471544   -29.19125 102.5            29.9     1750 -77.5
+## 6  5.973733   -26.94577 102.5            27.6     1745 -77.5
+##   rotation_to_horizontal radial_position_recomputed
+## 1                  102.5                       39.1
+## 2                  102.5                       36.8
+## 3                  102.5                       34.5
+## 4                  102.5                       32.2
+## 5                  102.5                       29.9
+## 6                  102.5                       27.6</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>Once we have the <code>angle</code> and <code>radial.position</code> variables, we can look at how velocity changes along each of the trajectories.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(galaxy, <span class="kw">aes</span>(<span class="dt">x =</span> radial.position, <span class="dt">y =</span> velocity)) +
+<span class="st">    </span><span class="kw">geom_point</span>() +
+<span class="st">    </span><span class="kw">stat_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;loess&quot;</span>) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">facet_wrap</span>(~<span class="st"> </span>angle, <span class="dt">ncol =</span> <span class="dv">4</span>) +
+<span class="st">    </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Galaxy position and velocity split by slit angle&quot;</span>)</code></pre>
+<div class="figure">
+<img src="lecture-13-fig/unnamed-chunk-5-1.png" />
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Since there's nothing particularly special about the angles measured, and we expect that velocity is smooth not just along those trajectories but overall, we would prefer a 2d loess smooth.</p>
+<pre class="sourceCode r"><code class="sourceCode r">galaxy_loess =<span class="st"> </span><span class="kw">loess</span>(velocity ~<span class="st"> </span>east.west *<span class="st"> </span>north.south,
+    <span class="dt">data =</span> galaxy, <span class="dt">span =</span> <span class="fl">0.25</span>, 
+    <span class="dt">family =</span> <span class="st">&quot;symmetric&quot;</span>, <span class="dt">normalize =</span> <span class="ot">FALSE</span>)</code></pre>
+<p>Why <code>normalize = FALSE</code>?</p>
+</div>
+<div class="slide section level2">
+
+<p>Making the analogous coplot with loess fitted values, we see a similar but not identical smooth.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(<span class="kw">augment</span>(galaxy_loess, <span class="dt">data =</span> galaxy), <span class="kw">aes</span>(<span class="dt">x =</span> radial.position, <span class="dt">y =</span> velocity)) +
+<span class="st">    </span><span class="kw">geom_point</span>() +<span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> .fitted), <span class="dt">color =</span> <span class="st">&quot;blue&quot;</span>) +
+<span class="st">    </span><span class="kw">facet_wrap</span>(~<span class="st"> </span>angle, <span class="dt">ncol =</span> <span class="dv">4</span>) +
+<span class="st">    </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Galaxy position and velocity split by slit angle with fitted model&quot;</span>)</code></pre>
+<div class="figure">
+<img src="lecture-13-fig/unnamed-chunk-7-1.png" />
+</div>
+</div>
+<div id="level-plots-for-fitted-values" class="slide section level2">
+<h1>Level plots for fitted values</h1>
+<p>To make a level plot, we first need to get fitted values for the loess smoother at a grid of points:</p>
+<pre class="sourceCode r"><code class="sourceCode r">galaxy_grid =<span class="st"> </span><span class="kw">data.frame</span>(<span class="kw">expand.grid</span>(
+    <span class="dt">east.west =</span> <span class="kw">seq</span>(-<span class="dv">25</span>, <span class="dv">25</span>, <span class="fl">0.5</span>),
+    <span class="dt">north.south =</span> <span class="kw">seq</span>(-<span class="dv">45</span>, <span class="dv">45</span>, <span class="fl">0.5</span>)))
+galaxy_smoothed =<span class="st"> </span><span class="kw">augment</span>(galaxy_loess, <span class="dt">newdata =</span> galaxy_grid)</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>Then we can make the level plot by cutting the response into bins:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(galaxy_smoothed, <span class="kw">aes</span>(<span class="dt">x =</span> east.west, <span class="dt">y =</span> north.south, <span class="dt">fill =</span> .fitted)) +
+<span class="st">    </span><span class="kw">geom_raster</span>() +<span class="st"> </span>
+<span class="st">    </span><span class="kw">coord_fixed</span>() +
+<span class="st">    </span><span class="kw">facet_wrap</span>(~<span class="st"> </span><span class="kw">cut_number</span>(.fitted *<span class="st"> </span><span class="dv">10</span>^-<span class="dv">3</span>, <span class="dt">n =</span> <span class="dv">20</span>), <span class="dt">ncol =</span> <span class="dv">10</span>) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">scale_fill_viridis</span>()</code></pre>
+<div class="figure">
+<img src="lecture-13-fig/unnamed-chunk-9-1.png" />
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Again, compare the level plot with one where the fitted value is indicated only by color:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(galaxy_smoothed, <span class="kw">aes</span>(<span class="dt">x =</span> east.west, <span class="dt">y =</span> north.south, <span class="dt">fill =</span> .fitted)) +
+<span class="st">    </span><span class="kw">geom_raster</span>() +<span class="st"> </span>
+<span class="st">    </span><span class="kw">coord_fixed</span>() +
+<span class="st">    </span><span class="kw">scale_fill_viridis</span>()</code></pre>
+<div class="figure">
+<img src="lecture-13-fig/unnamed-chunk-10-1.png" />
+</div>
+</div>
+<div id="contour-plots" class="slide section level2">
+<h1>Contour plots</h1>
+<p>Definition: The <span class="math">\(a\)</span> <em>contour</em> of a function <span class="math">\(f(x,y)\)</span> is the set <span class="math">\(\{ (x, y) : f(x,y) = a \}\)</span>.</p>
+<p>A <em>contour plot</em> of <span class="math">\(f(x,y)\)</span> is a plot with <span class="math">\(x\)</span> and <span class="math">\(y\)</span> on the horizontal and vertical axes, and one or more contours of the function <span class="math">\(f(x,y)\)</span>.</p>
+<p>Note: Finding the contours is an inverse problem, and for most functions we want contours of we won't have anything available in closed form. In practice, contours are computed numerically.</p>
+</div>
+<div class="slide section level2">
+
+<p>An algorithm for finding the <span class="math">\(a\)</span> contour of a function <span class="math">\(f\)</span>:</p>
+<ul>
+<li><p>Evaluate <span class="math">\(f\)</span> at a rectangular grid of points covering the region of study.</p></li>
+<li><p>Consider all the grid segments (line segments connecting two neighboring grid points) for which one endpoint is at greater than or equal to <span class="math">\(a\)</span> and the other endpoint is less than or equal to <span class="math">\(a\)</span>. Note that if the function <span class="math">\(f\)</span> is continuous, the <span class="math">\(a\)</span> contour must cross the grid segment.</p></li>
+<li><p>Approximate the location where the <span class="math">\(a\)</span> contour crosses the grid segment by interpolation, and save the point.</p></li>
+<li><p>Draw contours by connecting the points (see pp. 242-244 for one way to do this).</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>Contour plot interpretation</p>
+<ul>
+<li><p>Closely spaced contours indicate large slope.</p></li>
+<li><p>Parallel, evenly-spaced contours indicate the surface is a plane.</p></li>
+</ul>
+</div>
+<div id="contour-plots-for-galaxy-data" class="slide section level2">
+<h1>Contour plots for galaxy data</h1>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(galaxy_smoothed, <span class="kw">aes</span>(<span class="dt">x =</span> east.west, <span class="dt">y =</span> north.south, <span class="dt">fill =</span> .fitted, <span class="dt">z =</span> .fitted)) +
+<span class="st">    </span><span class="kw">geom_raster</span>() +
+<span class="st">    </span><span class="kw">geom_contour</span>(<span class="dt">bins =</span> <span class="dv">20</span>, <span class="dt">color =</span> <span class="st">&quot;black&quot;</span>) +
+<span class="st">    </span><span class="kw">coord_fixed</span>() +
+<span class="st">    </span><span class="kw">scale_fill_viridis</span>()</code></pre>
+<div class="figure">
+<img src="lecture-13-fig/unnamed-chunk-11-1.png" />
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Again, compare with the plot with no contours and fitted value indicated only by color:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(galaxy_smoothed, <span class="kw">aes</span>(<span class="dt">x =</span> east.west, <span class="dt">y =</span> north.south, <span class="dt">fill =</span> .fitted, <span class="dt">z =</span> .fitted)) +
+<span class="st">    </span><span class="kw">geom_raster</span>() +
+<span class="st">    </span><span class="kw">coord_fixed</span>() +
+<span class="st">    </span><span class="kw">scale_fill_viridis</span>()</code></pre>
+<div class="figure">
+<img src="lecture-13-fig/unnamed-chunk-12-1.png" />
+</div>
+</div>
+<div id="soil-data" class="slide section level2">
+<h1>Soil data</h1>
+<p>The <code>soil</code> dataset contains measurements of soil resistivity. The variables are:</p>
+<ul>
+<li><p><code>northing</code>: The position along one axis (not actually north-south).</p></li>
+<li><p><code>easting</code>: The position along the perpendicular axis (also not east-west).</p></li>
+<li><p><code>resistivity</code>: The soil resistivity.</p></li>
+</ul>
+<p>First let's look at where we have measures of resistivity:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(soil, <span class="kw">aes</span>(<span class="dt">x =</span> easting, <span class="dt">y =</span> northing)) +<span class="st"> </span><span class="kw">geom_point</span>(<span class="dt">size=</span>.<span class="dv">5</span>) +<span class="st"> </span><span class="kw">coord_fixed</span>()</code></pre>
+<div class="figure">
+<img src="lecture-13-fig/unnamed-chunk-13-1.png" />
+</div>
+</div>
+<div class="slide section level2">
+
+<p>The plot above motivates the inclusion of the additional variables:</p>
+<ul>
+<li><p><code>is.ns</code>: Was the measurement taken from a northing track?</p></li>
+<li><p><code>track</code>: The ID of a track.</p></li>
+</ul>
+<p>We can look at these two variables in a little more detail to see how tracks are defined:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">table</span>(soil[,<span class="kw">c</span>(<span class="st">&quot;is.ns&quot;</span>, <span class="st">&quot;track&quot;</span>)])</code></pre>
+<pre><code>##        track
+## is.ns     1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16
+##   FALSE 113 142 157 166 156 128 107 166 184 230 139 190 166 226 193 202
+##   TRUE  273 462 267 355 256 175 119 181   0   0   0   0   0   0   0   0
+##        track
+## is.ns    17  18  19  20  21  22  23  24  25  26  27  28  29  30  31  32
+##   FALSE 134 128 125 109  93 187 110 134 148 153 188 203 219 202 214 201
+##   TRUE    0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0
+##        track
+## is.ns    33  34  35  36  37  38  39  40
+##   FALSE 199 179 182 177 180 203 118 102
+##   TRUE    0   0   0   0   0   0   0   0</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>As with the galaxy data, we can look at resistivity along tracks:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(<span class="kw">subset</span>(soil, is.ns ==<span class="st"> </span><span class="ot">TRUE</span>), <span class="kw">aes</span>(<span class="dt">x =</span> northing, <span class="dt">y =</span> resistivity)) +
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="dt">size=</span>.<span class="dv">5</span>) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">facet_wrap</span>(~track, <span class="dt">ncol =</span> <span class="dv">4</span>)</code></pre>
+<div class="figure">
+<img src="lecture-13-fig/unnamed-chunk-15-1.png" />
+</div>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(<span class="kw">subset</span>(soil, is.ns ==<span class="st"> </span><span class="ot">FALSE</span>), <span class="kw">aes</span>(<span class="dt">x =</span> easting, <span class="dt">y =</span> resistivity)) +
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="dt">size =</span> <span class="fl">0.5</span>) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">facet_wrap</span>(~track, <span class="dt">ncol =</span> <span class="dv">8</span>)</code></pre>
+<div class="figure">
+<img src="lecture-13-fig/unnamed-chunk-16-1.png" />
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Because the variables are interchangeable, we would prefer a 2d loess fit:</p>
+<pre class="sourceCode r"><code class="sourceCode r">soil_lo =<span class="st"> </span><span class="kw">loess</span>(resistivity ~<span class="st"> </span>easting *<span class="st"> </span>northing, <span class="dt">span =</span> <span class="fl">0.25</span>, <span class="dt">data =</span> soil, <span class="dt">normalize =</span> <span class="ot">FALSE</span>)</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>Once we have the fit, we evaluate it on a grid and make level plots and contour plots:</p>
+<pre class="sourceCode r"><code class="sourceCode r">soil_grid =<span class="st"> </span><span class="kw">data.frame</span>(<span class="kw">expand.grid</span>(<span class="dt">easting =</span> <span class="kw">seq</span>(<span class="dv">0</span>, <span class="fl">1.5</span>, <span class="fl">0.01</span>),
+    <span class="dt">northing =</span> <span class="kw">seq</span>(<span class="dv">0</span>, <span class="fl">3.5</span>, <span class="fl">0.01</span>)))
+soil_smoothed =<span class="st"> </span><span class="kw">augment</span>(soil_lo, <span class="dt">newdata =</span> soil_grid)
+<span class="kw">ggplot</span>(soil_smoothed,
+       <span class="kw">aes</span>(<span class="dt">x =</span> easting, <span class="dt">y =</span> northing, <span class="dt">z =</span> .fitted, <span class="dt">fill =</span> .fitted)) +
+<span class="st">    </span><span class="kw">geom_raster</span>() +<span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_contour</span>(<span class="dt">bins =</span> <span class="dv">16</span>, <span class="dt">color =</span> <span class="st">&quot;black&quot;</span>) +
+<span class="st">    </span><span class="kw">scale_fill_viridis</span>() +<span class="st"> </span>
+<span class="st">    </span><span class="kw">coord_fixed</span>()</code></pre>
+<div class="figure">
+<img src="lecture-13-fig/unnamed-chunk-18-1.png" />
+</div>
+</div>
+<div class="slide section level2">
+
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(soil_smoothed,
+       <span class="kw">aes</span>(<span class="dt">x =</span> easting, <span class="dt">y =</span> northing, <span class="dt">fill =</span> .fitted)) +
+<span class="st">    </span><span class="kw">geom_raster</span>() +
+<span class="st">    </span><span class="kw">facet_wrap</span>(~<span class="st"> </span><span class="kw">cut_number</span>(.fitted, <span class="dt">n =</span> <span class="dv">16</span>), <span class="dt">ncol =</span> <span class="dv">8</span>) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">scale_fill_viridis</span>() +<span class="st"> </span>
+<span class="st">    </span><span class="kw">coord_fixed</span>()</code></pre>
+<div class="figure">
+<img src="lecture-13-fig/unnamed-chunk-19-1.png" />
+</div>
+</div>
+</body>
+</html>

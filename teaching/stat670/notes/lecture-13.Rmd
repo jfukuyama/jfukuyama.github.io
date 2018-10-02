@@ -1,0 +1,338 @@
+% Stat 470/670 Lecture 13: Level plots and contour plots for trivariate data
+% Julia Fukuyama
+% October 2, 2018
+
+```{r setup, echo = FALSE}
+library(knitr)
+opts_chunk$set(fig.cap="", fig.width = 5, fig.height = 3, dpi=175, fig.path="lecture-13-fig/", warning = FALSE)
+load("../../datasets/lattice.RData")
+library(magrittr)
+library(tidyverse)
+library(ggplot2)
+library(broom)
+```
+
+## Level plots and contour plots
+
+Reading: Cleveland pp. 228-241, 245-248, 257-266, 270
+
+Today: Two new kinds of plots
+
+- Level plots
+
+- Contour plots
+
+We'll use them to plot
+
+- Data
+
+- Surfaces (e.g. output from a smoother)
+
+Another theme that runs through the examples today: data is not collected at even intervals, and it helps to look in places where you have data.
+
+## Level plots
+
+We still have three continuous variables, two "explanatory" variables, $u$ and $v$, and one "response" variable, $y$.
+
+Last week, we made coplots, with
+
+- $y$ on the vertical axis,
+
+- $u$ on the horizontal axis,
+
+- Facets defined by cuts of $v$.
+
+These are useful for finding interactions, and particularly useful when the interactions you find are simple.
+
+## Level plot definition
+
+A _level plot_ is very similar in form to a coplot, but the purpose is to visualize the response variable given both predictors at once.
+
+In a level plot, we put
+
+- $u$ on the vertical axis,
+
+- $v$ on the horizontal axis,
+
+- Define facets by cuts of $y$.
+
+This allows us to see which regions of the explanatory variables correspond to similar values of the response variable.
+
+## Galaxy data
+
+Velocities of the NGC 7531 galaxy.
+
+The data frame galaxy contains 323 measurements of velocity for locations in galaxy NGC 7531.
+
+Variables are:
+
+- `east.west`: Relative position on the east/west axis.
+
+- `north.south`: Relative position on the north/south axis.
+
+- `velocity`: Velocity of the galaxy in km/s.
+
+We would like to model `velocity` as a function of position.
+
+
+-----
+
+Let's start out just plotting the explanatory variables to see where we have measurements.
+
+```{r}
+library(viridis)
+load("../../datasets/lattice.RData")
+summary(galaxy)
+ggplot(galaxy, aes(x = east.west, y = north.south)) + geom_point(alpha=.5) + coord_fixed()
+```
+
+-----
+
+Next, let's try a level plot of the data.
+
+Remember that in a level plot, we plot the two explanatory variables on the horizontal and vertical axes, and we facet on intervals of the response variable.
+
+```{r, fig.width=7.5}
+## the cut_number command divides the range of a variable into
+## intervals such that each interval has approximately the same
+## number of observations
+table(cut_number(galaxy$velocity, n = 10))
+## we use cut_number to make the level plot/coplot: 
+ggplot(galaxy, aes(x = east.west, y = north.south, color = velocity * 10^(-3))) + 
+    geom_jitter(width = 0.5,  height = 0.5) +
+    facet_wrap(~ cut_number(velocity * 10^(-3), n = 10), ncol = 5) +
+    coord_fixed() +
+    scale_color_viridis("Velocity, 10^3 km/s") + 
+    labs(title = "Level plot of galaxy locations, faceted by velocity (expressed in 10^3 km/s)")
+```
+
+------
+
+Compare the level plot with a plot in which velocity is indicated solely by color:
+
+```{r}
+ggplot(galaxy, aes(x = east.west, y = north.south, color = velocity * 10^(-3))) + 
+    geom_jitter(width = 0.5,  height = 0.5) +
+    coord_fixed() +
+    scale_color_viridis("Velocity, 10^3 km/s") +
+    labs(title = "Galaxy locations and velocity")
+```
+
+
+## Reviewing coplots and variable transformations
+
+The galaxy dataset already has radial position and angle computed for us, but it's a useful exercise to do it yourself as well.
+
+```{r}
+galaxy %>%
+    mutate(theta = atan(north.south / east.west) / (2 * pi) * 360) %>%
+    mutate(rotation_to_horizontal = theta + 180 * (theta < 0)) %>%
+    mutate(radial_position_recomputed = sqrt(north.south^2 + east.west^2)) %>%
+    head
+```
+
+-----
+
+Once we have the `angle` and `radial.position` variables, we can look at how velocity changes along each of the trajectories.
+
+```{r}
+ggplot(galaxy, aes(x = radial.position, y = velocity)) +
+    geom_point() +
+    stat_smooth(method = "loess") + 
+    facet_wrap(~ angle, ncol = 4) +
+    labs(title = "Galaxy position and velocity split by slit angle")
+```
+
+-------
+
+Since there's nothing particularly special about the angles measured, and we expect that velocity is smooth not just along those trajectories but overall, we would prefer a 2d loess smooth.
+
+```{r}
+galaxy_loess = loess(velocity ~ east.west * north.south,
+    data = galaxy, span = 0.25, 
+    family = "symmetric", normalize = FALSE)
+```
+
+Why `normalize = FALSE`?
+
+-----
+
+Making the analogous coplot with loess fitted values, we see a similar but not identical smooth.
+
+```{r, fig.width=7.5}
+ggplot(augment(galaxy_loess, data = galaxy), aes(x = radial.position, y = velocity)) +
+    geom_point() + 
+    geom_line(aes(y = .fitted), color = "blue") +
+    facet_wrap(~ angle, ncol = 4) +
+    labs(title = "Galaxy position and velocity split by slit angle with fitted model")
+```
+
+## Level plots for fitted values
+
+To make a level plot, we first need to get fitted values for the loess smoother at a grid of points:
+
+```{r}
+galaxy_grid = data.frame(expand.grid(
+    east.west = seq(-25, 25, 0.5),
+    north.south = seq(-45, 45, 0.5)))
+galaxy_smoothed = augment(galaxy_loess, newdata = galaxy_grid)
+```
+
+------
+
+Then we can make the level plot by cutting the response into bins:
+
+```{r, fig.width=7.5}
+ggplot(galaxy_smoothed, aes(x = east.west, y = north.south, fill = .fitted)) +
+    geom_raster() + 
+    coord_fixed() +
+    facet_wrap(~ cut_number(.fitted * 10^-3, n = 20), ncol = 10) + 
+    scale_fill_viridis()
+```
+
+------
+
+Again, compare the level plot with one where the fitted value is indicated only by color:
+
+```{r}
+ggplot(galaxy_smoothed, aes(x = east.west, y = north.south, fill = .fitted)) +
+    geom_raster() + 
+    coord_fixed() +
+    scale_fill_viridis()
+```
+
+
+## Contour plots
+
+Definition: The $a$ _contour_ of a function $f(x,y)$ is the set $\{ (x, y) : f(x,y) = a \}$.
+
+A _contour plot_ of $f(x,y)$ is a plot with $x$ and $y$ on the horizontal and vertical axes, and one or more contours of the function $f(x,y)$.
+
+Note: Finding the contours is an inverse problem, and for most functions we want contours of we won't have anything available in closed form. In practice, contours are computed numerically.
+
+------
+
+An algorithm for finding the $a$ contour of a function $f$:
+
+- Evaluate $f$ at a rectangular grid of points covering the region of study.
+
+- Consider all the grid segments (line segments connecting two neighboring grid points) for which one endpoint is at greater than or equal to $a$ and the other endpoint is less than or equal to $a$. Note that if the function $f$ is continuous, the $a$ contour must cross the grid segment.
+
+- Approximate the location where the $a$ contour crosses the grid segment by interpolation, and save the point.
+
+- Draw contours by connecting the points (see pp. 242-244 for one way to do this).
+
+------
+
+Contour plot interpretation
+
+- Closely spaced contours indicate large slope.
+
+- Parallel, evenly-spaced contours indicate the surface is a plane.
+
+
+## Contour plots for galaxy data
+
+```{r}
+ggplot(galaxy_smoothed, aes(x = east.west, y = north.south, fill = .fitted, z = .fitted)) +
+    geom_raster() +
+    geom_contour(bins = 20, color = "black") +
+    coord_fixed() +
+    scale_fill_viridis()
+```
+
+
+------
+
+Again, compare with the plot with no contours and fitted value indicated only by color:
+
+```{r}
+ggplot(galaxy_smoothed, aes(x = east.west, y = north.south, fill = .fitted, z = .fitted)) +
+    geom_raster() +
+    coord_fixed() +
+    scale_fill_viridis()
+```
+
+
+## Soil data
+
+The `soil` dataset contains measurements of soil resistivity. The variables are:
+
+- `northing`: The position along one axis (not actually north-south).
+
+- `easting`: The position along the perpendicular axis (also not east-west).
+
+- `resistivity`: The soil resistivity.
+
+
+First let's look at where we have measures of resistivity:
+
+```{r,fig.height=6}
+ggplot(soil, aes(x = easting, y = northing)) + geom_point(size=.5) + coord_fixed()
+```
+
+-----
+
+The plot above motivates the inclusion of the additional variables:
+
+- `is.ns`: Was the measurement taken from a northing track?
+
+- `track`: The ID of a track.
+
+We can look at these two variables in a little more detail to see how tracks are defined:
+
+```{r}
+table(soil[,c("is.ns", "track")])
+```
+
+-----
+
+As with the galaxy data, we can look at resistivity along tracks:
+
+```{r, fig.width=7, fig.height=4}
+ggplot(subset(soil, is.ns == TRUE), aes(x = northing, y = resistivity)) +
+    geom_point(size=.5) + 
+    facet_wrap(~track, ncol = 4)
+```
+
+
+```{r, fig.width=8, fig.height=4}
+ggplot(subset(soil, is.ns == FALSE), aes(x = easting, y = resistivity)) +
+    geom_point(size = 0.5) + 
+    facet_wrap(~track, ncol = 8)
+```
+
+------
+
+Because the variables are interchangeable, we would prefer a 2d loess fit:
+
+```{r}
+soil_lo = loess(resistivity ~ easting * northing, span = 0.25, data = soil, normalize = FALSE)
+```
+
+------
+
+Once we have the fit, we evaluate it on a grid and make level plots and contour plots:
+```{r, fig.height=6}
+soil_grid = data.frame(expand.grid(easting = seq(0, 1.5, 0.01),
+    northing = seq(0, 3.5, 0.01)))
+soil_smoothed = augment(soil_lo, newdata = soil_grid)
+ggplot(soil_smoothed,
+       aes(x = easting, y = northing, z = .fitted, fill = .fitted)) +
+    geom_raster() + 
+    geom_contour(bins = 16, color = "black") +
+    scale_fill_viridis() + 
+    coord_fixed()
+```
+
+-----
+
+
+```{r, fig.height=5.5}
+ggplot(soil_smoothed,
+       aes(x = easting, y = northing, fill = .fitted)) +
+    geom_raster() +
+    facet_wrap(~ cut_number(.fitted, n = 16), ncol = 8) + 
+    scale_fill_viridis() + 
+    coord_fixed()
+```
