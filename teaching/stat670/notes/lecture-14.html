@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <meta name="author" content="Julia Fukuyama" />
+  <title>Stat 470/670 Lecture 14: Background for Hypervariate Data</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="http://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+  <script src="http://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div class="slide titlepage">
+  <h1 class="title">Stat 470/670 Lecture 14: Background for Hypervariate Data</h1>
+  <p class="author">
+Julia Fukuyama
+  </p>
+  <p class="date">October 4, 2018</p>
+</div>
+<div id="today" class="slide section level2">
+<h1>Today</h1>
+<ul>
+<li><p>Linear algebra review</p></li>
+<li><p>Introduce biplots</p></li>
+</ul>
+<p>Reading: Greenacre, Biplots in Practice, Chapter 1. The <a href="http://www.multivariatestatistics.org/biplots.html">book website</a> contains links to all the chapters, and chapter 1 is linked to on the course website for today's lecture. Also <a href="http://www.fbbva.es/TLFU/dat/greenacre_c01_2010.pdf">here</a>.</p>
+</div>
+<div id="vectors-and-matrices" class="slide section level2">
+<h1>Vectors and Matrices</h1>
+<ul>
+<li>A <em>vector</em> in <span class="math">\(\mathbb R^n\)</span> is given by a set of <span class="math">\(n\)</span> coordinates. We will write a vector <span class="math">\(\mathbf x \in \mathbb R^n\)</span> as <span class="math">\((x_1, x_2, \ldots, x_n)\)</span>.</li>
+</ul>
+<div class="incremental">
+<ul>
+<li>We think of vectors in <span class="math">\(\mathbb R^2\)</span> as points in the plane, vectors in <span class="math">\(\mathbb R^3\)</span> as points in 3-dimensional space, and vectors in <span class="math">\(\mathbb R^n\)</span> as points in <span class="math">\(n\)</span>-dimensional space.</li>
+</ul>
+</div>
+<div class="incremental">
+<ul>
+<li>A <em>matrix</em> in <span class="math">\(\mathbb R^{n \times p}\)</span> consists of <span class="math">\(n\)</span> rows and <span class="math">\(p\)</span> columns. We will write such a matrix as <span class="math">\[
+\mathbf X = \begin{pmatrix}
+\mathbf X_{11} &amp; \mathbf X_{12} &amp; \cdots &amp; \mathbf X_{1p} \\
+\mathbf X_{21} &amp; \mathbf X_{22} &amp; \cdots &amp; \mathbf X_{2p} \\
+\vdots &amp; \vdots &amp; \ddots &amp; \vdots \\
+\mathbf X_{n1} &amp; \mathbf X_{n2} &amp; \cdots &amp; \mathbf X_{np}
+\end{pmatrix}
+\]</span> so that <span class="math">\(\mathbf X_{ij}\)</span> represents the element in the <span class="math">\(i\)</span>th row and <span class="math">\(j\)</span>th column of <span class="math">\(\mathbf X\)</span>.</li>
+</ul>
+</div>
+<div class="incremental">
+<ul>
+<li>A <em>column vector</em> is a vector written as an <span class="math">\(n \times 1\)</span> matrix, and a <em>row vector</em> is a vector written as a <span class="math">\(1 \times n\)</span> matrix.</li>
+</ul>
+</div>
+</div>
+<div id="scalar-products" class="slide section level2">
+<h1>Scalar products</h1>
+<p>Suppose <span class="math">\(\mathbf x\)</span> and <span class="math">\(\mathbf y\)</span> are vectors in <span class="math">\(\mathbb R^n\)</span>, then the scalar product of <span class="math">\(\mathbf x\)</span> and <span class="math">\(\mathbf y\)</span> is <span class="math">\[
+\mathbf x \cdot \mathbf y = \sum_{i=1}^n x_i y_i
+\]</span></p>
+</div>
+<div id="norm-of-a-vector" class="slide section level2">
+<h1>Norm of a vector</h1>
+<p>Suppose <span class="math">\(\mathbf x\)</span> is a vector in <span class="math">\(\mathbb R^n\)</span>. The <em>norm</em> of <span class="math">\(\mathbf x\)</span> is defined as <span class="math">\[
+\| \mathbf x\| = \sqrt{\sum_{i=1}^n x_i^2}
+\]</span></p>
+<p>The norm is usually interpreted as a measure of size or length.</p>
+</div>
+<div id="vector-operation-properties" class="slide section level2">
+<h1>Vector operation properties</h1>
+<ul>
+<li><p><span class="math">\(\frac{\mathbf x \cdot \mathbf y }{ \|\mathbf x\| \|\mathbf y\|} = \cos(\theta)\)</span>, where <span class="math">\(\theta\)</span> is the angle between <span class="math">\(\mathbf x\)</span> and <span class="math">\(\mathbf y\)</span>.</p></li>
+<li><p><span class="math">\(\mathbf x \cdot \mathbf y = 0\)</span> means that <span class="math">\(\mathbf x\)</span> and <span class="math">\(\mathbf y\)</span> are orthogonal, i.e. that the angle between them is 90 degrees.</p></li>
+<li><p>If <span class="math">\(\|\mathbf x\| = 1\)</span> and <span class="math">\(\|\mathbf y\| = 1\)</span> (referred to as <em>unit vectors</em>), then <span class="math">\(\mathbf x \cdot \mathbf y = 1 \in [-1, 1]\)</span>.</p></li>
+<li><p>If <span class="math">\(\|\mathbf x\|\)</span> and <span class="math">\(\|\mathbf y\|\)</span> are unit vectors, then <span class="math">\(\mathbf x \cdot \mathbf y = 1\)</span> implies the angle between the two vectors is <span class="math">\(0\)</span>, and <span class="math">\(\mathbf x \cdot \mathbf y = -1\)</span> implies that the angle between the two vectors is <span class="math">\(180\)</span> degrees. This property motivates the interpretation of the scalar product as a measure of similarity.</p></li>
+</ul>
+</div>
+<div id="geometry-projection-of-one-vector-onto-another" class="slide section level2">
+<h1>Geometry: Projection of one vector onto another</h1>
+<div class="figure">
+<img src="projection.png" />
+</div>
+<p>The length of the projection of <span class="math">\(\mathbf x\)</span> onto <span class="math">\(\mathbf y\)</span> is <span class="math">\(\|\mathbf x \| \cos(\theta) = (\mathbf x \cdot \mathbf y) / \|\mathbf y\|\)</span>.</p>
+<div class="incremental">
+<p>More useful form: <span class="math">\[
+\mathbf x \cdot \mathbf y = (\text{length of projection of $\mathbf x$ onto $\mathbf y$})\|\mathbf y\|
+\]</span></p>
+<p>This result is important for visualization because we can &quot;read off&quot; scalar products as projections.</p>
+</div>
+</div>
+<div id="matrix-operations-multiplication" class="slide section level2">
+<h1>Matrix operations: Multiplication</h1>
+<p>Suppose <span class="math">\(\mathbf X \in \mathbb R^{a \times b}\)</span> and <span class="math">\(\mathbf Y \in \mathbb R^{b \times c}\)</span>. Then the matrix product of <span class="math">\(\mathbf X\)</span> and <span class="math">\(\mathbf Y\)</span> is a matrix <span class="math">\(\mathbf S \in \mathbb R^{a \times c}\)</span>, where the <span class="math">\(i, j\)</span> element of <span class="math">\(\mathbf S\)</span> is <span class="math">\[
+\mathbf S_{ij} = \sum_{k=1}^ b \mathbf X_{i k} \mathbf Y_{k j}
+\]</span></p>
+<div class="incremental">
+<p>Note: For the matrix multiplication operation to be defined for the matrices <span class="math">\(\mathbf X\)</span> and <span class="math">\(\mathbf Y\)</span>, the number of columns of <span class="math">\(\mathbf X\)</span> must be equal to the number of rows of <span class="math">\(\mathbf Y\)</span>.</p>
+</div>
+</div>
+<div id="matrix-operations-transpose" class="slide section level2">
+<h1>Matrix operations: Transpose</h1>
+<p>The matrix transpose operation flips the row and column indices. That is, <span class="math">\((\mathbf X^T)_{ij} = \mathbf X_{ji}\)</span>.</p>
+</div>
+<div id="matrix-multiplication-written-as-scalar-products" class="slide section level2">
+<h1>Matrix multiplication written as scalar products</h1>
+<p>Note that we can write the matrix multiplication operation in terms of scalar products.</p>
+<p>As before, suppose we have <span class="math">\(\mathbf X \in \mathbb R^{a \times b}\)</span> and <span class="math">\(\mathbf Y \in \mathbb R^{b \times c}\)</span>.</p>
+<p>Let <span class="math">\(\mathbf x_1, \ldots, \mathbf x_a\)</span> be column vectors containing the rows of <span class="math">\(\mathbf X\)</span>, so that <span class="math">\[
+\mathbf X = \begin{pmatrix} \mathbf x_1^T \\ \vdots \\ \mathbf x_a^T \end{pmatrix}
+\]</span> and let <span class="math">\(\mathbf y_1, \ldots, \mathbf y_c\)</span> be column vectors containing the columns of <span class="math">\(\mathbf Y\)</span>, so that <span class="math">\[
+\mathbf Y = \begin{pmatrix} \mathbf y_1 &amp; \cdots &amp; \mathbf y_c \end{pmatrix}
+\]</span></p>
+<p>Then if <span class="math">\(\mathbf S = \mathbf X \mathbf Y\)</span>, <span class="math">\(\mathbf S_{ij} = \mathbf x_i \cdot \mathbf y_j\)</span>.</p>
+<p><span class="math">\[
+\mathbf S = \begin{pmatrix}
+\mathbf x_1 \cdot \mathbf y_1 &amp; \mathbf x_1 \cdot \mathbf y_2 &amp; \cdots &amp; \mathbf x_1 \cdot \mathbf y_c\\
+\mathbf x_2 \cdot \mathbf y_1&amp; \mathbf x_2 \cdot \mathbf y_2 &amp; \cdots &amp; \mathbf x_2 \cdot \mathbf y_c\\
+\vdots &amp; \vdots &amp; \ddots &amp; \vdots \\
+\mathbf x_a \cdot \mathbf y_1&amp; \mathbf x_a \cdot \mathbf y_2&amp; \cdots &amp; \mathbf x_a \cdot \mathbf y_c
+\end{pmatrix}
+\]</span></p>
+</div>
+<div id="biplot-the-main-idea" class="slide section level2">
+<h1>Biplot: the main idea</h1>
+<p>Suppose we have a matrix <span class="math">\(\mathbf S \in \mathbb R^{n \times p}\)</span>.</p>
+<p>The rows of <span class="math">\(\mathbf S\)</span> correspond to observations, and the columns of <span class="math">\(\mathbf S\)</span> correspond to the variables measured.</p>
+<p>A biplot is a visualization of the matrix <span class="math">\(\mathbf S\)</span> that will allow us to read off</p>
+<ul>
+<li><p>The values of <span class="math">\(\mathbf S\)</span>,</p></li>
+<li><p>The correlations between the variables,</p></li>
+<li><p>The similarities between the observations.</p></li>
+</ul>
+<p>To do this, we combine our results about matrix multiplication as scalar products with our results describing scalar products in terms of projections of one variable onto another.</p>
+</div>
+<div id="biplot-definition" class="slide section level2">
+<h1>Biplot definition</h1>
+<p>Suppose we have a matrix <span class="math">\(\mathbf S \in \mathbb R^{n \times p}\)</span>. Further suppose that we can write <span class="math">\(\mathbf S\)</span> as <span class="math">\[
+\mathbf S = \mathbf X \mathbf Y^T,
+\]</span> where <span class="math">\(\mathbf X \in \mathbb R^{n \times 2}\)</span> and <span class="math">\(\mathbf Y \in \mathbb R^{p \times 2}\)</span>.</p>
+<p><span class="math">\(\mathbf S\)</span> is the <em>target matrix</em>, and <span class="math">\(\mathbf X\)</span> and <span class="math">\(\mathbf Y\)</span> are the <em>left</em> and <em>right</em> matrices, respectively.</p>
+<p>In a biplot, we plot the rows of <span class="math">\(\mathbf X\)</span> and the rows of <span class="math">\(\mathbf Y\)</span>.</p>
+<p>The convention is that</p>
+<ul>
+<li><p>Rows of <span class="math">\(\mathbf X\)</span> are plotted as points, and are referred to as <em>biplot points</em>.</p></li>
+<li><p>Rows of <span class="math">\(\mathbf Y\)</span> are plotted as arrows, and are referred to as <em>biplot vectors</em>.</p></li>
+</ul>
+</div>
+<div id="an-example" class="slide section level2">
+<h1>An example</h1>
+<pre class="sourceCode r"><code class="sourceCode r">X =<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">c</span>(<span class="dv">2</span>,<span class="dv">2</span>, <span class="dv">1</span>,<span class="dv">2</span>, -<span class="dv">1</span>,<span class="dv">1</span>, <span class="dv">1</span>,-<span class="dv">1</span>, <span class="dv">2</span>,-<span class="dv">2</span>), <span class="dt">ncol =</span> <span class="dv">2</span>, <span class="dt">byrow =</span> <span class="ot">TRUE</span>)
+Y =<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">c</span>(<span class="dv">3</span>,<span class="dv">1</span>, <span class="dv">2</span>,-<span class="dv">1</span>, -<span class="dv">1</span>,<span class="dv">2</span>, -<span class="dv">2</span>,-<span class="dv">1</span>), <span class="dt">ncol =</span> <span class="dv">2</span>, <span class="dt">byrow =</span> <span class="ot">TRUE</span>)
+## %*% is the matrix multiplication function in R
+S =<span class="st"> </span>X %*%<span class="st"> </span><span class="kw">t</span>(Y)
+X</code></pre>
+<pre><code>##      [,1] [,2]
+## [1,]    2    2
+## [2,]    1    2
+## [3,]   -1    1
+## [4,]    1   -1
+## [5,]    2   -2</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">Y</code></pre>
+<pre><code>##      [,1] [,2]
+## [1,]    3    1
+## [2,]    2   -1
+## [3,]   -1    2
+## [4,]   -2   -1</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">S</code></pre>
+<pre><code>##      [,1] [,2] [,3] [,4]
+## [1,]    8    2    2   -6
+## [2,]    5    0    3   -4
+## [3,]   -2   -3    3    1
+## [4,]    2    3   -3   -1
+## [5,]    4    6   -6   -2</code></pre>
+</div>
+<div id="a-toy-biplot" class="slide section level2">
+<h1>A toy biplot</h1>
+<p>The arrows are the biplot vectors, or the rows of <span class="math">\(\mathbf Y\)</span>.</p>
+<p>The points are the byplot points, or the rows of <span class="math">\(\mathbf X\)</span>.</p>
+<div class="figure">
+<img src="lecture-14-fig/unnamed-chunk-2-1.png" />
+</div>
+<p>How do we use this plot?</p>
+</div>
+<div id="we-can-read-off-the-elements-of-the-original-data-matrix" class="slide section level2">
+<h1>We can read off the elements of the original data matrix</h1>
+<p>Remember that we can write S as a matrix of scalar products. <span class="math">\[
+\mathbf S = \mathbf X \mathbf Y^T =
+\begin{pmatrix}
+\mathbf x_1 \cdot \mathbf y_1 &amp; \mathbf x_1 \cdot \mathbf y_2 &amp; \cdots &amp; \mathbf x_1 \cdot \mathbf y_p \\
+\mathbf x_2 \cdot \mathbf y_1 &amp; \mathbf x_2 \cdot \mathbf y_2 &amp; \cdots &amp; \mathbf x_2 \cdot \mathbf y_p \\
+\vdots &amp; \vdots &amp; \ddots &amp; \vdots\\
+\mathbf x_n \cdot \mathbf y_1 &amp; \mathbf x_n \cdot \mathbf y_2 &amp; \cdots &amp; \mathbf x_n \cdot \mathbf y_p
+\end{pmatrix}
+\]</span> where <span class="math">\(\mathbf x_i\)</span> are vectors denoting the rows of <span class="math">\(\mathbf X\)</span> and <span class="math">\(\mathbf y_i\)</span> are vectors denoting the rows of <span class="math">\(\mathbf Y\)</span></p>
+<p>What this means is that we can reconstruct any element of S by looking at the scalar product between the biplot point and the biplot vector corresponding to that element.</p>
+<p>Remember that the scalar product between <span class="math">\(\mathbf x_i\)</span> and <span class="math">\(\mathbf y_j\)</span> is the length of the projection of <span class="math">\(\mathbf x_i\)</span> onto <span class="math">\(\mathbf y_j\)</span> times the length of <span class="math">\(\mathbf y_j\)</span>.</p>
+</div>
+<div id="biplot-calibration" class="slide section level2">
+<h1>Biplot calibration</h1>
+<p>To read off absolute values, not just relative values, we need to calibrate the axes.</p>
+<p>Suppose we are interested in the value in the target matrix for observation <span class="math">\(i\)</span>, variable <span class="math">\(j\)</span>.</p>
+<p>Recall that <span class="math">\[
+\text{length of the projection of point $\mathbf x_i$ onto vector $\mathbf y_j$} = (\mathbf x_i \cdot \mathbf y_j) /\|\mathbf y_j\|,
+\]</span> and the value of the target matrix is <span class="math">\[
+\mathbf S_{ij} = \mathbf x_i \cdot \mathbf y_j
+\]</span></p>
+<div class="incremental">
+<p>Therefore, if the value in the target matrix is <span class="math">\(1\)</span>, the length of the projection of <span class="math">\(\mathbf x_i\)</span> onto <span class="math">\(\mathbf y_j\)</span> is <span class="math">\(1 / \|\mathbf y\|\)</span>. This is the length of one unit along the biplot axis, and it tells us that</p>
+<ul>
+<li><p>If the biplot vector is long, the intervals between units on the biplot vector are short (and so values change quickly as we move along that axis).</p></li>
+<li><p>If the biplot vector is short, the intervals between units on the biplot vector are long (and so values change slowly as we move along that axis).</p></li>
+</ul>
+</div>
+</div>
+<div class="slide section level2">
+
+<div class="figure">
+<img src="calibration.png" />
+</div>
+</div>
+<div id="the-biplot-shows-us-correlation-between-variables-and-similarities-between-samples" class="slide section level2">
+<h1>The biplot shows us correlation between variables and similarities between samples</h1>
+<p>The biplot shows us correlations between the variables.</p>
+<ul>
+<li>If two biplot axes lie in the same orientation, the observations have approximately the same relative positions on both. This translates to the variables being highly correlated.</li>
+</ul>
+<p>The biplot shows us similarities between the samples</p>
+<ul>
+<li>If two biplot points lie close to each other, their projections along all of the biplot axes will be similar, implying that their values on all the variables are similar.</li>
+</ul>
+</div>
+<div id="summing-up" class="slide section level2">
+<h1>Summing up</h1>
+<ul>
+<li>Think of a biplot as a generalization of a scatterplot. In a scatterplot, you visualize two variables. Points represent observations, and you can read off the value each variable takes for each observation. In biplots, we can have as many variables as we want; we are no longer limited to two.</li>
+</ul>
+<p>However....</p>
+<ul>
+<li>We can't always write our data matrix as the product of two matrices with only two columns. What do we do in the general case?</li>
+</ul>
+</div>
+</body>
+</html>
