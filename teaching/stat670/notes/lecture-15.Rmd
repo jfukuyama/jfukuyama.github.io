@@ -109,7 +109,7 @@ The values in $\mathbf D$ tell us about how well $\hat {\mathbf S}$ approximates
 We have
 
 $$
-1 - \frac{\mathbf D_{11} + \mathbf D_{22}}{\sum_{i=1}^r \mathbf D_{ii}} = \frac{\sum_{i=1}^n \sum_{j=1}^p (\hat {\mathbf S}_{ij} - \mathbf S_{ij})^2}{\sum_{i=1}^n \sum_{j=1}^p \mathbf S_{ij}^2}
+1 - \frac{\mathbf D_{11}^2 + \mathbf D_{22}^2}{\sum_{i=1}^r \mathbf D_{ii}^2} = \frac{\sum_{i=1}^n \sum_{j=1}^p (\hat {\mathbf S}_{ij} - \mathbf S_{ij})^2}{\sum_{i=1}^n \sum_{j=1}^p \mathbf S_{ij}^2}
 $$
 
 This is the quality of a rank-2 approximation because we are interested in biplots and representations of $\mathbf S$ in the plane, but the analogous result holds for approximations of any rank.
@@ -141,7 +141,7 @@ HairEyeColor
 hec_svd = svd(HairEyeColor[,,2])
 hec_svd
 ## Quality of the rank-2 approximation:
-sum(hec_svd$d[1:2]) / sum(hec_svd$d)
+sum(hec_svd$d[1:2]^2) / sum(hec_svd$d^2)
 ```
 
 -----

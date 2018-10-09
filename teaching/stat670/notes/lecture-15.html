@@ -121,7 +121,7 @@ Julia Fukuyama
 <p>The values in <span class="math">\(\mathbf D\)</span> tell us about how well <span class="math">\(\hat {\mathbf S}\)</span> approximates <span class="math">\(\mathbf S\)</span>.</p>
 <p>We have</p>
 <p><span class="math">\[
-1 - \frac{\mathbf D_{11} + \mathbf D_{22}}{\sum_{i=1}^r \mathbf D_{ii}} = \frac{\sum_{i=1}^n \sum_{j=1}^p (\hat {\mathbf S}_{ij} - \mathbf S_{ij})^2}{\sum_{i=1}^n \sum_{j=1}^p \mathbf S_{ij}^2}
+1 - \frac{\mathbf D_{11}^2 + \mathbf D_{22}^2}{\sum_{i=1}^r \mathbf D_{ii}^2} = \frac{\sum_{i=1}^n \sum_{j=1}^p (\hat {\mathbf S}_{ij} - \mathbf S_{ij})^2}{\sum_{i=1}^n \sum_{j=1}^p \mathbf S_{ij}^2}
 \]</span></p>
 <p>This is the quality of a rank-2 approximation because we are interested in biplots and representations of <span class="math">\(\mathbf S\)</span> in the plane, but the analogous result holds for approximations of any rank.</p>
 </div>
@@ -179,8 +179,8 @@ hec_svd</code></pre>
 ## [3,] -0.2896722  0.15444110 -0.8092755 -0.48714583
 ## [4,] -0.1716771 -0.01382906 -0.4641847  0.86883155</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">## Quality of the rank-2 approximation:
-<span class="kw">sum</span>(hec_svd$d[<span class="dv">1</span>:<span class="dv">2</span>]) /<span class="st"> </span><span class="kw">sum</span>(hec_svd$d)</code></pre>
-<pre><code>## [1] 0.9225178</code></pre>
+<span class="kw">sum</span>(hec_svd$d[<span class="dv">1</span>:<span class="dv">2</span>]^<span class="dv">2</span>) /<span class="st"> </span><span class="kw">sum</span>(hec_svd$d^<span class="dv">2</span>)</code></pre>
+<pre><code>## [1] 0.9920139</code></pre>
 </div>
 <div class="slide section level2">
 
