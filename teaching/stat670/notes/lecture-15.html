@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <meta name="author" content="Julia Fukuyama" />
+  <title>Stat 470/670 Lecture 15: Matrix Approximation, the SVD, and Reduced Rank Biplots</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="http://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+  <script src="http://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div class="slide titlepage">
+  <h1 class="title">Stat 470/670 Lecture 15: Matrix Approximation, the SVD, and Reduced Rank Biplots</h1>
+  <p class="author">
+Julia Fukuyama
+  </p>
+  <p class="date">October 9, 2018</p>
+</div>
+<div id="today" class="slide section level2">
+<h1>Today</h1>
+<ul>
+<li><p>Singular Value Decomposition</p></li>
+<li><p>Reduced Rank Biplots</p></li>
+</ul>
+<p>Reading: Greenacre, Biplots in Practice, Chapter 5. The <a href="http://www.multivariatestatistics.org/biplots.html">book website</a> contains links to all the chapters, and chapter 5 is linked to on the course website for today's lecture. Also <a href="http://www.fbbva.es/TLFU/dat/greenacre_c05_2010.pdf">here</a>.</p>
+</div>
+<div id="what-to-know-about-biplots" class="slide section level2">
+<h1>What to know about biplots</h1>
+<ul>
+<li><p>A biplot is a generalization of a scatterplot to an arbitrary number of variables.</p></li>
+<li><p>The value of each observation for each variable is read off of the biplot by projecting the point onto the variable &quot;axis&quot;, just as in a scatterplot.</p></li>
+<li><p>We can represent a matrix <span class="math">\(\mathbf S \in \mathbb R^{n \times p}\)</span> as a biplot if we can write <span class="math">\(\mathbf S = \mathbf L \mathbf R^T\)</span>, where <span class="math">\(\mathbf L \in \mathbb R^{n \times 2}\)</span> and <span class="math">\(\mathbf R \in \mathbb R^{p \times 2}\)</span>.</p></li>
+</ul>
+</div>
+<div id="rank-of-a-matrix" class="slide section level2">
+<h1>Rank of a matrix</h1>
+<p>One more concept from linear algebra:</p>
+<p>The <em>rank</em> of a matrix is the number of linearly independent rows or columns of a matrix.</p>
+<ul>
+<li><p>A set of vectors <span class="math">\(\mathbf v_1, \ldots, \mathbf v_n\)</span> is <em>linearly dependent</em> if there exist a set of scalar values <span class="math">\(a_1, \ldots, a_n\)</span> such that <span class="math">\(\sum_{i=1}^n a_i \mathbf v_i = \mathbf 0\)</span>, where <span class="math">\(\mathbf 0\)</span> represents the vector containing all zero values.</p></li>
+<li><p>A set of vectors <span class="math">\(\mathbf v_1, \ldots, \mathbf v_n\)</span> is <em>linearly independent</em> if it is not linearly dependent.</p></li>
+</ul>
+<p>Note: If you've had linear algebra this should be familiar to you. If you haven't had linear algebra or don't particularly remember about ranks that's ok too, the main idea here is going to be that the rank of a matrix controls whether we can represent it exactly in two dimensions or not.</p>
+</div>
+<div class="slide section level2">
+
+<p>Properties of the rank:</p>
+<ul>
+<li><p>The rank is well defined, for any matrix the number of linearly independent rows and the number of linearly independent columns is the same.</p></li>
+<li><p>An <span class="math">\(n \times p\)</span> matrix has rank at most <span class="math">\(\text{min}(n, p)\)</span>.</p></li>
+<li><p>If a matrix <span class="math">\(\mathbf S \in \mathbb R^{n \times p}\)</span> has rank <span class="math">\(k\)</span>, there exist matrices <span class="math">\(\mathbf L \in \mathbb R^{n \times k}\)</span> and <span class="math">\(\mathbf R \in \mathbb R^{p \times k}\)</span> such that <span class="math">\(\mathbf S = \mathbf L \mathbf R^T\)</span>.</p></li>
+</ul>
+</div>
+<div id="problem-we-need-to-solve-to-make-a-biplot-of-a-high-dimensional-matrix" class="slide section level2">
+<h1>Problem we need to solve to make a biplot of a high-dimensional matrix</h1>
+<p>Suppose we have a matrix <span class="math">\(\mathbf S \in \mathbb R^{n \times p}\)</span>, and <span class="math">\(\mathbf S\)</span> has rank greater than 2.</p>
+<p>To make a biplot, we need to have <span class="math">\(\mathbf S = \mathbf L \mathbf R^T\)</span>, where <span class="math">\(\mathbf L \in \mathbb R^{n \times 2}\)</span> and <span class="math">\(\mathbf R \in \mathbb R^{p \times 2}\)</span>.</p>
+<p>If the rank if <span class="math">\(\mathbf S\)</span> is more than 2, such matrices don't exist!</p>
+<div class="incremental">
+<p>Solution: Find the rank-2 matrix <span class="math">\(\hat {\mathbf S}\)</span> that most closely approximates <span class="math">\(\mathbf S\)</span>, and use that to make a biplot.</p>
+<p><span class="math">\[
+\hat {\mathbf S} = \text{argmin}_{\mathbf T : \text{rank}(\mathbf T) = 2} \sum_{i=1}^n \sum_{j=1}^p (\mathbf S_{ij} - \mathbf T_{ij})^2
+\]</span></p>
+</div>
+</div>
+<div id="singular-value-decomposition" class="slide section level2">
+<h1>Singular Value Decomposition</h1>
+<p>The <a href="https://en.wikipedia.org/wiki/Singular_value_decomposition">Singular Value Decomposition (SVD)</a> is one of the most useful matrix decompositions.</p>
+<p>It says that any matrix <span class="math">\(\mathbf S\)</span> of rank <span class="math">\(r\)</span> can be written as <span class="math">\[
+\mathbf S = \mathbf U \mathbf D \mathbf V^T
+\]</span> where:</p>
+<ul>
+<li><p><span class="math">\(\mathbf U \in \mathbb R^{n \times r}\)</span>, with orthogonal columns (the scalar product between any two distinct columns is 0, the scalar product between any column and itself is 1).</p></li>
+<li><p><span class="math">\(\mathbf D \in \mathbb R^{r \times r}\)</span> is a diagonal matrix, with positive numbers on the diagonal. These are written in decreasing order.</p></li>
+<li><p><span class="math">\(\mathbf V \in \mathbb R^{p \times r}\)</span>, with orthogonal columns.</p></li>
+</ul>
+</div>
+<div id="matrix-approximation-by-the-svd" class="slide section level2">
+<h1>Matrix Approximation by the SVD</h1>
+<p>We can use the SVD to find the solution to our problem on the previous slide:</p>
+<p>We want <span class="math">\(\hat{\mathbf S}\)</span> such that <span class="math">\[
+\hat {\mathbf S} = \text{argmin}_{\mathbf T : \text{rank}(\mathbf T) = 2} \sum_{i=1}^n \sum_{j=1}^p (\mathbf S_{ij} - \mathbf T_{ij})^2
+\]</span></p>
+<div class="incremental">
+<p>It turns out that <span class="math">\(\hat{\mathbf S} = \mathbf U_{(2)} \mathbf D_{(2)} \mathbf V_{(2)}^T\)</span>, where</p>
+<ul>
+<li><p><span class="math">\(\mathbf U_{(2)} \in \mathbb R^{n \times 2}\)</span> is the matrix containing the first two columns of the matrix <span class="math">\(\mathbf U\)</span> in the SVD of <span class="math">\(\mathbf S\)</span></p></li>
+<li><p><span class="math">\(\mathbf D_{(2)} \in \mathbb R^{2 \times 2}\)</span> is the diagonal matrix containing the first two rows and columns of <span class="math">\(\mathbf D\)</span> in the SVD of <span class="math">\(\mathbf S\)</span>.</p></li>
+<li><p><span class="math">\(\mathbf V_{(2)} \in \mathbb R^{p \times 2}\)</span> is the matrix containing the first two columns of the matrix <span class="math">\(\mathbf V\)</span> in the SVD of <span class="math">\(\mathbf S\)</span></p></li>
+</ul>
+</div>
+</div>
+<div id="quality-of-the-approximation" class="slide section level2">
+<h1>Quality of the approximation</h1>
+<p>The values in <span class="math">\(\mathbf D\)</span> tell us about how well <span class="math">\(\hat {\mathbf S}\)</span> approximates <span class="math">\(\mathbf S\)</span>.</p>
+<p>We have</p>
+<p><span class="math">\[
+1 - \frac{\mathbf D_{11} + \mathbf D_{22}}{\sum_{i=1}^r \mathbf D_{ii}} = \frac{\sum_{i=1}^n \sum_{j=1}^p (\hat {\mathbf S}_{ij} - \mathbf S_{ij})^2}{\sum_{i=1}^n \sum_{j=1}^p \mathbf S_{ij}^2}
+\]</span></p>
+<p>This is the quality of a rank-2 approximation because we are interested in biplots and representations of <span class="math">\(\mathbf S\)</span> in the plane, but the analogous result holds for approximations of any rank.</p>
+</div>
+<div id="biplot-representation-of-the-svd-approximation" class="slide section level2">
+<h1>Biplot representation of the SVD approximation</h1>
+<p><span class="math">\(\hat{\mathbf S} = \mathbf U_{(2)} \mathbf D_{(2)} \mathbf V_{(2)}^T\)</span> is almost in the right form for a biplot, but not quite. We need just a left and a right matrix, and we have <span class="math">\(\mathbf D_{(2)}\)</span> in the middle.</p>
+<p>We have a couple of options:</p>
+<ul>
+<li><p>Left matrix <span class="math">\(\mathbf U_{(2)}\)</span>, right matrix <span class="math">\(\mathbf V_{(2)} \mathbf D_{(2)}\)</span></p></li>
+<li><p>Left matrix <span class="math">\(\mathbf U_{(2)} \mathbf D_{(2)}\)</span>, right matrix <span class="math">\(\mathbf V_{(2)}\)</span></p></li>
+<li><p>Left matrix <span class="math">\(\mathbf U_{(2)} \mathbf D_{(2)}^{1/2}\)</span>, right matrix <span class="math">\(\mathbf V_{(2)} \mathbf D_{(2)}^{1/2}\)</span></p></li>
+</ul>
+<p>The last is referred to as the symmetric biplot, and we'll go with that for now.</p>
+</div>
+<div id="example" class="slide section level2">
+<h1>Example</h1>
+<pre class="sourceCode r"><code class="sourceCode r">## HairEyeColor dataset, we&#39;ll just use the women
+HairEyeColor</code></pre>
+<pre><code>## , , Sex = Male
+## 
+##        Eye
+## Hair    Brown Blue Hazel Green
+##   Black    32   11    10     3
+##   Brown    53   50    25    15
+##   Red      10   10     7     7
+##   Blond     3   30     5     8
+## 
+## , , Sex = Female
+## 
+##        Eye
+## Hair    Brown Blue Hazel Green
+##   Black    36    9     5     2
+##   Brown    66   34    29    14
+##   Red      16    7     7     7
+##   Blond     4   64     5     8</code></pre>
+</div>
+<div class="slide section level2">
+
+<pre class="sourceCode r"><code class="sourceCode r">hec_svd =<span class="st"> </span><span class="kw">svd</span>(HairEyeColor[,,<span class="dv">2</span>])
+hec_svd</code></pre>
+<pre><code>## $d
+## [1] 98.392552 52.703025  9.489478  3.201033
+## 
+## $u
+##            [,1]       [,2]       [,3]        [,4]
+## [1,] -0.3341488  0.3032153  0.8780094  0.15970129
+## [2,] -0.7993476  0.3549164 -0.3697302 -0.31365176
+## [3,] -0.1921516  0.1032077 -0.2788792  0.93522849
+## [4,] -0.4609401 -0.8783183  0.1209359  0.03828508
+## 
+## $v
+##            [,1]        [,2]       [,3]        [,4]
+## [1,] -0.7084325  0.61625080  0.3401477  0.05155421
+## [2,] -0.6202744 -0.77213448  0.1179200 -0.07185294
+## [3,] -0.2896722  0.15444110 -0.8092755 -0.48714583
+## [4,] -0.1716771 -0.01382906 -0.4641847  0.86883155</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">## Quality of the rank-2 approximation:
+<span class="kw">sum</span>(hec_svd$d[<span class="dv">1</span>:<span class="dv">2</span>]) /<span class="st"> </span><span class="kw">sum</span>(hec_svd$d)</code></pre>
+<pre><code>## [1] 0.9225178</code></pre>
+</div>
+<div class="slide section level2">
+
+<pre class="sourceCode r"><code class="sourceCode r">## Distribute the singular values evenly between the left and right singular vectors
+left_matrix =<span class="st"> </span>hec_svd$u %*%<span class="st"> </span><span class="kw">diag</span>(hec_svd$d^(.<span class="dv">5</span>))
+right_matrix =<span class="st"> </span>hec_svd$v %*%<span class="st"> </span><span class="kw">diag</span>(hec_svd$d^(.<span class="dv">5</span>))</code></pre>
+<div class="incremental">
+<p>Let's check the quality of the approximations</p>
+<pre class="sourceCode r"><code class="sourceCode r">HairEyeColor[,,<span class="dv">2</span>]</code></pre>
+<pre><code>##        Eye
+## Hair    Brown Blue Hazel Green
+##   Black    36    9     5     2
+##   Brown    66   34    29    14
+##   Red      16    7     7     7
+##   Blond     4   64     5     8</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">left_matrix %*%<span class="st"> </span><span class="kw">t</span>(right_matrix)</code></pre>
+<pre><code>##      [,1] [,2] [,3] [,4]
+## [1,]   36    9    5    2
+## [2,]   66   34   29   14
+## [3,]   16    7    7    7
+## [4,]    4   64    5    8</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">round</span>(left_matrix[,<span class="dv">1</span>:<span class="dv">2</span>] %*%<span class="st"> </span><span class="kw">t</span>(right_matrix[,<span class="dv">1</span>:<span class="dv">2</span>]), <span class="dt">digits =</span> <span class="dv">1</span>)</code></pre>
+<pre><code>##      [,1] [,2] [,3] [,4]
+## [1,] 33.1  8.1 12.0  5.4
+## [2,] 67.2 34.3 25.7 13.2
+## [3,] 16.7  7.5  6.3  3.2
+## [4,]  3.6 63.9  6.0  8.4</code></pre>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Set up for making a biplot:</p>
+<pre class="sourceCode r"><code class="sourceCode r">## Change the matrices to data frames and add a column describing the variables
+left_df =<span class="st"> </span><span class="kw">data.frame</span>(left_matrix, <span class="dt">HairColor =</span> <span class="kw">rownames</span>(HairEyeColor))
+right_df =<span class="st"> </span><span class="kw">data.frame</span>(right_matrix, <span class="dt">EyeColor =</span> <span class="kw">colnames</span>(HairEyeColor))</code></pre>
+<div class="incremental">
+<pre class="sourceCode r"><code class="sourceCode r">left_df</code></pre>
+<pre><code>##          X1         X2         X3          X4 HairColor
+## 1 -3.314523  2.2012479  2.7047077  0.28572844     Black
+## 2 -7.928970  2.5765809 -1.1389536 -0.56116783     Brown
+## 3 -1.906010  0.7492551 -0.8590873  1.67325747       Red
+## 4 -4.572204 -6.3763140  0.3725429  0.06849748     Blond</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">right_df</code></pre>
+<pre><code>##          X1         X2         X3          X4 EyeColor
+## 1 -7.027156  4.4737866  1.0478249  0.09223785    Brown
+## 2 -6.152689 -5.6054530  0.3632527 -0.12855519     Blue
+## 3 -2.873346  1.1211937 -2.4929731 -0.87157352    Hazel
+## 4 -1.702917 -0.1003946 -1.4299209  1.55446385    Green</code></pre>
+</div>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(left_df) +<span class="st"> </span><span class="kw">geom_text_repel</span>(<span class="kw">aes</span>(<span class="dt">x =</span> X1, <span class="dt">y =</span> X2, <span class="dt">label =</span> HairColor)) +
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> X1, <span class="dt">y =</span> X2)) +
+<span class="st">    </span><span class="kw">coord_fixed</span>() +
+<span class="st">    </span><span class="kw">geom_segment</span>(<span class="kw">aes</span>(<span class="dt">xend =</span> X1, <span class="dt">yend =</span> X2, <span class="dt">x =</span> <span class="dv">0</span>, <span class="dt">y =</span> <span class="dv">0</span>),
+                 <span class="dt">data =</span> right_df, <span class="dt">arrow =</span> <span class="kw">arrow</span>(<span class="dt">length =</span> <span class="kw">unit</span>(<span class="fl">0.03</span>, <span class="st">&quot;npc&quot;</span>))) +
+<span class="st">    </span><span class="kw">geom_text</span>(<span class="kw">aes</span>(<span class="dt">x =</span> X1, <span class="dt">y =</span> X2, <span class="dt">label =</span> EyeColor), <span class="dt">data =</span> right_df, <span class="dt">nudge_y =</span> .<span class="dv">2</span>, <span class="dt">nudge_x =</span> -.<span class="dv">5</span>)</code></pre>
+<div class="figure">
+<img src="lecture-15-fig/unnamed-chunk-7-1.png" />
+</div>
+</div>
+</div>
+</body>
+</html>
