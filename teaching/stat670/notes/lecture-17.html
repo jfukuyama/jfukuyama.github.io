@@ -242,7 +242,11 @@ state_mds =<span class="st"> </span><span class="kw">cmdscale</span>(state_dista
 <div id="non-metric-mds" class="slide section level2">
 <h1>Non-metric MDS</h1>
 <p>Non-metric MDS is a robust alternative to classical MDS, and it is used when we want a map that preserves relative distances instead of absolute distances.</p>
-<p>The idea is that we want to find a an embedding of the points into a lower-dimensional space <em>and</em> a monotonic transformation of the embedded distances so that the transformed distances recapitulate the input distances as well as possible.</p>
+<p>The idea is that we want to find a an embedding of the points into a lower-dimensional space so that the ranks of the distances are preserved as well as possible (the points that are the farthest from each other in the embedded space have the largest input distance, the points that are closest to each other in the embedded space have the smallest input distance, etc.).</p>
+<p>To do this, we find an embedding of the points into a lower-dimensional space <em>and</em> a monotonic transformation of the embedded distances so that the transformed distances recapitulate the input distances as well as possible. The monotone transformation is essentially a trick that allows us to match ranks of distances instead of absolute distances.</p>
+</div>
+<div class="slide section level2">
+
 <p>Notes:</p>
 <ul>
 <li><p>NMDS is more resistant to outliers than classical MDS: if one point has a very large distance from all the others, the first classical MDS axis will tend to separate that point from the others and not be informative about the remaining distances.</p></li>

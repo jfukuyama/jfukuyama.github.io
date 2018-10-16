@@ -227,7 +227,11 @@ More heuristically, since we only provide MDS with distances, we can only expect
 
 Non-metric MDS is a robust alternative to classical MDS, and it is used when we want a map that preserves relative distances instead of absolute distances.
 
-The idea is that we want to find a an embedding of the points into a lower-dimensional space _and_ a monotonic transformation of the embedded distances  so that the transformed distances recapitulate the input distances as well as possible.
+The idea is that we want to find a an embedding of the points into a lower-dimensional space so that the ranks of the distances are preserved as well as possible (the points that are the farthest from each other in the embedded space have the largest input distance, the points that are closest to each other in the embedded space have the smallest input distance, etc.).
+
+To do this, we find an embedding of the points into a lower-dimensional space _and_ a monotonic transformation of the embedded distances  so that the transformed distances recapitulate the input distances as well as possible. The monotone transformation is essentially a trick that allows us to match ranks of distances instead of absolute distances.
+
+-----
 
 Notes:
 
