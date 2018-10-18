@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <meta name="author" content="Julia Fukuyama" />
+  <meta name="date" content="2018-10-18" />
+  <title>Stat 470/670 Lecture 18: Functions in R and some exploratory analysis</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="http://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="http://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div class="slide titlepage">
+  <h1 class="title">Stat 470/670 Lecture 18: Functions in R and some exploratory analysis</h1>
+  <p class="author">
+Julia Fukuyama
+  </p>
+  <p class="date">October 18, 2018</p>
+</div>
+<div id="today" class="slide section level2">
+<h1>Today</h1>
+<ul>
+<li><p>Functions (<a href="http://r4ds.had.co.nz/functions.html">Reading</a> in the R for Data Science book)</p></li>
+<li><p>Analysis of congressional voting data</p></li>
+</ul>
+</div>
+<div id="functions" class="slide section level2">
+<h1>Functions</h1>
+<p>The purpose of a function is to tie together related commands into a single object.</p>
+<p>You should create a function when you see yourself copying the same code, or running very similar chunks of code over and over.</p>
+<p>Tying together the commands into a function allows you to abstract away the details and ultimately makes your scripts more readable.</p>
+</div>
+<div id="functions-in-r" class="slide section level2">
+<h1>Functions in R</h1>
+<p>Components:</p>
+<ul>
+<li><p>Name</p></li>
+<li><p>Arguments: give the inputs to the function, generally the data you want your function to work on and some extra information about the details of the computation.</p></li>
+<li><p>Body: Everything in between <code>{</code> and <code>}</code>, the set of commands that you need to run.</p></li>
+<li><p>Return value: The end product of the function.</p></li>
+</ul>
+<div class="incremental">
+<p>Function definition syntax in R:</p>
+<pre><code>norm = function(arg1, arg2) {
+    y = sqrt(arg1^2 + arg2^2)
+    return(y)
+}</code></pre>
+<p>Function use syntax: If you wanted to compute the <code>norm</code> function with <code>arg1</code> set to <code>1</code> and <code>arg2</code> set to <code>.5</code>, you would use</p>
+<pre><code>n = norm(arg1 = 1, arg2 = .5)</code></pre>
+</div>
+</div>
+<div id="function-arguments" class="slide section level2">
+<h1>Function arguments</h1>
+<p>Function arguments can be anything, but generally fall into two broad classes:</p>
+<ul>
+<li><p>Data arguments: gives the function the data to compute on</p></li>
+<li><p>Detail arguments: describes how the computation should be performed, often given default values.</p></li>
+</ul>
+<p>For example:</p>
+<ul>
+<li><p><code>log</code>: Two arguments: <code>x</code>, giving the number to take the logarithm of, and <code>base</code>, giving the base of the logarithm. The default is <code>exp(1)</code>.</p></li>
+<li><p><code>prcomp</code>: Data argument is <code>x</code>, the matrix to take the principal components of, and detail arguments <code>scale.</code>, <code>center</code>, <code>rank</code> control whether we scale the variables, whether we center the variables, and the number of principal components to keep.</p></li>
+</ul>
+</div>
+<div id="what-the-function-knows-about" class="slide section level2">
+<h1>What the function knows about</h1>
+<p>Each function has its own <em>environment</em>.</p>
+<ul>
+<li><p>The function's environment includes all the variables in the global environment (everything you can access when you're using R), plus variables corresponding to the function arguments.</p></li>
+<li><p>If the function arguments have the same name as variables in the global environment, the function arguments take precedence.</p></li>
+<li><p>When you assign values to variables inside the function, that only affects the environment inside the function, and they won't be accessible outside of the function.</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>For example, try this in your R session:</p>
+<pre><code>norm = function(x1, x2) {
+    y = x1^2 + x2^2
+    return(y)
+}
+x1 = 0
+y = 0
+norm(x1 = 1, x2 = 1)
+x1
+y</code></pre>
+<p>What does <code>norm(x1 = 1, x2 = 1)</code> return?</p>
+<p>What happens to the values of <code>x1</code> and <code>y</code> after you call the <code>norm</code> function?</p>
+</div>
+<div id="return-values" class="slide section level2">
+<h1>Return values</h1>
+<p>The function will go through the commands in its body until it reaches the end or a <code>return</code> statement, whichever comes first.</p>
+<p>If it reaches a <code>return</code> statement before the end of the set of commands in the body, it will return the value in the <code>return</code> statement.</p>
+<p>Otherwise, it will return the result of the last computation it performed.</p>
+</div>
+<div class="slide section level2">
+
+<p>For example, how does this function work?</p>
+<pre><code>string_is_yes = function(string) {
+    if(string == &quot;yes&quot;) {
+        return(TRUE)
+    }
+    FALSE
+}</code></pre>
+<div class="incremental">
+<p>A more readable version of this function is</p>
+<pre><code>string_is_yes = function(string) {
+    if(string == &quot;yes&quot;) {
+        return(TRUE)
+    } else {
+        return(FALSE)
+    }
+}</code></pre>
+<p>but the two do the same thing.</p>
+</div>
+</div>
+</body>
+</html>
