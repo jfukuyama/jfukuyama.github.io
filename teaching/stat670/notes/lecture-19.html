@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <meta name="author" content="Julia Fukuyama" />
+  <meta name="date" content="2018-10-23" />
+  <title>Stat 470/670 Lecture 19: Linear Discriminant Analysis</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="http://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+  <script src="http://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div class="slide titlepage">
+  <h1 class="title">Stat 470/670 Lecture 19: Linear Discriminant Analysis</h1>
+  <p class="author">
+Julia Fukuyama
+  </p>
+  <p class="date">October 23, 2018</p>
+</div>
+<div id="today-linear-discriminant-analysis" class="slide section level2">
+<h1>Today: Linear discriminant analysis</h1>
+<ul>
+<li><p>I'll give you two interpretations of linear discriminant analysis so that you have some idea where it comes from and to give you intuition into when it is likely to perform well.</p></li>
+<li><p>We'll go back to the congressional voting data and see how LDA helps us understand other divisions among the senators.</p></li>
+</ul>
+</div>
+<div id="problem-setup" class="slide section level2">
+<h1>Problem Setup</h1>
+<ul>
+<li><p>We have <span class="math">\(p\)</span> of &quot;predictor&quot; variables and <span class="math">\(n\)</span> cases.</p></li>
+<li><p>We have a special &quot;response&quot; variable, and we are interested in how it is related to the predictors.</p></li>
+<li><p>Today we will talk about linear discriminant analysis and the case where the response is categorical, so something like party ID.</p></li>
+</ul>
+<p>Potential questions: Is there a relationship between the response and the predictors? If so, what is that relationship? How good of a job can the predictor variables do in explaining the response? Which predictors are most important?</p>
+</div>
+<div id="lda-probabilistic-interpretation" class="slide section level2">
+<h1>LDA: Probabilistic Interpretation</h1>
+<p>Reading: Section 4.3 in ESL</p>
+<p>LDA is based on a simple probabilistic model, where we assume that within each group, the predictor variables come from a multivariate normal distribution with a group-specific mean and a covariance matrix that is the same for each group.</p>
+<p>In math: Let <span class="math">\(\mathbf x_i \in \mathbb R^p\)</span> be the values for the predictor variables for case <span class="math">\(i\)</span>, and let <span class="math">\(y_i \in \{1,2,\ldots, K\}\)</span> describe the group membership for case <span class="math">\(i\)</span>. Then our model is <span class="math">\[
+\mathbf x_i \sim \mathcal N(\mathbf \mu_{y_i}, \mathbf \Sigma)
+\]</span></p>
+<ul>
+<li><p><span class="math">\(\mathbf \mu_{y_i} \in \mathbb R^p\)</span> is the group mean for observation <span class="math">\(i\)</span>.</p></li>
+<li><p><span class="math">\(\mathbf \Sigma \in \mathbb R^{p \times p}\)</span> is the within-group covariance matrix.</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>In pictures:</p>
+<div class="figure">
+<img src="lda-model.png" />
+</div>
+<ul>
+<li><p>In this case, we have three classes.</p></li>
+<li><p>Each class comes from a bivariate normal distribution with its own centroid (the + mark on the graph).</p></li>
+<li><p>Each class has the same covariance. The ellipse indicates a level curve for the density of each class, and each class having the same covariance corresponds to the ellipses being the same shape.</p></li>
+<li><p>The solid lines indicate the Bayes decision boundaries.</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>If we knew <span class="math">\(\mathbf \mu_{y_i}\)</span> and <span class="math">\(\mathbf \Sigma\)</span>, we could use Bayes' rule to obtain <span class="math">\(\mathbf P(y_i \mid \mathbf x_i)\)</span>.</p>
+<p>However, we don't know either, and so we estimate them from the data and use the estimates to predict which group each case belongs to.</p>
+<p>This procedure turns out to give linear decision boundaries, hence the name linear discriminant analysis.</p>
+</div>
+<div id="lda-projection-interpretation" class="slide section level2">
+<h1>LDA: Projection Interpretation</h1>
+<p>Reading: ESL 4.3.3</p>
+<p>The probabilistic interpretation of LDA is nice, but what makes it particularly useful is that it also gives us an informative low-dimensional projection of the data.</p>
+<p>In PCA, we projected the data so as to maximize the variance of the projection, but we noticed that this projection won't necessarily be informative about the groups we are interested in.</p>
+<p>In LDA, if we have <span class="math">\(K\)</span> groups, we can project the data into <span class="math">\(K-1\)</span> dimensions, the space spanned by the estimated group means, and retain all the information necessary for classification using the model we defined above.</p>
+</div>
+<div id="fishers-linear-discriminant" class="slide section level2">
+<h1>Fisher's linear discriminant</h1>
+<p>Fisher posed a different problem and ended up with the same solution. He was interested in projecting the predictors in such a way as to maximize the ratio of the within-class to between-class variance.</p>
+<div class="figure">
+<img src="lda-projections.png" />
+</div>
+<p>If you want more details you can read about it in Section 4.3.3 of ESL, but the main point to take away here is that in this derivation of LDA, there is no reference to a probabilistic model or to Gaussian distributions. Therefore, we don't need to assume anything about our predictors for LDA to be a reasonable tool for predicting group membership.</p>
+</div>
+<div id="lda-biplots" class="slide section level2">
+<h1>LDA biplots</h1>
+<p>Reading: <a href="https://www.fbbva.es/wp-content/uploads/2017/05/dat/greenacre_c11_2010.pdf">Greenacre Chapter 11</a></p>
+<p>Since LDA gives a projection of the data onto a lower-dimensional space, LDA biplots work the same way as PCA biplots:</p>
+<ul>
+<li><p>We get biplot points for the observations and biplot axes for the variables.</p></li>
+<li><p>Variables with longer biplot axes are more &quot;important&quot; for explaining the response.</p></li>
+<li><p>When we look at an LDA biplot, we look at which direction each class centroid is in, and then identify biplot axes that point in that direction (or in the opposite direction) and have large magnitudes. These axes will correspond to the most important variables for explaining that class.</p></li>
+</ul>
+</div>
+<div id="lda-practical-considerations" class="slide section level2">
+<h1>LDA: Practical considerations</h1>
+<p>LDA will fail/not work well if</p>
+<ul>
+<li><p>You have more variables than observations. Computationally, we need to invert an estimate of the covariance matrix, and so if <span class="math">\(p &gt; n - K\)</span>, the estimated covariance will be singular and this will be impossible.</p></li>
+<li><p>Even if you <span class="math">\(p\)</span> strictly less than <span class="math">\(n-K\)</span>, LDA still might not perform that well. In general, you want to have <span class="math">\(p\)</span> substantially less than <span class="math">\(n\)</span>, and it often helps to filter out variables you don't think will be useful before running LDA. <br><br> <em>Note</em>: The problem of <span class="math">\(p\)</span> on the same order or larger than <span class="math">\(n\)</span> motivated work on a large class of models referred to as <em>regularized</em>, and we'll look at some of these later.</p></li>
+<li><p>You have outliers in the predictors. This is because the procedure relies on non-robust estimates of the mean and the covariance.</p></li>
+</ul>
+</div>
+</body>
+</html>
