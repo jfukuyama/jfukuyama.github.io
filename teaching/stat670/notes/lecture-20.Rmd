@@ -1,0 +1,266 @@
+% Stat 470/670 Lecture 20: Model-building with a moderate number of variables
+% Julia Fukuyama
+% October 25, 2018
+
+```{r setup, echo = FALSE, message = FALSE}
+library(knitr)
+opts_chunk$set(fig.cap="", fig.width = 5, fig.height = 3, dpi=175, fig.path="lecture-20-fig/", warning = FALSE)
+library(ggplot2)
+library(ggrepel)
+library(magrittr)
+library(tidyverse)
+library(broom)
+library(ggbiplot)
+library(GGally)
+set.seed(0)
+```
+
+## 
+
+- Over the next couple of weeks we'll get back to building models, and
+we'll look at models for different kinds of responses (binary, count,
+categorical).
+
+- We won't have that much more on high-dimensional data, although it
+will come up in a couple of later lectures.
+
+- Today we'll look at model-building with a moderate number of
+variables. Today will be linear models, but the ideas carry
+over to logistic regression and the generalized linear models we'll
+talk about next week.
+
+## Data: Prostate Cancer
+
+We have a data set containing clinical data on patients who were about
+to receive a radical prostatectomy. The relevant variables are:
+
+- `lcavol`: log cancer volume
+
+- `lweight`: log prostate weight
+
+- `age`: Age in years
+
+- `lbph`: log of the amount of benign prostatic hyperplasia
+
+- `svi`: Seminal vesicle invasion, a measure of how advanced the
+cancer is.
+
+- `lcp`: log of capsular penetration
+
+- `gleason`: A numeric vector
+
+- `pgg45`: Percent of Gleason score 4 or 5
+
+- `lpsa`: log of the concentration of prostate-stimulating antigen.
+
+We are primarily interested in `lpsa`, which is used as a marker for
+prostate cancer. We would like to know whether and how it is related
+to the other variables we have available to us.
+
+
+## First we look at the data
+
+```{r, fig.width = 8, fig.height = 5}
+library(ElemStatLearn)
+data(prostate)
+summary(prostate)
+prostate = prostate %>% select(-"train")
+ggpairs(prostate, progress = FALSE)
+```
+
+From the `ggpairs` plot, we see that the distributions of the
+variables are reasonable symmetrical, not that skewed, and that there
+is at least some relationship between most of the variables and `lpsa`.
+
+-----
+
+We can also use principal components as a visualization of the variables:
+
+```{r}
+prostate_prcomp = prcomp(prostate, scale. = TRUE)
+ggbiplot(prostate_prcomp)
+```
+
+From the principal components plot, we see that there are two groups
+of variables, one group of which are all highly correlated with
+`lpsa`.
+
+
+-----
+
+And a side note: this data set has already been transformed for
+you. Many of the variables are logged versions of what were presumably
+the raw measurements. This is actually a really important step: models
+with the logged variables perform substantially better than models
+with the raw variables, as we can see if we un-transform:
+
+```{r}
+prostate_unlogged = prostate %>%
+    mutate(cavol = exp(lcavol), weight = exp(lweight), bph = exp(lbph), cp = exp(lcp)) %>%
+    select(-"lcavol", -"lweight", -"lbph", -"lcp")
+summary(lm(lpsa ~ ., data = prostate))
+summary(lm(lpsa ~ ., data = prostate_unlogged))
+```
+
+-----
+
+If we had started off with the raw data, we would have seen that we
+should log-transform some of the variables by looking at their
+marginal distributions: the variables that were transformed started
+off quite skewed, and the transformation got rid of the skewness.
+
+```{r, fig.width = 8, fig.height = 5}
+ggpairs(prostate_unlogged, progress = FALSE)
+```
+
+## Linear model with all the predictors
+
+As a first step, we can fit a linear model with all the predictors and
+look at the results. We see that a lot of the coefficients are within
+the margin of error of zero, which suggests to us that a model with
+fewer predictors would do better.
+
+```{r}
+prostate_lm = lm(lpsa ~ ., data = prostate)
+prostate_coefs = tidy(prostate_lm, conf.int = TRUE)
+ggplot(prostate_coefs[-1, ], aes(x = estimate, y = term, xmin = conf.low, xmax = conf.high)) +
+    geom_point() + geom_errorbarh() + geom_vline(xintercept = 0)
+```
+
+
+## Best subset
+
+There are a lot of ways of doing variable selection for linear models.
+
+You might have heard of forward stepwise or backward stepwise
+regression, where predictors are added to or subtracted from the model
+one at a time, stopping when adding a new predictor doesn't seem to
+help (for forward stepwise) or when subtracting an existing predictor
+seems to hurt too much (for backward stepwise).
+
+Part of the reason why people used forward or backward stepwise
+regression was due to computational cost though, and what they really
+wanted was to find the set of predictors that gave the best model.
+
+With eight predictors and a laptop, we can actually just look through
+all the subsets and see which model performs best.
+
+This is what the `regsubsets` in the package `leaps` does for you.
+
+```{r}
+library(leaps)
+prostate_leaps = regsubsets(lpsa ~ ., data = prostate)
+summary(prostate_leaps)$which
+```
+
+This shows us that the best one-predictor model uses `lcavol`, the
+best two-predictor model uses `lcavol` and `lweight`, the best
+three-predictor model uses `lcavol`, `lweight`, and `svi`, and so on.
+
+We can use this set of models as guidance for what variables to
+include, and build up an interpretable model using some of the tools
+we've seen earlier in the course.
+
+-----
+
+We start off looking at the best one-predictor model, with `lcavol`
+predicting `lpsa`.
+
+```{r}
+ggplot(prostate, aes(x = lcavol, y = lpsa)) + geom_point() + geom_smooth()
+```
+
+We see that the relationship is pretty close to linear (a line would
+go through the entire confidence band of the smoother), and so we're
+ok with using a linear function of `lcavol` to predict `lpsa`.
+
+If there had been a major non-linearity here, we would have wanted to
+ditch the linear modeling approach and do something non-parametric,
+maybe loess.
+
+-----
+
+Then we can move to the two-predictor model, and see what the
+relationship between `lcavol`, `lweight`, and `lpsa` looks like.
+
+We can make a coplot to examine the relationship between `lpsa` and
+`lcavol`, with `lweight`as the given variable
+
+```{r}
+ggplot(prostate, aes(x = lcavol, y = lpsa)) + geom_point() + geom_smooth(span = 1) + 
+    facet_grid(~cut_number(lweight, n = 3))
+```
+
+Here it seems like there is some non-linearity, but only for the
+observations with a high value of `lweight`.
+
+If we had a lot more observations, this might prompt us to move to
+loess, but since the non-linearity is based on just a few points, we
+want to see first whether the non-linearity shows up in other graphs
+as well.
+
+-----
+
+The best three-predictor model identified by `leaps` included `svi` in
+addition to `lcavol` and `lweight`, so we next look at those four
+variables together.
+
+`svi` is binary and there are only 21 cases where `svi` is equal to 1,
+we can't make a lot of facets and we don't trust curves that much.
+
+```{r}
+table(prostate$svi)
+prostate$svi = recode(prostate$svi, `1` = "Yes", `0` = "No")
+ggplot(prostate, aes(x = lcavol, y = lpsa, group = svi, color = svi)) +
+    geom_point() + 
+    geom_smooth(method = "lm", se = FALSE) +
+    facet_wrap(~cut_number(lweight, n = 2))
+```
+
+The different slopes suggest an interaction, but again, we don't have
+that much data.
+
+-----
+
+Next we try looking at the predictors from the four-predictor
+model. This is pushing the limits of the number of variables we can
+look at all at once, but we will try.
+
+We can look at the relationship between `lpsa`, `lcavol`, and `svi`,
+with `lweight` and `lbph` as the given variables.
+
+```{r}
+ggplot(prostate, aes(x = lcavol, y = lpsa, group = svi, color = svi)) +
+    geom_point() + 
+    geom_smooth(method = "lm", se = FALSE) +
+        facet_grid(cut_number(lweight, 
+    n = 2) ~ cut(lbph, breaks = c(-2, -1, 3)))
+```
+
+Based on this visualization, we might not be confident about an interaction: the blue lines vary in slope, but there’s based on very small samples. The red lines have different heights but are similar in slope.
+
+-----
+
+In EDA we’re not always required to find a “best” model, and even if
+we were we can decide on what best means subjectively.
+
+If you wanted to fit a linear model with `lcavol`, `lweight`, and `svi` as
+predictors plus interactions, you’re free to do so and then call that
+"best" because of the complexity you can get out of a relatively small
+number of variables.
+
+On the other hand, if you want a
+numerical decision for "best", you can just find the model that
+optimizes your favorite criterion. For example, if you like [Mallow’s
+Cp](https://en.wikipedia.org/wiki/Mallows%27s_Cp), this is available in `leaps`:
+
+```{r}
+summary(prostate_leaps)$cp
+```
+
+When we use Cp, we look for the model with the lowest value of Cp, so
+here the five-predictor model is "best".
+
+The idea behind the Cp statistic is that the RSS underestimates the
+prediction error in a linear model, and the Cp statistic is a
+corrected version of the RSS.
