@@ -19,7 +19,7 @@ We are interested in understanding voting patterns, and in particular
 how vote for president is related to income.
 
 There is data on this topic in the
-[ANES dataset](http://jfukuyama.github.io/teaching/stat670/notes/anes_timeseries_cdf.dta): for each election, 
+[ANES dataset](http://jfukuyama.github.io/teaching/stat670/notes/anes.csv): for each election, 
 they have demographic information on a subset of voters plus
 information about how they voted in the presidential elections.
 
