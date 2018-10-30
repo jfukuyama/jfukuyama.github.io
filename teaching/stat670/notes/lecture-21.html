@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <meta name="author" content="Julia Fukuyama" />
+  <meta name="date" content="2018-10-30" />
+  <title>Stat 470/670 Lecture 21: Binary data and logistic regression</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="http://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+  <script src="http://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div class="slide titlepage">
+  <h1 class="title">Stat 470/670 Lecture 21: Binary data and logistic regression</h1>
+  <p class="author">
+Julia Fukuyama
+  </p>
+  <p class="date">October 30, 2018</p>
+</div>
+<div id="problem-setup" class="slide section level2">
+<h1>Problem setup</h1>
+<p>We are interested in understanding voting patterns, and in particular how vote for president is related to income.</p>
+<p>There is data on this topic in the <a href="http://jfukuyama.github.io/teaching/stat670/notes/anes_timeseries_cdf.dta">ANES dataset</a>: for each election, they have demographic information on a subset of voters plus information about how they voted in the presidential elections.</p>
+<p>The variables here have particularly uninformative names, but the ones we are interested in describe the year, income, and presidential vote. They are coded as:</p>
+<ul>
+<li><p>Year: VCF0004</p></li>
+<li><p>Income: VCF0114</p></li>
+<li><p>Vote: VCF0704a</p></li>
+</ul>
+<p>The primary difference between our task here and the modeling that we've done earlier in the semester is that the variable we're trying to predict, vote, is binary. That is, it only takes two values (here vote for Republicans vs. vote for Democrats) instead of taking as a value any real number. This turns out to be enough of a difference that we need a new modeling technique.</p>
+</div>
+<div class="slide section level2">
+
+<p>Income is measured on a scale from 1 to 5:</p>
+<p>1: 0 to 16 percentile</p>
+<p>2: 17 to 33 percentile</p>
+<p>3: 34 to 67 percentile</p>
+<p>4: 68 to 95 percentile</p>
+<p>5: 96 to 100 percentile</p>
+<p>The zeroes and NA’s are missing values (this is terrible). Using percentiles allows comparability between years. Also note that this is really an ordinal variable but we might find some advantages in treating it as quantitative.</p>
+<pre class="sourceCode r"><code class="sourceCode r">ANES =<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;../../datasets/anes.csv&quot;</span>)
+income =<span class="st"> </span>ANES$VCF0114
+<span class="kw">summary</span>(income)</code></pre>
+<pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA&#39;s 
+##   0.000   2.000   3.000   2.663   4.000   5.000    1511</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">table</span>(income) /<span class="st"> </span><span class="kw">length</span>(income)</code></pre>
+<pre><code>## income
+##          0          1          2          3          4          5 
+## 0.06870352 0.15793728 0.15086037 0.29829005 0.24875166 0.04831699</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>Next we need the year for each observation. This is VCF0004.</p>
+<pre class="sourceCode r"><code class="sourceCode r">year =<span class="st"> </span>ANES$VCF0004
+<span class="kw">summary</span>(year)</code></pre>
+<pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##    1948    1970    1984    1983    1998    2012</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>The coding is that “1” means the Democrat, “2” means the Republican, and “0” or “NA” means some other outcome. We want everything to be coded as 0, 1, or NA (using 0/1 coding is the standard way to code binary variables for logistic regression).</p>
+<pre class="sourceCode r"><code class="sourceCode r">vote =<span class="st"> </span>ANES$VCF0704a
+##  First, change the zeroes to NA’s:
+vote[vote ==<span class="st"> </span><span class="dv">0</span>] =<span class="st"> </span><span class="ot">NA</span>
+## Then, to go from 2 representing Republican and 1 representing Democrat to 1 = Republican, 0 = Democrat, we just have to subtract 1
+vote =<span class="st"> </span>vote -<span class="st"> </span><span class="dv">1</span>
+<span class="kw">summary</span>(vote)</code></pre>
+<pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA&#39;s 
+##    0.00    0.00    0.00    0.48    1.00    1.00   33457</code></pre>
+<p>The variable really represents a two-party vote for a Republican now, so for clarity let’s just rename it as such.</p>
+<pre class="sourceCode r"><code class="sourceCode r">Republican =<span class="st"> </span>vote</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>Let's put everything in a data frame, and then filter to just presidential election years:</p>
+<pre class="sourceCode r"><code class="sourceCode r">ANES_df =<span class="st"> </span><span class="kw">data.frame</span>(year, income, Republican)
+ANES_df =<span class="st"> </span><span class="kw">filter</span>(ANES_df, year %in%<span class="st"> </span><span class="kw">seq</span>(<span class="dv">1948</span>, <span class="dv">2012</span>, <span class="dv">4</span>))
+<span class="kw">summary</span>(ANES_df)</code></pre>
+<pre><code>##       year          income        Republican   
+##  Min.   :1948   Min.   :0.000   Min.   :0.000  
+##  1st Qu.:1972   1st Qu.:2.000   1st Qu.:0.000  
+##  Median :1988   Median :3.000   Median :0.000  
+##  Mean   :1985   Mean   :2.657   Mean   :0.482  
+##  3rd Qu.:2004   3rd Qu.:4.000   3rd Qu.:1.000  
+##  Max.   :2012   Max.   :5.000   Max.   :1.000  
+##                                 NA&#39;s   :12733</code></pre>
+</div>
+<div id="visualizing-the-relationship-with-one-predictor" class="slide section level2">
+<h1>Visualizing the relationship with one predictor</h1>
+<p>The first question we can ask is about the relationship between income and the probability of voting Republican in 1992. Let's start off just by plotting the two points. It turns out that this isn't trivial because the variables are categorical, and we need to do some work to get anything useful. Jittering helps with categorical variables, and we use it here:</p>
+<pre class="sourceCode r"><code class="sourceCode r">ANES92 =<span class="st"> </span><span class="kw">subset</span>(ANES_df, year ==<span class="st"> </span><span class="dv">1992</span>)
+<span class="kw">ggplot</span>(ANES92, <span class="kw">aes</span>(<span class="dt">x =</span> income, <span class="dt">y =</span> Republican)) +
+<span class="st">    </span><span class="kw">geom_point</span>()</code></pre>
+<div class="figure">
+<img src="lecture-21-fig/unnamed-chunk-6-1.png" />
+</div>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(ANES92, <span class="kw">aes</span>(<span class="dt">x =</span> income, <span class="dt">y =</span> Republican)) +
+<span class="st">    </span><span class="kw">geom_jitter</span>(<span class="dt">height =</span> <span class="fl">0.1</span>, <span class="dt">width =</span> <span class="fl">0.25</span>)</code></pre>
+<div class="figure">
+<img src="lecture-21-fig/unnamed-chunk-6-2.png" />
+</div>
+<p>The jittered plot is ok, but here it's actually more useful to compute the fraction of the vote going to Republicans and either look at the table or plot those values.</p>
+<pre class="sourceCode r"><code class="sourceCode r">ANES92 %&gt;%
+<span class="st">    </span><span class="kw">group_by</span>(income) %&gt;%
+<span class="st">    </span><span class="kw">summarise</span>(<span class="kw">mean</span>(Republican, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>))</code></pre>
+<pre><code>## # A tibble: 6 x 2
+##   income `mean(Republican, na.rm = TRUE)`
+##    &lt;int&gt;                            &lt;dbl&gt;
+## 1      0                            0.433
+## 2      1                            0.267
+## 3      2                            0.345
+## 4      3                            0.404
+## 5      4                            0.488
+## 6      5                            0.532</code></pre>
+</div>
+<div id="how-could-we-model-this-relationship" class="slide section level2">
+<h1>How could we model this relationship?</h1>
+<p>This gives the proportion (out of major party voters) who voted for Bush for each income group. Aside from group zero, which represents missing values of income, we see a strictly increasing pattern. How do we model this? Three options (not the only three) include:</p>
+<ol style="list-style-type: decimal">
+<li><p>Linear regression with income as a numerical predictor.</p></li>
+<li><p>Logistic regression with income as a numerical predictor.</p></li>
+<li><p>Regression with income as a categorical (factor) predictor. (In this linear and logistic give identical predictions.)</p></li>
+</ol>
+</div>
+<div class="slide section level2">
+
+<p>Method 1 is the easiest to interpret: we get a slope that directly tells us the change in model probability of voting Republican as income goes up one category. However, linear regression for binary responses has two big limitations:</p>
+<ul>
+<li><p>The technical limitation is that it only works well when probabilities are far from 0 and 1. Otherwise, if <span class="math">\(x\)</span> is unbounded, you can end up with negative probabilities or probabilities greater than 1.</p></li>
+<li><p>There is also a social limitation in that statisticians will be quite upset with you and your work if you use linear regression to model binary data.</p></li>
+</ul>
+<p>Method 3 isn’t really a model at all: it just returns the proportion within each category who voted for Bush, the same as our <code>summarise()</code> call gave us above. There’s something to be said for not fitting restrictive models when you don’t have to. However, if our goal is to fit more complex models or make comparisons between different sets of data, as it eventually will be, then some degree of simplification may be useful to understand the patterns in the data. Or we might fit a simplifying model first, then go back and look at the data in more detail and see if there are any important features our model missed. That will be our basic approach here.</p>
+<p>Method 2, logistic regression, should work well. It does require treating a predictor that isn’t inherently a numeric variable as numeric, and requires a parametric form (effects are linear on a logit scale.) However, most of the time, doing this is reasonable as long as the pattern of the probability with <span class="math">\(x\)</span> is monotonic and as long as predictive accuracy is not the sole goal.</p>
+</div>
+<div id="logistic-regression-with-one-predictor" class="slide section level2">
+<h1>Logistic regression with one predictor</h1>
+<p>We fit such a logistic regression using income as a quantitative variable and omitting missing values. Logistic regression is a special case of a GLM, so we use the <code>glm()</code> function; specifying a binomial family fits a logistic regression by default. Firstly, we can just add the fitted curve to the jittered plot:</p>
+<pre class="sourceCode r"><code class="sourceCode r">ANES92 =<span class="st"> </span><span class="kw">subset</span>(ANES92, income &gt;<span class="st"> </span><span class="dv">0</span>)
+<span class="kw">ggplot</span>(ANES92, <span class="kw">aes</span>(<span class="dt">x =</span> income, <span class="dt">y =</span> Republican)) +
+<span class="st">    </span><span class="kw">geom_jitter</span>(<span class="dt">height =</span> <span class="fl">0.1</span>, <span class="dt">width =</span> <span class="fl">0.25</span>) +
+<span class="st">    </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;glm&quot;</span>, <span class="dt">method.args =</span> <span class="kw">list</span>(<span class="dt">family =</span> <span class="st">&quot;binomial&quot;</span>))</code></pre>
+<div class="figure">
+<img src="lecture-21-fig/unnamed-chunk-8-1.png" />
+</div>
+<p>We can also fit it explicitly:</p>
+<pre class="sourceCode r"><code class="sourceCode r">logit_92 =<span class="st"> </span><span class="kw">glm</span>(Republican ~<span class="st"> </span>income, <span class="dt">family =</span> binomial, <span class="dt">data =</span> ANES92)
+<span class="kw">summary</span>(logit_92)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = Republican ~ income, family = binomial, data = ANES92)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -1.2733  -1.0235  -0.9086   1.2096   1.6069  
+## 
+## Coefficients:
+##             Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept) -1.26750    0.17789  -7.125 1.04e-12 ***
+## income       0.29802    0.05379   5.541 3.01e-08 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 1719.1  on 1266  degrees of freedom
+## Residual deviance: 1687.2  on 1265  degrees of freedom
+##   (1014 observations deleted due to missingness)
+## AIC: 1691.2
+## 
+## Number of Fisher Scoring iterations: 4</code></pre>
+<p>The summary gives a lot of information; we’ll focus on the coefficients. The summary tells us that</p>
+<p><span class="math">\[
+\text{logit}[P(\text{Republican})]=−1.27+0.298\times \text{income}
+\]</span></p>
+<p>where the logit function is</p>
+<p><span class="math">\[
+\text{logit}(x)=\text{log}_e [x/(1−x)]
+\]</span></p>
+<p>To find <span class="math">\(P(\text{Republican})\)</span>, we invert the logit:</p>
+<p><span class="math">\[
+P(\text{Republican})=\frac{e^y}{1+e^y}
+\]</span></p>
+<p>where <span class="math">\[
+y=\text{logit}[P(\text{Republican})].
+\]</span></p>
+<p>For a quick and dirty interpretation, the &quot;divide by 4&quot; rule is useful: the maximum change in probability associated with a one unit change in <span class="math">\(x\)</span> is the coefficient of <span class="math">\(x\)</span> divided by four. So going one income group changes the model probability by up to about 7.5%. This looks like it’s about the increase in the curve from income group 4 to group 5.</p>
+<p>We can check how good the approximation is:</p>
+<pre class="sourceCode r"><code class="sourceCode r">## the package boot has the inv.logit function
+<span class="kw">library</span>(boot)
+## P(Republican) evaluated at income = 4
+<span class="kw">inv.logit</span>(-<span class="fl">1.27</span> +<span class="st"> </span><span class="fl">0.298</span> *<span class="st"> </span><span class="dv">4</span>)</code></pre>
+<pre><code>## [1] 0.4805099</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">## P(Republican) evaluated at income = 5
+<span class="kw">inv.logit</span>(-<span class="fl">1.27</span> +<span class="st"> </span><span class="fl">0.298</span> *<span class="st"> </span><span class="dv">5</span>)</code></pre>
+<pre><code>## [1] 0.5547792</code></pre>
+</div>
+<div id="fitting-a-series-of-regressions" class="slide section level2">
+<h1>Fitting a series of regressions</h1>
+<p>We’re not just interested in 1992. We want to know the relationship between income and vote for every Presidential election we have data for – is the relationship similar for every election, or are some elections different? Has there been a consistent change over time?</p>
+<p>In programming terms, the easiest way to fit the same model on many subsets of the data is to write a function that subsets the data and fits the model, then to write a for loop to fit the model for each subset. There are much more computationally efficient approaches, but otherwise more efficiency usually isn’t worth the effort.</p>
+<p>Here’s a function to fit our weighted logistic regression of vote on income for any given year.</p>
+<pre class="sourceCode r"><code class="sourceCode r">logit_ANES_subset =<span class="st"> </span>function(my_year, data) {
+    newdata =<span class="st"> </span><span class="kw">subset</span>(data, year ==<span class="st"> </span>my_year)
+    newdata =<span class="st"> </span><span class="kw">subset</span>(newdata, income &gt;<span class="st"> </span><span class="dv">0</span>)
+    model =<span class="st"> </span><span class="kw">glm</span>(Republican ~<span class="st"> </span>income, <span class="dt">family =</span> binomial, 
+        <span class="dt">data =</span> newdata)
+    output =<span class="st"> </span><span class="kw">c</span>(my_year, <span class="kw">summary</span>(model)$coef[<span class="dv">2</span>, <span class="dv">1</span>:<span class="dv">2</span>])
+    <span class="kw">return</span>(output)
+}</code></pre>
+<p>The function returns the year, the model’s coefficient for income, and the standard error of that coefficient. We shouldn’t take the standard error too literally, because we haven’t accounted for the complex design of the ANES surveys.</p>
+<p>Let’s test the function out on 1992 (Bush-Clinton).</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">logit_ANES_subset</span>(<span class="dt">my_year =</span> <span class="dv">1992</span>, <span class="dt">data =</span> ANES_df)</code></pre>
+<pre><code>##                  Estimate   Std. Error 
+## 1.992000e+03 2.980249e-01 5.378931e-02</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>Once we've checked that it works, we can loop over every presidential election year in our dataset: every four years between 1948 and 2012:</p>
+<pre class="sourceCode r"><code class="sourceCode r">years =<span class="st"> </span><span class="kw">seq</span>(<span class="dv">1948</span>, <span class="dv">2012</span>, <span class="dv">4</span>)
+n =<span class="st"> </span><span class="kw">length</span>(years)
+income_by_year =<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">year =</span> <span class="kw">rep</span>(<span class="ot">NA</span>, n), <span class="dt">income_coef =</span> <span class="kw">rep</span>(<span class="ot">NA</span>, n), <span class="dt">income_se =</span> <span class="kw">rep</span>(<span class="ot">NA</span>, n))
+for (J in <span class="dv">1</span>:n) {
+    my_year =<span class="st"> </span>years[J]
+    income_by_year[J, ] =<span class="st"> </span><span class="kw">logit_ANES_subset</span>(<span class="dt">my_year =</span> my_year, <span class="dt">data =</span> ANES_df)
+}</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>We’ll display the results using <code>ggplot</code>. <code>geom_errorbar()</code> lets us add one standard error bounds. We shouldn’t take these too literally, just use them to get a ballpark idea of uncertainty.</p>
+<pre class="sourceCode r"><code class="sourceCode r">gg =<span class="st"> </span><span class="kw">ggplot</span>(income_by_year, <span class="kw">aes</span>(<span class="dt">x =</span> year, <span class="dt">y =</span> income_coef, <span class="dt">ymin =</span> income_coef -<span class="st"> </span>
+<span class="st">    </span>income_se, <span class="dt">ymax =</span> income_coef +<span class="st"> </span>income_se))
+gg +<span class="st"> </span><span class="kw">geom_errorbar</span>(<span class="dt">width=</span><span class="dv">1</span>) +<span class="st"> </span><span class="kw">geom_smooth</span>(<span class="dt">method.args =</span> <span class="kw">list</span>(<span class="dt">family =</span> <span class="st">&quot;symmetric&quot;</span>)) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">ylab</span>(<span class="st">&quot;Coefficient of income in linear model&quot;</span>)</code></pre>
+<pre><code>## `geom_smooth()` using method = &#39;loess&#39; and formula &#39;y ~ x&#39;</code></pre>
+<div class="figure">
+<img src="lecture-21-fig/unnamed-chunk-14-1.png" />
+</div>
+<p>The income coefficient is positive for every election, meaning richer people were more likely to vote Republican every time (though 1960 was close.) The general trend was an increase in the income coefficient from 1952 to 1984, then a leveling-off. There was a huge drop from 1948 to 1952; unfortunately we don’t have data from before 1948 to know if the election was typical. Otherwise there are a couple of elections outside the confidence band: 1964 (Johnson over Goldwater) and 2008 (Obama over McCain.)</p>
+</div>
+<div id="less-modeling-more-detail" class="slide section level2">
+<h1>Less modeling, more detail</h1>
+<p>In our regressions, we treated income as a quantitative variable. A simpler approach would be to treat it as a factor, and simply track the weighted proportion of each income group that (two-party) voted Republican by year. Again, this is easiest to program (if inefficient) using a for loop.</p>
+<p>To find means, I used use <code>mean()</code> in conjunction with <code>summarise()</code> in dplyr. Let’s first work out how to do it for the 1992 data.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summarise</span>(<span class="kw">group_by</span>(ANES92, <span class="kw">factor</span>(income)), <span class="dt">prop_Republican =</span> <span class="kw">mean</span>(Republican, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>))</code></pre>
+<pre><code>## # A tibble: 5 x 2
+##   `factor(income)` prop_Republican
+##   &lt;fct&gt;                      &lt;dbl&gt;
+## 1 1                          0.267
+## 2 2                          0.345
+## 3 3                          0.404
+## 4 4                          0.488
+## 5 5                          0.532</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">income_prop =<span class="st"> </span>ANES_df %&gt;%
+<span class="st">    </span><span class="kw">group_by</span>(income, year) %&gt;%
+<span class="st">    </span><span class="kw">summarise</span>(<span class="dt">prop_Republican =</span> <span class="kw">mean</span>(Republican, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>))
+## clean up a bit
+income_prop =<span class="st"> </span>income_prop %&gt;%
+<span class="st">    </span><span class="kw">subset</span>(income &gt;<span class="st"> </span><span class="dv">0</span>) %&gt;%
+<span class="st">    </span>## making income an ordered factor will give a nice color scale for us later
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">income_ord =</span> <span class="kw">factor</span>(income, <span class="dt">levels =</span> <span class="dv">1</span>:<span class="dv">5</span>, <span class="dt">ordered =</span> <span class="ot">TRUE</span>))</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">gg =<span class="st"> </span><span class="kw">ggplot</span>(income_prop, <span class="kw">aes</span>(<span class="dt">x =</span> year, <span class="dt">y =</span> prop_Republican, <span class="dt">group =</span> income_ord, <span class="dt">color =</span> income_ord)) +<span class="st"> </span><span class="kw">geom_line</span>()
+gg +<span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;Proportion of two-party vote for Republican&quot;</span>) +<span class="st"> </span><span class="kw">labs</span>(<span class="dt">color =</span> <span class="st">&quot;Income percentile&quot;</span>)</code></pre>
+<div class="figure">
+<img src="lecture-21-fig/unnamed-chunk-17-1.png" />
+</div>
+</div>
+<div class="slide section level2">
+
+<p>We now have a bit more detail on the trends and the aberrant results.</p>
+<ul>
+<li><p>The top income group is reliably the most Republican, but the bottom income group isn’t always the most Democratic (although it was in the middle part of the time period.)</p></li>
+<li><p>In 1948 there were pretty big differences between income groups, but in the 1950s the differences between all groups except the richest were small. It’s guess work whether 1948 was an aberration or whether the small income differences from 1952 to 1968 were historical unusual (though I suspect it’s the latter.)</p></li>
+<li><p>The big coefficient for 1964 (compared to the elections before and after) might be in part an artifact of the logit scale.</p></li>
+<li><p>In 2008 there really was a big difference between income group, which is likely attributable to the financial crisis.</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>We can also draw lines to connect income groups by year. Because there are so many different years, we’ll facet them rather than color them.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(income_prop, <span class="kw">aes</span>(<span class="dt">x =</span> income, <span class="dt">y =</span> prop_Republican)) +
+<span class="st">    </span><span class="kw">geom_line</span>() +
+<span class="st">    </span><span class="kw">facet_wrap</span>(~<span class="st"> </span>year, <span class="dt">ncol =</span> <span class="dv">5</span>) +<span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;Proportion of two-party vote for Republican&quot;</span>)</code></pre>
+<div class="figure">
+<img src="lecture-21-fig/unnamed-chunk-18-1.png" />
+</div>
+<p>This yields less insight, but still has interesting features: notably the big magnitude of the uptick in Republicanism for the highest income group for almost every year. (It would be interesting to check if this continued to hold in 2016.)</p>
+</div>
+<div id="data-summaries-vs.-data-models" class="slide section level2">
+<h1>Data summaries vs. data models</h1>
+<p>Both data summaries (like our last plot) and models (like our logistic regressions) have their uses.</p>
+<ul>
+<li><p>Data summaries require fewer assumptions, and often give you a fuller picture than a model. However, they can be noisy or just too complicated to easily get a grip on.</p></li>
+<li><p>Models require assumptions, so in addition to being reductive, there’s more potential for things to go horribly wrong. However, models can be a easy way into the data: everything gets summarized in a couple of parameters, and you can put your effort into understanding what those parameters really mean. Furthermore, complexity can easily be added to models – for example, it’s easy to build a logistic regression model with multiple predictors (as we’ll see in the next lecture.)</p></li>
+</ul>
+<p>In practice, going back and forth between models and data summaries, as we did here, is often very useful in exploratory work. Models can usefully simplify the data so you can get the big picture. Then you can look a fuller data summary and bear in results that the big picture doesn’t explain.</p>
+</div>
+</body>
+</html>
