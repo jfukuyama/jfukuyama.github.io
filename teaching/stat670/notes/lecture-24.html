@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <meta name="author" content="Julia Fukuyama" />
+  <title>Stat 470/670 Lecture 24: Categorical data and contingency tables</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="http://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="http://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div class="slide titlepage">
+  <h1 class="title">Stat 470/670 Lecture 24: Categorical data and contingency tables</h1>
+  <p class="author">
+Julia Fukuyama
+  </p>
+  <p class="date">November 8, 2018</p>
+</div>
+<div id="motivating-example-ucb-admissions-data" class="slide section level1">
+<h1>Motivating example: UCB Admissions Data</h1>
+<p>Reading: <a href="https://cran.r-project.org/web/packages/vcdExtra/vignettes/vcd-tutorial.pdf">vcd tutorial</a></p>
+<p>The admissions data is formatted as a three-way <em>contingency table</em>.</p>
+<p>In a contingency table, each dimension of the table (rows and columns for two-way tables) gives the levels of one variable.</p>
+<p>For the admissions data, we have</p>
+<ul>
+<li><p><code>Admit</code>: Whether the applicant was admitted, either <code>Admitted</code> or <code>Rejected</code>,</p></li>
+<li><p><code>Gender</code>: The gender of the applicant, either <code>Male</code> or <code>Female</code>,</p></li>
+<li><p><code>Dept</code>: The academic department the applicant wanted admission into, labeled <code>A</code> through <code>F</code>.</p></li>
+</ul>
+<p>The cells in the table represent the number of observations with each combination of values: the <code>[1,1,1]</code> element of <code>UCBAdmissions</code> is the number of admitted men to Department A, the <code>[2,1,1]</code> element is the number of rejected men to Department A, and so on.</p>
+</div>
+<div class="slide section level1">
+
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(vcd)
+<span class="kw">data</span>(UCBAdmissions)
+UCBAdmissions</code></pre>
+<pre><code>## , , Dept = A
+## 
+##           Gender
+## Admit      Male Female
+##   Admitted  512     89
+##   Rejected  313     19
+## 
+## , , Dept = B
+## 
+##           Gender
+## Admit      Male Female
+##   Admitted  353     17
+##   Rejected  207      8
+## 
+## , , Dept = C
+## 
+##           Gender
+## Admit      Male Female
+##   Admitted  120    202
+##   Rejected  205    391
+## 
+## , , Dept = D
+## 
+##           Gender
+## Admit      Male Female
+##   Admitted  138    131
+##   Rejected  279    244
+## 
+## , , Dept = E
+## 
+##           Gender
+## Admit      Male Female
+##   Admitted   53     94
+##   Rejected  138    299
+## 
+## , , Dept = F
+## 
+##           Gender
+## Admit      Male Female
+##   Admitted   22     24
+##   Rejected  351    317</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">## the structable command in vcd lets us re-arrange contingency tables
+<span class="kw">structable</span>(Admit ~<span class="st"> </span>Gender, <span class="dt">data =</span> UCBAdmissions)</code></pre>
+<pre><code>##        Admit Admitted Rejected
+## Gender                        
+## Male             1198     1493
+## Female            557     1278</code></pre>
+</div>
+<div id="what-questions-do-we-have-here" class="slide section level1">
+<h1>What questions do we have here?</h1>
+<p>For the admissions data (and generally for contingency tables), the first thing we want to know is whether the numbers are consistent with independence between the variables we measured.</p>
+<p>In particular, for the admissions data, we want to know whether admission is independent of gender: if it's not, we might suspect that there is some sort of gender-based discrimination happening in the admissions process, and we would want to complain to someone.</p>
+<p>If the variables aren't independent of each other, we want to know what the cause is.</p>
+</div>
+<div id="chi-squared-test-of-independence" class="slide section level1">
+<h1>Chi-squared test of independence</h1>
+<p>If all we care about is testing, we could just use a chi-squared test of independence and be done.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">chisq.test</span>(<span class="kw">structable</span>(Admit ~<span class="st"> </span>Gender, <span class="dt">data =</span> UCBAdmissions))</code></pre>
+<pre><code>## 
+##  Pearson&#39;s Chi-squared test with Yates&#39; continuity correction
+## 
+## data:  structable(Admit ~ Gender, data = UCBAdmissions)
+## X-squared = 91.61, df = 1, p-value &lt; 2.2e-16</code></pre>
+<p>If we do that test, we see that the two factors are not independent, but that still leaves a lot of work for us: what is the nature of the non-independence? What cells in the contingency table are over- or under-represented compared to what we would expect under independence of the two factors?</p>
+</div>
+<div id="mosaic-plot" class="slide section level1">
+<h1>Mosaic plot</h1>
+<p>A mosaic plot gives a visualization of a two-way contingency table.</p>
+<p>Each cell in the contingency table is represented by a tile, and the area of the tile is proportional to the number of observations in the corresponding cell of the contingency table.</p>
+</div>
+<div class="slide section level1">
+
+<p>Let's take a look at the admissions data with a mosaic plot.</p>
+<p>Here we're looking at admission and gender. The area of each tile shows us how many applicants were in each of the four categories: either admitted/male, admitted/female, rejected/male, or rejected/female.</p>
+<p>The heights of the tiles represent the overall fraction of applicants that were male or female. (If we call the function the other way, <code>mosaic(~ Admit + Gender)</code>, the heights of the tiles would represent the overall fraction of applicants that were admitted or rejected, you can try it out and see.)</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mosaic</span>(~<span class="st"> </span>Gender +<span class="st"> </span>Admit, <span class="dt">data =</span> UCBAdmissions)</code></pre>
+<div class="figure">
+<img src="lecture-24-fig/unnamed-chunk-3-1.png" />
+</div>
+</div>
+<div class="slide section level1">
+
+<p>The really nice thing about mosaic plots is that they tell us about departures from independence.</p>
+<p>It turns out (you can try to figure the math out yourself if you're interested) that if the factors were really independent of each other, the boundaries of the tiles would match up, and we would have something that looks like this:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mosaic</span>(<span class="kw">independence_table</span>(<span class="kw">structable</span>(Admit ~<span class="st"> </span>Gender, <span class="dt">data =</span> UCBAdmissions)))</code></pre>
+<div class="figure">
+<img src="lecture-24-fig/unnamed-chunk-4-1.png" />
+</div>
+<p>To the extent that the boundaries of the tiles don't match, we can see which categories are over-represented or under-represented.</p>
+</div>
+<div class="slide section level1">
+
+<p>The R function allows us to color the tiles as an additional way to show departures from independence: in the coloring scheme below, blue tiles represent cells that have more observations than we would expect if the factors were independent, and red tiles represent cells that have fewer observations than we would expect if the factors were independent.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mosaic</span>(~<span class="st"> </span>Gender +<span class="st"> </span>Admit, <span class="dt">data =</span> UCBAdmissions, <span class="dt">gp =</span> shading_max)</code></pre>
+<div class="figure">
+<img src="lecture-24-fig/unnamed-chunk-5-1.png" />
+</div>
+<p>The colors represent residuals from the independence model: how many more observations do we have than we would expect if the factors were actually independent of each other?</p>
+<p>There are a number of different options for coloring, but they are all based on deviations from expected values under the independence model.</p>
+</div>
+<div id="conditional-independence" class="slide section level1">
+<h1>Conditional independence</h1>
+<p>We've seen that there's a lack of independence between gender and admission, so we would like to investigate more to see if we can explain the non-independence.</p>
+<p>We have one other variable in our contingency table: Department.</p>
+<p>We can look at how the departments differ in their admissions rates and in the gender composition of their applicant pools:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">structable</span>(Dept ~<span class="st"> </span>Admit, <span class="dt">data =</span> UCBAdmissions)</code></pre>
+<pre><code>##          Dept   A   B   C   D   E   F
+## Admit                                
+## Admitted      601 370 322 269 147  46
+## Rejected      332 215 596 523 437 668</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">structable</span>(Dept ~<span class="st"> </span>Gender, <span class="dt">data =</span> UCBAdmissions)</code></pre>
+<pre><code>##        Dept   A   B   C   D   E   F
+## Gender                             
+## Male        825 560 325 417 191 373
+## Female      108  25 593 375 393 341</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>Or, more to the point of this course, we can look at the same information graphically:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mosaic</span>(~<span class="st"> </span>Dept +<span class="st"> </span>Gender, <span class="dt">data =</span> UCBAdmissions, <span class="dt">gp =</span> shading_max)</code></pre>
+<div class="figure">
+<img src="lecture-24-fig/unnamed-chunk-7-1.png" />
+</div>
+</div>
+<div class="slide section level1">
+
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mosaic</span>(~<span class="st"> </span>Dept +<span class="st"> </span>Admit, <span class="dt">data =</span> UCBAdmissions, <span class="dt">gp =</span> shading_max)</code></pre>
+<div class="figure">
+<img src="lecture-24-fig/unnamed-chunk-8-1.png" />
+</div>
+<p>Note that here, when we plot with <code>Dept</code> on the vertical axis, it is easy to compare the conditional probabilities of gender given department (from the first plot) or admission given department (from the second plot) by comparing the widths of the bars. If we had plotted the other way (<code>mosaic(~ Dept + Gender)</code>), we would have to compare areas instead of widths, which is much more difficult perceptually.</p>
+<p>Since the different departments both admit students at very different rates and have very different proportions of male and female applicants, it is possible that the relationship between admission and gender is very different conditional on department than it is unconditionally.</p>
+</div>
+<div id="cotab-plot" class="slide section level1">
+<h1>Cotab plot</h1>
+<p>Next, we want to know about independence or lack of independence conditional on department. A good tool for this is a cotab plot, which is the analog of a coplot, but for categorical data.</p>
+<p>A cotab plot tells us about the conditional independence of two variables (the two explanatory variables) given a third (the given variable).</p>
+<ul>
+<li><p>Each panel corresponds to a subset of the data that all have the same value of the given variable.</p></li>
+<li><p>In each panel, we make a mosaic plot describing the relationships between the two explanatory variables.</p></li>
+</ul>
+<p>The cotab plot allows us to see not only whether the variables are conditionally independent, but also whether the variables are conditionally independent for some values of the given variable. If there is a lack of conditional independence, it shows us which combinations of factor levels are over- or under-represented.</p>
+</div>
+<div id="cotab-plot-for-admissions-data" class="slide section level1">
+<h1>Cotab plot for admissions data</h1>
+<p>Let's try this on the admissions data.</p>
+<p>We want to know whether gender and admission are independent conditional on department.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cotabplot</span>(~<span class="st"> </span>Gender +<span class="st"> </span>Admit |<span class="st"> </span>Dept, <span class="dt">data =</span> UCBAdmissions, <span class="dt">gp =</span> shading_max, <span class="dt">margins =</span> <span class="kw">rep</span>(<span class="dv">0</span>, <span class="dv">4</span>))</code></pre>
+<div class="figure">
+<img src="lecture-24-fig/unnamed-chunk-9-1.png" />
+</div>
+<p>The syntax for the cotab plot is that the variable to the right of the <code>|</code> is the given variable (in this case, <code>Dept</code>), and the variables to the left of the <code>|</code> and to the right of the <code>~</code> are the two explanatory variables.</p>
+</div>
+<div id="double-decker-plot" class="slide section level1">
+<h1>Double decker plot</h1>
+<p>When we have one response variable that we are particularly interested in, and if we want to see how the conditional probability changes with the levels of several other factors, we can also use a doubledecker plot.</p>
+<p>A doubledecker plot is like a mosaic plot, but the vertical axis gives us the conditional probabilites of the response variable, and the horizontal axis gives us the probabilities of all the remaining factor combinations.</p>
+<p>This can be helpful when we are more interested in comparing conditional probabilities than we are in looking for conditional independence.</p>
+</div>
+<div id="double-decker-plot-for-admissions-data" class="slide section level1">
+<h1>Double decker plot for admissions data</h1>
+<p>We can try a doubledecker plot on the admissions data.</p>
+<p>Here the height of the first bar gives the conditional probability of admission given that the applicant was male and applying to Department A, the height of the second bar gives the conditional probability of admission given that the applicant was female and applying to Department A, and so on.</p>
+<p>The widths of the bars represent the probabilities of the categories: the width of the first bar is proportional to the number of male applicants to Department A, the width of the second bar is proportional to the number of female applicants to Department B, and so on.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">doubledecker</span>(Admit ~<span class="st"> </span>Dept +<span class="st"> </span>Gender, <span class="dt">data =</span> UCBAdmissions)</code></pre>
+<div class="figure">
+<img src="lecture-24-fig/unnamed-chunk-10-1.png" />
+</div>
+</div>
+<div class="slide section level1">
+
+<pre class="sourceCode r"><code class="sourceCode r">## nitpicky plotting modification: plots go in the same order as
+## the array, so if we want admitted to be on bottom we need to
+## switch the order of admit vs. rejected in the UCBAdmissions array
+<span class="kw">doubledecker</span>(Admit ~<span class="st"> </span>Dept +<span class="st"> </span>Gender, <span class="dt">data =</span> UCBAdmissions[<span class="dv">2</span>:<span class="dv">1</span>,,])</code></pre>
+<div class="figure">
+<img src="lecture-24-fig/unnamed-chunk-11-1.png" />
+</div>
+<p>The syntax here is that the variable to the left of the <code>~</code> is plotted on the vertical axis, and the variables to the right of the <code>~</code> are plotted on the vertical axis, with the first factor being grouped first, and subsequent factors being grouped separately.</p>
+</div>
+<div class="slide section level1">
+
+<p>The order you put the variables to the left of the <code>~</code> makes a big difference in what information you can easily read off the plot. When we have <code>Admit ~ Dept + Gender</code>, it's easy to see the differences between male and female admissions within each department because those bars are placed next to each other.</p>
+<p>If we do it the other way around, we're plotting the same information, but it's now easier to read off the differences in admission rates by department instead of the differences in admission rates by gender.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">doubledecker</span>(Admit ~<span class="st"> </span>Gender +<span class="st"> </span>Dept, <span class="dt">data =</span> UCBAdmissions[<span class="dv">2</span>:<span class="dv">1</span>,,])</code></pre>
+<div class="figure">
+<img src="lecture-24-fig/unnamed-chunk-12-1.png" />
+</div>
+</div>
+</body>
+</html>
