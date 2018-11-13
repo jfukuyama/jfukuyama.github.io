@@ -1,0 +1,580 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <meta name="author" content="Julia Fukuyama" />
+  <meta name="date" content="2018-11-13" />
+  <title>Stat 470/670 Lecture 25: Ordered and unordered categorical responses</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="http://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+  <script src="http://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div class="slide titlepage">
+  <h1 class="title">Stat 470/670 Lecture 25: Ordered and unordered categorical responses</h1>
+  <p class="author">
+Julia Fukuyama
+  </p>
+  <p class="date">November 13, 2018</p>
+</div>
+<div id="ordered-categorical-responses-polr" class="slide section level1">
+<h1>Ordered categorical responses: polr()</h1>
+<p>Optional reading: Gelman &amp; Hill pp. 119--123.</p>
+<p>With categorical regression, the main distinction is between models with ordered categories and models with unordered categories. Let's start with the ordered case.</p>
+</div>
+<div id="fake-data-grad-school" class="slide section level1">
+<h1>Fake data: Grad school</h1>
+<p>Let's use the (simulated) data on the potential grad school application of college students at</p>
+<p>http://stats.idre.ucla.edu/r/dae/ordinal-logistic-regression/</p>
+<p>The data purports to be for 400 juniors asked how likely they are to apply to grad school.</p>
+<p>The variables:</p>
+<ul>
+<li><p><code>apply</code> gives a student's intention to apply to grad school, where 0 means unlikely, 1 means somewhat likely, and 2 means very likely.</p></li>
+<li><p><code>pared</code>is a binary variable indicating whether the parent has a graduate degree.</p></li>
+<li><p><code>public</code> is a binary variable indicating whether the student goes to a public college.</p></li>
+<li><p><code>gpa</code>is the student's GPA.</p></li>
+</ul>
+<p>We want to model how the likelihood of applying to grad school depends on the other factors.</p>
+<p>Notice that <code>apply</code> is an ordered categorical variable.</p>
+</div>
+<div class="slide section level1">
+
+<p>We'll read in the Stata data using <code>import()</code> in the <code>rio</code> package:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(rio)
+gradschool =<span class="st"> </span><span class="kw">import</span>(<span class="st">&quot;https://stats.idre.ucla.edu/stat/data/ologit.dta&quot;</span>)
+<span class="kw">summary</span>(gradschool)</code></pre>
+<pre><code>##      apply          pared            public            gpa       
+##  Min.   :0.00   Min.   :0.0000   Min.   :0.0000   Min.   :1.900  
+##  1st Qu.:0.00   1st Qu.:0.0000   1st Qu.:0.0000   1st Qu.:2.720  
+##  Median :0.00   Median :0.0000   Median :0.0000   Median :2.990  
+##  Mean   :0.55   Mean   :0.1575   Mean   :0.1425   Mean   :2.999  
+##  3rd Qu.:1.00   3rd Qu.:0.0000   3rd Qu.:0.0000   3rd Qu.:3.270  
+##  Max.   :2.00   Max.   :1.0000   Max.   :1.0000   Max.   :4.000</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(dplyr)
+gradschool$Likelihood =<span class="st"> </span><span class="kw">recode_factor</span>(gradschool$apply,
+    <span class="st">&quot;0&quot;</span> =<span class="st"> &quot;unlikely&quot;</span>, <span class="st">&quot;1&quot;</span> =<span class="st"> &quot;somewhat likely&quot;</span>, <span class="st">&quot;2&quot;</span> =<span class="st"> &quot;very likely&quot;</span>,
+    ## when we do .ordered = TRUE we create an ordered factor,
+    ## which makes the default versions of some plots nicer.
+    <span class="dt">.ordered =</span> <span class="ot">TRUE</span>)</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>For a preliminary model, we'll use <code>gpa</code> as our initial explanatory variable. Let's draw a jittered plot showing the relationship between <code>gpa</code> and likelihood of applying to grad school.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(gradschool, <span class="kw">aes</span>(<span class="dt">x =</span> gpa, <span class="dt">y =</span> Likelihood, <span class="dt">color =</span> Likelihood)) +
+<span class="st">    </span><span class="kw">geom_jitter</span>(<span class="dt">width =</span> <span class="dv">0</span>, <span class="dt">height =</span> <span class="fl">0.2</span>) +<span class="st"> </span><span class="kw">ggtitle</span>(<span class="st">&quot;Likelihood of applying to grad school&quot;</span>)</code></pre>
+<div class="figure">
+<img src="lecture-25-fig/unnamed-chunk-3-1.png" />
+</div>
+<p>Most students are unlikely to apply to grad school. However, a higher GPA does mean a student is more likely to apply.</p>
+</div>
+<div class="slide section level1">
+
+<p>It's easy to get a sense of the conditional distribution of <code>gpa</code> given <code>Likelihood</code>. What we want, however, is the conditional distribution of <code>Likelihood</code> given <code>gpa</code>. We can get at this by discretizing <code>gpa</code>, drawing a histogram, then coloring it by the levels of <code>Likelihood</code>:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(gradschool, <span class="kw">aes</span>(<span class="dt">x =</span> gpa, <span class="dt">fill =</span> Likelihood)) +
+<span class="st">    </span><span class="kw">geom_histogram</span>(<span class="dt">breaks =</span> <span class="kw">seq</span>(<span class="fl">1.8</span>, <span class="dv">4</span>, <span class="fl">0.2</span>)) +
+<span class="st">    </span><span class="kw">ggtitle</span>(<span class="st">&quot;Likelihood of applying to grad school&quot;</span>)</code></pre>
+<div class="figure">
+<img src="lecture-25-fig/unnamed-chunk-4-1.png" />
+</div>
+</div>
+<div class="slide section level1">
+
+<p>Discretizing is arbitrary. If you prefer smooth estimates at the cost of some transparency, you can use stacked density estimates instead:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(gradschool, <span class="kw">aes</span>(<span class="dt">x =</span> gpa, ..count.., <span class="dt">fill =</span> Likelihood)) +
+<span class="st">    </span><span class="kw">geom_density</span>(<span class="dt">position =</span> <span class="st">&quot;stack&quot;</span>) +
+<span class="st">    </span><span class="kw">ggtitle</span>(<span class="st">&quot;Likelihood of applying to grad school&quot;</span>)</code></pre>
+<div class="figure">
+<img src="lecture-25-fig/unnamed-chunk-5-1.png" />
+</div>
+<p>The y-axis scale is a bit confusing here, since it's neither a true density nor a count. Instead, the total area is scaled to be equal to the number of observations (400.)</p>
+</div>
+<div class="slide section level1">
+
+<p>One question these graph don't answer directly: for a given GPA, what proportions of students are unlikely, somewhat likely, and very likely to apply to grad school?</p>
+<p>Here, instead of <em>joint</em> probabilities, we want <em>conditional</em> probabilities (conditional on GPA and possibly other variables.)</p>
+<p>We can use <a href="https://www.rdocumentation.org/packages/ggplot2/versions/2.1.0/topics/position_fill"><code>position = &quot;fill&quot;</code></a> to plot conditional density estimates:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(gradschool, <span class="kw">aes</span>(<span class="dt">x =</span> gpa, ..count.., <span class="dt">fill =</span> Likelihood)) +
+<span class="st">    </span><span class="kw">geom_density</span>(<span class="dt">position =</span> <span class="st">&quot;fill&quot;</span>) +
+<span class="st">    </span><span class="kw">ggtitle</span>(<span class="st">&quot;Likelihood of applying to grad school&quot;</span>)</code></pre>
+<div class="figure">
+<img src="lecture-25-fig/unnamed-chunk-6-1.png" />
+</div>
+</div>
+<div id="modeling-ordinal-responses" class="slide section level1">
+<h1>Modeling ordinal responses</h1>
+<p>What if we'd prefer to fit a model? The option we'll pursue is <em>proportional odds logistic regression</em>, fitted in R using the <code>polr()</code> function in <code>MASS</code>.</p>
+<p>Let's first fit the model, then explain what it means.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(MASS)
+gpa.polr =<span class="st"> </span><span class="kw">polr</span>(Likelihood ~<span class="st"> </span>gpa, <span class="dt">data =</span> gradschool)
+<span class="kw">library</span>(arm)
+<span class="kw">display</span>(gpa.polr)</code></pre>
+<pre><code>## polr(formula = Likelihood ~ gpa, data = gradschool)
+##                             coef.est coef.se
+## gpa                         0.72     0.25   
+## unlikely|somewhat likely    2.37     0.76   
+## somewhat likely|very likely 4.40     0.78   
+## ---
+## n = 400, k = 3 (including 2 intercepts)
+## residual deviance = 732.6, null deviance is not computed by polr</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>The model gives us both a <em>linear predictor</em> (on a logit scale) and <em>cutpoints</em>.</p>
+<ul>
+<li><p>The linear predictor is <span class="math">\[
+0.72 \times \textrm{GPA}
+\]</span> (Note that the form of the model fitted by <code>polr()</code> has no intercept.)</p></li>
+<li><p>The cutpoints correspond to boundaries between groups: the boundary between group 0 (unlikely) and group 1 (somewhat likely) is 2.37, while the boundary between group 1 and group 2 (very likely) is 4.4 (found in <code>gpa.polr$zeta</code>).</p></li>
+<li><p>To get deterministic predictions, we compare the linear predictor to the cutpoints. So if a student has a GPA of 3.5, our linear predictor would be <span class="math">\(.72 \times 3.5 = 2.52\)</span>. Since this is above the cutoff between the &quot;unlikely&quot; and &quot;somewhat likely&quot; groups but below the cutoff between the &quot;somewhat likely&quot; and &quot;very likely&quot;, so our prediction for someone with a 3.5 GPA is that they are &quot;somewhat likely&quot; to apply to grad school.</p></li>
+</ul>
+</div>
+<div id="polr-and-probability" class="slide section level1">
+<h1>polr() and probability</h1>
+<p>Deterministic predictions are the analog of the maximum likelihood predictions in logistic regression. But just as in logistic regression, we can also get fitted probabilities of all the possible categories for any observation.</p>
+<p>According to the proportional odds logistic regression model, if we have an observation with predictor <span class="math">\(x\)</span>, a coefficient <span class="math">\(\beta\)</span>, and cutpoints between the categories, the probability that the response variable falls in category <span class="math">\(i\)</span> are <span class="math">\[
+P(x \beta + \epsilon \in [z_i, z_{i+1}])
+\]</span> if <span class="math">\(\epsilon\)</span> is a random variable with a <a href="https://en.wikipedia.org/wiki/Logistic_distribution">standard logistic distribution</a> and <span class="math">\(z_i\)</span> and <span class="math">\(z_{i+1}\)</span> are the cutpoints corresponding to the upper and lower boundaries for category <span class="math">\(i\)</span>.</p>
+</div>
+<div class="slide section level1">
+
+<p>Because we might not be used to the logistic distribution, let's first use simulation to estimate the distribution of the latent variable for a person with a 3.5 GPA.</p>
+<p>To find this probability in the model we fit above, we would:</p>
+<ul>
+<li><p>Find the linear predictor based on their GPA;</p></li>
+<li><p>Add random logistic noise;</p></li>
+<li><p>Compare this &quot;latent&quot; variable to the cutpoints;</p></li>
+<li><p>Repeat lots of times and compute the fraction of times the latent variable fell into each of the categories.</p></li>
+</ul>
+</div>
+<div class="slide section level1">
+
+<p>Their linear predictor is <span class="math">\(0.725 \times 3.5 = 2.54\)</span>. We add logistic noise and see how often they fall in each cutpoint range.</p>
+<pre class="sourceCode r"><code class="sourceCode r">prediction =<span class="st"> </span><span class="kw">coefficients</span>(gpa.polr) *<span class="st"> </span><span class="fl">3.5</span>
+latent =<span class="st"> </span>prediction +<span class="st"> </span><span class="kw">rlogis</span>(<span class="dv">10000</span>)
+<span class="kw">ggplot</span>(<span class="kw">as.data.frame</span>(latent), <span class="kw">aes</span>(<span class="dt">x =</span> latent)) +<span class="st"> </span><span class="kw">geom_density</span>() +<span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_vline</span>(<span class="dt">xintercept =</span> gpa.polr$zeta, <span class="dt">color =</span> <span class="st">&quot;red&quot;</span>)</code></pre>
+<div class="figure">
+<img src="lecture-25-fig/unnamed-chunk-8-1.png" />
+</div>
+<p>We see that the left and middle areas are bigger than the right area. This means that &quot;unlikely&quot; and &quot;somewhat likely&quot; are more probable than &quot;very likely.&quot;</p>
+<p>We can also find the fraction of times the latent variables fall in each range:</p>
+<pre class="sourceCode r"><code class="sourceCode r">## what fraction of the time did the latent variables fall below the cutoff for &quot;unlikely&quot;
+<span class="kw">mean</span>(latent &lt;=<span class="st"> </span><span class="fl">2.3748</span>)</code></pre>
+<pre><code>## [1] 0.4649</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">## what fraction of the time did the latent variables fall between
+## the cutoff values corresponding to the &quot;somewhat likely&quot; category?
+<span class="kw">mean</span>(latent &gt;<span class="st"> </span><span class="fl">2.3748</span> &amp;<span class="st"> </span>latent &lt;=<span class="st"> </span><span class="fl">4.3998</span>)</code></pre>
+<pre><code>## [1] 0.3945</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">## what fraction of the time did the latent variables fall above the
+## cutoff for &quot;very likely&quot;?
+<span class="kw">mean</span>(latent &gt;<span class="st"> </span><span class="fl">4.3998</span>)</code></pre>
+<pre><code>## [1] 0.1406</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>So that we can compare with the predictions in the model later, let's find the exact probabilities. The probability of being &quot;unlikely&quot; is</p>
+<p><span class="math">\[
+P(\beta x + \epsilon &lt; z_{unlikely|somewhat})
+\]</span></p>
+<p>where <span class="math">\(x\)</span> is GPA, <span class="math">\(\epsilon\)</span> is standard logistic noise, and <span class="math">\(z_{unlikely|somewhat}\)</span> is the lower cutpoint. This is the same as</p>
+<p><span class="math">\[
+P(\epsilon &lt; z_{unlikely|somewhat} - \beta x)
+\]</span></p>
+<p>i.e., the probabilistic a standard logistic random variable is less than <span class="math">\(z_{unlikely|somewhat} - \beta x\)</span>.</p>
+</div>
+<div class="slide section level1">
+
+<p>We find logistic probabilities using the <code>inv.logit()</code> function in <code>boot</code>.</p>
+<pre class="sourceCode r"><code class="sourceCode r">beta =<span class="st"> </span><span class="kw">coefficients</span>(gpa.polr)
+zeta =<span class="st"> </span>gpa.polr$zeta
+<span class="kw">library</span>(boot)
+<span class="kw">inv.logit</span>(zeta[<span class="dv">1</span>] -<span class="st"> </span>beta *<span class="st"> </span><span class="fl">3.5</span>)</code></pre>
+<pre><code>## unlikely|somewhat likely 
+##                0.4595418</code></pre>
+<p>There's a 46% chance a person with a 3.5 GPA is &quot;unlikely&quot; to apply to grad school. Similarly, the probability they're &quot;very likely&quot; to apply to grad school is the probability a standard logistic random variable is <em>greater</em> than the difference between the second cutpoint and the linear predictor:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="dv">1</span> -<span class="st"> </span><span class="kw">inv.logit</span>(zeta[<span class="dv">2</span>] -<span class="st"> </span>beta *<span class="st"> </span><span class="fl">3.5</span>)</code></pre>
+<pre><code>## somewhat likely|very likely 
+##                   0.1343714</code></pre>
+<p>There's a 13% chance they're &quot;very likely.&quot; That leaves a 41% chance they're &quot;somewhat likely.&quot;</p>
+</div>
+<div class="slide section level1">
+
+<p>Now that we know what we're doing, we can just get these probabilities using <code>predict()</code>:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">predict</span>(gpa.polr, <span class="dt">newdata=</span><span class="kw">data.frame</span>(<span class="dt">gpa=</span><span class="fl">3.5</span>), <span class="dt">type =</span> <span class="st">&quot;probs&quot;</span>)</code></pre>
+<pre><code>##        unlikely somewhat likely     very likely 
+##       0.4595418       0.4060868       0.1343714</code></pre>
+</div>
+<div id="graphing-and-checking-the-model" class="slide section level1">
+<h1>Graphing and checking the model</h1>
+<p>Let's display the fit as a function of GPA.</p>
+<pre class="sourceCode r"><code class="sourceCode r">gpa =<span class="st"> </span><span class="kw">seq</span>(<span class="kw">min</span>(gradschool$gpa), <span class="kw">max</span>(gradschool$gpa), <span class="fl">0.01</span>)
+grad.probs =<span class="st"> </span><span class="kw">predict</span>(gpa.polr, <span class="dt">newdata =</span> <span class="kw">data.frame</span>(gpa), <span class="dt">type =</span> <span class="st">&quot;prob&quot;</span>)
+grad.probs.df =<span class="st"> </span><span class="kw">data.frame</span>(gpa, grad.probs)
+<span class="kw">names</span>(grad.probs.df) =<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;GPA&quot;</span>, <span class="st">&quot;Unlikely&quot;</span>, <span class="st">&quot;Somewhat Likely&quot;</span>, <span class="st">&quot;Very Likely&quot;</span>)
+<span class="kw">library</span>(tidyr)
+grad.probs.long =<span class="st"> </span>grad.probs.df %&gt;%<span class="st"> </span><span class="kw">gather</span>(Likelihood, Probability, <span class="dv">2</span>:<span class="dv">4</span>)
+grad.probs.long$Likelihood =<span class="st"> </span><span class="kw">factor</span>(grad.probs.long$Likelihood, <span class="dt">levels =</span> <span class="kw">c</span>(<span class="st">&quot;Unlikely&quot;</span>, <span class="st">&quot;Somewhat Likely&quot;</span>, <span class="st">&quot;Very Likely&quot;</span>), <span class="dt">ordered =</span> <span class="ot">TRUE</span>)
+<span class="kw">ggplot</span>(grad.probs.long, <span class="kw">aes</span>(<span class="dt">x =</span> GPA, <span class="dt">y =</span> Probability, <span class="dt">group =</span> Likelihood, <span class="dt">color =</span> Likelihood)) +
+<span class="st">    </span><span class="kw">geom_line</span>() +
+<span class="st">    </span><span class="kw">ggtitle</span>(<span class="st">&quot;Likelihood of applying to grad school&quot;</span>)</code></pre>
+<div class="figure">
+<img src="lecture-25-fig/unnamed-chunk-13-1.png" />
+</div>
+<p>The probability of both &quot;somewhat likely&quot; and &quot;very likely&quot; increase with GPA, though &quot;very likely&quot; never gets very high.</p>
+</div>
+<div class="slide section level1">
+
+<p>We can also stack the lines and use areas:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(grad.probs.long, <span class="kw">aes</span>(<span class="dt">x =</span> GPA, <span class="dt">y =</span> Probability, <span class="dt">group =</span> Likelihood, <span class="dt">fill =</span> Likelihood)) +
+<span class="st">    </span><span class="kw">geom_area</span>() +
+<span class="st">    </span><span class="kw">ggtitle</span>(<span class="st">&quot;Likelihood of applying to grad school&quot;</span>)</code></pre>
+<div class="figure">
+<img src="lecture-25-fig/unnamed-chunk-14-1.png" />
+</div>
+</div>
+<div class="slide section level1">
+
+<p>To check the fit, we could check every category separately. Instead we'll return to using <code>apply</code> as a quantitative variable: 0 for unlikely, 1 for somewhat likely, and 2 for very likely. That allows us to find means.</p>
+<pre class="sourceCode r"><code class="sourceCode r">apply.fitted =<span class="st"> </span><span class="kw">fitted.values</span>(gpa.polr)[,<span class="dv">2</span>] +<span class="st"> </span><span class="dv">2</span> *<span class="st"> </span><span class="kw">fitted.values</span>(gpa.polr)[,<span class="dv">3</span>]
+apply.resid =<span class="st"> </span>gradschool$apply -<span class="st"> </span>apply.fitted
+gpa.polr.df =<span class="st"> </span><span class="kw">data.frame</span>(gradschool, <span class="dt">.fitted =</span> apply.fitted, <span class="dt">.resid =</span> apply.resid)
+<span class="co"># Sort</span>
+gpa.polr.df =<span class="st"> </span>gpa.polr.df[<span class="kw">order</span>(gradschool$gpa),]
+gg =<span class="st"> </span><span class="kw">ggplot</span>(gpa.polr.df, <span class="kw">aes</span>(<span class="dt">x =</span> gpa, <span class="dt">y =</span> apply)) +<span class="st"> </span><span class="kw">geom_jitter</span>(<span class="dt">width =</span> <span class="dv">0</span>, <span class="dt">height =</span> <span class="fl">0.2</span>, <span class="kw">aes</span>(<span class="dt">color =</span> Likelihood)) +<span class="st"> </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">x =</span> gpa, <span class="dt">y =</span> .fitted))
+gg +<span class="st"> </span><span class="kw">ggtitle</span>(<span class="st">&quot;Likelihood of applying to grad school&quot;</span>) +<span class="st"> </span><span class="kw">scale_color_manual</span>(<span class="dt">values =</span> nice.palette)</code></pre>
+<pre><code>## Error in f(...): object &#39;nice.palette&#39; not found</code></pre>
+<div class="figure">
+<img src="lecture-25-fig/unnamed-chunk-15-1.png" />
+</div>
+<p>Now look at the residuals:</p>
+<pre class="sourceCode r"><code class="sourceCode r">gg =<span class="st"> </span><span class="kw">ggplot</span>(gpa.polr.df, <span class="kw">aes</span>(<span class="dt">x =</span> gpa, <span class="dt">y =</span> .resid)) +<span class="st"> </span><span class="kw">geom_point</span>()
+gg +<span class="st"> </span><span class="kw">geom_smooth</span>(<span class="dt">method.args =</span> <span class="kw">list</span>(<span class="dt">degree =</span> <span class="dv">1</span>))</code></pre>
+<pre><code>## `geom_smooth()` using method = &#39;loess&#39; and formula &#39;y ~ x&#39;</code></pre>
+<div class="figure">
+<img src="lecture-25-fig/unnamed-chunk-16-1.png" />
+</div>
+<p>This looks fine -- there's a kink for GPAs below 2.25, but that could just be because there are few people with GPAs that low.</p>
+</div>
+<div id="multiple-predictors" class="slide section level1">
+<h1>Multiple predictors</h1>
+<p>Let's now include two other variables in the model: <code>pared</code> is a binary variable indicating whether a parent has a grad degree, and <code>public</code> is a binary variable indicating whether the student goes to a public college.</p>
+<pre class="sourceCode r"><code class="sourceCode r">grad.polr =<span class="st"> </span><span class="kw">polr</span>(Likelihood ~<span class="st"> </span>gpa +<span class="st"> </span>pared +<span class="st"> </span>public, <span class="dt">data =</span> gradschool)
+<span class="kw">display</span>(grad.polr)</code></pre>
+<pre><code>## 
+## Re-fitting to get Hessian</code></pre>
+<pre><code>## polr(formula = Likelihood ~ gpa + pared + public, data = gradschool)
+##                             coef.est coef.se
+## gpa                          0.62     0.26  
+## pared                        1.05     0.27  
+## public                      -0.06     0.30  
+## unlikely|somewhat likely     2.20     0.78  
+## somewhat likely|very likely  4.30     0.80  
+## ---
+## n = 400, k = 5 (including 2 intercepts)
+## residual deviance = 717.0, null deviance is not computed by polr</code></pre>
+<p>The deviance has gone down by about 16 and the coefficients are in the direction in you'd expect -- your parents going to grad school means it's more probable you'll go to grad school, while going to a public college means it's slightly less probable.</p>
+</div>
+<div class="slide section level1">
+
+<p>As for numerical responses, we can study the fit by using <code>expand.grid()</code> to get a data frame of explanatories and making predictions.</p>
+<pre class="sourceCode r"><code class="sourceCode r">grad.grid =<span class="st"> </span><span class="kw">expand.grid</span>(<span class="dt">gpa =</span> <span class="kw">seq</span>(<span class="kw">min</span>(gradschool$gpa), <span class="kw">max</span>(gradschool$gpa), <span class="fl">0.01</span>), <span class="dt">pared =</span> <span class="dv">0</span>:<span class="dv">1</span>, <span class="dt">public =</span> <span class="dv">0</span>:<span class="dv">1</span>)
+grad.predict =<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">predict</span>(grad.polr, <span class="dt">newdata =</span> grad.grid, <span class="dt">type =</span> <span class="st">&quot;probs&quot;</span>))
+grad.polr.df =<span class="st"> </span><span class="kw">data.frame</span>(grad.grid, grad.predict)
+<span class="kw">names</span>(grad.polr.df) =<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;gpa&quot;</span>, <span class="st">&quot;pared&quot;</span>, <span class="st">&quot;public&quot;</span>, <span class="st">&quot;Unlikely&quot;</span>, <span class="st">&quot;Somewhat Likely&quot;</span>, <span class="st">&quot;Very Likely&quot;</span>)</code></pre>
+<p>We'll append a new variable that gives the combination of <code>pared</code> and <code>public</code>.</p>
+<pre class="sourceCode r"><code class="sourceCode r">pared_descriptive =<span class="st"> </span><span class="kw">recode</span>(grad.polr.df$pared, <span class="st">&quot;0&quot;</span> =<span class="st"> &quot;No grad parent&quot;</span>, <span class="st">&quot;1&quot;</span> =<span class="st"> &quot;Grad parent&quot;</span>)
+public_descriptive =<span class="st"> </span><span class="kw">recode</span>(grad.polr.df$public, <span class="st">&quot;0&quot;</span> =<span class="st"> &quot;private college&quot;</span>, <span class="st">&quot;1&quot;</span> =<span class="st"> &quot;public college&quot;</span>)
+grad.polr.df$Group =<span class="st"> </span><span class="kw">factor</span>(<span class="kw">paste</span>(pared_descriptive, public_descriptive, <span class="dt">sep =</span> <span class="st">&quot;, &quot;</span>))
+<span class="kw">head</span>(grad.polr.df)</code></pre>
+<pre><code>##    gpa pared public  Unlikely Somewhat Likely Very Likely
+## 1 1.90     0      0 0.7376186       0.2204577  0.04192370
+## 2 1.91     0      0 0.7364248       0.2214034  0.04217180
+## 3 1.92     0      0 0.7352275       0.2223512  0.04242130
+## 4 1.93     0      0 0.7340267       0.2233011  0.04267221
+## 5 1.94     0      0 0.7328225       0.2242530  0.04292454
+## 6 1.95     0      0 0.7316148       0.2252070  0.04317830
+##                             Group
+## 1 No grad parent, private college
+## 2 No grad parent, private college
+## 3 No grad parent, private college
+## 4 No grad parent, private college
+## 5 No grad parent, private college
+## 6 No grad parent, private college</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>There are a few ways to view this data frame, but probably the clearest is to draw a panel for each category.</p>
+<pre class="sourceCode r"><code class="sourceCode r">grad.polr.long =<span class="st"> </span>grad.polr.df %&gt;%<span class="st"> </span><span class="kw">gather</span>(Likelihood, Probability, <span class="st">`</span><span class="dt">Unlikely</span><span class="st">`</span>:<span class="st">`</span><span class="dt">Very Likely</span><span class="st">`</span>)
+grad.polr.long$Likelihood =<span class="st"> </span><span class="kw">factor</span>(grad.polr.long$Likelihood, <span class="dt">levels =</span> <span class="kw">c</span>(<span class="st">&quot;Unlikely&quot;</span>, <span class="st">&quot;Somewhat Likely&quot;</span>, <span class="st">&quot;Very Likely&quot;</span>), <span class="dt">ordered =</span> <span class="ot">TRUE</span>)
+<span class="kw">ggplot</span>(grad.polr.long, <span class="kw">aes</span>(<span class="dt">x =</span> gpa, <span class="dt">y =</span> Probability, <span class="dt">group =</span> Group, <span class="dt">color =</span> Group)) +<span class="st"> </span><span class="kw">geom_line</span>() +<span class="st"> </span><span class="kw">facet_grid</span>(~Likelihood) +<span class="st"> </span><span class="kw">ggtitle</span>(<span class="st">&quot;Likelihood of applying to grad school&quot;</span>)</code></pre>
+<div class="figure">
+<img src="lecture-25-fig/unnamed-chunk-20-1.png" />
+</div>
+<p>We see that private or public college makes almost no difference, so we should consider dropping that from the model.</p>
+</div>
+<div id="unordered-categorial-responses-alligator-food" class="slide section level1">
+<h1>Unordered categorial responses: Alligator food</h1>
+<p>Optional reading: Agresti, Categorical Data Analysis, section 8.1 (3rd edition pp. 294--297.)</p>
+<p>What do alligators like to eat? Researcher captured 219 alligators in four Florida lakes, and categorized them by the primary contents of their stomach.</p>
+<p>The variables they collected were:</p>
+<ul>
+<li><p><code>lake</code> gives the lake where the alligator was captured;</p></li>
+<li><p><code>sex</code> is male or female;</p></li>
+<li><p><code>size</code> is small or large;</p></li>
+<li><p><code>food</code> is fish, invertebrate, reptile, bird, or other;</p></li>
+<li><p><code>count</code> is how many of the 219 alligators had that combination of lake, sex, size, and food.</p></li>
+</ul>
+</div>
+<div class="slide section level1">
+
+<pre class="sourceCode r"><code class="sourceCode r">alligator =<span class="st"> </span><span class="kw">read.table</span>(<span class="st">&quot;../../datasets/alligator.txt&quot;</span>, <span class="dt">header =</span> <span class="ot">TRUE</span>)
+<span class="kw">summary</span>(alligator)</code></pre>
+<pre><code>##        lake        sex        size         food        count       
+##  George  :20   female:40   large:40   bird   :16   Min.   : 0.000  
+##  Hancock :20   male  :40   small:40   fish   :16   1st Qu.: 0.000  
+##  Oklawaha:20                          invert :16   Median : 1.000  
+##  Trafford:20                          other  :16   Mean   : 2.737  
+##                                       reptile:16   3rd Qu.: 3.250  
+##                                                    Max.   :16.000</code></pre>
+<p>Check that there are <span class="math">\(4 \times 2 \times 2 \times 5 = 80\)</span> (lakes times sex times size times food) rows:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">nrow</span>(alligator)</code></pre>
+<pre><code>## [1] 80</code></pre>
+<p>Check that there are 219 alligators:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(alligator$count)</code></pre>
+<pre><code>## [1] 219</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>One issue with categorical data is that different R function often require the data to be in different formats. To get it over with, let's put the data in wide form. This will also let us print out a table with fewer rows that gives all the data.</p>
+<pre class="sourceCode r"><code class="sourceCode r">## The first argument to spread tells the function what variable
+## you want to spread over the columns (food in this case)
+## The second argument to spread tells the function what variable
+## should go in the cells, in this case it is count
+alligator.wide =<span class="st"> </span>alligator %&gt;%<span class="st"> </span><span class="kw">spread</span>(food, count)
+alligator.wide</code></pre>
+<pre><code>##        lake    sex  size bird fish invert other reptile
+## 1    George female large    0    8      1     1       0
+## 2    George female small    0    3      9     1       1
+## 3    George   male large    1    9      0     2       0
+## 4    George   male small    2   13     10     2       0
+## 5   Hancock female large    2    3      0     3       1
+## 6   Hancock female small    2   16      3     3       2
+## 7   Hancock   male large    1    4      0     2       0
+## 8   Hancock   male small    0    7      1     5       0
+## 9  Oklawaha female large    1    0      1     0       0
+## 10 Oklawaha female small    0    3      9     2       1
+## 11 Oklawaha   male large    0   13      7     0       6
+## 12 Oklawaha   male small    0    2      2     1       0
+## 13 Trafford female large    0    0      1     0       0
+## 14 Trafford female small    1    2      4     4       1
+## 15 Trafford   male large    3    8      6     5       6
+## 16 Trafford   male small    0    3      7     1       1</code></pre>
+<p>Just by looking at the numbers we see that fish are relatively popular, while birds and reptiles are unpopular. Our eventual goal will be to build a model that gives the probability an alligator prefers each type of food, based on the predictors we have.</p>
+</div>
+<div id="mosaic-plots" class="slide section level1">
+<h1>Mosaic plots</h1>
+<p>As in the previous lecture, we can make mosaic plots describing the variables.</p>
+<p>Last time we used <code>moisaic</code> in <code>vcd</code>, but there is also <code>geom_mosaic</code> in the <code>ggmosaic</code> package, and we'll use that function this time.</p>
+<p><code>ggmosaic</code> requires the data in &quot;product&quot; format (easily achieved with the <code>product()</code> function) and a <code>weight</code> variable. Here our weights are the counts of alligators in each combination of categories. Let's first draw a mosaic plot breaking up the total sample of alligators by lake and food.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># install.packages(&#39;ggmosaic&#39;)</span>
+<span class="kw">library</span>(ggmosaic)
+<span class="kw">ggplot</span>(alligator) +
+<span class="st">    </span><span class="kw">geom_mosaic</span>(<span class="kw">aes</span>(<span class="kw">product</span>(food, lake), <span class="dt">weight =</span> count, <span class="dt">fill =</span> food)) +
+<span class="st">    </span><span class="kw">xlab</span>(<span class="st">&quot;Lake&quot;</span>) +<span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;Proportion of gators at that lake&quot;</span>)</code></pre>
+<div class="figure">
+<img src="lecture-25-fig/unnamed-chunk-25-1.png" />
+</div>
+<p>The above plot shows us the <em>conditional</em> distribution of each type of food, given the lake, as well as the joint relative frequency of each lake/food combination. The preferred types of food do seem to differ a lot by lake.</p>
+</div>
+<div class="slide section level1">
+
+<p>We can also look at the other pairs of variables: food/size and food/sex.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(alligator) +
+<span class="st">    </span><span class="kw">geom_mosaic</span>(<span class="kw">aes</span>(<span class="kw">product</span>(food, size), <span class="dt">weight =</span> count, <span class="dt">fill =</span> food)) +<span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;Alligator size&quot;</span>)</code></pre>
+<div class="figure">
+<img src="lecture-25-fig/unnamed-chunk-26-1.png" />
+</div>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(alligator) +
+<span class="st">    </span><span class="kw">geom_mosaic</span>(<span class="kw">aes</span>(<span class="kw">product</span>(food, sex), <span class="dt">weight =</span> count, <span class="dt">fill =</span> food)) +<span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;Sex&quot;</span>)</code></pre>
+<div class="figure">
+<img src="lecture-25-fig/unnamed-chunk-26-2.png" />
+</div>
+<p>We see that in the sample, there are more small gators than large ones, and more males than females. More importantly, the conditional distribution of food looks quite different between big and small gators, but quite similar comparing males and females.</p>
+</div>
+<div class="slide section level1">
+
+<p>We could keep on subdividing the bars in an attempt to look for interactions, but this is messy. Combining mosaics with faceting is preferable. In this case, because the data consists of a sample from each lake, it makes sense to facet by lake.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(alligator) +
+<span class="st">    </span><span class="kw">geom_mosaic</span>(<span class="kw">aes</span>(<span class="kw">product</span>(food, size), <span class="dt">weight =</span> count, <span class="dt">fill =</span> food)) +
+<span class="st">    </span><span class="kw">facet_wrap</span>(~lake, <span class="dt">ncol=</span><span class="dv">2</span>, <span class="dt">labeller =</span> label_context) +<span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;Alligator size&quot;</span>)</code></pre>
+<div class="figure">
+<img src="lecture-25-fig/unnamed-chunk-27-1.png" />
+</div>
+</div>
+<div id="multinomial-regression" class="slide section level1">
+<h1>Multinomial regression</h1>
+<p>Let's fit a model using <code>lake</code> and <code>size</code> as predictors. For categorical responses, we want the conditional distribution given the predictors to be <code>multinomial</code>. I use the <code>vglm()</code> function (vector GLM) in package <code>VGAM</code> to fit multinomial regressions. The syntax is similar to that of <code>glm()</code> with family <code>multinomial</code>, except you need to specify a matrix of responses (one column for each category.) This can be done using <code>cbind()</code> with the data in wide format.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># install.packages(&#39;VGAM&#39;)</span>
+<span class="kw">library</span>(VGAM)
+alligator.mlogit =<span class="st"> </span><span class="kw">vglm</span>(<span class="kw">cbind</span>(bird, fish, invert, other, reptile) ~<span class="st"> </span>lake +<span class="st"> </span>size, 
+    <span class="dt">family =</span> multinomial, <span class="dt">data =</span> alligator.wide)
+alligator.mlogit</code></pre>
+<pre><code>## 
+## Call:
+## vglm(formula = cbind(bird, fish, invert, other, reptile) ~ lake + 
+##     size, family = multinomial, data = alligator.wide)
+## 
+## 
+## Coefficients:
+##  (Intercept):1  (Intercept):2  (Intercept):3  (Intercept):4  lakeHancock:1 
+##      1.2214559      3.3145327      1.7655141      1.4102610     -0.5476591 
+##  lakeHancock:2  lakeHancock:3  lakeHancock:4 lakeOklawaha:1 lakeOklawaha:2 
+##     -1.2427766     -2.9011352     -0.4165804     -3.1120797     -2.4588720 
+## lakeOklawaha:3 lakeOklawaha:4 lakeTrafford:1 lakeTrafford:2 lakeTrafford:3 
+##     -1.5216526     -2.4532189     -1.8474865     -2.9352533     -1.8132685 
+## lakeTrafford:4    sizesmall:1    sizesmall:2    sizesmall:3    sizesmall:4 
+##     -1.4188846     -0.2793969      0.3512628      1.8094675      0.6828131 
+## 
+## Degrees of Freedom: 64 Total; 44 Residual
+## Residual deviance: 52.47849 
+## Log-likelihood: -74.42948 
+## 
+## This is a multinomial logit model with 5 levels</code></pre>
+<p>There are lots of coefficients here! These can be interpreted in terms of log odds, but instead we'll examine the model fit graphically.</p>
+</div>
+<div class="slide section level1">
+
+<pre class="sourceCode r"><code class="sourceCode r">alligator.mlogit.df =<span class="st"> </span><span class="kw">data.frame</span>(<span class="kw">model.frame</span>(alligator.mlogit), <span class="kw">fitted.values</span>(alligator.mlogit))
+alligator.mlogit.long =<span class="st"> </span>alligator.mlogit.df %&gt;%<span class="st"> </span><span class="kw">gather</span>(food, probability, bird:reptile)
+<span class="kw">ggplot</span>(alligator.mlogit.long, <span class="kw">aes</span>(<span class="dt">x =</span> food, <span class="dt">y =</span> probability)) +<span class="st"> </span><span class="kw">geom_point</span>() +<span class="st"> </span>
+<span class="st">    </span><span class="kw">facet_wrap</span>(~lake +<span class="st"> </span>size, <span class="dt">ncol =</span> <span class="dv">4</span>)</code></pre>
+<div class="figure">
+<img src="lecture-25-fig/unnamed-chunk-29-1.png" />
+</div>
+</div>
+<div class="slide section level1">
+
+<p>We could also collapse the large and small rows and color-code:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(alligator.mlogit.long, <span class="kw">aes</span>(<span class="dt">x =</span> food, <span class="dt">y =</span> probability, <span class="dt">col =</span> size)) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_point</span>() +<span class="st"> </span><span class="kw">facet_wrap</span>(~<span class="st"> </span>lake)</code></pre>
+<div class="figure">
+<img src="lecture-25-fig/unnamed-chunk-30-1.png" />
+</div>
+</div>
+<div class="slide section level1">
+
+<p>Let's check the deviance of a couple of alternatives:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">deviance</span>(<span class="kw">vglm</span>(<span class="kw">cbind</span>(bird, fish, invert, other, reptile) ~<span class="st"> </span>lake +<span class="st"> </span>size +<span class="st"> </span>sex, <span class="dt">family =</span> multinomial, <span class="dt">data =</span> alligator.wide))</code></pre>
+<pre><code>## [1] 50.26369</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">deviance</span>(<span class="kw">vglm</span>(<span class="kw">cbind</span>(bird, fish, invert, other, reptile) ~<span class="st"> </span>lake *<span class="st"> </span>size, <span class="dt">family =</span> multinomial, <span class="dt">data =</span> alligator.wide))</code></pre>
+<pre><code>## [1] 35.39866</code></pre>
+<p>Adding sex only reduces deviance by a trivial amount (less than the 4 extra degrees of freedom), and so is unlikely to be worth it.</p>
+<p>Adding an interaction between lake and size reduces deviance by a lot, but also makes the model much more complicated, so that's a judgment call.</p>
+<p>Also note that when we add an interaction between categorical predictors, this is just equivalent to taking the raw proportions for each two-way combination of predictors. So we're back to the two-way faceted bar graph, only standardized so that each panel adds up to probability 1.</p>
+</div>
+<div id="quantitative-predictors" class="slide section level1">
+<h1>Quantitative predictors</h1>
+<p>We can also fit multinomial models with quantitative predictors. In the file <code>gator2.txt</code>, the numerical predictor is the length of the alligator in meters.</p>
+<p>The two variables are:</p>
+<ul>
+<li><p><code>length</code>: Length in meters</p></li>
+<li><p><code>food</code>: One of either <code>Invertebrates</code>, <code>Fish</code>, or <code>Other</code></p></li>
+</ul>
+</div>
+<div class="slide section level1">
+
+<p>Let's read in the data and fit a multinomial logit model:</p>
+<pre class="sourceCode r"><code class="sourceCode r">gator2 =<span class="st"> </span><span class="kw">read.table</span>(<span class="st">&quot;../../datasets/gator2.txt&quot;</span>, <span class="dt">header =</span> <span class="ot">TRUE</span>)
+<span class="kw">summary</span>(gator2)</code></pre>
+<pre><code>##      length                 food   
+##  Min.   :1.240   Fish         :31  
+##  1st Qu.:1.575   Invertebrates:20  
+##  Median :1.850   Other        : 8  
+##  Mean   :2.130                     
+##  3rd Qu.:2.450                     
+##  Max.   :3.890</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">gator2.mlogit =<span class="st"> </span><span class="kw">vglm</span>(food ~<span class="st"> </span>length, <span class="dt">family =</span> multinomial, <span class="dt">data =</span> gator2)
+gator2.mlogit</code></pre>
+<pre><code>## 
+## Call:
+## vglm(formula = food ~ length, family = multinomial, data = gator2)
+## 
+## 
+## Coefficients:
+## (Intercept):1 (Intercept):2      length:1      length:2 
+##      1.617731      5.697444     -0.110109     -2.465446 
+## 
+## Degrees of Freedom: 118 Total; 114 Residual
+## Residual deviance: 98.34124 
+## Log-likelihood: -49.17062 
+## 
+## This is a multinomial logit model with 3 levels</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>As we did in the ordered categories case, let's start making predictions to understand the fit. First, on the linear predictor (i.e. transformed) scale:</p>
+<pre class="sourceCode r"><code class="sourceCode r">log.ratios =<span class="st"> </span><span class="kw">predict</span>(gator2.mlogit, <span class="dt">newdata =</span> <span class="kw">data.frame</span>(<span class="dt">length =</span> <span class="dv">2</span>))
+log.ratios</code></pre>
+<pre><code>##   log(mu[,1]/mu[,3]) log(mu[,2]/mu[,3])
+## 1           1.397513          0.7665519</code></pre>
+<p>This gives us the log probability ratios for one type of food to another. The log of the probability ratio for fish to other is <span class="math">\(1.62 - 0.11 \times 2 \approx 1.4\)</span> and for invertebrates to other is <span class="math">\(5.7 - 2.47 \times 2 \approx 0.77\)</span>. (Note that <code>vglm()</code> take the <em>last</em> level of the factor as the baseline, which is weird but is what it is.)</p>
+</div>
+<div class="slide section level1">
+
+<p>We can look at the predictions on the probabiliity scale, and then check that all of our numbers are consistent with each other.</p>
+<pre class="sourceCode r"><code class="sourceCode r">twometerprobs =<span class="st"> </span><span class="kw">predict</span>(gator2.mlogit, <span class="dt">newdata =</span> <span class="kw">data.frame</span>(<span class="dt">length =</span> <span class="dv">2</span>), <span class="dt">type =</span> <span class="st">&quot;response&quot;</span>)
+twometerprobs</code></pre>
+<pre><code>##        Fish Invertebrates     Other
+## 1 0.5620216     0.2990405 0.1389379</code></pre>
+<p>To go from the probability scale to the linear predictor scale:</p>
+<pre class="sourceCode r"><code class="sourceCode r">## note that this is the same as log.ratios above
+<span class="kw">log</span>(twometerprobs[<span class="dv">1</span>:<span class="dv">2</span>] /<span class="st"> </span>twometerprobs[<span class="dv">3</span>])</code></pre>
+<pre><code>## [1] 1.3975134 0.7665519</code></pre>
+<p>To go from the linear predictor scale to the probability scale:</p>
+<pre class="sourceCode r"><code class="sourceCode r">## this is the same as twometerprobs above
+<span class="kw">exp</span>(<span class="kw">c</span>(log.ratios, <span class="dv">0</span>)) /<span class="st"> </span><span class="kw">sum</span>(<span class="kw">exp</span>(<span class="kw">c</span>(log.ratios, <span class="dv">0</span>)))</code></pre>
+<pre><code>## [1] 0.5620216 0.2990405 0.1389379</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>Now let's look at how these probabilities vary with length:</p>
+<pre class="sourceCode r"><code class="sourceCode r">length =<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">length =</span> <span class="kw">seq</span>(<span class="fl">1.24</span>, <span class="fl">3.89</span>, <span class="fl">0.01</span>))
+gator2.pred =<span class="st"> </span><span class="kw">predict</span>(gator2.mlogit, <span class="dt">newdata =</span> length, <span class="dt">type =</span> <span class="st">&quot;response&quot;</span>)
+gator2.pred.df =<span class="st"> </span><span class="kw">data.frame</span>(length, gator2.pred)
+gator2.pred.long =<span class="st"> </span>gator2.pred.df %&gt;%<span class="st"> </span><span class="kw">gather</span>(food, probability, Fish:Other)
+<span class="kw">ggplot</span>(gator2.pred.long, <span class="kw">aes</span>(<span class="dt">x =</span> length, <span class="dt">y =</span> probability, <span class="dt">group =</span> food, <span class="dt">color =</span> food)) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_line</span>() +<span class="st"> </span><span class="kw">ggtitle</span>(<span class="st">&quot;What do alligators eat?&quot;</span>)</code></pre>
+<div class="figure">
+<img src="lecture-25-fig/unnamed-chunk-37-1.png" />
+</div>
+<p>Bigger alligators prefer fish and, to a lesser extend, &quot;other.&quot; Smaller alligators prefer invertebrates.</p>
+<p>We finally note that just as with the Poisson, multinomial data is often overdispersed, so be careful of taking standard errors literally.</p>
+</div>
+</body>
+</html>
