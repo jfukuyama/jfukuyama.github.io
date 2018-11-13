@@ -258,29 +258,6 @@ grad.probs.long$Likelihood =<span class="st"> </span><span class="kw">factor</sp
 <img src="lecture-25-fig/unnamed-chunk-14-1.png" />
 </div>
 </div>
-<div class="slide section level1">
-
-<p>To check the fit, we could check every category separately. Instead we'll return to using <code>apply</code> as a quantitative variable: 0 for unlikely, 1 for somewhat likely, and 2 for very likely. That allows us to find means.</p>
-<pre class="sourceCode r"><code class="sourceCode r">apply.fitted =<span class="st"> </span><span class="kw">fitted.values</span>(gpa.polr)[,<span class="dv">2</span>] +<span class="st"> </span><span class="dv">2</span> *<span class="st"> </span><span class="kw">fitted.values</span>(gpa.polr)[,<span class="dv">3</span>]
-apply.resid =<span class="st"> </span>gradschool$apply -<span class="st"> </span>apply.fitted
-gpa.polr.df =<span class="st"> </span><span class="kw">data.frame</span>(gradschool, <span class="dt">.fitted =</span> apply.fitted, <span class="dt">.resid =</span> apply.resid)
-<span class="co"># Sort</span>
-gpa.polr.df =<span class="st"> </span>gpa.polr.df[<span class="kw">order</span>(gradschool$gpa),]
-gg =<span class="st"> </span><span class="kw">ggplot</span>(gpa.polr.df, <span class="kw">aes</span>(<span class="dt">x =</span> gpa, <span class="dt">y =</span> apply)) +<span class="st"> </span><span class="kw">geom_jitter</span>(<span class="dt">width =</span> <span class="dv">0</span>, <span class="dt">height =</span> <span class="fl">0.2</span>, <span class="kw">aes</span>(<span class="dt">color =</span> Likelihood)) +<span class="st"> </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">x =</span> gpa, <span class="dt">y =</span> .fitted))
-gg +<span class="st"> </span><span class="kw">ggtitle</span>(<span class="st">&quot;Likelihood of applying to grad school&quot;</span>) +<span class="st"> </span><span class="kw">scale_color_manual</span>(<span class="dt">values =</span> nice.palette)</code></pre>
-<pre><code>## Error in f(...): object &#39;nice.palette&#39; not found</code></pre>
-<div class="figure">
-<img src="lecture-25-fig/unnamed-chunk-15-1.png" />
-</div>
-<p>Now look at the residuals:</p>
-<pre class="sourceCode r"><code class="sourceCode r">gg =<span class="st"> </span><span class="kw">ggplot</span>(gpa.polr.df, <span class="kw">aes</span>(<span class="dt">x =</span> gpa, <span class="dt">y =</span> .resid)) +<span class="st"> </span><span class="kw">geom_point</span>()
-gg +<span class="st"> </span><span class="kw">geom_smooth</span>(<span class="dt">method.args =</span> <span class="kw">list</span>(<span class="dt">degree =</span> <span class="dv">1</span>))</code></pre>
-<pre><code>## `geom_smooth()` using method = &#39;loess&#39; and formula &#39;y ~ x&#39;</code></pre>
-<div class="figure">
-<img src="lecture-25-fig/unnamed-chunk-16-1.png" />
-</div>
-<p>This looks fine -- there's a kink for GPAs below 2.25, but that could just be because there are few people with GPAs that low.</p>
-</div>
 <div id="multiple-predictors" class="slide section level1">
 <h1>Multiple predictors</h1>
 <p>Let's now include two other variables in the model: <code>pared</code> is a binary variable indicating whether a parent has a grad degree, and <code>public</code> is a binary variable indicating whether the student goes to a public college.</p>
@@ -334,7 +311,7 @@ grad.polr.df$Group =<span class="st"> </span><span class="kw">factor</span>(<spa
 grad.polr.long$Likelihood =<span class="st"> </span><span class="kw">factor</span>(grad.polr.long$Likelihood, <span class="dt">levels =</span> <span class="kw">c</span>(<span class="st">&quot;Unlikely&quot;</span>, <span class="st">&quot;Somewhat Likely&quot;</span>, <span class="st">&quot;Very Likely&quot;</span>), <span class="dt">ordered =</span> <span class="ot">TRUE</span>)
 <span class="kw">ggplot</span>(grad.polr.long, <span class="kw">aes</span>(<span class="dt">x =</span> gpa, <span class="dt">y =</span> Probability, <span class="dt">group =</span> Group, <span class="dt">color =</span> Group)) +<span class="st"> </span><span class="kw">geom_line</span>() +<span class="st"> </span><span class="kw">facet_grid</span>(~Likelihood) +<span class="st"> </span><span class="kw">ggtitle</span>(<span class="st">&quot;Likelihood of applying to grad school&quot;</span>)</code></pre>
 <div class="figure">
-<img src="lecture-25-fig/unnamed-chunk-20-1.png" />
+<img src="lecture-25-fig/unnamed-chunk-18-1.png" />
 </div>
 <p>We see that private or public college makes almost no difference, so we should consider dropping that from the model.</p>
 </div>
@@ -408,7 +385,7 @@ alligator.wide</code></pre>
 <span class="st">    </span><span class="kw">geom_mosaic</span>(<span class="kw">aes</span>(<span class="kw">product</span>(food, lake), <span class="dt">weight =</span> count, <span class="dt">fill =</span> food)) +
 <span class="st">    </span><span class="kw">xlab</span>(<span class="st">&quot;Lake&quot;</span>) +<span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;Proportion of gators at that lake&quot;</span>)</code></pre>
 <div class="figure">
-<img src="lecture-25-fig/unnamed-chunk-25-1.png" />
+<img src="lecture-25-fig/unnamed-chunk-23-1.png" />
 </div>
 <p>The above plot shows us the <em>conditional</em> distribution of each type of food, given the lake, as well as the joint relative frequency of each lake/food combination. The preferred types of food do seem to differ a lot by lake.</p>
 </div>
@@ -418,12 +395,12 @@ alligator.wide</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(alligator) +
 <span class="st">    </span><span class="kw">geom_mosaic</span>(<span class="kw">aes</span>(<span class="kw">product</span>(food, size), <span class="dt">weight =</span> count, <span class="dt">fill =</span> food)) +<span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;Alligator size&quot;</span>)</code></pre>
 <div class="figure">
-<img src="lecture-25-fig/unnamed-chunk-26-1.png" />
+<img src="lecture-25-fig/unnamed-chunk-24-1.png" />
 </div>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(alligator) +
 <span class="st">    </span><span class="kw">geom_mosaic</span>(<span class="kw">aes</span>(<span class="kw">product</span>(food, sex), <span class="dt">weight =</span> count, <span class="dt">fill =</span> food)) +<span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;Sex&quot;</span>)</code></pre>
 <div class="figure">
-<img src="lecture-25-fig/unnamed-chunk-26-2.png" />
+<img src="lecture-25-fig/unnamed-chunk-24-2.png" />
 </div>
 <p>We see that in the sample, there are more small gators than large ones, and more males than females. More importantly, the conditional distribution of food looks quite different between big and small gators, but quite similar comparing males and females.</p>
 </div>
@@ -434,7 +411,7 @@ alligator.wide</code></pre>
 <span class="st">    </span><span class="kw">geom_mosaic</span>(<span class="kw">aes</span>(<span class="kw">product</span>(food, size), <span class="dt">weight =</span> count, <span class="dt">fill =</span> food)) +
 <span class="st">    </span><span class="kw">facet_wrap</span>(~lake, <span class="dt">ncol=</span><span class="dv">2</span>, <span class="dt">labeller =</span> label_context) +<span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;Alligator size&quot;</span>)</code></pre>
 <div class="figure">
-<img src="lecture-25-fig/unnamed-chunk-27-1.png" />
+<img src="lecture-25-fig/unnamed-chunk-25-1.png" />
 </div>
 </div>
 <div id="multinomial-regression" class="slide section level1">
@@ -475,7 +452,7 @@ alligator.mlogit.long =<span class="st"> </span>alligator.mlogit.df %&gt;%<span 
 <span class="kw">ggplot</span>(alligator.mlogit.long, <span class="kw">aes</span>(<span class="dt">x =</span> food, <span class="dt">y =</span> probability)) +<span class="st"> </span><span class="kw">geom_point</span>() +<span class="st"> </span>
 <span class="st">    </span><span class="kw">facet_wrap</span>(~lake +<span class="st"> </span>size, <span class="dt">ncol =</span> <span class="dv">4</span>)</code></pre>
 <div class="figure">
-<img src="lecture-25-fig/unnamed-chunk-29-1.png" />
+<img src="lecture-25-fig/unnamed-chunk-27-1.png" />
 </div>
 </div>
 <div class="slide section level1">
@@ -484,7 +461,7 @@ alligator.mlogit.long =<span class="st"> </span>alligator.mlogit.df %&gt;%<span 
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(alligator.mlogit.long, <span class="kw">aes</span>(<span class="dt">x =</span> food, <span class="dt">y =</span> probability, <span class="dt">col =</span> size)) +<span class="st"> </span>
 <span class="st">    </span><span class="kw">geom_point</span>() +<span class="st"> </span><span class="kw">facet_wrap</span>(~<span class="st"> </span>lake)</code></pre>
 <div class="figure">
-<img src="lecture-25-fig/unnamed-chunk-30-1.png" />
+<img src="lecture-25-fig/unnamed-chunk-28-1.png" />
 </div>
 </div>
 <div class="slide section level1">
@@ -496,7 +473,7 @@ alligator.mlogit.long =<span class="st"> </span>alligator.mlogit.df %&gt;%<span 
 <pre><code>## [1] 35.39866</code></pre>
 <p>Adding sex only reduces deviance by a trivial amount (less than the 4 extra degrees of freedom), and so is unlikely to be worth it.</p>
 <p>Adding an interaction between lake and size reduces deviance by a lot, but also makes the model much more complicated, so that's a judgment call.</p>
-<p>Also note that when we add an interaction between categorical predictors, this is just equivalent to taking the raw proportions for each two-way combination of predictors. So we're back to the two-way faceted bar graph, only standardized so that each panel adds up to probability 1.</p>
+<p>Also note that when we add an interaction between categorical predictors, this is just equivalent to taking the raw proportions for each two-way combination of predictors. It therefore isn't good at giving us a parsimonious description of the data, but it might be good for predictors.</p>
 </div>
 <div id="quantitative-predictors" class="slide section level1">
 <h1>Quantitative predictors</h1>
@@ -571,7 +548,7 @@ gator2.pred.long =<span class="st"> </span>gator2.pred.df %&gt;%<span class="st"
 <span class="kw">ggplot</span>(gator2.pred.long, <span class="kw">aes</span>(<span class="dt">x =</span> length, <span class="dt">y =</span> probability, <span class="dt">group =</span> food, <span class="dt">color =</span> food)) +<span class="st"> </span>
 <span class="st">    </span><span class="kw">geom_line</span>() +<span class="st"> </span><span class="kw">ggtitle</span>(<span class="st">&quot;What do alligators eat?&quot;</span>)</code></pre>
 <div class="figure">
-<img src="lecture-25-fig/unnamed-chunk-37-1.png" />
+<img src="lecture-25-fig/unnamed-chunk-35-1.png" />
 </div>
 <p>Bigger alligators prefer fish and, to a lesser extend, &quot;other.&quot; Smaller alligators prefer invertebrates.</p>
 <p>We finally note that just as with the Poisson, multinomial data is often overdispersed, so be careful of taking standard errors literally.</p>

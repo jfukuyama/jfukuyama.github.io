@@ -261,28 +261,6 @@ ggplot(grad.probs.long, aes(x = GPA, y = Probability, group = Likelihood, fill =
     ggtitle("Likelihood of applying to grad school")
 ```
 
------
-
-To check the fit, we could check every category separately. Instead we'll return to using `apply` as a quantitative variable: 0 for unlikely, 1 for somewhat likely, and 2 for very likely. That allows us to find means.
-
-```{r}
-apply.fitted = fitted.values(gpa.polr)[,2] + 2 * fitted.values(gpa.polr)[,3]
-apply.resid = gradschool$apply - apply.fitted
-gpa.polr.df = data.frame(gradschool, .fitted = apply.fitted, .resid = apply.resid)
-# Sort
-gpa.polr.df = gpa.polr.df[order(gradschool$gpa),]
-gg = ggplot(gpa.polr.df, aes(x = gpa, y = apply)) + geom_jitter(width = 0, height = 0.2, aes(color = Likelihood)) + geom_line(aes(x = gpa, y = .fitted))
-gg + ggtitle("Likelihood of applying to grad school") + scale_color_manual(values = nice.palette)
-```
-
-Now look at the residuals:
-
-```{r}
-gg = ggplot(gpa.polr.df, aes(x = gpa, y = .resid)) + geom_point()
-gg + geom_smooth(method.args = list(degree = 1))
-```
-
-This looks fine -- there's a kink for GPAs below 2.25, but that could just be because there are few people with GPAs that low.
 
 # Multiple predictors
 
