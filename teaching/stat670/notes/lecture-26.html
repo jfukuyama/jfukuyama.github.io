@@ -1,0 +1,346 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <meta name="author" content="Julia Fukuyama" />
+  <meta name="date" content="2018-11-27" />
+  <title>Stat 470/670 Lecture 26: EDA and the Problem of Multiple Comparisons</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="http://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+  <script src="http://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div class="slide titlepage">
+  <h1 class="title">Stat 470/670 Lecture 26: EDA and the Problem of Multiple Comparisons</h1>
+  <p class="author">
+Julia Fukuyama
+  </p>
+  <p class="date">November 27, 2018</p>
+</div>
+<div id="presentation-notes" class="slide section level1">
+<h1>Presentation notes</h1>
+<ul>
+<li><p>You can use either your computer or mine to present.</p></li>
+<li><p>If you want to use mine, email me a pdf of your slides before class and I'll have them ready to go.</p></li>
+<li><p>If you want to use your computer, make sure you have the right equipment to hook your computer up to the projector.</p></li>
+<li><p>We will have exactly enough time for all the presentations on Thursday, but we'll have to start exactly on time and the presentations can't run long.</p></li>
+</ul>
+</div>
+<div id="eda-and-multiple-comparisons" class="slide section level1">
+<h1>EDA and Multiple Comparisons</h1>
+<p>Optional reading: <a href="http://www.stat.columbia.edu/~gelman/research/unpublished/p_hacking.pdf">Gelman and Loken</a></p>
+<p>For our last lecture, we will talk for the first time about <span class="math">\(p\)</span>-values.</p>
+</div>
+<div id="the-standard-multiple-comparison-problem" class="slide section level1">
+<h1>The standard multiple comparison problem</h1>
+<p>Suppose a researcher is interested in whether married and unmarried men have different opinions on gun laws.</p>
+<p>He asks married and unmarried men whether they are in favor of stricter gun laws.</p>
+<p>Overall he didn't see a difference between the two groups, but he also looked at his data state-by-state and gets the following results (only the 15 states with the largest absolute differences are shown):</p>
+<pre><code>##    State Unmarried Married Difference
+## 36    NJ      0.48    0.42      -0.06
+## 37    CO      0.50    0.57       0.07
+## 38    CT      0.57    0.50      -0.07
+## 39    OR      0.53    0.60       0.07
+## 40    AK      0.49    0.42      -0.07
+## 41    MD      0.51    0.59       0.08
+## 42    VA      0.48    0.57       0.09
+## 43    SC      0.44    0.53       0.09
+## 44    TX      0.42    0.51       0.09
+## 45    IL      0.56    0.47      -0.09
+## 46    OH      0.51    0.61       0.10
+## 47    WV      0.42    0.52       0.10
+## 48    ND      0.41    0.59       0.18
+## 49    IN      0.39    0.58       0.19
+## 50    MI      0.38    0.59       0.21</code></pre>
+<p>When he tests for whether the state-by-state differences are significant, he sees that three are: North Dakota, Indiana, and Michigan, and in each case married men are more likely to favor stricter gun laws.</p>
+<p>What are some possible explanations for these results?</p>
+</div>
+<div class="slide section level1">
+
+<p>In this example, we might worry that there is actually no difference in any of the states, and that we saw the three small <span class="math">\(p\)</span>-values simply by chance.</p>
+<p>We can do a little simulation to see what would happen if the true effect was zero in all of the states: In that case, for each state we have a <span class="math">\(.05\)</span> chance of getting a <span class="math">\(p\)</span>-value less than <span class="math">\(.05\)</span> (the definition of a <span class="math">\(p\)</span>-value).</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set.seed</span>(<span class="dv">2</span>)
+<span class="co"># simulate 50 hypothesis tests at .05</span>
+rejections =<span class="st"> </span><span class="kw">rbinom</span>(<span class="dv">50</span>, <span class="dv">1</span>, <span class="dt">prob =</span> .<span class="dv">05</span>)
+<span class="co"># a value of 1 means we rejected the null, a value of 0 means we failed to reject</span>
+<span class="co"># here all of the nulls were true, but we rejected 4 of them</span>
+rejections</code></pre>
+<pre><code>##  [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0
+## [36] 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>We can repeat the example above many times to see how many times we expect to reject three or more hypotheses out of 50, and we see that even when all of the nulls are true, we would expect to reject at least three null hypotheses almost half of the time</p>
+<pre class="sourceCode r"><code class="sourceCode r">n_rejections =<span class="st"> </span><span class="kw">rep</span>(<span class="ot">NA</span>, <span class="dv">5000</span>)
+for(i in <span class="dv">1</span>:<span class="dv">5000</span>) {
+    rejections =<span class="st"> </span><span class="kw">rbinom</span>(<span class="dv">50</span>, <span class="dv">1</span>, <span class="dt">prob =</span> .<span class="dv">05</span>)
+    n_rejections[i] =<span class="st"> </span><span class="kw">sum</span>(rejections)
+}
+<span class="kw">table</span>(n_rejections)</code></pre>
+<pre><code>## n_rejections
+##    0    1    2    3    4    5    6    7    8    9   10   11 
+##  377  979 1340 1102  695  326  119   45   13    1    2    1</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mean</span>(n_rejections &gt;=<span class="st"> </span><span class="dv">3</span>)</code></pre>
+<pre><code>## [1] 0.4608</code></pre>
+</div>
+<div id="testing-the-global-null-hypothesis" class="slide section level1">
+<h1>Testing the global null hypothesis</h1>
+<p>The hypothesis that all of the individual null hypotheses are true is referred to as the <em>global null</em>: if <span class="math">\(H_{0i}\)</span> refers to the <span class="math">\(i\)</span>th null hypotheses, the global null is</p>
+<p><span class="math">\[
+H_0 = \cap_{i=1}^n H_{0i},
+\]</span> the intersection of all the individual null hypotheses.</p>
+<div class="incremental">
+<p>Suppose we are interested in testing hypotheses at level <span class="math">\(\alpha\)</span> (we reject with a <span class="math">\(p\)</span>-values less than <span class="math">\(\alpha\)</span>)</p>
+<p>One of the simplest methods for testing the global null hypothesis is called <em>Bonferroni's Method</em>.</p>
+<p>The procedure is as follows:</p>
+<ul>
+<li><p>Test each of the <span class="math">\(n\)</span> individual hypotheses <span class="math">\(H_{0i}\)</span>, <span class="math">\(i = 1,\ldots, n\)</span> at level <span class="math">\(\alpha / n\)</span>.</p></li>
+<li><p>Reject the global null, <span class="math">\(H_0\)</span>, whenever we reject one of the <span class="math">\(H_{0i}\)</span>'s. If <span class="math">\(p_i\)</span> is the <span class="math">\(p\)</span>-value corresponding to hypothesis <span class="math">\(i\)</span>, this amounts to rejecting the global null <span class="math">\(H_0\)</span> whenever <span class="math">\(\text{min} \; p_i \le \alpha / n\)</span>.</p></li>
+</ul>
+</div>
+</div>
+<div id="notes" class="slide section level1">
+<h1>Notes</h1>
+<ul>
+<li><p>Bonferroni's method has the correct size: if the global null is true, and we test at level <span class="math">\(\alpha\)</span>, we will reject the global null with a rate at most <span class="math">\(\alpha\)</span>.</p></li>
+<li><p>The more tests we run, the smaller the minimum <span class="math">\(p\)</span>-value has to be for us to reject the global null. If we're &quot;fishing&quot; and looking at a lot of possibilities, we need a lot more evidence than if we had decided in advance what question we wanted to ask.</p></li>
+<li><p>There are other ways of testing the global null, and there is a lot of research into multiple testing. Even so, Bonferroni's method is commonly used as a quick and easy way of correcting for multiple tests.</p></li>
+</ul>
+</div>
+<div id="multiple-comparisons-and-eda" class="slide section level1">
+<h1>Multiple comparisons and EDA</h1>
+<p>Let's set up a toy example.</p>
+<p>Suppose we are interested in whether two variables, <span class="math">\(x\)</span> and <span class="math">\(y\)</span>, are related to each other.</p>
+<p>In reality they are not, but we are equipped with the full power of our EDA course and we are able to try out different transformations of the variables and different methods to check for the relationship.</p>
+<pre class="sourceCode r"><code class="sourceCode r">## full disclosure: I started the seed at 0 and went up
+## until I got a result with a p-value &lt; .05
+<span class="kw">set.seed</span>(<span class="dv">4</span>)
+<span class="kw">library</span>(broom)
+<span class="kw">library</span>(MASS)
+x =<span class="st"> </span><span class="kw">rgamma</span>(<span class="dv">20</span>, <span class="dv">1</span>, <span class="dv">1</span>)
+y =<span class="st"> </span><span class="kw">rgamma</span>(<span class="dv">20</span>, <span class="dv">10</span>, <span class="dv">10</span>)</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>We start off by just plotting <span class="math">\(x\)</span> vs. <span class="math">\(y\)</span>:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(<span class="kw">data.frame</span>(x, y), <span class="kw">aes</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y))+<span class="st"> </span><span class="kw">geom_point</span>() +<span class="st"> </span><span class="kw">stat_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>)</code></pre>
+<div class="figure">
+<img src="lecture-26-fig/unnamed-chunk-4-1.png" />
+</div>
+<p>It doesn't look like there's much there. However, <span class="math">\(x\)</span> looks like it has heavy tails, and so maybe we should transform it to reduce the skewness.</p>
+</div>
+<div class="slide section level1">
+
+<p>Let's plot <span class="math">\(y\)</span> vs <span class="math">\(\text{log}(x)\)</span>:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(<span class="kw">data.frame</span>(x, y), <span class="kw">aes</span>(<span class="dt">x =</span> <span class="kw">log</span>(x), <span class="dt">y =</span> y))+<span class="st"> </span><span class="kw">geom_point</span>() +<span class="st"> </span><span class="kw">stat_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>)</code></pre>
+<div class="figure">
+<img src="lecture-26-fig/unnamed-chunk-5-1.png" />
+</div>
+<p>That's better, but maybe we should also use robust regression because we think there might be outliers in <span class="math">\(y\)</span>.</p>
+</div>
+<div class="slide section level1">
+
+<p>We plot the robust smooth as well:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(<span class="kw">data.frame</span>(x, y), <span class="kw">aes</span>(<span class="dt">x =</span> <span class="kw">log</span>(x), <span class="dt">y =</span> y))+<span class="st"> </span><span class="kw">geom_point</span>() +<span class="st"> </span><span class="kw">stat_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;rlm&quot;</span>)</code></pre>
+<div class="figure">
+<img src="lecture-26-fig/unnamed-chunk-6-1.png" />
+</div>
+</div>
+<div class="slide section level1">
+
+<p>In the end, we fit three models. Maybe we changed our minds and decided that robust regression wasn't necessary and that we think the linear model with <span class="math">\(y\)</span> predicted by <span class="math">\(\text{log}(x)\)</span> is the best.</p>
+<p>We then want a <span class="math">\(p\)</span>-value for our collaborators or to publish, and we are happy to see that the coefficient is significant:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">tidy</span>(<span class="kw">lm</span>(y ~<span class="st"> </span><span class="kw">log</span>(x)))</code></pre>
+<pre><code>## # A tibble: 2 x 5
+##   term        estimate std.error statistic  p.value
+##   &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+## 1 (Intercept)    0.885    0.0595     14.9  1.51e-11
+## 2 log(x)        -0.141    0.0583     -2.43 2.60e- 2</code></pre>
+<p>What is the problem here?</p>
+</div>
+<div class="slide section level1">
+
+<p>Let's look at the <span class="math">\(p\)</span>-values for the other two models that we rejected:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">tidy</span>(<span class="kw">lm</span>(y ~<span class="st"> </span>x))</code></pre>
+<pre><code>## # A tibble: 2 x 5
+##   term        estimate std.error statistic       p.value
+##   &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;         &lt;dbl&gt;
+## 1 (Intercept)   1.03      0.0901     11.4  0.00000000116
+## 2 x            -0.0859    0.0577     -1.49 0.154</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">tidy</span>(<span class="kw">rlm</span>(y ~<span class="st"> </span><span class="kw">log</span>(x)))</code></pre>
+<pre><code>## # A tibble: 2 x 4
+##   term        estimate std.error statistic
+##   &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;
+## 1 (Intercept)    0.880    0.0645     13.6 
+## 2 log(x)        -0.111    0.0631     -1.76</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">## the corresponding p-value for rlm:
+<span class="kw">pnorm</span>(<span class="kw">abs</span>(<span class="kw">tidy</span>(<span class="kw">rlm</span>(y ~<span class="st"> </span><span class="kw">log</span>(x)))[<span class="dv">2</span>, <span class="st">&quot;statistic&quot;</span>, <span class="dt">drop =</span> <span class="ot">TRUE</span>]), <span class="dt">lower.tail =</span> <span class="ot">FALSE</span>) *<span class="st"> </span><span class="dv">2</span></code></pre>
+<pre><code>## [1] 0.07833073</code></pre>
+<p>Neither of the other two models would have given us a significant result at the <span class="math">\(.05\)</span> level: the <span class="math">\(p\)</span>-values were <span class="math">\(.15\)</span> and <span class="math">\(.08\)</span>.</p>
+<p>The problem is that if the other models had looked better to us, we might have used the <span class="math">\(p\)</span>-values from them instead of from the model we chose, and so we are implicitly or unconsciously performing multiple tests.</p>
+</div>
+<div class="slide section level1">
+
+<p>To see why this invalidates our <span class="math">\(p\)</span>-values, suppose we ungenerously describe the procedure we used to come up with our model as follows:</p>
+<ul>
+<li><p>Fit a linear model of <span class="math">\(y\)</span> described by <span class="math">\(x\)</span>. If that has a significant <span class="math">\(p\)</span>-value, stop and report that <span class="math">\(p\)</span>-value. Otherwise...</p></li>
+<li><p>Fit a linear model of <span class="math">\(y\)</span> described by <span class="math">\(\text{log}(x)\)</span>. If that has a significant <span class="math">\(p\)</span>-value, stop and report that <span class="math">\(p\)</span>-value. Otherwise...</p></li>
+<li><p>Fit a robust linear model of <span class="math">\(y\)</span> described by <span class="math">\(\text{log}(x)\)</span>. Report that <span class="math">\(p\)</span>-value because you're out of time.</p></li>
+</ul>
+<p>What fraction of the time will you reject the null hypothesis?</p>
+</div>
+<div class="slide section level1">
+
+<p>We can see what happens by simulation:</p>
+<pre class="sourceCode r"><code class="sourceCode r">pvals =<span class="st"> </span><span class="kw">rep</span>(<span class="ot">NA</span>, <span class="dv">5000</span>)
+for(i in <span class="dv">1</span>:<span class="dv">5000</span>) {
+    x =<span class="st"> </span><span class="kw">rgamma</span>(<span class="dv">20</span>, <span class="dv">1</span>, <span class="dv">1</span>)
+    y =<span class="st"> </span><span class="kw">rgamma</span>(<span class="dv">20</span>, <span class="dv">10</span>, <span class="dv">10</span>)
+    out.lm =<span class="st"> </span><span class="kw">lm</span>(y ~<span class="st"> </span>x)
+    pval =<span class="st"> </span><span class="kw">tidy</span>(out.lm)[<span class="dv">2</span>,<span class="st">&quot;p.value&quot;</span>, drop=<span class="ot">TRUE</span>]
+    if(pval &gt;<span class="st"> </span>.<span class="dv">05</span>) {
+        out.lm =<span class="st"> </span><span class="kw">lm</span>(y ~<span class="st"> </span><span class="kw">log</span>(x))
+        pval =<span class="st"> </span><span class="kw">tidy</span>(out.lm)[<span class="dv">2</span>,<span class="st">&quot;p.value&quot;</span>, drop=<span class="ot">TRUE</span>]
+    }
+    if(pval &gt;<span class="st"> </span>.<span class="dv">05</span>) {
+        out.lm =<span class="st"> </span><span class="kw">rlm</span>(y ~<span class="st"> </span><span class="kw">log</span>(x))
+        pval =<span class="st"> </span><span class="kw">pnorm</span>(-<span class="kw">abs</span>(<span class="kw">tidy</span>(out.lm)[<span class="dv">2</span>, <span class="st">&quot;statistic&quot;</span>, <span class="dt">drop=</span><span class="ot">TRUE</span>])) *<span class="st"> </span><span class="dv">2</span>
+    }
+    pvals[i] =<span class="st"> </span>pval
+}</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>We reject at the <span class="math">\(.05\)</span> level about twice as much as we should, and so reporting the nominal <span class="math">\(p\)</span>-value would be misleading here.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mean</span>(pvals &lt;=<span class="st"> </span>.<span class="dv">05</span>)</code></pre>
+<pre><code>## [1] 0.103</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(<span class="kw">data.frame</span>(<span class="dt">pval =</span> pvals)) +
+<span class="st">    </span><span class="kw">stat_ecdf</span>(<span class="kw">aes</span>(<span class="dt">x =</span> pval)) +
+<span class="st">    </span><span class="kw">scale_x_continuous</span>(<span class="dt">breaks =</span> <span class="kw">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dt">by =</span> .<span class="dv">05</span>)) +
+<span class="st">    </span><span class="kw">scale_y_continuous</span>(<span class="dt">breaks =</span> <span class="kw">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dt">by =</span> .<span class="dv">05</span>)) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">theme</span>(<span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">angle =</span> <span class="dv">90</span>, <span class="dt">vjust =</span> .<span class="dv">5</span>))</code></pre>
+<div class="figure">
+<img src="lecture-26-fig/unnamed-chunk-9-1.png" />
+</div>
+<p>In our simulation, we made modeling decisions explicitly based on <span class="math">\(p\)</span>-values. You can invalidate your <span class="math">\(p\)</span>-values even if you make the decisions without actually looking at the <span class="math">\(p\)</span>-values, it's just easier to simulate this way.</p>
+</div>
+<div id="note-1" class="slide section level1">
+<h1>Note 1</h1>
+<ul>
+<li>Notice that this isn't quite as bad as running three independent tests: in that case we would expect about <span class="math">\(14\)</span>% of the <span class="math">\(p\)</span>-values to be less than <span class="math">\(.05\)</span>, but here we only get about <span class="math">\(10\)</span>%.</li>
+</ul>
+<pre class="sourceCode r"><code class="sourceCode r">## .95^3 is the probability that you fail to reject
+## three null hypotheses at the .05 level, and so the
+## following is the probability that you reject at
+## least one of three null hypotheses at the .05 level
+<span class="dv">1</span> -<span class="st"> </span>.<span class="dv">95</span>^<span class="dv">3</span></code></pre>
+<pre><code>## [1] 0.142625</code></pre>
+</div>
+<div id="note-2" class="slide section level1">
+<h1>Note 2</h1>
+<p>We only looked at three models/potential tests in the simulation here, but the problem can be much, much worse. We have:</p>
+<ul>
+<li><p>Multiple ways to transform each of the predictors,</p></li>
+<li><p>Multiple ways to transform the response,</p></li>
+<li><p>Choices about excluding outliers,</p></li>
+<li><p>Choices about how to code variables,</p></li>
+<li><p>Multiple models to fit,</p></li>
+<li><p>Tunable parameters in the models we use (e.g. the span parameter in LOESS),</p></li>
+<li><p>Decisions about whether and which interactions to fit</p></li>
+</ul>
+<p>This can lead to an enormous number of potential tests: Suppose you have two predictors, four ways of transforming predictors, three potential outliers, two coding choices, and five potential models. This gives <span class="math">\[
+4 \times 4 \times 4 \times 2^3 \times 2 \times 5 = 5120
+\]</span> distinct combinations of analysis choices.</p>
+<p>In principle, we could count up all the possible tests and do a Bonferroni correction, but in practice the Bonferroni cutoff will be too strict for you to ever reject.</p>
+</div>
+<div id="note-3" class="slide section level1">
+<h1>Note 3</h1>
+<p>Exploration doesn't always invalidate your <span class="math">\(p\)</span>-values, only if you do it while looking at the relationship you want to test.</p>
+<ul>
+<li><p>You can do anything to the predictors before you see the response and still get valid <span class="math">\(p\)</span>-values.</p></li>
+<li><p>If you make decisions about transformations of the response without seeing how it relates to the predictors, you can still have valid <span class="math">\(p\)</span>-values.</p></li>
+</ul>
+</div>
+<div class="slide section level1">
+
+<p>Let's try another simulation to illustrate the point above.</p>
+<p>Suppose we have the same setup as in the first simulation, but now we decide whether or not to transform <span class="math">\(x\)</span> and <span class="math">\(y\)</span> based on how skewed they are instead of of based on the significance of the relationship.</p>
+<p>Our procedure:</p>
+<ul>
+<li><p>If <span class="math">\(x\)</span> has a skewness larger than <span class="math">\(1.5\)</span>, use a log transformation of <span class="math">\(x\)</span> in the model.</p></li>
+<li><p>If <span class="math">\(y\)</span> has a skewness larger than <span class="math">\(1\)</span>, use a log transformation of <span class="math">\(y\)</span> in the model.</p></li>
+<li><p>Fit a linear model and report a <span class="math">\(p\)</span>-value.</p></li>
+</ul>
+</div>
+<div class="slide section level1">
+
+<pre class="sourceCode r"><code class="sourceCode r">pvals2 =<span class="st"> </span><span class="kw">rep</span>(<span class="ot">NA</span>, <span class="dv">5000</span>)
+for(i in <span class="dv">1</span>:<span class="dv">5000</span>){
+    x =<span class="st"> </span><span class="kw">rgamma</span>(<span class="dv">20</span>, <span class="dv">1</span>, <span class="dv">1</span>)
+    y =<span class="st"> </span><span class="kw">rgamma</span>(<span class="dv">20</span>, <span class="dv">10</span>, <span class="dv">10</span>)
+    if(<span class="kw">skewness</span>(x) &gt;<span class="st"> </span><span class="fl">1.5</span>)
+        x =<span class="st"> </span><span class="kw">log</span>(x)
+    if(<span class="kw">skewness</span>(y) &gt;<span class="st"> </span><span class="dv">1</span>)
+        y =<span class="st"> </span><span class="kw">log</span>(y)
+    out.lm =<span class="st"> </span><span class="kw">lm</span>(y ~<span class="st"> </span>x)
+    pvals2[i] =<span class="st"> </span><span class="kw">tidy</span>(out.lm)[<span class="dv">2</span>,<span class="st">&quot;p.value&quot;</span>, drop =<span class="st"> </span><span class="ot">TRUE</span>]
+}</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>Now we see that the <span class="math">\(p\)</span>-values are distributed the way they should be. In this case, looking at the variables and transforming them didn't invalidate our <span class="math">\(p\)</span>-values.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mean</span>(pvals2 &lt;=<span class="st"> </span>.<span class="dv">05</span>)</code></pre>
+<pre><code>## [1] 0.0536</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(<span class="kw">data.frame</span>(<span class="dt">pval =</span> pvals2)) +
+<span class="st">    </span><span class="kw">stat_ecdf</span>(<span class="kw">aes</span>(<span class="dt">x =</span> pval)) +
+<span class="st">    </span><span class="kw">scale_x_continuous</span>(<span class="dt">breaks =</span> <span class="kw">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dt">by =</span> .<span class="dv">05</span>)) +
+<span class="st">    </span><span class="kw">scale_y_continuous</span>(<span class="dt">breaks =</span> <span class="kw">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dt">by =</span> .<span class="dv">05</span>)) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">theme</span>(<span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">angle =</span> <span class="dv">90</span>, <span class="dt">vjust =</span> .<span class="dv">5</span>))</code></pre>
+<div class="figure">
+<img src="lecture-26-fig/unnamed-chunk-11-1.png" />
+</div>
+</div>
+<div id="remedies" class="slide section level1">
+<h1>Remedies</h1>
+<ul>
+<li>Report the results as exploratory. Describe all the choices made and everything you looked at so that the reader can make his or her own judgment about whether the results are real or due to chance.</li>
+</ul>
+<div class="incremental">
+<ul>
+<li>New data: Perform exploratory analysis, identify some hypotheses that you would like to test (how you will transform the predictors and responses, how you will code variables, what model you will use, what tunable parameters you will use, etc.). Test those hypotheses on a new dataset that you've never seen before.</li>
+</ul>
+</div>
+<div class="incremental">
+<ul>
+<li>Split the data into exploration and validation sets before you begin. Do the exploratory analysis on the exploration set, identify specific hypotheses to test, and test them on the validation set.</li>
+</ul>
+</div>
+</div>
+</body>
+</html>
