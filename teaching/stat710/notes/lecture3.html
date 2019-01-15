@@ -1,0 +1,516 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="http://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="http://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div id="text-representations-and-data-frames" class="slide section level2">
+<h1>Text representations and Data Frames</h1>
+<p>Reading: Matloff Chapter 11.1 (for strings), 6.1 (for factors), 5.1 (for data frames)</p>
+</div>
+<div id="the-character-type" class="slide section level2">
+<h1>The character type</h1>
+<ul>
+<li><p>Strings have type <code>character</code> in R.</p></li>
+<li><p>No special type for single characters vs. strings:</p></li>
+</ul>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">typeof</span>(<span class="st">&#39;a&#39;</span>)</code></pre>
+<pre><code>## [1] &quot;character&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">typeof</span>(<span class="st">&quot;ABC&quot;</span>)</code></pre>
+<pre><code>## [1] &quot;character&quot;</code></pre>
+<ul>
+<li>As with the numeric type, single strings are vectors of length 1:</li>
+</ul>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">length</span>(<span class="st">&#39;a&#39;</span>)</code></pre>
+<pre><code>## [1] 1</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">length</span>(<span class="st">&quot;ABC&quot;</span>)</code></pre>
+<pre><code>## [1] 1</code></pre>
+<ul>
+<li>If you actually want the number of characters in a string, you need the <code>nchar</code> function:</li>
+</ul>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">nchar</span>(<span class="st">&#39;a&#39;</span>)</code></pre>
+<pre><code>## [1] 1</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">nchar</span>(<span class="st">&quot;ABC&quot;</span>)</code></pre>
+<pre><code>## [1] 3</code></pre>
+</div>
+<div id="creating-strings" class="slide section level2">
+<h1>Creating strings</h1>
+<p>You can use either double or single quotes.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="st">&quot;The Leopard&quot;</span></code></pre>
+<pre><code>## [1] &quot;The Leopard&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="st">&#39;Burt Lancaster&#39;</span></code></pre>
+<pre><code>## [1] &quot;Burt Lancaster&quot;</code></pre>
+</div>
+<div id="displaying-strings" class="slide section level2">
+<h1>Displaying strings</h1>
+<ul>
+<li><p><code>print</code> works.</p></li>
+<li><p>Sometimes slightly nicer to use <code>cat</code>, which prints the string to the console instead of giving the representation with subscripts that <code>print</code> does.</p></li>
+</ul>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">print</span>(<span class="st">&quot;The Leopard&quot;</span>)</code></pre>
+<pre><code>## [1] &quot;The Leopard&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="st">&quot;The Leopard&quot;</span></code></pre>
+<pre><code>## [1] &quot;The Leopard&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cat</span>(<span class="st">&quot;The Leopard&quot;</span>)</code></pre>
+<pre><code>## The Leopard</code></pre>
+</div>
+<div id="escape-characters" class="slide section level2">
+<h1>Escape characters</h1>
+<p>The <code>\</code> is an <em>escape character</em>.</p>
+<p>It tells R to interpret whatever comes after literally instead of as a special character.</p>
+<p>For example, if you need quotes inside your string, you need to escape the quotation character:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cat</span>(<span class="st">&quot;Giuseppe Tomasi di Lampedusa&#39;s </span><span class="ch">\&quot;</span><span class="st">The Leopard</span><span class="ch">\&quot;</span><span class="st">&quot;</span>)</code></pre>
+<pre><code>## Giuseppe Tomasi di Lampedusa&#39;s &quot;The Leopard&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cat</span>(<span class="st">&#39;Giuseppe Tomasi di Lampedusa</span><span class="ch">\&#39;</span><span class="st">s &quot;The Leopard&quot;&#39;</span>)</code></pre>
+<pre><code>## Giuseppe Tomasi di Lampedusa&#39;s &quot;The Leopard&quot;</code></pre>
+<div class="incremental">
+<p>If you need a <code>\</code> in your string, you need to escape it:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cat</span>(<span class="st">&quot;We use the &#39;</span><span class="ch">\\</span><span class="st">&#39; character to escape&quot;</span>)</code></pre>
+<pre><code>## We use the &#39;\&#39; character to escape</code></pre>
+</div>
+</div>
+<div id="string-manipulation" class="slide section level2">
+<h1>String Manipulation</h1>
+<p>We can't use <code>[]</code> or <code>[[]]</code> to get at the internal parts of a string because strings are atomic in R.</p>
+<p>We need to use <code>substr</code>.</p>
+<p>Syntax is <code>substr(string, start, stop)</code>:</p>
+<pre class="sourceCode r"><code class="sourceCode r">lancaster =<span class="st"> &quot;Burt Lancaster&quot;</span>
+<span class="kw">substr</span>(lancaster, <span class="dv">1</span>, <span class="dv">4</span>)</code></pre>
+<pre><code>## [1] &quot;Burt&quot;</code></pre>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<p><code>substr</code> vectorizes over the first argument (i.e. the <code>start</code> and <code>stop</code> arguments will be expanded to match the length of the first argument):</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">substr</span>(<span class="st">&quot;Burt Lancaster&quot;</span>, <span class="dv">1</span>, <span class="dv">4</span>)</code></pre>
+<pre><code>## [1] &quot;Burt&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">substr</span>(<span class="st">&quot;Burt Lancaster&quot;</span>, <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">6</span>), <span class="kw">c</span>(<span class="dv">4</span>, <span class="dv">14</span>))</code></pre>
+<pre><code>## [1] &quot;Burt&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">substr</span>(<span class="kw">rep</span>(<span class="st">&quot;Burt Lancaster&quot;</span>, <span class="dv">2</span>), <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">6</span>), <span class="kw">c</span>(<span class="dv">4</span>, <span class="dv">14</span>))</code></pre>
+<pre><code>## [1] &quot;Burt&quot;      &quot;Lancaster&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">substr</span>(<span class="kw">rep</span>(<span class="st">&quot;Burt Lancaster&quot;</span>, <span class="dv">2</span>), <span class="dv">1</span>, <span class="kw">c</span>(<span class="dv">4</span>, <span class="dv">14</span>))</code></pre>
+<pre><code>## [1] &quot;Burt&quot;           &quot;Burt Lancaster&quot;</code></pre>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>We can use <code>substr</code> for replacement as well:</p>
+<pre class="sourceCode r"><code class="sourceCode r">lancaster</code></pre>
+<pre><code>## [1] &quot;Burt Lancaster&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">substr</span>(lancaster, <span class="dv">1</span>, <span class="dv">4</span>) =<span class="st"> &quot;Bill&quot;</span>
+lancaster</code></pre>
+<pre><code>## [1] &quot;Bill Lancaster&quot;</code></pre>
+<p>What happens if the replacement string isn't the same length as the piece of the string you want to replace?</p>
+</div>
+<div id="combining-strings" class="slide section level2">
+<h1>Combining strings</h1>
+<p><code>paste</code> is the workhorse function for string combination.</p>
+<p>Simplest way to use it:</p>
+<p><code>paste(s1, s2, ..., sn, sep)</code></p>
+<p>This will paste together <code>s1</code>, <code>s2</code>, up to <code>sn</code>, with <code>sep</code> in between each one.</p>
+<p>For example:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">paste</span>(<span class="st">&quot;Chico&quot;</span>, <span class="st">&quot;Harpo&quot;</span>, <span class="st">&quot;Groucho&quot;</span>, <span class="dt">sep =</span> <span class="st">&quot;, &quot;</span>)</code></pre>
+<pre><code>## [1] &quot;Chico, Harpo, Groucho&quot;</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>The arguments to <code>paste</code> can be vectors, and the function is vectorized so we get recycling:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">paste</span>(<span class="kw">c</span>(<span class="st">&quot;Chico&quot;</span>, <span class="st">&quot;Harpo&quot;</span>, <span class="st">&quot;Groucho&quot;</span>), <span class="st">&quot;Marx&quot;</span>, <span class="dt">sep =</span> <span class="st">&quot; &quot;</span>)</code></pre>
+<pre><code>## [1] &quot;Chico Marx&quot;   &quot;Harpo Marx&quot;   &quot;Groucho Marx&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">paste</span>(<span class="st">&quot;Marx&quot;</span>, <span class="kw">c</span>(<span class="st">&quot;Chico&quot;</span>, <span class="st">&quot;Harpo&quot;</span>, <span class="st">&quot;Groucho&quot;</span>), <span class="dt">sep =</span> <span class="st">&quot;, &quot;</span>)</code></pre>
+<pre><code>## [1] &quot;Marx, Chico&quot;   &quot;Marx, Harpo&quot;   &quot;Marx, Groucho&quot;</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>Final argument: <code>collapse</code>.</p>
+<p>Syntax <code>paste(vector, collapse)</code></p>
+<p>Will create <em>one string</em> (vector of length 1, not the length of the input vector) by pasting the elements of <code>vector</code> together, with the argument from <code>collapse</code> in between them.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">paste</span>(<span class="kw">c</span>(<span class="st">&quot;Chico&quot;</span>, <span class="st">&quot;Harpo&quot;</span>, <span class="st">&quot;Grouco&quot;</span>), <span class="dt">collapse =</span> <span class="st">&quot;, &quot;</span>)</code></pre>
+<pre><code>## [1] &quot;Chico, Harpo, Grouco&quot;</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>Finaly, we can specify both <code>sep</code> and <code>collapse</code> together.</p>
+<p>Think of this as first calling <code>paste</code> with <code>collapse = NULL</code>, then calling <code>paste</code> with non-null collapse on the result:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">paste</span>(<span class="kw">c</span>(<span class="st">&quot;Chico&quot;</span>, <span class="st">&quot;Harpo&quot;</span>, <span class="st">&quot;Groucho&quot;</span>), <span class="st">&quot;Marx&quot;</span>, <span class="dt">sep =</span> <span class="st">&quot; &quot;</span>, <span class="dt">collapse =</span> <span class="st">&quot; and &quot;</span>)</code></pre>
+<pre><code>## [1] &quot;Chico Marx and Harpo Marx and Groucho Marx&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">## note the equivalence:
+marx.brothers =<span class="st"> </span><span class="kw">paste</span>(<span class="kw">c</span>(<span class="st">&quot;Chico&quot;</span>, <span class="st">&quot;Harpo&quot;</span>, <span class="st">&quot;Groucho&quot;</span>), <span class="st">&quot;Marx&quot;</span>, <span class="dt">sep =</span> <span class="st">&quot; &quot;</span>, <span class="dt">collapse =</span> <span class="ot">NULL</span>)
+<span class="kw">paste</span>(marx.brothers, <span class="dt">collapse =</span> <span class="st">&quot; and &quot;</span>)</code></pre>
+<pre><code>## [1] &quot;Chico Marx and Harpo Marx and Groucho Marx&quot;</code></pre>
+</div>
+<div id="splitting-strings" class="slide section level2">
+<h1>Splitting strings</h1>
+<p>Primariy function is <code>strsplit</code>.</p>
+<p>Syntax: <code>strsplit(s, split)</code></p>
+<ul>
+<li><p><code>s</code> is a character vector (can have length greater than 1), and the function vectorizes.</p></li>
+<li><p><code>split</code> gives the string we want to split on: every element of <code>s</code> will be split into pieces separated by <code>split</code>.</p></li>
+</ul>
+<p>Given these parameters, what do you expect the output from <code>strsplit</code> to look like? Which of the data structures we've seen so far can accommodate everything we need?</p>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<pre class="sourceCode r"><code class="sourceCode r">split.brothers =<span class="st"> </span><span class="kw">strsplit</span>(<span class="st">&quot;Groucho and Harpo and Chico&quot;</span>, <span class="st">&quot;and&quot;</span>)
+<span class="kw">typeof</span>(split.brothers)</code></pre>
+<pre><code>## [1] &quot;list&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">split.brothers</code></pre>
+<pre><code>## [[1]]
+## [1] &quot;Groucho &quot; &quot; Harpo &quot;  &quot; Chico&quot;</code></pre>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>A slightly more realistic example:</p>
+<p>I have some fasta files that I'm going to use as input, perform some manipulations on, and then write some output based on each one. I want the output files to have the same prefix but have the extension <code>.txt</code> instead of <code>.fasta</code>:</p>
+<pre class="sourceCode r"><code class="sourceCode r">file.names =<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;ighv_human.fasta&quot;</span>, <span class="st">&quot;ighd_mouse.fasta&quot;</span>, <span class="st">&quot;ighj_human.fasta&quot;</span>, <span class="st">&quot;ighv_mouse.fasta&quot;</span>, <span class="st">&quot;ighd_human.fasta&quot;</span>, <span class="st">&quot;ighj_mouse.fasta&quot;</span>)
+split.files =<span class="st"> </span><span class="kw">strsplit</span>(file.names, <span class="st">&quot;.&quot;</span>, <span class="dt">fixed =</span> <span class="ot">TRUE</span>) ## fixed = TRUE has to do with regular expressions, which we&#39;ll talk about on Thursday
+output.names =<span class="st"> </span><span class="kw">character</span>(<span class="dt">length =</span> <span class="kw">length</span>(file.names))
+for(i in <span class="dv">1</span>:<span class="kw">length</span>(split.files)) {
+    prefix =<span class="st"> </span>split.files[[i]][[<span class="dv">1</span>]]
+    output.names[i] =<span class="st"> </span><span class="kw">paste</span>(prefix, <span class="st">&quot;.txt&quot;</span>, <span class="dt">sep =</span> <span class="st">&quot;&quot;</span>)
+}
+output.names</code></pre>
+<pre><code>## [1] &quot;ighv_human.txt&quot; &quot;ighd_mouse.txt&quot; &quot;ighj_human.txt&quot; &quot;ighv_mouse.txt&quot;
+## [5] &quot;ighd_human.txt&quot; &quot;ighj_mouse.txt&quot;</code></pre>
+</div>
+<div id="factors" class="slide section level2">
+<h1>Factors</h1>
+<ul>
+<li><p>A way of representing qualitative variables.</p></li>
+<li><p>Variable that takes string values, but we know in advance which strings are valid.</p></li>
+</ul>
+<div class="incremental">
+<p>Factor creation:</p>
+<ul>
+<li><p>By default, when R reads in string data it will store it as a factor.</p></li>
+<li><p>Manually with the factor function:</p></li>
+</ul>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">factor</span>(<span class="kw">c</span>(<span class="st">&quot;a&quot;</span>, <span class="st">&quot;b&quot;</span>, <span class="st">&quot;b&quot;</span>, <span class="st">&quot;z&quot;</span>))</code></pre>
+<pre><code>## [1] a b b z
+## Levels: a b z</code></pre>
+</div>
+</div>
+<div id="factors-vs.-strings" class="slide section level2">
+<h1>Factors vs. strings</h1>
+<ul>
+<li><p>Factors represented differently from strings internally.</p></li>
+<li><p>Factors are an integer vector plus a set of names corresponding to each of the levels.</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<pre class="sourceCode r"><code class="sourceCode r">state.name</code></pre>
+<pre><code>##  [1] &quot;Alabama&quot;        &quot;Alaska&quot;         &quot;Arizona&quot;        &quot;Arkansas&quot;      
+##  [5] &quot;California&quot;     &quot;Colorado&quot;       &quot;Connecticut&quot;    &quot;Delaware&quot;      
+##  [9] &quot;Florida&quot;        &quot;Georgia&quot;        &quot;Hawaii&quot;         &quot;Idaho&quot;         
+## [13] &quot;Illinois&quot;       &quot;Indiana&quot;        &quot;Iowa&quot;           &quot;Kansas&quot;        
+## [17] &quot;Kentucky&quot;       &quot;Louisiana&quot;      &quot;Maine&quot;          &quot;Maryland&quot;      
+## [21] &quot;Massachusetts&quot;  &quot;Michigan&quot;       &quot;Minnesota&quot;      &quot;Mississippi&quot;   
+## [25] &quot;Missouri&quot;       &quot;Montana&quot;        &quot;Nebraska&quot;       &quot;Nevada&quot;        
+## [29] &quot;New Hampshire&quot;  &quot;New Jersey&quot;     &quot;New Mexico&quot;     &quot;New York&quot;      
+## [33] &quot;North Carolina&quot; &quot;North Dakota&quot;   &quot;Ohio&quot;           &quot;Oklahoma&quot;      
+## [37] &quot;Oregon&quot;         &quot;Pennsylvania&quot;   &quot;Rhode Island&quot;   &quot;South Carolina&quot;
+## [41] &quot;South Dakota&quot;   &quot;Tennessee&quot;      &quot;Texas&quot;          &quot;Utah&quot;          
+## [45] &quot;Vermont&quot;        &quot;Virginia&quot;       &quot;Washington&quot;     &quot;West Virginia&quot; 
+## [49] &quot;Wisconsin&quot;      &quot;Wyoming&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">typeof</span>(state.name) ## typeof tells us about R&#39;s internal representation of the variable</code></pre>
+<pre><code>## [1] &quot;character&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">state.name.fac =<span class="st"> </span><span class="kw">as.factor</span>(state.name)
+<span class="kw">typeof</span>(state.name.fac) ## typeof tells us that from R&#39;s point of view, state.name.fac is a vector of integers </code></pre>
+<pre><code>## [1] &quot;integer&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">class</span>(state.name.fac) ## class tells us that the object is a factor</code></pre>
+<pre><code>## [1] &quot;factor&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">attributes</span>(state.name.fac)</code></pre>
+<pre><code>## $levels
+##  [1] &quot;Alabama&quot;        &quot;Alaska&quot;         &quot;Arizona&quot;        &quot;Arkansas&quot;      
+##  [5] &quot;California&quot;     &quot;Colorado&quot;       &quot;Connecticut&quot;    &quot;Delaware&quot;      
+##  [9] &quot;Florida&quot;        &quot;Georgia&quot;        &quot;Hawaii&quot;         &quot;Idaho&quot;         
+## [13] &quot;Illinois&quot;       &quot;Indiana&quot;        &quot;Iowa&quot;           &quot;Kansas&quot;        
+## [17] &quot;Kentucky&quot;       &quot;Louisiana&quot;      &quot;Maine&quot;          &quot;Maryland&quot;      
+## [21] &quot;Massachusetts&quot;  &quot;Michigan&quot;       &quot;Minnesota&quot;      &quot;Mississippi&quot;   
+## [25] &quot;Missouri&quot;       &quot;Montana&quot;        &quot;Nebraska&quot;       &quot;Nevada&quot;        
+## [29] &quot;New Hampshire&quot;  &quot;New Jersey&quot;     &quot;New Mexico&quot;     &quot;New York&quot;      
+## [33] &quot;North Carolina&quot; &quot;North Dakota&quot;   &quot;Ohio&quot;           &quot;Oklahoma&quot;      
+## [37] &quot;Oregon&quot;         &quot;Pennsylvania&quot;   &quot;Rhode Island&quot;   &quot;South Carolina&quot;
+## [41] &quot;South Dakota&quot;   &quot;Tennessee&quot;      &quot;Texas&quot;          &quot;Utah&quot;          
+## [45] &quot;Vermont&quot;        &quot;Virginia&quot;       &quot;Washington&quot;     &quot;West Virginia&quot; 
+## [49] &quot;Wisconsin&quot;      &quot;Wyoming&quot;       
+## 
+## $class
+## [1] &quot;factor&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">unclass</span>(state.name.fac)</code></pre>
+<pre><code>##  [1]  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
+## [24] 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46
+## [47] 47 48 49 50
+## attr(,&quot;levels&quot;)
+##  [1] &quot;Alabama&quot;        &quot;Alaska&quot;         &quot;Arizona&quot;        &quot;Arkansas&quot;      
+##  [5] &quot;California&quot;     &quot;Colorado&quot;       &quot;Connecticut&quot;    &quot;Delaware&quot;      
+##  [9] &quot;Florida&quot;        &quot;Georgia&quot;        &quot;Hawaii&quot;         &quot;Idaho&quot;         
+## [13] &quot;Illinois&quot;       &quot;Indiana&quot;        &quot;Iowa&quot;           &quot;Kansas&quot;        
+## [17] &quot;Kentucky&quot;       &quot;Louisiana&quot;      &quot;Maine&quot;          &quot;Maryland&quot;      
+## [21] &quot;Massachusetts&quot;  &quot;Michigan&quot;       &quot;Minnesota&quot;      &quot;Mississippi&quot;   
+## [25] &quot;Missouri&quot;       &quot;Montana&quot;        &quot;Nebraska&quot;       &quot;Nevada&quot;        
+## [29] &quot;New Hampshire&quot;  &quot;New Jersey&quot;     &quot;New Mexico&quot;     &quot;New York&quot;      
+## [33] &quot;North Carolina&quot; &quot;North Dakota&quot;   &quot;Ohio&quot;           &quot;Oklahoma&quot;      
+## [37] &quot;Oregon&quot;         &quot;Pennsylvania&quot;   &quot;Rhode Island&quot;   &quot;South Carolina&quot;
+## [41] &quot;South Dakota&quot;   &quot;Tennessee&quot;      &quot;Texas&quot;          &quot;Utah&quot;          
+## [45] &quot;Vermont&quot;        &quot;Virginia&quot;       &quot;Washington&quot;     &quot;West Virginia&quot; 
+## [49] &quot;Wisconsin&quot;      &quot;Wyoming&quot;</code></pre>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>This representation is a bit more parsimonious in general (but not always...):</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">object.size</span>(state.name)</code></pre>
+<pre><code>## 3496 bytes</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">object.size</span>(state.name.fac)</code></pre>
+<pre><code>## 4080 bytes</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">object.size</span>(<span class="kw">rep</span>(state.name, <span class="dv">1000</span>))</code></pre>
+<pre><code>## 403096 bytes</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">object.size</span>(<span class="kw">rep</span>(state.name.fac, <span class="dv">1000</span>))</code></pre>
+<pre><code>## 203880 bytes</code></pre>
+</div>
+<div id="factor-manipulation" class="slide section level2">
+<h1>Factor manipulation</h1>
+<p>Problems we might need to deal with:</p>
+<ul>
+<li><p>Too many levels</p></li>
+<li><p>Too few levels</p></li>
+<li><p>Levels with the wrong names</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<p>Suppose California falls off into the ocean and Puerto Rico becomes a state.</p>
+<p>We need to change our state names to reflect the new state of affairs, and we want to replace California with Puerto Rico.</p>
+<pre class="sourceCode r"><code class="sourceCode r">cal.index =<span class="st"> </span><span class="kw">which</span>(state.name.fac ==<span class="st"> &quot;California&quot;</span>)
+state.name.fac[cal.index] =<span class="st"> &quot;Puerto Rico&quot;</span></code></pre>
+<pre><code>## Warning in `[&lt;-.factor`(`*tmp*`, cal.index, value = &quot;Puerto Rico&quot;): invalid
+## factor level, NA generated</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">state.name.fac</code></pre>
+<pre><code>##  [1] Alabama        Alaska         Arizona        Arkansas      
+##  [5] &lt;NA&gt;           Colorado       Connecticut    Delaware      
+##  [9] Florida        Georgia        Hawaii         Idaho         
+## [13] Illinois       Indiana        Iowa           Kansas        
+## [17] Kentucky       Louisiana      Maine          Maryland      
+## [21] Massachusetts  Michigan       Minnesota      Mississippi   
+## [25] Missouri       Montana        Nebraska       Nevada        
+## [29] New Hampshire  New Jersey     New Mexico     New York      
+## [33] North Carolina North Dakota   Ohio           Oklahoma      
+## [37] Oregon         Pennsylvania   Rhode Island   South Carolina
+## [41] South Dakota   Tennessee      Texas          Utah          
+## [45] Vermont        Virginia       Washington     West Virginia 
+## [49] Wisconsin      Wyoming       
+## 50 Levels: Alabama Alaska Arizona Arkansas California ... Wyoming</code></pre>
+<p>Why does this happen?</p>
+</div>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<p>Let's try again:</p>
+<pre class="sourceCode r"><code class="sourceCode r">state.name.fac =<span class="st"> </span><span class="kw">factor</span>(state.name)
+<span class="kw">levels</span>(state.name.fac) =<span class="st"> </span><span class="kw">c</span>(<span class="kw">levels</span>(state.name.fac), <span class="st">&quot;Puerto Rico&quot;</span>)
+state.name.fac[cal.index] =<span class="st"> &quot;Puerto Rico&quot;</span>
+state.name.fac</code></pre>
+<pre><code>##  [1] Alabama        Alaska         Arizona        Arkansas      
+##  [5] Puerto Rico    Colorado       Connecticut    Delaware      
+##  [9] Florida        Georgia        Hawaii         Idaho         
+## [13] Illinois       Indiana        Iowa           Kansas        
+## [17] Kentucky       Louisiana      Maine          Maryland      
+## [21] Massachusetts  Michigan       Minnesota      Mississippi   
+## [25] Missouri       Montana        Nebraska       Nevada        
+## [29] New Hampshire  New Jersey     New Mexico     New York      
+## [33] North Carolina North Dakota   Ohio           Oklahoma      
+## [37] Oregon         Pennsylvania   Rhode Island   South Carolina
+## [41] South Dakota   Tennessee      Texas          Utah          
+## [45] Vermont        Virginia       Washington     West Virginia 
+## [49] Wisconsin      Wyoming       
+## 51 Levels: Alabama Alaska Arizona Arkansas California ... Puerto Rico</code></pre>
+</div>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<p>Then Puerto Rico decides to change its name to The People's Republic of Puerto Rico, or The PR of PR, for its pleasing symmetry.</p>
+<p>We need to modify our state names again. How can we do it?</p>
+<pre class="sourceCode r"><code class="sourceCode r">pr.index =<span class="st"> </span><span class="kw">which</span>(<span class="kw">levels</span>(state.name.fac) ==<span class="st"> &quot;Puerto Rico&quot;</span>)
+<span class="kw">levels</span>(state.name.fac)[pr.index] =<span class="st"> &quot;The PR of PR&quot;</span>
+state.name.fac</code></pre>
+<pre><code>##  [1] Alabama        Alaska         Arizona        Arkansas      
+##  [5] The PR of PR   Colorado       Connecticut    Delaware      
+##  [9] Florida        Georgia        Hawaii         Idaho         
+## [13] Illinois       Indiana        Iowa           Kansas        
+## [17] Kentucky       Louisiana      Maine          Maryland      
+## [21] Massachusetts  Michigan       Minnesota      Mississippi   
+## [25] Missouri       Montana        Nebraska       Nevada        
+## [29] New Hampshire  New Jersey     New Mexico     New York      
+## [33] North Carolina North Dakota   Ohio           Oklahoma      
+## [37] Oregon         Pennsylvania   Rhode Island   South Carolina
+## [41] South Dakota   Tennessee      Texas          Utah          
+## [45] Vermont        Virginia       Washington     West Virginia 
+## [49] Wisconsin      Wyoming       
+## 51 Levels: Alabama Alaska Arizona Arkansas California ... The PR of PR</code></pre>
+</div>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<p>We now have this extra level hanging around, and we would like to get rid of it.</p>
+<p>What can we do?</p>
+<pre class="sourceCode r"><code class="sourceCode r">cal.index =<span class="st"> </span><span class="kw">which</span>(<span class="kw">levels</span>(state.name.fac) ==<span class="st"> &quot;California&quot;</span>)
+<span class="kw">levels</span>(state.name.fac) =<span class="st"> </span><span class="kw">levels</span>(state.name.fac)[-cal.index]</code></pre>
+<pre><code>## Error in `levels&lt;-.factor`(`*tmp*`, value = c(&quot;Alabama&quot;, &quot;Alaska&quot;, &quot;Arizona&quot;, : number of levels differs</code></pre>
+<p>This is good behavior! It prevents us from messing up our factor variables by mistake.</p>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>How do we actually do this?</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">droplevels</span>(state.name.fac) ## droplevels function does what it says it does</code></pre>
+<pre><code>##  [1] Alabama        Alaska         Arizona        Arkansas      
+##  [5] The PR of PR   Colorado       Connecticut    Delaware      
+##  [9] Florida        Georgia        Hawaii         Idaho         
+## [13] Illinois       Indiana        Iowa           Kansas        
+## [17] Kentucky       Louisiana      Maine          Maryland      
+## [21] Massachusetts  Michigan       Minnesota      Mississippi   
+## [25] Missouri       Montana        Nebraska       Nevada        
+## [29] New Hampshire  New Jersey     New Mexico     New York      
+## [33] North Carolina North Dakota   Ohio           Oklahoma      
+## [37] Oregon         Pennsylvania   Rhode Island   South Carolina
+## [41] South Dakota   Tennessee      Texas          Utah          
+## [45] Vermont        Virginia       Washington     West Virginia 
+## [49] Wisconsin      Wyoming       
+## 50 Levels: Alabama Alaska Arizona Arkansas Colorado ... The PR of PR</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">factor</span>(state.name.fac, <span class="dt">levels =</span> <span class="kw">levels</span>(state.name.fac)[-cal.index])</code></pre>
+<pre><code>##  [1] Alabama        Alaska         Arizona        Arkansas      
+##  [5] The PR of PR   Colorado       Connecticut    Delaware      
+##  [9] Florida        Georgia        Hawaii         Idaho         
+## [13] Illinois       Indiana        Iowa           Kansas        
+## [17] Kentucky       Louisiana      Maine          Maryland      
+## [21] Massachusetts  Michigan       Minnesota      Mississippi   
+## [25] Missouri       Montana        Nebraska       Nevada        
+## [29] New Hampshire  New Jersey     New Mexico     New York      
+## [33] North Carolina North Dakota   Ohio           Oklahoma      
+## [37] Oregon         Pennsylvania   Rhode Island   South Carolina
+## [41] South Dakota   Tennessee      Texas          Utah          
+## [45] Vermont        Virginia       Washington     West Virginia 
+## [49] Wisconsin      Wyoming       
+## 50 Levels: Alabama Alaska Arizona Arkansas Colorado ... The PR of PR</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">factor</span>(state.name.fac)</code></pre>
+<pre><code>##  [1] Alabama        Alaska         Arizona        Arkansas      
+##  [5] The PR of PR   Colorado       Connecticut    Delaware      
+##  [9] Florida        Georgia        Hawaii         Idaho         
+## [13] Illinois       Indiana        Iowa           Kansas        
+## [17] Kentucky       Louisiana      Maine          Maryland      
+## [21] Massachusetts  Michigan       Minnesota      Mississippi   
+## [25] Missouri       Montana        Nebraska       Nevada        
+## [29] New Hampshire  New Jersey     New Mexico     New York      
+## [33] North Carolina North Dakota   Ohio           Oklahoma      
+## [37] Oregon         Pennsylvania   Rhode Island   South Carolina
+## [41] South Dakota   Tennessee      Texas          Utah          
+## [45] Vermont        Virginia       Washington     West Virginia 
+## [49] Wisconsin      Wyoming       
+## 50 Levels: Alabama Alaska Arizona Arkansas Colorado ... The PR of PR</code></pre>
+</div>
+<div id="ordered-factors" class="slide section level2">
+<h1>Ordered factors</h1>
+<p>No detail here, but for reference: ordered factors exist, are created with the <code>ordered = TRUE</code> flag, some functions will have nicer default behavior if you tell them that ordinal variables are ordinal.</p>
+</div>
+<div id="data-frames" class="slide section level2">
+<h1>Data frames</h1>
+<p>Why do we need data frames at all?</p>
+<ul>
+<li><p>A common setup is that we have some samples, and some observations on those samples. The observations are of different types: some are numbers, and some are qualitative variables.</p></li>
+<li><p>We can't use a matrix because matrices require all of the elements to be of the same type. </br></br> Note that this isn't just an arbitrary rule about matrices: if we think about it from the computer's point of view, the amount of space required for a matrix containing all the same type of observations is fixed, but if the type of the observation can change, we don't know how much space to allocate.</p></li>
+<li><p>We need a data structure that mostly acts like a matrix (rectangular, we can extract subsets easily, and so on), but that allows for different data types in different columns.</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>Data frames in R are lists with some extra rules:</p>
+<ul>
+<li><p>Each element of the list needs to be a vector</p></li>
+<li><p>Each of the vectors needs to be of the same length</p></li>
+</ul>
+<p>This gives essentially a heterogeneous analog of a matrix.</p>
+</div>
+<div id="data-frame-creation" class="slide section level2">
+<h1>Data frame creation</h1>
+<pre class="sourceCode r"><code class="sourceCode r">kids =<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;Jack&quot;</span>, <span class="st">&quot;Jill&quot;</span>)
+ages =<span class="st"> </span><span class="kw">c</span>(<span class="dv">12</span>, <span class="dv">10</span>)
+df =<span class="st"> </span><span class="kw">data.frame</span>(kids, ages)
+df =<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">Kids =</span> kids, <span class="dt">Ages =</span> ages)
+<span class="kw">typeof</span>(df)</code></pre>
+<pre><code>## [1] &quot;list&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">class</span>(df)</code></pre>
+<pre><code>## [1] &quot;data.frame&quot;</code></pre>
+</div>
+<div id="referring-to-elements-of-a-data-frame" class="slide section level2">
+<h1>Referring to elements of a data frame</h1>
+<p>Remember that data frames are lists, wich each element of the list corresponding to one column.</p>
+<p>This means we can use the <code>[[]]</code> notation to get a column:</p>
+<pre class="sourceCode r"><code class="sourceCode r">df[[<span class="dv">1</span>]]</code></pre>
+<pre><code>## [1] Jack Jill
+## Levels: Jack Jill</code></pre>
+<div class="incremental">
+<p>We can also refer to portions of a data frame the same way we do for matrices, with the <code>[]</code> notation:</p>
+<pre class="sourceCode r"><code class="sourceCode r">df[,<span class="dv">1</span>]</code></pre>
+<pre><code>## [1] Jack Jill
+## Levels: Jack Jill</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">df[,<span class="dv">1</span>,drop =<span class="st"> </span><span class="ot">FALSE</span>]</code></pre>
+<pre><code>##   Kids
+## 1 Jack
+## 2 Jill</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">df[<span class="dv">1</span>,<span class="st">&quot;Ages&quot;</span>]</code></pre>
+<pre><code>## [1] 12</code></pre>
+</div>
+<div class="incremental">
+<p>Finally, we have a special operator, <code>$</code>, to get just one of the columns of the data frame:</p>
+<pre class="sourceCode r"><code class="sourceCode r">df$Age</code></pre>
+<pre><code>## [1] 12 10</code></pre>
+<p>Pay attention to the return type: some subsetting operations give you a data frame back, but some give you a vector.</p>
+</div>
+</div>
+<div id="thats-all-folks" class="slide section level2">
+<h1>That's all, folks</h1>
+<ul>
+<li><p>Please see me if you have any questions about how to submit the assignment or R scripts.</p></li>
+<li><p>Next time: Regular expressions!</p></li>
+</ul>
+</div>
+</body>
+</html>
