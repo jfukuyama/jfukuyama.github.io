@@ -1,0 +1,361 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="http://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+  <script src="http://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div id="regular-expressions" class="slide section level2">
+<h1>Regular expressions</h1>
+<p>Reading: Matloff Chapter 11.2.</p>
+<p>There are also many tutorials about regular expressions online, many of them not very good.</p>
+<p><a href="https://en.wikipedia.org/wiki/Regular_expression">Wikipedia</a> actually has a good treatment if you go through it slowly.</p>
+<p>You can also find formal treatments of regular expressions in books on the foundations of computing, e.g. Hopcroft, Motwani, and Ullman (2000). <em>Introduction to Automata Theory, Languages, and Computation</em>.</p>
+</div>
+<div class="slide section level2">
+
+<p>What is a regular expression?</p>
+<ul>
+<li>A way of specifying a set of strings.</li>
+</ul>
+<p>For example, the regular expression</p>
+<p><code>, *</code></p>
+<p>is the set of strings that start with a comma and are followed by any number (including zero) of spaces.</p>
+</div>
+<div class="slide section level2">
+
+<p>Why do we need them?</p>
+<ul>
+<li><p>Parsimony: We can express sets of strings more compactly. <br><br> For example: <code>(J.|Julia) Fukuyama</code> represents the set containing <code>J. Fukuyama</code> and <code>Julia Fukuyama</code></p></li>
+<li><p>Allows us to specify infinite-size sets in finite space. <br><br> For example: our <code>, *</code> expression from before.</p></li>
+</ul>
+</div>
+<div id="regular-expressions-abstractly" class="slide section level2">
+<h1>Regular expressions abstractly</h1>
+<p>The formal definition of a regular expression is inductive. Suppose that we have a finite alphabet <span class="math">\(\Sigma\)</span>.</p>
+<p>We start with specifying the following as regular expressions:</p>
+<ul>
+<li><p><span class="math">\(\emptyset\)</span>: The empty set</p></li>
+<li><p><span class="math">\(\varepsilon\)</span>: The set containing the empty string <code>&quot;&quot;</code></p></li>
+<li><p>Literal character <span class="math">\(a\)</span>: The one-element set <span class="math">\(\{a\}\)</span>, for <span class="math">\(a \in \Sigma\)</span></p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>The following operations, performed on regular expressions, yield regular expressions:</p>
+<ul>
+<li>Concatenation: If <span class="math">\(R\)</span> and <span class="math">\(S\)</span> are regular expressions, <span class="math">\(RS\)</span> denotes the set of strings that can be formed by concatenating a string in <span class="math">\(R\)</span> followed by a string in <span class="math">\(S\)</span>. <br><br> If <span class="math">\(R = \{good, bad\}\)</span> and <span class="math">\(S = \{boy, girl\}\)</span>, then <span class="math">\(RS = \{goodboy, goodgirl, badboy, badgirl\}\)</span>.</li>
+</ul>
+<div class="incremental">
+<ul>
+<li>Alternation (boolean or): If <span class="math">\(R\)</span> and <span class="math">\(S\)</span> are regular expressions, <span class="math">\(R|S\)</span> denotes the set of strings formed by taking either an element of <span class="math">\(R\)</span> or an element of <span class="math">\(S\)</span>. This is the same as the set union. <br><br> Same example: If <span class="math">\(R = \{good, bad\}\)</span> and <span class="math">\(S = \{boy, girl\}\)</span>, then <span class="math">\(RS = \{good, bad, boy, girl\}\)</span>.</li>
+</ul>
+</div>
+<div class="incremental">
+<ul>
+<li>Kleene star: If <span class="math">\(R\)</span> is a regular expression, <span class="math">\(R^\star\)</span> denotes the set of strings created by concatenating any finite number (including zero) of the strings in <span class="math">\(R\)</span>. <br><br> If <span class="math">\(R = \{good, bad\}\)</span>, <span class="math">\(R^\star\)</span> contains , good, goodgood, goodbad, bad, badgood, badbadgood, and so on</li>
+</ul>
+</div>
+<div class="incremental">
+<p>Order of operations: Kleene star has highest priority, followed by concatenation, followed by alternation.</p>
+<p>If a different grouping is desired, use parentheses <code>()</code>.</p>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Examples:</p>
+<ul>
+<li><code>a|b*</code>: <code>{ε, &quot;a&quot;, &quot;b&quot;, &quot;bb&quot;, &quot;bbb&quot;, ...}</code></li>
+</ul>
+<div class="incremental">
+<ul>
+<li><code>(a|b)*</code>: The set of all string containing only <code>a</code> and <code>b</code>, <code>{ε, &quot;a&quot;, &quot;b&quot;, &quot;aa&quot;, &quot;ab&quot;, &quot;ba&quot;, &quot;bb&quot;, &quot;aaa&quot;, ...}</code></li>
+</ul>
+</div>
+<div class="incremental">
+<ul>
+<li><code>ab*(c|epsilon)</code>: The set of strings starting with a single <code>a</code>, followed by zero or more <code>b</code>'s, optionally ending with a <code>c</code>, <code>{&quot;a&quot;, &quot;ac&quot;, &quot;ab&quot;, &quot;abc&quot;, &quot;abb&quot;, &quot;abbc&quot;, ...}</code></li>
+</ul>
+</div>
+</div>
+<div id="how-they-are-actually-implemented" class="slide section level2">
+<h1>How they are actually implemented</h1>
+<p>Actual implementations of regular expressions have many more symbols and operators, but they are mostly just shorthand for some common operations that would take longer to express using only the three operations in the formal definition.</p>
+</div>
+<div id="quantification-operations" class="slide section level2">
+<h1>Quantification operations</h1>
+<ul>
+<li><p><code>*</code>: Same as in the formal definition: zero or more times.</p></li>
+<li><p><code>?</code>: Zero or one occurrence of the preceding element. <code>colou?r</code> matches <code>color</code> and <code>colour</code>.</p></li>
+<li><p><code>+</code>: One or more occurrences of the preceding element.</p></li>
+<li><p><code>{m}</code>: Exactly m occurrences of the preceding element.</p></li>
+<li><p><code>{m,}</code>: At least m occurrences of the preceding element.</p></li>
+<li><p><code>{m,n}</code>: Between m and n occurrences of the preceding element, inclusive.</p></li>
+</ul>
+</div>
+<div id="alternatives-to" class="slide section level2">
+<h1>Alternatives to |</h1>
+<ul>
+<li><p><code>[]</code>: Matches any single character inside the brackets.</p></li>
+<li><p><code>[^ ]</code>: Negation, matches anything <em>except</em> the set of characters inside the brackets.</p></li>
+<li><p><code>.</code>: Wildcard, matches any character.</p></li>
+<li><p>Character classes, defined differently for the different implementations. See <a href="wikipedia">https://en.wikipedia.org/wiki/Regular_expression#Character_classes</a>, the POSIX column.</p></li>
+</ul>
+</div>
+<div id="anchoring" class="slide section level2">
+<h1>Anchoring</h1>
+<ul>
+<li><p><code>^</code> (not inside square brackets) means that what comes after must be at the start of a line.</p></li>
+<li><p><code>$</code> means that what comes before must be at the end of a line.</p></li>
+<li><p><code>\&lt;</code> anchors to the beginning of a word.</p></li>
+<li><p><code>\&gt;</code> anchors to the end of a word. Note that when you create a string using this operator, you will have to escape the <code>\</code></p></li>
+</ul>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">grepl</span>(<span class="st">&quot;</span><span class="ch">\\</span><span class="st">&lt;a&quot;</span>, <span class="st">&quot;hat at&quot;</span>)</code></pre>
+<pre><code>## [1] TRUE</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">grepl</span>(<span class="st">&quot;</span><span class="ch">\\</span><span class="st">&lt;a&quot;</span>, <span class="st">&quot;hat cat&quot;</span>)</code></pre>
+<pre><code>## [1] FALSE</code></pre>
+</div>
+<div id="greedy-quantification" class="slide section level2">
+<h1>Greedy quantification</h1>
+<p>By default, quantifiers are greedy, meaning they match the longest substring possible.</p>
+<p>We can make them have the opposite behavior by modifying them with the <code>?</code> character: in that case, they match the shortest substring possible.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">regmatches</span>(<span class="st">&quot;&lt;p&gt;&lt;/p&gt;&quot;</span>, <span class="kw">regexpr</span>(<span class="st">&quot;&lt;p.*&gt;&quot;</span>, <span class="st">&quot;&lt;p&gt;&lt;/p&gt;&quot;</span>))</code></pre>
+<pre><code>## [1] &quot;&lt;p&gt;&lt;/p&gt;&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">regmatches</span>(<span class="st">&quot;&lt;p&gt;&lt;/p&gt;&quot;</span>, <span class="kw">regexpr</span>(<span class="st">&quot;&lt;p.*?&gt;&quot;</span>, <span class="st">&quot;&lt;p&gt;&lt;/p&gt;&quot;</span>))</code></pre>
+<pre><code>## [1] &quot;&lt;p&gt;&quot;</code></pre>
+</div>
+<div id="splitting-on-regular-expressions" class="slide section level2">
+<h1>Splitting on regular expressions</h1>
+<p><code>strsplit</code>, from last time, also works with regular expressions.</p>
+<p>Syntax: <code>strsplit(s, split)</code></p>
+<ul>
+<li><p><code>s</code> is a character vector (can have length greater than 1), and the function vectorizes.</p></li>
+<li><p><code>split</code> gives the regular expression we want to split on: every element of <code>s</code> will be split into pieces separated by the regex <code>split</code>.</p></li>
+</ul>
+<div class="incremental">
+<p>Two other arguments you should know about, <code>fixed</code> and <code>perl</code>:</p>
+<ul>
+<li><p><code>fixed = TRUE</code> means to treat <code>split</code> as the literal string instead of a regular expression, <code>fixed = FALSE</code> is the default and means that we treat the splitting expression as a regular expression.</p></li>
+<li><p><code>perl</code> relates to the flavor of regular expressions used.</p></li>
+</ul>
+</div>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<p><a href="http://itre.cis.upenn.edu/myl/languagelog/archives/002932.html">1</a> <a href="https://en.wikipedia.org/wiki/Serial_comma">2</a></p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">strsplit</span>(<span class="st">&quot;my parents, Ayn Rand, and God&quot;</span>, <span class="st">&quot;,[[:space:]]*(and)?[[:space:]]+&quot;</span>)</code></pre>
+<pre><code>## [[1]]
+## [1] &quot;my parents&quot; &quot;Ayn Rand&quot;   &quot;God&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">strsplit</span>(<span class="st">&quot;my parents, Ayn Rand and God&quot;</span>, <span class="st">&quot;,[[:space:]]*(and)?[[:space:]]+&quot;</span>)</code></pre>
+<pre><code>## [[1]]
+## [1] &quot;my parents&quot;       &quot;Ayn Rand and God&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">strsplit</span>(<span class="st">&quot;my parents, Ayn Rand and God&quot;</span>, <span class="st">&quot;(,[[:space:]]*)|([[:space:]]+and[[:space:]]+)&quot;</span>)</code></pre>
+<pre><code>## [[1]]
+## [1] &quot;my parents&quot; &quot;Ayn Rand&quot;   &quot;God&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">strsplit</span>(<span class="st">&quot;Beyonce, Taylor Swift, and Kanye&quot;</span>, <span class="st">&quot;,[[:space:]]*(and)?[[:space:]]+&quot;</span>)</code></pre>
+<pre><code>## [[1]]
+## [1] &quot;Beyonce&quot;      &quot;Taylor Swift&quot; &quot;Kanye&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">strsplit</span>(<span class="st">&quot;Beyonce,Taylor Swift,  and Kanye&quot;</span>, <span class="st">&quot;,[[:space:]]*(and[[:space:]]+)?&quot;</span>)</code></pre>
+<pre><code>## [[1]]
+## [1] &quot;Beyonce&quot;      &quot;Taylor Swift&quot; &quot;Kanye&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">strsplit</span>(<span class="st">&quot;Beyonce,Taylor Swift,  and  Kanye&quot;</span>, <span class="st">&quot;,[[:space:]]*(and[[:space:]]+)?&quot;</span>)</code></pre>
+<pre><code>## [[1]]
+## [1] &quot;Beyonce&quot;      &quot;Taylor Swift&quot; &quot;Kanye&quot;</code></pre>
+</div>
+</div>
+<div id="finding-regular-expressions" class="slide section level2">
+<h1>Finding regular expressions</h1>
+<p><code>grep</code></p>
+<ul>
+<li><p>syntax: <code>grep(regex, string)</code>.</p></li>
+<li><p><code>regex</code> is a regular expression</p></li>
+<li><p><code>string</code> is a character vector</p></li>
+<li><p>The function will return the indices in string that match <code>regex</code></p></li>
+</ul>
+<div class="incremental">
+<p><code>grepl</code> (for grep logical): Same as <code>grep</code>, but returns a Boolean vector describing the match indices.</p>
+</div>
+<div class="incremental">
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">grep</span>(<span class="st">&quot;(K|k)ansas&quot;</span>, state.name)</code></pre>
+<pre><code>## [1]  4 16</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">grepl</span>(<span class="st">&quot;(K|k)ansas&quot;</span>, state.name)</code></pre>
+<pre><code>##  [1] FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [12] FALSE FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE
+## [23] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [34] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [45] FALSE FALSE FALSE FALSE FALSE FALSE</code></pre>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>A bigger example: let's try extracting the text from an html document.</p>
+<p><code>nyt.html</code> comes from an article on the New York Times.</p>
+<p>I want to just get the body of the article out, and I know that the line containing the article will have the string <code>&lt;section name = &quot;articleBody&quot;</code>.</p>
+<p>I can use <code>grep</code> to find the line corresponding to the article.</p>
+<pre class="sourceCode r"><code class="sourceCode r">nyt =<span class="st"> </span><span class="kw">readLines</span>(<span class="st">&quot;nyt.html&quot;</span>)</code></pre>
+<pre><code>## Warning in readLines(&quot;nyt.html&quot;): incomplete final line found on &#39;nyt.html&#39;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">article_text_index =<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;&lt;section name=</span><span class="ch">\&quot;</span><span class="st">articleBody</span><span class="ch">\&quot;</span><span class="st">&quot;</span>, nyt)</code></pre>
+</div>
+<div class="slide section level2">
+
+<p><code>grep</code> and <code>grepl</code> just tell us if the regular expression is present. What if you want to know where it is within the string?</p>
+<div class="incremental">
+<p><code>regexpr</code></p>
+<ul>
+<li><p>Syntax: <code>regexpr(regex, string)</code></p></li>
+<li><p><code>regex</code> is a regular expression.</p></li>
+<li><p><code>string</code> is a character vector.</p></li>
+<li><p>Vectorizes over <code>string</code></p></li>
+<li><p>Gives the location of the first occurrence of the <code>regex</code> expression within each element of <code>string</code>.</p></li>
+</ul>
+</div>
+<div class="incremental">
+<p><code>gregexpr</code>: Same syntax as <code>regexpr</code>, but gives the locations of <em>all</em> the occurrences of <code>regex</code> instead of just the first.</p>
+</div>
+<div class="incremental">
+<p>What do you think the output types will be for these functions?</p>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Example:</p>
+<div class="incremental">
+<pre class="sourceCode r"><code class="sourceCode r">fruits =<span class="st"> &quot;apple|banana|fruit&quot;</span>
+<span class="kw">regexpr</span>(fruits, <span class="st">&quot;fruit flies like a banana&quot;</span>)</code></pre>
+<pre><code>## [1] 1
+## attr(,&quot;match.length&quot;)
+## [1] 5
+## attr(,&quot;index.type&quot;)
+## [1] &quot;chars&quot;
+## attr(,&quot;useBytes&quot;)
+## [1] TRUE</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">typeof</span>(<span class="kw">regexpr</span>(fruits, <span class="st">&quot;fruit flies like a banana&quot;</span>))</code></pre>
+<pre><code>## [1] &quot;integer&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">gregexpr</span>(fruits, <span class="st">&quot;fruit flies like a banana&quot;</span>)</code></pre>
+<pre><code>## [[1]]
+## [1]  1 20
+## attr(,&quot;match.length&quot;)
+## [1] 5 6
+## attr(,&quot;index.type&quot;)
+## [1] &quot;chars&quot;
+## attr(,&quot;useBytes&quot;)
+## [1] TRUE</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">typeof</span>(<span class="kw">gregexpr</span>(fruits, <span class="st">&quot;fruit flies like a banana&quot;</span>))</code></pre>
+<pre><code>## [1] &quot;list&quot;</code></pre>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>If you want the text that matches the regular expression, you need <code>regmatches</code></p>
+<p>Syntax: <code>regmatches(text, match)</code></p>
+<ul>
+<li><p><code>match</code> is the output from <code>regexpr</code> or <code>gregexpr</code>, describing the locations of the regular expressions.</p></li>
+<li><p><code>text</code> is the character vector you passed to <code>regexpr</code> or <code>gregexpr</code>.</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>Example:</p>
+<pre class="sourceCode r"><code class="sourceCode r">text =<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;fruit flies like a banana&quot;</span>, <span class="st">&quot;banana flies like a fruit&quot;</span>)
+<span class="kw">regmatches</span>(text, <span class="kw">regexpr</span>(fruits, text))</code></pre>
+<pre><code>## [1] &quot;fruit&quot;  &quot;banana&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">regmatches</span>(text, <span class="kw">gregexpr</span>(fruits, text))</code></pre>
+<pre><code>## [[1]]
+## [1] &quot;fruit&quot;  &quot;banana&quot;
+## 
+## [[2]]
+## [1] &quot;banana&quot; &quot;fruit&quot;</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>Back to our newspaper article example: we want the text of the article, not just its position.</p>
+<p>We know it's going to be between something that looks like <code>&lt;section name=&quot;articleBody&quot;</code> and <code>&lt;/section&gt;</code>, so we create a regular expression for that sort of string and use <code>regmatches</code> and <code>gregexpr</code>.</p>
+<pre class="sourceCode r"><code class="sourceCode r">article_marked_up =<span class="st"> </span><span class="kw">regmatches</span>(nyt[article_text_index],
+    <span class="kw">gregexpr</span>(<span class="st">&quot;&lt;section name=</span><span class="ch">\&quot;</span><span class="st">articleBody</span><span class="ch">\&quot;</span><span class="st">.+?&lt;/section&gt;&quot;</span>, nyt[article_text_index]))</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>Then let's try to split the article on paragraphs:</p>
+<pre class="sourceCode r"><code class="sourceCode r">paragraphs =<span class="st"> </span><span class="kw">strsplit</span>(body_sub[[<span class="dv">1</span>]], <span class="st">&quot;(&lt;p[^&gt;]*&gt;)|(&lt;/p&gt;)&quot;</span>)</code></pre>
+</div>
+<div id="replacing-regular-expressions" class="slide section level2">
+<h1>Replacing regular expressions</h1>
+<p>Several options:</p>
+<ul>
+<li><p>Not recommended: you can assign to <code>regmatches</code>, which works like <code>substr</code> (also don't recommend using <code>substr</code> in this way).</p></li>
+<li><p><code>sub</code> and <code>gsub</code> are like <code>regexpr</code> and <code>gregexpr</code>, allow you to replace regular expressions.</p></li>
+</ul>
+<div class="incremental">
+<p>Syntax for <code>sub</code> and <code>gsub</code>: <code>sub(regex, replacement, string)</code></p>
+<ul>
+<li><p><code>regex</code> is the regular expression to replace.</p></li>
+<li><p><code>replacement</code> is what you want to replace it with.</p></li>
+<li><p><code>string</code> is a character vector containing the text that needs to be modified.</p></li>
+<li><p>The function vectorizes over <code>string</code>.</p></li>
+<li><p>The functions will return a new string.</p></li>
+</ul>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Back to our article example, we still have the problem of a bunch of extra html tags, which we would like to get rid of.</p>
+<pre class="sourceCode r"><code class="sourceCode r">paragraphs_no_tags =<span class="st"> </span><span class="kw">gsub</span>(<span class="dt">pattern =</span> <span class="st">&quot;&lt;.+?&gt;&quot;</span>, <span class="dt">replacement =</span> <span class="st">&quot;&quot;</span>, <span class="dt">x =</span> paragraphs[[<span class="dv">1</span>]])
+
+for(i in <span class="dv">1</span>:<span class="dv">4</span>) <span class="kw">cat</span>(paragraphs_no_tags[i])</code></pre>
+<pre><code>## WASHINGTON — Speaker Nancy Pelosi asked President Trump on Wednesday to scrap or delay his Jan. 29 State of the Union address amid the partial government shutdown, an extraordinary request that escalated the partisan battle over his border wall even as bipartisan groups of lawmakers pressed him to reopen the government and make room for compromise.In a letter to Mr. Trump that underscored how the shutdown fight has poisoned hopes of bipartisan comity at the start of divided government, Ms. Pelosi cited security concerns as her reason for proposing that the president postpone the annual presidential ritual of addressing a joint session of Congress in a televised speech during prime time — or perhaps submit a written message instead.</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>Remember greedy quantification? We really need the <code>?</code> modifier here:</p>
+<pre class="sourceCode r"><code class="sourceCode r">wrong =<span class="st"> </span><span class="kw">gsub</span>(<span class="dt">pattern =</span> <span class="st">&quot;&lt;.+&gt;&quot;</span>, <span class="dt">replacement =</span> <span class="st">&quot;&quot;</span>, <span class="dt">x =</span> paragraphs[[<span class="dv">1</span>]])
+<span class="kw">which</span>(<span class="kw">nchar</span>(wrong) !=<span class="st"> </span><span class="kw">nchar</span>(paragraphs_no_tags))</code></pre>
+<pre><code>##  [1] 12 18 19 21 23 25 43 47 67 69 82</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cat</span>(paragraphs[[<span class="dv">1</span>]][<span class="dv">82</span>])</code></pre>
+<pre><code>## “What are Democrats afraid of Americans hearing?” Representative Steve Scalise of Louisiana, the No. 2 Republican, said in a &lt;a class=&quot;css-1g7m0tk&quot; href=&quot;https://twitter.com/SteveScalise/status/1085553606638665733&quot; title=&quot;&quot; rel=&quot;noopener noreferrer&quot; target=&quot;_blank&quot;&gt;Twitter post&lt;/a&gt;, branding Ms. Pelosi #ShutdownNancy. “That 17,000+ criminals were caught last year at the border? 90% of heroin in the US comes across the southern border? Illegal border crossings dropped 90%+ in areas w/ a wall?”</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cat</span>(wrong[<span class="dv">82</span>])</code></pre>
+<pre><code>## “What are Democrats afraid of Americans hearing?” Representative Steve Scalise of Louisiana, the No. 2 Republican, said in a , branding Ms. Pelosi #ShutdownNancy. “That 17,000+ criminals were caught last year at the border? 90% of heroin in the US comes across the southern border? Illegal border crossings dropped 90%+ in areas w/ a wall?”</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cat</span>(paragraphs_no_tags[<span class="dv">82</span>])</code></pre>
+<pre><code>## “What are Democrats afraid of Americans hearing?” Representative Steve Scalise of Louisiana, the No. 2 Republican, said in a Twitter post, branding Ms. Pelosi #ShutdownNancy. “That 17,000+ criminals were caught last year at the border? 90% of heroin in the US comes across the southern border? Illegal border crossings dropped 90%+ in areas w/ a wall?”</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>Once the article is formatted a little better, we can do things like count the number of ads placed in the body of the article.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">grep</span>(<span class="st">&quot;Advertisement&quot;</span>, paragraphs_no_tags)</code></pre>
+<pre><code>## [1] 10 22 30 50 64</code></pre>
+</div>
+<div id="a-final-note" class="slide section level2">
+<h1>A final note</h1>
+<p><a href="https://stackoverflow.com/questions/201323/how-to-validate-an-email-address-using-a-regular-expression">They're not for everything</a></p>
+</div>
+</body>
+</html>
