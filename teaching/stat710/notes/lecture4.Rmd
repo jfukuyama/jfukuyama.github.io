@@ -143,7 +143,7 @@ inside the brackets.
 
 - Character classes, defined differently for the different
 implementations. See
-[https://en.wikipedia.org/wiki/Regular_expression#Character_classes](wikipedia),
+[https://en.wikipedia.org/wiki/Regular_expression#Character_classes](https://en.wikipedia.org/wiki/Regular_expression#Character_classes),
 the POSIX column.
 
 
