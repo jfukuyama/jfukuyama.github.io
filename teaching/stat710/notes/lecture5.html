@@ -1,0 +1,448 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="http://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="http://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div id="writing-and-calling-functions" class="slide section level2">
+<h1>Writing and calling functions</h1>
+<p>Reading:</p>
+<ul>
+<li><p>Matloff Section 1.3, 7.3-7.6 (7.6 is presented rather formally), 7.12, 7.13</p></li>
+<li><p>If you want more detail on environments: <em>Advanced R</em> by Hadley Wickham has a good <a href="http://adv-r.had.co.nz/Environments.html">chapter</a> on them.</p></li>
+<li><p>More relevant for next time: <em>Clean Code</em> by Robert Martin, <a href="https://iucat.iu.edu/iub/16580380">Chapter 3</a>.</p></li>
+</ul>
+<p>Today: Nuts and bolts, technical aspects of functions in R.</p>
+<p>Next time: More practical advice on how to write functions, best practices, etc.</p>
+</div>
+<div id="why-write-functions" class="slide section level2">
+<h1>Why write functions?</h1>
+<ul>
+<li>Make your code more readable.</li>
+</ul>
+<div class="incremental">
+<ul>
+<li>Allows you to re-use related lines of code for slightly different tasks.</li>
+</ul>
+</div>
+<div class="incremental">
+<ul>
+<li>Makes testing your code easier.</li>
+</ul>
+</div>
+</div>
+<div id="what-is-a-function" class="slide section level2">
+<h1>What is a function?</h1>
+<ul>
+<li>A way of turning some inputs into some outputs.</li>
+</ul>
+<div class="incremental">
+<ul>
+<li>A way of tying together related pieces of code.</li>
+</ul>
+</div>
+<div class="incremental">
+<ul>
+<li>An object.</li>
+</ul>
+</div>
+</div>
+<div id="function-creation" class="slide section level2">
+<h1>Function creation</h1>
+<p>Syntax for function creation:</p>
+<pre><code>f = function(arguments) {
+    body
+}</code></pre>
+<ul>
+<li><p><code>arguments</code> are assignments of values to variables.</p></li>
+<li><p><code>body</code> is the code you want to execute.</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>So for example, if we return to our steak-cooking example from the first week, we might define the following function:</p>
+<pre class="sourceCode r"><code class="sourceCode r">steak_directions =<span class="st"> </span>function(temp, steak_type) {
+    if(steak_type ==<span class="st"> &quot;rare&quot;</span> &amp;<span class="st"> </span>temp &gt;<span class="st"> </span><span class="dv">115</span>) {
+        <span class="kw">return</span>(<span class="st">&quot;take your steak off!&quot;</span>)
+    } else if(steak_type ==<span class="st"> &quot;med_rare&quot;</span> &amp;<span class="st"> </span>temp &gt;<span class="st"> </span><span class="dv">125</span>) {
+        <span class="kw">return</span>(<span class="st">&quot;take your steak off!&quot;</span>)        
+    } 
+    <span class="st">&quot;you can keep cooking&quot;</span>
+}</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>We can see the arguments and body of the function using <code>formals</code> and <code>body</code>, respectively.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">formals</span>(steak_directions)</code></pre>
+<pre><code>## $temp
+## 
+## 
+## $steak_type</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">body</span>(steak_directions)</code></pre>
+<pre><code>## {
+##     if (steak_type == &quot;rare&quot; &amp; temp &gt; 115) {
+##         return(&quot;take your steak off!&quot;)
+##     }
+##     else if (steak_type == &quot;med_rare&quot; &amp; temp &gt; 125) {
+##         return(&quot;take your steak off!&quot;)
+##     }
+##     &quot;you can keep cooking&quot;
+## }</code></pre>
+</div>
+<div id="function-arguments" class="slide section level2">
+<h1>Function arguments</h1>
+<p>Once you have a function, you call it by specifying the values for all of the arguments. The values can be specified in two ways:</p>
+<ul>
+<li><p>By position: first argument is assigned to the first variable in the function definition, second argument to the second variable in the function definition, and so on</p></li>
+<li><p>By name: arguments are specified by name instead of being inferred based on position.</p></li>
+</ul>
+<p>The two can be combined.</p>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<p>So for example, the following are all the same:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">steak_directions</span>(<span class="dt">temp =</span> <span class="dv">120</span>, <span class="dt">steak_type =</span> <span class="st">&quot;rare&quot;</span>)</code></pre>
+<pre><code>## [1] &quot;take your steak off!&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">steak_directions</span>(<span class="dt">steak_type =</span> <span class="st">&quot;rare&quot;</span>, <span class="dt">temp =</span> <span class="dv">120</span>)</code></pre>
+<pre><code>## [1] &quot;take your steak off!&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">steak_directions</span>(<span class="dv">120</span>, <span class="st">&quot;rare&quot;</span>)</code></pre>
+<pre><code>## [1] &quot;take your steak off!&quot;</code></pre>
+<p>But this is of course different and will not work:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">simulate_birthdays</span>(<span class="st">&quot;rare&quot;</span>, <span class="dv">120</span>)</code></pre>
+<pre><code>## Error in simulate_birthdays(&quot;rare&quot;, 120): could not find function &quot;simulate_birthdays&quot;</code></pre>
+</div>
+</div>
+<div id="default-arguments" class="slide section level2">
+<h1>Default arguments</h1>
+<p>When you define a function, you can set default values for any/all of the arguments.</p>
+<p>When you call such a function, if you don't specify a value for that argument, it will automatically go to the default value.</p>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<p>For example, in the following function the default argument for <code>steak_type</code> is <code>&quot;rare&quot;</code>.</p>
+<pre class="sourceCode r"><code class="sourceCode r">steak_directions =<span class="st"> </span>function(temp, <span class="dt">steak_type =</span> <span class="st">&quot;rare&quot;</span>) {
+    if(steak_type ==<span class="st"> &quot;rare&quot;</span> &amp;<span class="st"> </span>temp &gt;<span class="st"> </span><span class="dv">115</span>) {
+        <span class="kw">return</span>(<span class="st">&quot;take your steak off!&quot;</span>)
+    } else if(steak_type ==<span class="st"> &quot;med_rare&quot;</span> &amp;<span class="st"> </span>temp &gt;<span class="st"> </span><span class="dv">125</span>) {
+        <span class="kw">return</span>(<span class="st">&quot;take your steak off!&quot;</span>)        
+    } 
+    <span class="st">&quot;you can keep cooking&quot;</span>
+}</code></pre>
+<p>If we don't specify <code>steak_type</code>, we will get results as if we had specified it to be <code>&quot;rare&quot;</code>, but we can also over-ride that argument if we set it explicitly:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">steak_directions</span>(<span class="dv">120</span>, <span class="st">&quot;rare&quot;</span>)</code></pre>
+<pre><code>## [1] &quot;take your steak off!&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">steak_directions</span>(<span class="dv">120</span>)</code></pre>
+<pre><code>## [1] &quot;take your steak off!&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">steak_directions</span>(<span class="dv">120</span>, <span class="dt">steak_type =</span> <span class="st">&quot;med_rare&quot;</span>)</code></pre>
+<pre><code>## [1] &quot;you can keep cooking&quot;</code></pre>
+</div>
+</div>
+<div id="return-values" class="slide section level2">
+<h1>Return values</h1>
+<p>When a function is called, the commands in the body of the function are executed, and a value is returned.</p>
+<p>The return value is either:</p>
+<ul>
+<li><p>The value of last command executed, or</p></li>
+<li><p>A value set explicitly using the <code>return</code> syntax.</p></li>
+</ul>
+<p>The commands in the body of the function are executed until a <code>return</code> statement is encountered or the the end of the body is reached, whichever comes first.</p>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<p>Let's think through what happens when we call the function these two ways:</p>
+<pre class="sourceCode r"><code class="sourceCode r">steak_directions =<span class="st"> </span>function(temp, <span class="dt">steak_type =</span> <span class="st">&quot;rare&quot;</span>) {
+    if(steak_type ==<span class="st"> &quot;rare&quot;</span> &amp;<span class="st"> </span>temp &gt;<span class="st"> </span><span class="dv">115</span>) {
+        <span class="kw">return</span>(<span class="st">&quot;take your steak off!&quot;</span>)
+    } else if(steak_type ==<span class="st"> &quot;med_rare&quot;</span> &amp;<span class="st"> </span>temp &gt;<span class="st"> </span><span class="dv">125</span>) {
+        <span class="kw">return</span>(<span class="st">&quot;take your steak off!&quot;</span>)        
+    } 
+    <span class="st">&quot;you can keep cooking&quot;</span>
+}
+<span class="kw">steak_directions</span>(<span class="dt">steak_type =</span> <span class="st">&quot;rare&quot;</span>, <span class="dt">temp =</span> <span class="dv">120</span>)</code></pre>
+<pre><code>## [1] &quot;take your steak off!&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">steak_directions</span>(<span class="dt">steak_type =</span> <span class="st">&quot;med_rare&quot;</span>, <span class="dt">temp =</span> <span class="dv">120</span>)</code></pre>
+<pre><code>## [1] &quot;you can keep cooking&quot;</code></pre>
+</div>
+</div>
+<div id="invisible-return" class="slide section level2">
+<h1>Invisible return</h1>
+<p>Invisible return is a bit R-specific:</p>
+<ul>
+<li><p>If you use <code>invisible</code> instead of <code>return</code> in a function definition, the result will be discarded unless it is assigned.</p></li>
+<li><p>This is not usually something that you will use, but some of the built-in functions use invisible returns.</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<pre class="sourceCode r"><code class="sourceCode r">square_invisible =<span class="st"> </span>function(x) <span class="kw">invisible</span>(x^<span class="dv">2</span>)
+square =<span class="st"> </span>function(x) x^<span class="dv">2</span></code></pre>
+</div>
+<div class="incremental">
+<p>If we call <code>square(4)</code> we get output: 16</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">square</span>(<span class="dv">4</span>)</code></pre>
+<pre><code>## [1] 16</code></pre>
+<p>. . . But if we call <code>square_invisible(4)</code>, we don't see any output!</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">square_invisible</span>(<span class="dv">4</span>)</code></pre>
+</div>
+<div class="incremental">
+<p>The square was computed though, and we can see this if we assign the output:</p>
+<pre class="sourceCode r"><code class="sourceCode r">xsquared =<span class="st"> </span><span class="kw">square_invisible</span>(<span class="dv">4</span>)
+xsquared</code></pre>
+<pre><code>## [1] 16</code></pre>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Another example: compare the two versions of oddcount:</p>
+<pre class="sourceCode r"><code class="sourceCode r">oddcount =<span class="st"> </span>function(x) {
+    k =<span class="st"> </span><span class="dv">0</span>
+    for(n in x) {
+        if (n %%<span class="st"> </span><span class="dv">2</span> ==<span class="st"> </span><span class="dv">1</span>) k =<span class="st"> </span>k +<span class="st"> </span><span class="dv">1</span>
+    }
+    <span class="kw">return</span>(k)
+}
+<span class="kw">oddcount</span>(<span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">5</span>))</code></pre>
+<pre><code>## [1] 1</code></pre>
+<div class="incremental">
+<pre class="sourceCode r"><code class="sourceCode r">oddcount =<span class="st"> </span>function(x) {
+    k =<span class="st"> </span><span class="dv">0</span>
+    for(n in x) {
+        if (n %%<span class="st"> </span><span class="dv">2</span> ==<span class="st"> </span><span class="dv">1</span>) k =<span class="st"> </span>k +<span class="st"> </span><span class="dv">1</span>
+    }
+}
+<span class="kw">oddcount</span>(<span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">5</span>))
+oddcount_output =<span class="st"> </span><span class="kw">oddcount</span>(<span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">5</span>))
+oddcount_output</code></pre>
+<pre><code>## NULL</code></pre>
+<p>We get <code>NULL</code> for the value of <code>oddcount_output</code> because the last function to be evaluated in <code>oddcount</code> was technically the <code>for</code> function.</p>
+<p><code>for</code> returns <code>NULL</code> invisibly, so the second version of <code>oddcount</code> also returns <code>NULL</code> invisibly.</p>
+</div>
+</div>
+<div id="return-values-can-be-anything" class="slide section level2">
+<h1>Return values can be anything</h1>
+<ul>
+<li>If you want to return multiple related pieces of information, you can put them in a list or other type of object.</li>
+</ul>
+<div class="incremental">
+<ul>
+<li>Your return value can even be another function!</li>
+</ul>
+<pre class="sourceCode r"><code class="sourceCode r">g =<span class="st"> </span>function() {
+    t =<span class="st"> </span>function(x) x^<span class="dv">2</span>
+    <span class="kw">return</span>(t)
+}
+g</code></pre>
+<pre><code>## function() {
+##     t = function(x) x^2
+##     return(t)
+## }</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">g</span>()</code></pre>
+<pre><code>## function(x) x^2
+## &lt;environment: 0x7fef6276d980&gt;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">formals</span>(g)</code></pre>
+<pre><code>## NULL</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">formals</span>(<span class="kw">g</span>())</code></pre>
+<pre><code>## $x</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">body</span>(g)</code></pre>
+<pre><code>## {
+##     t = function(x) x^2
+##     return(t)
+## }</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">body</span>(<span class="kw">g</span>())</code></pre>
+<pre><code>## x^2</code></pre>
+</div>
+</div>
+<div id="environments-and-scope" class="slide section level2">
+<h1>Environments and scope</h1>
+<p>When you call a function, the commands in the function body are executed, but not in exactly the same way they would be if you simply ran them one at a time in an interactive R session.</p>
+<p>The commands are executed in the function's <em>environment</em>.</p>
+</div>
+<div id="environments" class="slide section level2">
+<h1>Environments</h1>
+<p>Ok, so what is an environment?</p>
+<ul>
+<li>An environment binds names to values.</li>
+</ul>
+<div class="incremental">
+<ul>
+<li>Every environment has a parent (except for the empty environment).</li>
+</ul>
+</div>
+<div class="incremental">
+<p>What are they good for?</p>
+<ul>
+<li><p>The purpose of environments is to describe where to look for variables.</p></li>
+<li><p>When you refer to any object, R first looks in the current environment for an object with that name.</p></li>
+<li><p>If it doesn't find an object with that name in the current environment, it looks in the parent environment, and continues until it runs out of parents or finds an object with the right name.</p></li>
+</ul>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>For example, have you ever wondered how R finds functions?</p>
+<p>The function <code>lm</code> is not in the global environment, as we can see if we just call <code>ls</code>:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ls</span>()</code></pre>
+<pre><code>##  [1] &quot;corner&quot;           &quot;f&quot;                &quot;g&quot;               
+##  [4] &quot;h&quot;                &quot;multiplot&quot;        &quot;oddcount&quot;        
+##  [7] &quot;oddcount_output&quot;  &quot;square&quot;           &quot;square_invisible&quot;
+## [10] &quot;steak_directions&quot; &quot;t&quot;                &quot;w&quot;               
+## [13] &quot;xsquared&quot;</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>But we are able to access it and, for instance, ask what its arguments are:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(<span class="kw">formals</span>(lm))</code></pre>
+<pre><code>## $formula
+## 
+## 
+## $data
+## 
+## 
+## $subset
+## 
+## 
+## $weights
+## 
+## 
+## $na.action
+## 
+## 
+## $method
+## [1] &quot;qr&quot;</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>Functions live in environments corresponding to the package they are defined in. For <code>lm</code>, this is <code>stats</code>.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">environment</span>(lm)</code></pre>
+<pre><code>## &lt;environment: namespace:stats&gt;</code></pre>
+<p>Package environments are all ancestral to the global environment, so when R found that lm wasn't defined in the global environment, it looked through the packages until it found lm defined in stats.</p>
+</div>
+<div id="function-environments" class="slide section level2">
+<h1>Function environments</h1>
+<div class="incremental">
+<p>When a function is called, its body is evaluated in an execution environment whose parent is the function's environment.</p>
+<pre class="sourceCode r"><code class="sourceCode r">w =<span class="st"> </span><span class="dv">12</span>
+f =<span class="st"> </span>function(y) {
+    d =<span class="st"> </span><span class="dv">8</span>
+    h =<span class="st"> </span>function() {
+        <span class="kw">return</span>(d *<span class="st"> </span>(w +<span class="st"> </span>y))
+    }
+    <span class="kw">cat</span>(<span class="st">&quot;h&#39;s environment: &quot;</span>, <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)
+    <span class="kw">print</span>(<span class="kw">environment</span>(h))
+    <span class="kw">cat</span>(<span class="st">&quot;h&#39;s parent environment:&quot;</span>, <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)
+    <span class="kw">print</span>(<span class="kw">parent.env</span>(<span class="kw">environment</span>(h)))
+    <span class="kw">return</span>(<span class="kw">h</span>())
+}
+<span class="kw">f</span>(<span class="dv">1</span>)</code></pre>
+<pre><code>## h&#39;s environment:  
+## &lt;environment: 0x7fef668bbe18&gt;
+## h&#39;s parent environment: 
+## &lt;environment: R_GlobalEnv&gt;</code></pre>
+<pre><code>## [1] 104</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">environment</span>(f)</code></pre>
+<pre><code>## &lt;environment: R_GlobalEnv&gt;</code></pre>
+</div>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<p>Compare with:</p>
+<pre class="sourceCode r"><code class="sourceCode r">f =<span class="st"> </span>function(y) {
+    d =<span class="st"> </span><span class="dv">8</span>
+    <span class="kw">return</span>(<span class="kw">h</span>())
+}
+
+h =<span class="st"> </span>function() {
+    <span class="kw">cat</span>(<span class="st">&quot;h&#39;s environment:&quot;</span>, <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)
+    <span class="kw">print</span>(<span class="kw">environment</span>(h))
+    <span class="kw">cat</span>(<span class="st">&quot;h&#39;s parent environment:&quot;</span>, <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)
+    <span class="kw">print</span>(<span class="kw">parent.env</span>(<span class="kw">environment</span>(h)))
+    <span class="kw">return</span>(d *<span class="st"> </span>(w +<span class="st"> </span>y))
+}
+<span class="kw">f</span>(<span class="dv">5</span>)</code></pre>
+<pre><code>## h&#39;s environment: 
+## &lt;environment: R_GlobalEnv&gt;
+## h&#39;s parent environment: 
+## &lt;environment: package:knitr&gt;
+## attr(,&quot;name&quot;)
+## [1] &quot;package:knitr&quot;
+## attr(,&quot;path&quot;)
+## [1] &quot;/Library/Frameworks/R.framework/Versions/3.5/Resources/library/knitr&quot;</code></pre>
+<pre><code>## Error in h(): object &#39;d&#39; not found</code></pre>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>This perhaps seems overly baroque, but the take-home points about environments (and the reason why they are set up the way they are) are:</p>
+<ul>
+<li><p>Commands called in the body of the function usually have access to values of the variables in that function plus variables at higher levels.</p></li>
+<li><p>Variables defined in the body of a function go away after the function exits.</p></li>
+</ul>
+</div>
+<div id="side-effects" class="slide section level2">
+<h1>Side effects</h1>
+<p>A function has a <em>side effect</em> if it does anything other than compute a return value, for instance, if it changes the values of other variables in the environment it is defined in, or adds variables to the environment.</p>
+<p>We generally don't want functions to have side effects, because they make code more confusing and more difficult to test.</p>
+<p>In R, functions <em>can</em> have side effects, but it is discouraged by both the language itself and by programming norms.</p>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<p>Remember that functions can see variables defined in the parent environments.</p>
+<p>What they can't do is change the values of those variables (except with a special operator).</p>
+<p>For example:</p>
+<pre class="sourceCode r"><code class="sourceCode r">w =<span class="st"> </span><span class="dv">12</span>
+f =<span class="st"> </span>function(y) {
+   d =<span class="st"> </span><span class="dv">8</span>
+   w =<span class="st"> </span>w +<span class="st"> </span><span class="dv">1</span>
+   y =<span class="st"> </span>y -<span class="st"> </span><span class="dv">2</span>
+   <span class="kw">cat</span>(<span class="kw">sprintf</span>(<span class="st">&quot;Value of w: %i&quot;</span>, w))
+   h =<span class="st"> </span>function() {
+      <span class="kw">return</span>(d*(w+y))
+   }
+   <span class="kw">return</span>(<span class="kw">h</span>())
+}
+t =<span class="st"> </span><span class="dv">4</span>
+<span class="kw">f</span>(t)</code></pre>
+<pre><code>## Value of w: 13</code></pre>
+<pre><code>## [1] 120</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">w</code></pre>
+<pre><code>## [1] 12</code></pre>
+<p>It looks like the value of <code>w</code> changed inside the function, but the value in the global environment was not actually changed.</p>
+</div>
+</div>
+</body>
+</html>
