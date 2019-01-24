@@ -106,6 +106,22 @@ We want to perform simulations to get at the distribution of this random variabl
 One option is to just take the code we had and wrap it in a for loop:
 
 ```{r}
+days_in_year = 365
+class_size = 20
+n_iter = 100
+n_class_vector = rep(NA, n_iter)
+for(i in 1:n_iter) {
+    num_classes = 0
+    while(TRUE) {
+        num_classes = num_classes + 1
+        birthdays = sample(1:days_in_year, class_size, replace = TRUE)
+        two_pairs = sum(table(birthdays) >= 2) >= 2
+        if(two_pairs) {
+            break
+        }
+    }
+    n_class_vector[i] = num_classes
+}
 
 ```
 
@@ -114,7 +130,21 @@ One option is to just take the code we had and wrap it in a for loop:
 A better option is to make the simulation code into its own function:
 
 ```{r}
-
+## simulates one draw of our random variable
+simulate_n_classes = function(class_size, days_in_year = 365) {
+    num_classes = 0
+    while(TRUE) {
+        num_classes = num_classes + 1
+        birthdays = sample(1:days_in_year, class_size, replace = TRUE)
+        two_pairs = sum(table(birthdays) >= 2) >= 2
+        if(two_pairs) {
+            break
+        }
+    }
+    return(num_classes)
+}
+## simulate many draws of the random variable
+n_class_vector = replicate(n = 100, simulate_n_classes(class_size = 20))
 ```
 
 -----
@@ -124,7 +154,11 @@ Maybe next we're interested in how the distribution changes with class size.
 Let's make a function that computes the average number of classes we need to go to before we get two pairs of birthdays:
 
 ```{r}
-
+get_expected_num_classes = function(class_size, days_in_year = 365, n_iter = 100) {
+    ## simulating n_iter draws from simulate_n_classes
+    sims = replicate(n = n_iter, simulate_n_classes(class_size = class_size, days_in_year = days_in_year))
+    return(mean(sims))
+}
 ```
 
 -----
@@ -132,7 +166,16 @@ Let's make a function that computes the average number of classes we need to go 
 Once we have that function, we can compute the expectation for a range of class sizes and make a plot:
 
 ```{r}
-
+plot_expected_num_classes = function(potential_class_sizes, days_in_year = 365, n_iter = 100) {
+    ## compute expected class size for every value of potential_class_sizes
+    expected_num_classes = rep(NA, length(potential_class_sizes))
+    for(i in 1:length(potential_class_sizes)) {
+        expected_num_classes[i] =
+            get_expected_num_classes(potential_class_sizes[i], days_in_year = days_in_year, n_iter = n_iter)
+    }
+    plot(expected_num_classes ~ potential_class_sizes)
+}
+plot_expected_num_classes(c(15, 20, 50, 100, 400))
 ```
 
 ------
@@ -145,7 +188,25 @@ We can modify our simulation code to simulate from uneven probabilities.
 We'll want to give the probabilities as an argument to the function and check that they are valid.
 
 ```{r}
-
+simulate_n_classes = function(class_size, day_probabilities) {
+    num_classes = 0
+    ## checking that day_probabilities is actually a vector of probabilities
+    stopifnot(sum(day_probabilities) == 1 && all(day_probabilities >= 0))
+    while(TRUE) {
+        num_classes = num_classes + 1
+        birthdays = sample(1:length(day_probabilities), class_size, replace = TRUE, prob = day_probabilities)
+        two_pairs = sum(table(birthdays) >= 2) >= 2
+        if(two_pairs) {
+            break
+        }
+    }
+    return(num_classes)
+}
+get_expected_num_classes = function(class_size, day_probabilities, n_iter = 100) {
+    ## simulating n_iter draws from simulate_n_classes
+    sims = replicate(n = n_iter, simulate_n_classes(class_size = class_size, day_probabilities))
+    return(mean(sims))
+}
 ```
 
 -----
@@ -153,5 +214,12 @@ We'll want to give the probabilities as an argument to the function and check th
 Then we can use the function we've created to see how the expected number of classes changes as the relative probability of weekday vs. weekend birth changes:
 
 ```{r}
-
+## make day probabilities by repeating two small numbers followed by five big numbers until we get 365, then divide by the sum to get probabilities
+day_probabilities = rep(c(rep(1,2), rep(3,5)), length.out = 365)
+day_probabilities = day_probabilities / sum(day_probabilities)
+# compare values when the weekdays are more likely to when everything is equal
+get_expected_num_classes(20, day_probabilities)
+get_expected_num_classes(20, rep(1 / 365, 365))
 ```
+
+A nice exercise would be to make a function that created these probabilities, taking as a parameter the relative probability of weekend vs. weekday. That would allow us to explore the distribution more easily, instead of with the ugly code on the last two lines.

@@ -118,35 +118,112 @@ while(<span class="ot">TRUE</span>) {
     }
 }
 num_classes</code></pre>
-<pre><code>## [1] 20</code></pre>
+<pre><code>## [1] 17</code></pre>
 </div>
 <div class="slide section level2">
 
 <p>We want to perform simulations to get at the distribution of this random variable, so we have to run the same code over and over.</p>
 <p>One option is to just take the code we had and wrap it in a for loop:</p>
+<pre class="sourceCode r"><code class="sourceCode r">days_in_year =<span class="st"> </span><span class="dv">365</span>
+class_size =<span class="st"> </span><span class="dv">20</span>
+n_iter =<span class="st"> </span><span class="dv">100</span>
+n_class_vector =<span class="st"> </span><span class="kw">rep</span>(<span class="ot">NA</span>, n_iter)
+for(i in <span class="dv">1</span>:n_iter) {
+    num_classes =<span class="st"> </span><span class="dv">0</span>
+    while(<span class="ot">TRUE</span>) {
+        num_classes =<span class="st"> </span>num_classes +<span class="st"> </span><span class="dv">1</span>
+        birthdays =<span class="st"> </span><span class="kw">sample</span>(<span class="dv">1</span>:days_in_year, class_size, <span class="dt">replace =</span> <span class="ot">TRUE</span>)
+        two_pairs =<span class="st"> </span><span class="kw">sum</span>(<span class="kw">table</span>(birthdays) &gt;=<span class="st"> </span><span class="dv">2</span>) &gt;=<span class="st"> </span><span class="dv">2</span>
+        if(two_pairs) {
+            break
+        }
+    }
+    n_class_vector[i] =<span class="st"> </span>num_classes
+}</code></pre>
 </div>
 <div class="slide section level2">
 
 <p>A better option is to make the simulation code into its own function:</p>
+<pre class="sourceCode r"><code class="sourceCode r">## simulates one draw of our random variable
+simulate_n_classes =<span class="st"> </span>function(class_size, <span class="dt">days_in_year =</span> <span class="dv">365</span>) {
+    num_classes =<span class="st"> </span><span class="dv">0</span>
+    while(<span class="ot">TRUE</span>) {
+        num_classes =<span class="st"> </span>num_classes +<span class="st"> </span><span class="dv">1</span>
+        birthdays =<span class="st"> </span><span class="kw">sample</span>(<span class="dv">1</span>:days_in_year, class_size, <span class="dt">replace =</span> <span class="ot">TRUE</span>)
+        two_pairs =<span class="st"> </span><span class="kw">sum</span>(<span class="kw">table</span>(birthdays) &gt;=<span class="st"> </span><span class="dv">2</span>) &gt;=<span class="st"> </span><span class="dv">2</span>
+        if(two_pairs) {
+            break
+        }
+    }
+    <span class="kw">return</span>(num_classes)
+}
+## simulate many draws of the random variable
+n_class_vector =<span class="st"> </span><span class="kw">replicate</span>(<span class="dt">n =</span> <span class="dv">100</span>, <span class="kw">simulate_n_classes</span>(<span class="dt">class_size =</span> <span class="dv">20</span>))</code></pre>
 </div>
 <div class="slide section level2">
 
 <p>Maybe next we're interested in how the distribution changes with class size.</p>
 <p>Let's make a function that computes the average number of classes we need to go to before we get two pairs of birthdays:</p>
+<pre class="sourceCode r"><code class="sourceCode r">get_expected_num_classes =<span class="st"> </span>function(class_size, <span class="dt">days_in_year =</span> <span class="dv">365</span>, <span class="dt">n_iter =</span> <span class="dv">100</span>) {
+    ## simulating n_iter draws from simulate_n_classes
+    sims =<span class="st"> </span><span class="kw">replicate</span>(<span class="dt">n =</span> n_iter, <span class="kw">simulate_n_classes</span>(<span class="dt">class_size =</span> class_size, <span class="dt">days_in_year =</span> days_in_year))
+    <span class="kw">return</span>(<span class="kw">mean</span>(sims))
+}</code></pre>
 </div>
 <div class="slide section level2">
 
 <p>Once we have that function, we can compute the expectation for a range of class sizes and make a plot:</p>
+<pre class="sourceCode r"><code class="sourceCode r">plot_expected_num_classes =<span class="st"> </span>function(potential_class_sizes, <span class="dt">days_in_year =</span> <span class="dv">365</span>, <span class="dt">n_iter =</span> <span class="dv">100</span>) {
+    ## compute expected class size for every value of potential_class_sizes
+    expected_num_classes =<span class="st"> </span><span class="kw">rep</span>(<span class="ot">NA</span>, <span class="kw">length</span>(potential_class_sizes))
+    for(i in <span class="dv">1</span>:<span class="kw">length</span>(potential_class_sizes)) {
+        expected_num_classes[i] =
+<span class="st">            </span><span class="kw">get_expected_num_classes</span>(potential_class_sizes[i], <span class="dt">days_in_year =</span> days_in_year, <span class="dt">n_iter =</span> n_iter)
+    }
+    <span class="kw">plot</span>(expected_num_classes ~<span class="st"> </span>potential_class_sizes)
+}
+<span class="kw">plot_expected_num_classes</span>(<span class="kw">c</span>(<span class="dv">15</span>, <span class="dv">20</span>, <span class="dv">50</span>, <span class="dv">100</span>, <span class="dv">400</span>))</code></pre>
+<div class="figure">
+<img src="figure/unnamed-chunk-6-1.png" alt="plot of chunk unnamed-chunk-6" /><p class="caption">plot of chunk unnamed-chunk-6</p>
+</div>
 </div>
 <div class="slide section level2">
 
 <p>That's about as far as we want to go in that direction.</p>
 <p>Let's ask a new question: how does the birthday problem change if different days of the week are more or less favored?</p>
 <p>We can modify our simulation code to simulate from uneven probabilities. We'll want to give the probabilities as an argument to the function and check that they are valid.</p>
+<pre class="sourceCode r"><code class="sourceCode r">simulate_n_classes =<span class="st"> </span>function(class_size, day_probabilities) {
+    num_classes =<span class="st"> </span><span class="dv">0</span>
+    ## checking that day_probabilities is actually a vector of probabilities
+    <span class="kw">stopifnot</span>(<span class="kw">sum</span>(day_probabilities) ==<span class="st"> </span><span class="dv">1</span> &amp;&amp;<span class="st"> </span><span class="kw">all</span>(day_probabilities &gt;=<span class="st"> </span><span class="dv">0</span>))
+    while(<span class="ot">TRUE</span>) {
+        num_classes =<span class="st"> </span>num_classes +<span class="st"> </span><span class="dv">1</span>
+        birthdays =<span class="st"> </span><span class="kw">sample</span>(<span class="dv">1</span>:<span class="kw">length</span>(day_probabilities), class_size, <span class="dt">replace =</span> <span class="ot">TRUE</span>, <span class="dt">prob =</span> day_probabilities)
+        two_pairs =<span class="st"> </span><span class="kw">sum</span>(<span class="kw">table</span>(birthdays) &gt;=<span class="st"> </span><span class="dv">2</span>) &gt;=<span class="st"> </span><span class="dv">2</span>
+        if(two_pairs) {
+            break
+        }
+    }
+    <span class="kw">return</span>(num_classes)
+}
+get_expected_num_classes =<span class="st"> </span>function(class_size, day_probabilities, <span class="dt">n_iter =</span> <span class="dv">100</span>) {
+    ## simulating n_iter draws from simulate_n_classes
+    sims =<span class="st"> </span><span class="kw">replicate</span>(<span class="dt">n =</span> n_iter, <span class="kw">simulate_n_classes</span>(<span class="dt">class_size =</span> class_size, day_probabilities))
+    <span class="kw">return</span>(<span class="kw">mean</span>(sims))
+}</code></pre>
 </div>
 <div class="slide section level2">
 
 <p>Then we can use the function we've created to see how the expected number of classes changes as the relative probability of weekday vs. weekend birth changes:</p>
+<pre class="sourceCode r"><code class="sourceCode r">## make day probabilities by repeating two small numbers followed by five big numbers until we get 365, then divide by the sum to get probabilities
+day_probabilities =<span class="st"> </span><span class="kw">rep</span>(<span class="kw">c</span>(<span class="kw">rep</span>(<span class="dv">1</span>,<span class="dv">2</span>), <span class="kw">rep</span>(<span class="dv">3</span>,<span class="dv">5</span>)), <span class="dt">length.out =</span> <span class="dv">365</span>)
+day_probabilities =<span class="st"> </span>day_probabilities /<span class="st"> </span><span class="kw">sum</span>(day_probabilities)
+<span class="co"># compare values when the weekdays are more likely to when everything is equal</span>
+<span class="kw">get_expected_num_classes</span>(<span class="dv">20</span>, day_probabilities)</code></pre>
+<pre><code>## [1] 10.45</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">get_expected_num_classes</span>(<span class="dv">20</span>, <span class="kw">rep</span>(<span class="dv">1</span> /<span class="st"> </span><span class="dv">365</span>, <span class="dv">365</span>))</code></pre>
+<pre><code>## [1] 11.64</code></pre>
+<p>A nice exercise would be to make a function that created these probabilities, taking as a parameter the relative probability of weekend vs. weekday. That would allow us to explore the distribution more easily, instead of with the ugly code on the last two lines.</p>
 </div>
 </body>
 </html>
