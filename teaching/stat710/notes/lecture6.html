@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="http://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="http://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div id="writing-and-calling-functions" class="slide section level2">
+<h1>Writing and calling functions</h1>
+<p>Agenda for today:</p>
+<ul>
+<li><p>Finish up from last time</p></li>
+<li><p>We'll write some functions that let us investigate the birthday problem.</p></li>
+</ul>
+</div>
+<div id="side-effects" class="slide section level2">
+<h1>Side effects</h1>
+<p>A function has a <em>side effect</em> if it does anything other than compute a return value, for instance, if it changes the values of other variables in the environment it is defined in, or adds variables to the environment.</p>
+<p>We generally don't want functions to have side effects, because they make code more confusing and more difficult to test.</p>
+<p>In R, functions <em>can</em> have side effects, but it is discouraged by both the language itself and by programming norms.</p>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<p>Remember that functions can see variables defined in the parent environments.</p>
+<p>What they can't do is change the values of those variables (except with a special operator).</p>
+<p>For example:</p>
+<pre class="sourceCode r"><code class="sourceCode r">w =<span class="st"> </span><span class="dv">12</span>
+f =<span class="st"> </span>function(y) {
+   d =<span class="st"> </span><span class="dv">8</span>
+   w =<span class="st"> </span>w +<span class="st"> </span><span class="dv">1</span>
+   y =<span class="st"> </span>y -<span class="st"> </span><span class="dv">2</span>
+   <span class="kw">cat</span>(<span class="kw">sprintf</span>(<span class="st">&quot;Value of w: %i&quot;</span>, w))
+   h =<span class="st"> </span>function() {
+      <span class="kw">return</span>(d*(w+y))
+   }
+   <span class="kw">return</span>(<span class="kw">h</span>())
+}
+t =<span class="st"> </span><span class="dv">4</span>
+<span class="kw">f</span>(t)</code></pre>
+<pre><code>## Value of w: 13</code></pre>
+<pre><code>## [1] 120</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">w</code></pre>
+<pre><code>## [1] 12</code></pre>
+<p>It looks like the value of <code>w</code> changed inside the function, but the value in the global environment was not actually changed.</p>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Primary exceptions to the no side effects rule:</p>
+<ul>
+<li><p>Plotting</p></li>
+<li><p>Data export</p></li>
+</ul>
+</div>
+<div id="the-complement-of-the-no-side-effects-rule" class="slide section level2">
+<h1>The complement of the no side effects rule</h1>
+<ul>
+<li><p>No side effects says in part that functions shouldn't change variables in the global environment (or any other environment).</p></li>
+<li><p>Your functions also should not read from environments other than the function's execution environment.</p></li>
+</ul>
+<p>This rule isn't as strong/there are more exceptions, but in general all the variables your function uses should be given as arguments to the function.</p>
+</div>
+<div id="some-rules-for-writing-functions" class="slide section level2">
+<h1>Some rules for writing functions</h1>
+<ul>
+<li><p>&quot;The first rule of functions is that they should be small. The second rule of functions is that <em>they should be smaller than that</em>.&quot;</p></li>
+<li><p>Functions should <em>do one thing</em>. Multiple tasks = multiple functions.</p></li>
+<li><p>Related functions should have consistent interfaces: if they take the same input, they should have the same arguments in the same order. If they make the same output, they should give output in the same way.</p></li>
+<li><p>No side effects.</p></li>
+<li><p>No <a href="https://en.wikipedia.org/wiki/Magic_number_(programming)#Unnamed_numerical_constants">magic numbers</a>.</p></li>
+</ul>
+<div class="incremental">
+<p>But, like <a href="http://languagelog.ldc.upenn.edu/nll/?p=992">Orwell's last rule for effective writing</a>: break any of these rules rather than write something outright barbarous.</p>
+</div>
+</div>
+<div id="example" class="slide section level2">
+<h1>Example</h1>
+<p>Back to the birthday problem from the first week of class.</p>
+<p>We wanted to know how many classes filled with randomly selected individuals we would have to attend before we found one where there were at least two pairs of people with the same birthday, and we wrote the following code to do one simulation:</p>
+<pre class="sourceCode r"><code class="sourceCode r">days_in_year =<span class="st"> </span><span class="dv">365</span>
+class_size =<span class="st"> </span><span class="dv">20</span>
+num_classes =<span class="st"> </span><span class="dv">0</span>
+while(<span class="ot">TRUE</span>) {
+    num_classes =<span class="st"> </span>num_classes +<span class="st"> </span><span class="dv">1</span>
+    birthdays =<span class="st"> </span><span class="kw">sample</span>(<span class="dv">1</span>:days_in_year, class_size, <span class="dt">replace =</span> <span class="ot">TRUE</span>)
+    two_pairs =<span class="st"> </span><span class="kw">sum</span>(<span class="kw">table</span>(birthdays) &gt;=<span class="st"> </span><span class="dv">2</span>) &gt;=<span class="st"> </span><span class="dv">2</span>
+    if(two_pairs) {
+        break
+    }
+}
+num_classes</code></pre>
+<pre><code>## [1] 20</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>We want to perform simulations to get at the distribution of this random variable, so we have to run the same code over and over.</p>
+<p>One option is to just take the code we had and wrap it in a for loop:</p>
+</div>
+<div class="slide section level2">
+
+<p>A better option is to make the simulation code into its own function:</p>
+</div>
+<div class="slide section level2">
+
+<p>Maybe next we're interested in how the distribution changes with class size.</p>
+<p>Let's make a function that computes the average number of classes we need to go to before we get two pairs of birthdays:</p>
+</div>
+<div class="slide section level2">
+
+<p>Once we have that function, we can compute the expectation for a range of class sizes and make a plot:</p>
+</div>
+<div class="slide section level2">
+
+<p>That's about as far as we want to go in that direction.</p>
+<p>Let's ask a new question: how does the birthday problem change if different days of the week are more or less favored?</p>
+<p>We can modify our simulation code to simulate from uneven probabilities. We'll want to give the probabilities as an argument to the function and check that they are valid.</p>
+</div>
+<div class="slide section level2">
+
+<p>Then we can use the function we've created to see how the expected number of classes changes as the relative probability of weekday vs. weekend birth changes:</p>
+</div>
+</body>
+</html>

@@ -1,0 +1,157 @@
+## Writing and calling functions
+
+Agenda for today:
+
+- Finish up from last time
+
+- We'll write some functions that let us investigate the birthday problem.
+
+## Side effects
+
+A function has a _side effect_ if it does anything other than compute a return value, for instance, if it changes the values of other variables in the environment it is defined in, or adds variables to the environment.
+
+We generally don't want functions to have side effects, because they make code more confusing and more difficult to test.
+
+In R, functions _can_ have side effects, but it is discouraged by both the language itself and by programming norms.
+
+
+-----
+
+. . .
+
+Remember that functions can see variables defined in the parent environments.
+
+What they can't do is change the values of those variables (except with a special operator).
+
+For example:
+
+
+```{r}
+w = 12
+f = function(y) {
+   d = 8
+   w = w + 1
+   y = y - 2
+   cat(sprintf("Value of w: %i", w))
+   h = function() {
+      return(d*(w+y))
+   }
+   return(h())
+}
+t = 4
+f(t)
+w
+```
+
+It looks like the value of `w` changed inside the function, but the value in the global environment was not actually changed.
+
+-----
+
+Primary exceptions to the no side effects rule:
+
+- Plotting
+
+- Data export
+
+## The complement of the no side effects rule
+
+- No side effects says in part that functions shouldn't change variables in the global environment (or any other environment).
+
+- Your functions also should not read from environments other than the function's execution environment.
+
+This rule isn't as strong/there are more exceptions, but in general all the variables your function uses should be given as arguments to the function.
+
+
+## Some rules for writing functions
+
+- "The first rule of functions is that they should be small. The second rule of functions is that _they should be smaller than that_."
+
+- Functions should _do one thing_. Multiple tasks = multiple functions.
+
+- Related functions should have consistent interfaces: if they take the same input, they should have the same arguments in the same order. If they make the same output, they should give output in the same way.
+
+- No side effects.
+
+- No [magic numbers](https://en.wikipedia.org/wiki/Magic_number_(programming)#Unnamed_numerical_constants).
+
+. . .
+
+But, like [Orwell's last rule for effective writing](http://languagelog.ldc.upenn.edu/nll/?p=992): break any of these rules rather than write something outright barbarous.
+
+## Example
+
+Back to the birthday problem from the first week of class.
+
+We wanted to know how many classes filled with randomly selected individuals we would have to attend before we found one where there were at least two pairs of people with the same birthday, and we wrote the following code to do one simulation:
+
+```{r}
+days_in_year = 365
+class_size = 20
+num_classes = 0
+while(TRUE) {
+    num_classes = num_classes + 1
+    birthdays = sample(1:days_in_year, class_size, replace = TRUE)
+    two_pairs = sum(table(birthdays) >= 2) >= 2
+    if(two_pairs) {
+        break
+    }
+}
+num_classes
+```
+
+-----
+
+We want to perform simulations to get at the distribution of this random variable, so we have to run the same code over and over.
+
+One option is to just take the code we had and wrap it in a for loop:
+
+```{r}
+
+```
+
+-----
+
+A better option is to make the simulation code into its own function:
+
+```{r}
+
+```
+
+-----
+
+Maybe next we're interested in how the distribution changes with class size.
+
+Let's make a function that computes the average number of classes we need to go to before we get two pairs of birthdays:
+
+```{r}
+
+```
+
+-----
+
+Once we have that function, we can compute the expectation for a range of class sizes and make a plot:
+
+```{r}
+
+```
+
+------
+
+That's about as far as we want to go in that direction.
+
+Let's ask a new question: how does the birthday problem change if different days of the week are more or less favored?
+
+We can modify our simulation code to simulate from uneven probabilities.
+We'll want to give the probabilities as an argument to the function and check that they are valid.
+
+```{r}
+
+```
+
+-----
+
+Then we can use the function we've created to see how the expected number of classes changes as the relative probability of weekday vs. weekend birth changes:
+
+```{r}
+
+```
