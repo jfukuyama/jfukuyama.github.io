@@ -1,0 +1,566 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="http://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="http://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div id="splitapplycombine-part-2" class="slide section level2">
+<h1>Split/apply/combine part 2</h1>
+<p>Reading: <a href="https://www.jstatsoft.org/article/view/v040i01">Hadley Wickham, &quot;The Split/Apply/Combine Strategy for Data Analysis&quot;</a>.</p>
+<p>Agenda for today:</p>
+<ul>
+<li><p>Functions as objects</p></li>
+<li><p>Split/apply/combine with plyr</p></li>
+</ul>
+</div>
+<div id="last-time" class="slide section level2">
+<h1>Last time</h1>
+<p>Split/apply/combine with base R, lots of different functions for different tasks</p>
+<ul>
+<li><p>lapply/sapply for applying to lists/vectors, giving different kinds of output</p></li>
+<li><p>apply for applying row-by-row to matrices or data frames</p></li>
+<li><p>mapply for applying to multiple vectors</p></li>
+<li><p>tapply for splitting a vector and then applying a function to the groups</p></li>
+<li><p>by for splitting a data frame and then applying a function to the groups</p></li>
+<li><p>split for just splitting a vector or data frame up</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>plyr is going to clean this up for us. The plyr functions have the goals as base R functions, but with</p>
+<ul>
+<li><p>more consistent interface</p></li>
+<li><p>guaranteed output type</p></li>
+</ul>
+<p>Before we get into that, let's go back to functions...</p>
+</div>
+<div id="functions-as-objects" class="slide section level2">
+<h1>Functions as objects</h1>
+<p>Remember that functions in R are objects that we can create, manipulate, and pass to other functions.</p>
+<pre class="sourceCode r"><code class="sourceCode r">simple_function =<span class="st"> </span>function(x) x^<span class="dv">2</span>
+simple_function</code></pre>
+<pre><code>## function(x) x^2</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">formals</span>(simple_function)</code></pre>
+<pre><code>## $x</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">environment</span>(simple_function)</code></pre>
+<pre><code>## &lt;environment: R_GlobalEnv&gt;</code></pre>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<p>There is a difference between a function and what the function evaluates to:</p>
+<pre class="sourceCode r"><code class="sourceCode r">simple_function</code></pre>
+<pre><code>## function(x) x^2</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">class</span>(simple_function)</code></pre>
+<pre><code>## [1] &quot;function&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">simple_function</span>(<span class="dv">2</span>)</code></pre>
+<pre><code>## [1] 4</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">class</span>(<span class="kw">simple_function</span>(<span class="dv">2</span>))</code></pre>
+<pre><code>## [1] &quot;numeric&quot;</code></pre>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>When we're doing split/apply/combine, we want to pass in a function, not what the function evaluates to.</p>
+<pre class="sourceCode r"><code class="sourceCode r">x =<span class="st"> </span><span class="kw">sample</span>(<span class="dv">0</span>:<span class="dv">1</span>, <span class="dt">size =</span> <span class="dv">20</span>, <span class="dt">replace =</span> <span class="ot">TRUE</span>)
+type =<span class="st"> </span><span class="kw">rep</span>(letters[<span class="dv">1</span>:<span class="dv">2</span>], <span class="dt">each =</span> <span class="dv">10</span>)
+x</code></pre>
+<pre><code>##  [1] 0 1 0 0 0 1 1 0 0 1 0 0 0 1 1 0 0 0 1 1</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">type</code></pre>
+<pre><code>##  [1] &quot;a&quot; &quot;a&quot; &quot;a&quot; &quot;a&quot; &quot;a&quot; &quot;a&quot; &quot;a&quot; &quot;a&quot; &quot;a&quot; &quot;a&quot; &quot;b&quot; &quot;b&quot; &quot;b&quot; &quot;b&quot; &quot;b&quot; &quot;b&quot; &quot;b&quot;
+## [18] &quot;b&quot; &quot;b&quot; &quot;b&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">tapply</span>(x, type, mean) ## mean is a function</code></pre>
+<pre><code>##   a   b 
+## 0.4 0.4</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">tapply</span>(x, type, <span class="kw">mean</span>(x)) ## mean(x) is a number, not a function</code></pre>
+<pre><code>## Error in match.fun(FUN): &#39;mean(x)&#39; is not a function, character or symbol</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">## the line above is the same as the following:
+mean_x =<span class="st"> </span><span class="kw">mean</span>(x)
+mean_x</code></pre>
+<pre><code>## [1] 0.4</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">tapply</span>(x, type, mean_x)</code></pre>
+<pre><code>## Error in get(as.character(FUN), mode = &quot;function&quot;, envir = envir): object &#39;mean_x&#39; of mode &#39;function&#39; was not found</code></pre>
+</div>
+<div id="anonymous-functions" class="slide section level2">
+<h1>Anonymous functions</h1>
+<p>If you have a function you only want to use once, you don't have to assign it to anything.</p>
+<p>When you use a function this way it is called an <em>anonymous function</em> because it doesn't have a name in your code.</p>
+<p>These are often used in the context of the apply family.</p>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data</span>(diamonds)
+## here the function for computing the coefficients is an anonymous function
+diamond_coefs =<span class="st"> </span><span class="kw">by</span>(diamonds, diamonds$color, <span class="dt">FUN =</span> function(data_subset) {
+    diamond_lm =<span class="st"> </span><span class="kw">lm</span>(<span class="kw">log</span>(price) ~<span class="st"> </span>carat, <span class="dt">data =</span> data_subset)
+    diamond_coefficients =<span class="st"> </span><span class="kw">coef</span>(diamond_lm)
+    <span class="kw">return</span>(diamond_coefficients)
+})
+diamond_coefs</code></pre>
+<pre><code>## diamonds$color: D
+## (Intercept)       carat 
+##    6.048811    2.383864 
+## -------------------------------------------------------- 
+## diamonds$color: E
+## (Intercept)       carat 
+##    6.034513    2.348335 
+## -------------------------------------------------------- 
+## diamonds$color: F
+## (Intercept)       carat 
+##    6.088442    2.272790 
+## -------------------------------------------------------- 
+## diamonds$color: G
+## (Intercept)       carat 
+##    6.109554    2.178489 
+## -------------------------------------------------------- 
+## diamonds$color: H
+## (Intercept)       carat 
+##    6.180284    1.906300 
+## -------------------------------------------------------- 
+## diamonds$color: I
+## (Intercept)       carat 
+##    6.175315    1.799199 
+## -------------------------------------------------------- 
+## diamonds$color: J
+## (Intercept)       carat 
+##    6.254074    1.627947</code></pre>
+</div>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<p>Equivalent to:</p>
+<pre class="sourceCode r"><code class="sourceCode r">get_diamond_coefs =<span class="st"> </span>function(data_subset) {
+    diamond_lm =<span class="st"> </span><span class="kw">lm</span>(<span class="kw">log</span>(price) ~<span class="st"> </span>carat, <span class="dt">data =</span> data_subset)
+    diamond_coefficients =<span class="st"> </span><span class="kw">coef</span>(diamond_lm)
+    <span class="kw">return</span>(diamond_coefficients)
+}
+diamond_coefs =<span class="st"> </span><span class="kw">by</span>(diamonds, diamonds$color, get_diamond_coefs)
+diamond_coefs</code></pre>
+<pre><code>## diamonds$color: D
+## (Intercept)       carat 
+##    6.048811    2.383864 
+## -------------------------------------------------------- 
+## diamonds$color: E
+## (Intercept)       carat 
+##    6.034513    2.348335 
+## -------------------------------------------------------- 
+## diamonds$color: F
+## (Intercept)       carat 
+##    6.088442    2.272790 
+## -------------------------------------------------------- 
+## diamonds$color: G
+## (Intercept)       carat 
+##    6.109554    2.178489 
+## -------------------------------------------------------- 
+## diamonds$color: H
+## (Intercept)       carat 
+##    6.180284    1.906300 
+## -------------------------------------------------------- 
+## diamonds$color: I
+## (Intercept)       carat 
+##    6.175315    1.799199 
+## -------------------------------------------------------- 
+## diamonds$color: J
+## (Intercept)       carat 
+##    6.254074    1.627947</code></pre>
+</div>
+</div>
+<div id="plyr-naming-convention" class="slide section level2">
+<h1>plyr naming convention</h1>
+<p>All plyr functions named <code>**ply</code></p>
+<ul>
+<li><p>First position stands for the input and split type</p></li>
+<li><p>Second position stands for the output type</p></li>
+</ul>
+<div class="incremental">
+<p>The possible vaues for the positions are</p>
+<ul>
+<li><p><code>a</code> for array input/slicing by dimension into lower-dimensional pieces</p></li>
+<li><p><code>d</code> for data frame/subsetting by combinations of variables</p></li>
+<li><p><code>l</code> for list input/chopping the list into its individual elements</p></li>
+</ul>
+</div>
+<div class="incremental">
+<p>Syntax will have you specify:</p>
+<ul>
+<li><p>Data the function should be applied to</p></li>
+<li><p>How the data should be split</p></li>
+<li><p>The function to be applied to each split</p></li>
+</ul>
+</div>
+</div>
+<div id="array-input-aply" class="slide section level2">
+<h1>Array input: <code>a*ply</code></h1>
+<p>syntax: <code>a*ply(data, margin, fun)</code></p>
+<ul>
+<li><p><code>data</code> is the data to apply the function to. Should be an array/matrix (well, almost, we'll complicate in a couple slides).</p></li>
+<li><p><code>margin</code> describes how the data should be split: for matrices this is either by row or by column. 1 indicates split by row, 2 indicates split by column.</p></li>
+<li><p><code>fun</code> is the function to apply to each split of the data (generally a row or column vector).</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<p>Example:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(plyr)
+X =<span class="st"> </span><span class="kw">matrix</span>(<span class="dv">1</span>:<span class="dv">6</span>, <span class="dt">nrow =</span> <span class="dv">2</span>, <span class="dt">ncol =</span> <span class="dv">3</span>)
+X</code></pre>
+<pre><code>##      [,1] [,2] [,3]
+## [1,]    1    3    5
+## [2,]    2    4    6</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">aaply</span>(X, <span class="dv">1</span>, sum)</code></pre>
+<pre><code>##  1  2 
+##  9 12</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">adply</span>(X, <span class="dv">1</span>, sum)</code></pre>
+<pre><code>##   X1 V1
+## 1  1  9
+## 2  2 12</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">alply</span>(X, <span class="dv">1</span>, sum)</code></pre>
+<pre><code>## $`1`
+## [1] 9
+## 
+## $`2`
+## [1] 12
+## 
+## attr(,&quot;split_type&quot;)
+## [1] &quot;array&quot;
+## attr(,&quot;split_labels&quot;)
+##   X1
+## 1  1
+## 2  2</code></pre>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>A couple of extras:</p>
+<ul>
+<li><p>Works on higher-dimensional arrays, in which case margin can be 1,...,p, where p is the dimension of the array.</p></li>
+<li><p>Margin can also be a vector, in which case the array is split on the combination of the dimensions.</p></li>
+<li><p>The function technically works on anything with dimensions and multi-dimensional indexing, so you can pass data frames as well as arrays/matrices.</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<p>Example on a 3-dimensional array:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data</span>(HairEyeColor)
+HairEyeColor</code></pre>
+<pre><code>## , , Sex = Male
+## 
+##        Eye
+## Hair    Brown Blue Hazel Green
+##   Black    32   11    10     3
+##   Brown    53   50    25    15
+##   Red      10   10     7     7
+##   Blond     3   30     5     8
+## 
+## , , Sex = Female
+## 
+##        Eye
+## Hair    Brown Blue Hazel Green
+##   Black    36    9     5     2
+##   Brown    66   34    29    14
+##   Red      16    7     7     7
+##   Blond     4   64     5     8</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">dim</span>(HairEyeColor)</code></pre>
+<pre><code>## [1] 4 4 2</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">dimnames</span>(HairEyeColor)</code></pre>
+<pre><code>## $Hair
+## [1] &quot;Black&quot; &quot;Brown&quot; &quot;Red&quot;   &quot;Blond&quot;
+## 
+## $Eye
+## [1] &quot;Brown&quot; &quot;Blue&quot;  &quot;Hazel&quot; &quot;Green&quot;
+## 
+## $Sex
+## [1] &quot;Male&quot;   &quot;Female&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">adply</span>(HairEyeColor, <span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>), sum)</code></pre>
+<pre><code>##     Hair   Eye  V1
+## 1  Black Brown  68
+## 2  Brown Brown 119
+## 3    Red Brown  26
+## 4  Blond Brown   7
+## 5  Black  Blue  20
+## 6  Brown  Blue  84
+## 7    Red  Blue  17
+## 8  Blond  Blue  94
+## 9  Black Hazel  15
+## 10 Brown Hazel  54
+## 11   Red Hazel  14
+## 12 Blond Hazel  10
+## 13 Black Green   5
+## 14 Brown Green  29
+## 15   Red Green  14
+## 16 Blond Green  16</code></pre>
+<p>Play around with replacing the margin vector with others, and convince yourself of why you get the output you do.</p>
+</div>
+</div>
+<div id="data-frame-input-dply" class="slide section level2">
+<h1>Data frame input: <code>d*ply</code></h1>
+<p>syntax: <code>d*ply(data, variables, fun)</code></p>
+<ul>
+<li><p><code>data</code> is the data to apply the function to. Should be a data frame, but it will be ok if you pass a matrix.</p></li>
+<li><p><code>variables</code> describes the variables used to split the data, and you specify them as <code>.(var1, var2, ... , varN)</code> <br><br> You can give it a single factor variable, in which case the data is split by the levels of that factor, or several factor variables, in which case the data is split on all combinations of those factors. <br><br> The syntax is special to indicate that the variables are taken first from the data frame in data and then, if they aren't found there, from the global environment.</p></li>
+<li><p><code>fun</code> is the function to apply to each split of the data.</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<p>Let's look a bit more at HairEyeColor:</p>
+<pre class="sourceCode r"><code class="sourceCode r">hair_and_gender_counts =<span class="st"> </span><span class="kw">adply</span>(HairEyeColor, <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">3</span>), sum)
+hair_and_gender_counts</code></pre>
+<pre><code>##    Hair    Sex  V1
+## 1 Black   Male  56
+## 2 Brown   Male 143
+## 3   Red   Male  34
+## 4 Blond   Male  46
+## 5 Black Female  52
+## 6 Brown Female 143
+## 7   Red Female  37
+## 8 Blond Female  81</code></pre>
+</div>
+<div class="incremental">
+<p>Suppose we want to know what fraction of people with each hair color are men, and it seems to us that split/apply/combine will be good for this task.</p>
+<p>First ask:</p>
+<ul>
+<li><p>What is variable(s) should be used to split the data?</p></li>
+<li><p>What function do we want to compute within each split?</p></li>
+</ul>
+</div>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<p>First define a function that will take a subset of the data and find return to us the fraction of men:</p>
+<pre class="sourceCode r"><code class="sourceCode r">get_fraction_male =<span class="st"> </span>function(data_subset) {
+    male_subset =<span class="st"> </span><span class="kw">subset</span>(data_subset, Sex ==<span class="st"> &quot;Male&quot;</span>)
+    frac_male =<span class="st"> </span><span class="kw">sum</span>(male_subset$V1) /<span class="st"> </span><span class="kw">sum</span>(data_subset$V1)
+}</code></pre>
+<p>Then split <code>hair_and_gender_counts</code> on the <code>Hair</code> variable and apply <code>get_fraction_male</code> to each data subset:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ddply</span>(hair_and_gender_counts, .(Hair), get_fraction_male)</code></pre>
+<pre><code>##    Hair        V1
+## 1 Black 0.5185185
+## 2 Brown 0.5000000
+## 3   Red 0.4788732
+## 4 Blond 0.3622047</code></pre>
+</div>
+</div>
+<div id="list-input-lply" class="slide section level2">
+<h1>List input: <code>l*ply</code></h1>
+<p>syntax: <code>l*ply(data, fun)</code></p>
+<ul>
+<li><p><code>data</code> is a list containing the data you want the function to be applied to.</p></li>
+<li><p><code>fun</code> is a function that will be applied to each element of the list.</p></li>
+<li><p>Notice that there is no specification for the split: <code>l*ply</code> assumes that you split the list into its individual elements.</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>Example:</p>
+<div class="incremental">
+<pre class="sourceCode r"><code class="sourceCode r">a_list =<span class="st"> </span><span class="kw">list</span>(<span class="dt">a =</span> <span class="dv">1</span>, <span class="dt">b =</span> <span class="st">&quot;state&quot;</span>, <span class="dt">c =</span> <span class="ot">TRUE</span>)
+a_list</code></pre>
+<pre><code>## $a
+## [1] 1
+## 
+## $b
+## [1] &quot;state&quot;
+## 
+## $c
+## [1] TRUE</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">laply</span>(a_list, typeof)</code></pre>
+<pre><code>## [1] &quot;double&quot;    &quot;character&quot; &quot;logical&quot;</code></pre>
+</div>
+</div>
+<div class="slide section level2">
+
+<p><code>l*ply</code> will also work on vectors, e.g.:</p>
+<pre class="sourceCode r"><code class="sourceCode r">vec =<span class="st"> </span><span class="dv">1</span>:<span class="dv">10</span>
+<span class="kw">laply</span>(vec, log)</code></pre>
+<pre><code>##  [1] 0.0000000 0.6931472 1.0986123 1.3862944 1.6094379 1.7917595 1.9459101
+##  [8] 2.0794415 2.1972246 2.3025851</code></pre>
+</div>
+<div id="output-types" class="slide section level2">
+<h1>Output types</h1>
+<p>We said the options for output are arrays, data frames, and lists.</p>
+<p>We've seen examples above, but let's look more systematically.</p>
+</div>
+<div id="data-frame-output-dply" class="slide section level2">
+<h1>Data frame output: <code>*dply</code></h1>
+<ul>
+<li><p>Returns a data frame with columns for the values of the processing function and columns describing the data splits.</p></li>
+<li><p>The processing function should return either a row of a data frame or a vector of a consistent length.</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data</span>(diamonds)
+diamond_coefs =<span class="st"> </span><span class="kw">ddply</span>(diamonds, .(color), function(data_subset) {
+    <span class="kw">return</span>(<span class="kw">coef</span>(<span class="kw">lm</span>(<span class="kw">log</span>(price) ~<span class="st"> </span>carat, <span class="dt">data =</span> data_subset)))
+})
+diamond_coefs</code></pre>
+<pre><code>##   color (Intercept)    carat
+## 1     D    6.048811 2.383864
+## 2     E    6.034513 2.348335
+## 3     F    6.088442 2.272790
+## 4     G    6.109554 2.178489
+## 5     H    6.180284 1.906300
+## 6     I    6.175315 1.799199
+## 7     J    6.254074 1.627947</code></pre>
+<p>Check on your own what happens when you replace <code>.(color)</code> with <code>.(color, clarity)</code>. How is the output different than what we got using <code>by</code> last time? Is it better?</p>
+</div>
+</div>
+<div id="array-output-aply" class="slide section level2">
+<h1>Array output: <code>*aply</code></h1>
+<ul>
+<li><p>Returns an array with dimension equal to the dimension of the split plus the dimension of the output. <br><br> The first dimensions in the array correspond to the split dimensions, and subsequent dimensions correspond to the output dimensions.</p></li>
+<li><p>The processing function should return a vector or array of the same type and dimensionality each time it is called.</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<p>Here we split along one dimension and have one-dimensional output. Similar to what we've seen before with apply in base R.</p>
+<pre class="sourceCode r"><code class="sourceCode r">X =<span class="st"> </span><span class="kw">matrix</span>(<span class="dv">1</span>:<span class="dv">6</span>, <span class="dt">nrow =</span> <span class="dv">3</span>, <span class="dt">ncol =</span> <span class="dv">2</span>)
+X</code></pre>
+<pre><code>##      [,1] [,2]
+## [1,]    1    4
+## [2,]    2    5
+## [3,]    3    6</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">row_sums_x =<span class="st"> </span><span class="kw">aaply</span>(X, <span class="dv">1</span>, sum)
+<span class="kw">dim</span>(row_sums_x)</code></pre>
+<pre><code>## NULL</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">length</span>(row_sums_x)</code></pre>
+<pre><code>## [1] 3</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">row_sums_x</code></pre>
+<pre><code>## 1 2 3 
+## 5 7 9</code></pre>
+</div>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<p>Here we split along two dimensions and have one-dimensional output:</p>
+<pre class="sourceCode r"><code class="sourceCode r">X_array =<span class="st"> </span><span class="kw">array</span>(<span class="dt">data =</span> <span class="dv">1</span>:<span class="dv">12</span>, <span class="dt">dim =</span> <span class="kw">c</span>(<span class="dv">3</span>, <span class="dv">2</span>, <span class="dv">2</span>))
+<span class="kw">dim</span>(X_array)</code></pre>
+<pre><code>## [1] 3 2 2</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">X_array</code></pre>
+<pre><code>## , , 1
+## 
+##      [,1] [,2]
+## [1,]    1    4
+## [2,]    2    5
+## [3,]    3    6
+## 
+## , , 2
+## 
+##      [,1] [,2]
+## [1,]    7   10
+## [2,]    8   11
+## [3,]    9   12</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">third_dim_sums_x =<span class="st"> </span><span class="kw">aaply</span>(X_array, <span class="dv">1</span>:<span class="dv">2</span>, sum)
+<span class="kw">dim</span>(third_dim_sums_x)</code></pre>
+<pre><code>## [1] 3 2</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">third_dim_sums_x</code></pre>
+<pre><code>##    X2
+## X1   1  2
+##   1  8 14
+##   2 10 16
+##   3 12 18</code></pre>
+</div>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<p>Here we split along one dimension and have two-dimensional output:</p>
+<pre class="sourceCode r"><code class="sourceCode r">nonsense_function =<span class="st"> </span>function(x) {
+    out =<span class="st"> </span><span class="kw">c</span>(x[<span class="dv">1</span>] *<span class="st"> </span><span class="dv">2</span>, x[<span class="dv">2</span>] *<span class="st"> </span>-<span class="dv">1</span>)
+    <span class="kw">return</span>(out)
+}
+X</code></pre>
+<pre><code>##      [,1] [,2]
+## [1,]    1    4
+## [2,]    2    5
+## [3,]    3    6</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">nonsense_applied_to_rows =<span class="st"> </span><span class="kw">aaply</span>(X, <span class="dv">1</span>, nonsense_function)
+<span class="kw">dim</span>(nonsense_applied_to_rows)</code></pre>
+<pre><code>## [1] 3 2</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">nonsense_applied_to_rows</code></pre>
+<pre><code>##    
+## X1  1  2
+##   1 2 -4
+##   2 4 -5
+##   3 6 -6</code></pre>
+<p>I don't expect you to memorize this, just to know that we can use these functions to get consistently-shaped output and be able to look it up and figure out what it should be.</p>
+</div>
+</div>
+<div id="list-output-lply" class="slide section level2">
+<h1>List output: <code>*lply</code></h1>
+<ul>
+<li><p>Returns a list, names of the list describe the split.</p></li>
+<li><p>Since the output type is list, no restrictions on the type of output the processing function returns.</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<pre class="sourceCode r"><code class="sourceCode r">diamond_lms =<span class="st"> </span><span class="kw">dlply</span>(diamonds, .(color), function(data_subset) {
+    <span class="kw">lm</span>(<span class="kw">log</span>(price) ~<span class="st"> </span>carat, <span class="dt">data =</span> data_subset)
+})
+
+<span class="kw">class</span>(diamond_lms)</code></pre>
+<pre><code>## [1] &quot;list&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">class</span>(diamond_lms[[<span class="dv">1</span>]])</code></pre>
+<pre><code>## [1] &quot;lm&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">names</span>(diamond_lms)</code></pre>
+<pre><code>## [1] &quot;D&quot; &quot;E&quot; &quot;F&quot; &quot;G&quot; &quot;H&quot; &quot;I&quot; &quot;J&quot;</code></pre>
+</div>
+<div id="some-special-cases" class="slide section level2">
+<h1>Some special cases</h1>
+<ul>
+<li><p>No output: <code>*_ply</code> (for functions that just have side effects, like making plots or writing to the disk).</p></li>
+<li><p><code>r*ply</code>: like <code>l*ply</code>, but <code>r</code> for repeat. Pass it some number of times to repeat an expression instead of passing it data, and pass it an expression to evaluate instead of a function.</p></li>
+</ul>
+</div>
+<div id="summing-up" class="slide section level2">
+<h1>Summing up</h1>
+<ul>
+<li><p><code>a*ply</code> functions take array-like structures and split them up row-by-row or column-by-column.</p></li>
+<li><p><code>d*ply</code> functions take data frames and split them on a factor or a combination of factors.</p></li>
+<li><p><code>l*ply</code> functions take lists and split them up one element at a time.</p></li>
+<li><p>In every case, a function is applied to each element of the split, the output computed, and the results reported as either an array, a data frame, or a list.</p></li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,412 @@
+## Split/apply/combine part 2
+
+Reading: [Hadley Wickham, "The Split/Apply/Combine Strategy for Data Analysis"](https://www.jstatsoft.org/article/view/v040i01).
+
+Agenda for today:
+
+- Functions as objects
+
+- Split/apply/combine with plyr
+
+-----
+
+## Last time
+
+
+Split/apply/combine with base R, lots of different functions for different tasks
+
+- lapply/sapply for applying to lists/vectors, giving different kinds of output
+
+- apply for applying row-by-row to matrices or data frames
+
+- mapply for applying to multiple vectors
+
+- tapply for splitting a vector and then applying a function to the groups
+
+- by for splitting a data frame and then applying a function to the groups
+
+- split for just splitting a vector or data frame up
+
+
+-----
+
+
+plyr is going to clean this up for us. The plyr functions have the goals as base R functions, but with
+
+- more consistent interface
+
+- guaranteed output type
+
+Before we get into that, let's go back to functions...
+
+## Functions as objects
+
+Remember that functions in R are objects that we can create, manipulate, and pass to other functions.
+
+```{r}
+simple_function = function(x) x^2
+simple_function
+formals(simple_function)
+environment(simple_function)
+```
+
+-----
+
+. . .
+
+There is a difference between a function and what the function evaluates to:
+
+```{r}
+simple_function
+class(simple_function)
+simple_function(2)
+class(simple_function(2))
+```
+
+-----
+
+When we're doing split/apply/combine, we want to pass in a function, not what the function evaluates to.
+
+```{r}
+x = sample(0:1, size = 20, replace = TRUE)
+type = rep(letters[1:2], each = 10)
+x
+type
+```
+
+```{r}
+tapply(x, type, mean) ## mean is a function
+```
+
+```{r}
+tapply(x, type, mean(x)) ## mean(x) is a number, not a function
+## the line above is the same as the following:
+mean_x = mean(x)
+mean_x
+tapply(x, type, mean_x)
+```
+
+## Anonymous functions
+
+If you have a function you only want to use once, you don't have to assign it to anything.
+
+When you use a function this way it is called an _anonymous function_ because it doesn't have a name in your code.
+
+These are often used in the context of the apply family.
+
+-----
+
+. . .
+
+```{r}
+data(diamonds)
+## here the function for computing the coefficients is an anonymous function
+diamond_coefs = by(diamonds, diamonds$color, FUN = function(data_subset) {
+    diamond_lm = lm(log(price) ~ carat, data = data_subset)
+    diamond_coefficients = coef(diamond_lm)
+    return(diamond_coefficients)
+})
+diamond_coefs
+```
+
+-----
+
+. . .
+
+Equivalent to:
+
+```{r}
+get_diamond_coefs = function(data_subset) {
+    diamond_lm = lm(log(price) ~ carat, data = data_subset)
+    diamond_coefficients = coef(diamond_lm)
+    return(diamond_coefficients)
+}
+diamond_coefs = by(diamonds, diamonds$color, get_diamond_coefs)
+diamond_coefs
+```
+
+## plyr naming convention
+
+All plyr functions named `**ply`
+
+- First position stands for the input and split type
+
+- Second position stands for the output type
+
+. . .
+
+The possible vaues for the positions are
+
+- `a` for array input/slicing by dimension into lower-dimensional pieces
+
+- `d` for data frame/subsetting by combinations of variables
+
+- `l` for list input/chopping the list into its individual elements
+
+. . .
+
+Syntax will have you specify:
+
+- Data the function should be applied to
+
+- How the data should be split
+
+- The function to be applied to each split
+
+## Array input: `a*ply`
+
+syntax: `a*ply(data, margin, fun)`
+
+- `data` is the data to apply the function to. Should be an array/matrix (well, almost, we'll complicate in a couple slides).
+
+- `margin` describes how the data should be split: for matrices this is either by row or by column. 1 indicates split by row, 2 indicates split by column.
+
+- `fun` is the function to apply to each split of the data (generally a row or column vector).
+
+-----
+
+. . .
+
+Example:
+
+```{r}
+library(plyr)
+X = matrix(1:6, nrow = 2, ncol = 3)
+X
+aaply(X, 1, sum)
+adply(X, 1, sum)
+alply(X, 1, sum)
+```
+
+
+-----
+
+A couple of extras:
+
+- Works on higher-dimensional arrays, in which case margin can be 1,...,p, where p is the dimension of the array.
+
+- Margin can also be a vector, in which case the array is split on the combination of the dimensions.
+
+- The function technically works on anything with dimensions and multi-dimensional indexing, so you can pass data frames as well as arrays/matrices.
+
+-----
+
+. . .
+
+Example on a 3-dimensional array:
+
+```{r}
+data(HairEyeColor)
+HairEyeColor
+dim(HairEyeColor)
+dimnames(HairEyeColor)
+adply(HairEyeColor, c(1,2), sum)
+```
+
+Play around with replacing the margin vector with others, and convince yourself of why you get the output you do.
+
+## Data frame input: `d*ply`
+
+syntax: `d*ply(data, variables, fun)`
+
+- `data` is the data to apply the function to. Should be a data frame, but it will be ok if you pass a matrix.
+
+- `variables` describes the variables used to split the data, and you specify them as `.(var1, var2, ... , varN)`
+<br><br>
+You can give it a single factor variable, in which case the data is split by the levels of that factor, or several factor variables, in which case the data is split on all combinations of those factors.
+<br><br>
+The syntax is special to indicate that the variables are taken first from the data frame in data and then, if they aren't found there, from the global environment.
+
+- `fun` is the function to apply to each split of the data.
+
+-----
+
+. . .
+
+Let's look a bit more at HairEyeColor:
+
+```{r}
+hair_and_gender_counts = adply(HairEyeColor, c(1, 3), sum)
+hair_and_gender_counts
+```
+
+. . .
+
+Suppose we want to know what fraction of people with each hair color are men, and it seems to us that split/apply/combine will be good for this task.
+
+First ask:
+
+- What is variable(s) should be used to split the data?
+
+- What function do we want to compute within each split?
+
+-----
+
+. . .
+
+First define a function that will take a subset of the data and find return to us the fraction of men:
+
+```{r}
+get_fraction_male = function(data_subset) {
+    male_subset = subset(data_subset, Sex == "Male")
+    frac_male = sum(male_subset$V1) / sum(data_subset$V1)
+}
+```
+
+
+Then split `hair_and_gender_counts` on the `Hair` variable and apply `get_fraction_male` to each data subset:
+
+```{r}
+ddply(hair_and_gender_counts, .(Hair), get_fraction_male)
+```
+
+## List input: `l*ply`
+
+syntax: `l*ply(data, fun)`
+
+- `data` is a list containing the data you want the function to be applied to.
+
+- `fun` is a function that will be applied to each element of the list.
+
+- Notice that there is no specification for the split: `l*ply` assumes that you split the list into its individual elements.
+
+
+-----
+
+Example:
+
+. . .
+
+```{r}
+a_list = list(a = 1, b = "state", c = TRUE)
+a_list
+laply(a_list, typeof)
+```
+
+-----
+
+`l*ply` will also work on vectors, e.g.:
+
+```{r}
+vec = 1:10
+laply(vec, log)
+```
+
+
+## Output types
+
+We said the options for output are arrays, data frames, and lists.
+
+We've seen examples above, but let's look more systematically.
+
+## Data frame output: `*dply`
+
+- Returns a data frame with columns for the values of the processing function and columns describing the data splits.
+
+- The processing function should return either a row of a data frame or a vector of a consistent length.
+
+-----
+
+. . .
+
+```{r}
+data(diamonds)
+diamond_coefs = ddply(diamonds, .(color), function(data_subset) {
+    return(coef(lm(log(price) ~ carat, data = data_subset)))
+})
+diamond_coefs
+```
+
+Check on your own what happens when you replace `.(color)` with `.(color, clarity)`. How is the output different than what we got using `by` last time? Is it better?
+
+## Array output: `*aply`
+
+- Returns an array with dimension equal to the dimension of the split plus the dimension of the output.
+<br><br>
+The first dimensions in the array correspond to the split dimensions, and subsequent dimensions correspond to the output dimensions.
+
+- The processing function should return a vector or array of the same type and dimensionality each time it is called.
+
+
+-----
+
+. . .
+
+Here we split along one dimension and have one-dimensional output. Similar to what we've seen before with apply in base R.
+
+```{r}
+X = matrix(1:6, nrow = 3, ncol = 2)
+X
+row_sums_x = aaply(X, 1, sum)
+dim(row_sums_x)
+length(row_sums_x)
+row_sums_x
+```
+
+-----
+
+. . .
+
+Here we split along two dimensions and have one-dimensional output:
+
+```{r}
+X_array = array(data = 1:12, dim = c(3, 2, 2))
+dim(X_array)
+X_array
+third_dim_sums_x = aaply(X_array, 1:2, sum)
+dim(third_dim_sums_x)
+third_dim_sums_x
+```
+
+-----
+
+. . .
+
+Here we split along one dimension and have two-dimensional output:
+
+```{r}
+nonsense_function = function(x) {
+    out = c(x[1] * 2, x[2] * -1)
+    return(out)
+}
+X
+nonsense_applied_to_rows = aaply(X, 1, nonsense_function)
+dim(nonsense_applied_to_rows)
+nonsense_applied_to_rows
+```
+
+I don't expect you to memorize this, just to know that we can use these functions to get consistently-shaped output and be able to look it up and figure out what it should be.
+
+## List output: `*lply`
+
+- Returns a list, names of the list describe the split.
+
+- Since the output type is list, no restrictions on the type of output the processing function returns.
+
+-----
+
+```{r}
+diamond_lms = dlply(diamonds, .(color), function(data_subset) {
+    lm(log(price) ~ carat, data = data_subset)
+})
+
+class(diamond_lms)
+class(diamond_lms[[1]])
+names(diamond_lms)
+```
+
+## Some special cases
+
+- No output: `*_ply` (for functions that just have side effects, like making plots or writing to the disk).
+
+- `r*ply`: like `l*ply`, but `r` for repeat. Pass it some number of times to repeat an expression instead of passing it data, and pass it an expression to evaluate instead of a function.
+
+## Summing up
+
+- `a*ply` functions take array-like structures and split them up row-by-row or column-by-column.
+
+- `d*ply` functions take data frames and split them on a factor or a combination of factors.
+
+- `l*ply` functions take lists and split them up one element at a time.
+
+- In every case, a function is applied to each element of the split, the output computed, and the results reported as either an array, a data frame, or a list.
