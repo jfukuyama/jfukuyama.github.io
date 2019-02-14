@@ -166,7 +166,7 @@ code > span.er { color: #ff0000; font-weight: bold; }
 
 <p>The <code>browser</code> function:</p>
 <ul>
-<li><p>Syntax: <code>browser(condition)</code></p></li>
+<li><p>Syntax: <code>browser(expr=condition)</code></p></li>
 <li><p>You enter the browser if the condition is true.</p></li>
 <li><p>If you don't specify a condition, the function stops executing and you enter the browser when you reach the <code>browser</code> line in the function.</p></li>
 </ul>
@@ -176,7 +176,6 @@ code > span.er { color: #ff0000; font-weight: bold; }
 <pre class="sourceCode r"><code class="sourceCode r">f =<span class="st"> </span>function(y, z) {
     x =<span class="st"> </span>y^<span class="dv">2</span> -<span class="st"> </span><span class="dv">3</span> *<span class="st"> </span>z^<span class="dv">2</span>
     w =<span class="st"> </span><span class="dv">28</span>
-    <span class="kw">browser</span>()
     if (x &gt;<span class="st"> </span><span class="dv">0</span> &amp;&amp;<span class="st"> </span>a &gt;<span class="st"> </span><span class="dv">0</span>) {
         u =<span class="st"> </span><span class="dv">1</span> +<span class="st"> </span>x
     } else {
@@ -228,6 +227,7 @@ f =<span class="st"> </span>function(y, z) {
     }
     <span class="kw">return</span>(u)
 }
+<span class="kw">f</span>(<span class="dv">0</span>,<span class="dv">1</span>)
 <span class="kw">debug</span>(f)
 <span class="kw">f</span>(<span class="dv">0</span>, <span class="dv">1</span>)</code></pre>
 </div>
@@ -253,7 +253,7 @@ f =<span class="st"> </span>function(y, z) {
     <span class="kw">return</span>(u)
 }
 <span class="kw">f</span>(<span class="dv">1</span>, <span class="dv">0</span>)
-<span class="kw">traceback</span>(f)</code></pre>
+<span class="kw">traceback</span>()</code></pre>
 </div>
 <div class="slide section level2">
 
@@ -302,14 +302,15 @@ f =<span class="st"> </span>function(y, z) {
     n =<span class="st"> </span><span class="kw">length</span>(x)
     runs =<span class="st"> </span><span class="ot">NULL</span>
     for(i in <span class="dv">1</span>:(n-k)) {
-        if(<span class="kw">all</span>(x[i:i+k<span class="dv">-1</span>] ==<span class="st"> </span><span class="dv">1</span>)) {
+        if(<span class="kw">all</span>(x[i:(i+k<span class="dv">-1</span>)] ==<span class="st"> </span><span class="dv">1</span>)) {
             runs =<span class="st"> </span><span class="kw">c</span>(runs, i)
         }
+        
     }
     <span class="kw">return</span>(runs)
 }
 <span class="kw">findruns</span>(<span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">1</span>),<span class="dv">2</span>)</code></pre>
-<pre><code>## [1] 3 4 6 7</code></pre>
+<pre><code>## [1] 4 7</code></pre>
 </div>
 <div id="example-2" class="slide section level2">
 <h1>Example 2</h1>
