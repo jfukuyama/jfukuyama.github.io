@@ -1,0 +1,399 @@
+## Testing and debugging
+
+Logistics
+
+- I'll post a study guide for the midterm on Sunday
+
+Today:
+
+- Finish debugging
+
+- Testing, test-based design
+
+
+Reading
+
+- [Wickham, "testthat: Get Started with Testing"](https://journal.r-project.org/archive/2011/RJ-2011-002/RJ-2011-002.pdf). The details are slightly out of date compared with the current version of the package, but the philosophy is the same.
+
+
+## Informal testing
+
+- We've done informal testing when debugging, and you've probably done it on your own.
+
+- Check whether the output is what we expect, either by inspection or using `==` or `identical` or something similar.
+
+
+
+## Simple cases
+
+Idea: make sure your function works on cases where you know what the answer should be.
+
+You're checking that the core behavior is correct.
+
+-----
+
+
+
+```{r}
+## returns the minimum value of d[i,j], i != j, and
+## the row/col attaining that minimum, for square
+## symmetric matrix d; no special policy on ties;
+## motivated by distance matrices
+mind = function(d) {
+    n = nrow(d)
+    ## add a column to identify row number for apply()
+    dd = cbind(d, 1:n)
+    wmins = apply(dd[-n, ], 1, imin)
+    ## wmins will be 2xn, 1st row being indices and 2nd being values
+    i = which.min(wmins[1, ])
+    j = wmins[2, i]
+    return(c(d[i, j], i, j))
+}
+
+## finds the location, value of the minimum in a row x
+imin = function(x) {
+    n = length(x)
+    i = x[n]
+    j = which.min(x[(i + 1):(n - 1)])
+    return(c(j, x[j]))
+}
+
+m = rbind(c(0, 12, 5), c(12, 0, 8), c(5, 8, 0))
+```
+
+-----
+
+. . .
+
+Let's write some tests for `imin`.
+
+The comment says that it finds the location and value of the minimum in a row x, so let's see if it does.
+
+```{r}
+## location of the minimum
+x = 1:5
+index_and_value = imin(x)
+## should be 1, per the comment
+index_and_value[1]
+## should be 1, per the comment
+index_and_value[2]
+```
+
+-----
+
+The comment was misleading: what the function is supposed to do is to take a vector x whose last element indicates the row the vector was taken from, and finds the minimum index among locations corresponding to the upper triangle of the initial matrix.
+
+This is very confusing, and it's why there was a bug in the function to begin with.
+
+We might be tempted to change the function in the following way:
+
+```{r}
+imin = function(x) {
+    n = length(x)
+    row = x[n]
+    upper_tri_idx = (row + 1):(n - 1)
+    idx_in_upper_tri = which.min(x[upper_tri_idx])
+    idx = upper_tri_idx[idx_in_upper_tri]
+    value = x[idx]
+    return(c(idx, value))
+}
+```
+
+-----
+
+. . .
+
+And then we can test:
+
+```{r}
+row = 1
+x = c(5:1, row)
+index_and_value = imin(x)
+## index of the minimum should be 5
+index_and_value[1] == 5
+## value of the minimum should be 1
+index_and_value[2] == 1
+```
+
+## Edge cases
+
+Idea: If the input to the function isn't exactly what you expect, what happens?
+
+- You're checking that if something funny happens (bad input from a user or another function), your function will (best case) still work correctly or (at minimum) fail informatively.
+
+- Very important to make sure that the function doesn't fail silently: it looks like it's producing good results, but they're actually wrong.
+
+- Most important if you are not directly providing the input to the function.
+
+-----
+
+. . .
+
+Let's try testing the `imin` function again with an edge case:
+
+```{r}
+row = 5
+x = c(5:1, row)
+index_and_value = imin(x)
+## there aren't any elements in the upper triangle in row 5, so these should be some sort of NA
+index_and_value
+```
+
+-----
+
+Based on our test, we might modify our function to look like this:
+
+```{r}
+imin = function(x) {
+    n = length(x)
+    row = x[n]
+    if(row >= (length(x) - 1)) {
+        upper_tri_idx = c()
+    } else {
+        upper_tri_idx = (row + 1):(n - 1)
+    }
+    idx_in_upper_tri = which.min(x[upper_tri_idx])
+    idx = upper_tri_idx[idx_in_upper_tri]
+    value = x[idx]
+    return(c(idx, value))
+}
+```
+
+-----
+
+. . .
+
+And try testing again:
+
+```{r}
+row = 5
+x = c(5:1, row)
+index_and_value = imin(x)
+## there aren't any elements in the upper triangle in row 5, so these should be some sort of NA
+index_and_value
+```
+
+## The real moral of the story
+
+This is a bad way to write functions to compute the minimum, we should throw it all out and start over.
+
+## Test-based design
+
+- Decide what you want your function(s) to do
+
+- Write tests for those behaviors
+
+- Write the functions, check whether they pass the tests
+
+- If they pass, you're done! Otherwise, cycle through changing the functions and testing.
+
+## Example
+
+I want to make a program that performs gradient descent for functions where I don't have the derivative in closed form.
+
+I'm going to need to write a function that computes the derivative
+
+
+```{r, eval = FALSE}
+## derivative of x^2, evaluated at x = 1
+deriv(function(x) x^2, 1) == 2
+## derivative of 2 * x, evaluated at x = -5
+deriv(function(x) 2 * x, -5) == 2
+## derivative of x^2, evaluated at x = 0
+deriv(function(x) x^2, 0) == 0
+## derivative of e^x, evaluated at x = 0
+deriv(function(x) exp(x), 0) == exp(0)
+```
+
+------
+
+Then I write the following function, based on advice from wikipedia:
+
+```{r}
+deriv = function(fn, x) {
+    eps = .Machine$double.eps
+    h = sqrt(eps) * x
+    deriv = (fn(x + h) - fn(x - h)) / (2 * h)
+    return(deriv)
+}
+```
+
+-----
+
+. . .
+
+And run through my tests:
+
+```{r}
+## derivative of x^2, evaluated at x = 1
+deriv(function(x) x^2, 1) == 2
+## derivative of 2 * x, evaluated at x = -5
+deriv(function(x) 2 * x, -5) == 2
+## derivative of x^2, evaluated at x = 0
+deriv(function(x) x^2, 0) == 0
+## derivative of 2 * x, evaluated at x = 0
+deriv(function(x) 2 * x, 0) == 2
+```
+
+The third and fourth tests failed, and not just because of precision. Why?
+
+------
+
+Then we can modify the function to evaluate derivatives at $x = 0$
+
+```{r}
+deriv = function(fn, x) {
+    eps = .Machine$double.eps
+    if(x == 0) {
+        h = 2 * eps
+    } else {
+        h = sqrt(eps) * x
+    }
+    deriv = (fn(x + h) - fn(x - h)) / (2 * h)
+    return(deriv)
+}
+```
+
+------
+
+. . .
+
+Run through the tests again:
+
+```{r}
+## derivative of x^2, evaluated at x = 1
+deriv(function(x) x^2, 1) == 2
+## derivative of 2 * x, evaluated at x = -5
+deriv(function(x) 2 * x, -5) == 2
+## derivative of x^2, evaluated at x = 0
+deriv(function(x) x^2, 0) == 0
+## derivative of 2 * x, evaluated at x = 0
+deriv(function(x) 2 * x, 0) == 2
+## derivative of e^x, evaluated at x = 0
+deriv(function(x) exp(x), 0) == exp(0)
+```
+
+
+## More formal ways of integrating tests
+
+- R package called `testthat`
+
+- Aimed more at package developers
+
+- Allows for tests to be stored and run automatically.
+
+
+-----
+
+Suppose we have `testthat_example.R` and `numerical_deriv.R`, with contents that look like this:
+
+
+`testthat_example.R`:
+
+```{r, eval = FALSE}
+context("Check numerical derivative")
+source("numerical_deriv.R")
+
+test_that("derivatives match on simple functions", {
+    expect_equal(deriv(function(x) x^2, 1), 2)
+    expect_equal(deriv(function(x) 2 * x, -5), 2)
+    expect_equal(deriv(function(x) x^2, 0), 0)
+    expect_equal(deriv(function(x) 2 * x, 0), 2)
+    expect_equal(deriv(function(x) exp(x), 0), exp(0))
+})
+
+test_that("error thrown when derivative doesn't exist", {
+    expect_error(deriv(function(x) log(x), 0))
+}) 
+```
+
+`numerical_deriv.R`:
+
+```{r, eval = FALSE}
+deriv = function(fn, x) {
+    eps = .Machine$double.eps
+    if(x == 0) {
+        h = 2 * eps
+    } else {
+        h = sqrt(eps) * x
+    }
+    deriv = (fn(x + h) - fn(x - h)) / (2 * h)
+    return(deriv)
+}
+```
+
+-----
+
+```{r}
+library(testthat)
+test_dir(".")
+```
+
+
+## Idea behind testthat
+
+- Expectations: Finest unit of testing, checks one aspect of a function's output.
+
+- Tests: Groups of related expectations.
+
+- Contexts/files: Each context or file can contain a group of tests. Primarily useful for having the test output formatted nicely. Perhaps also useful if you have some tests that require a lot of setup and you don't want to run them every time.
+
+## Expectations
+
+An expectation is the finest unit of testing, tests whether a call to a function does what you expect.
+
+- All start with `expect_`
+
+- All have two arguments: the actual result, and what you expect
+
+- `testthat` will throw an error if the two don't match
+
+-----
+
+. . .
+
+Some of the most useful expectations
+
+- `expect_equal`/`expect_identical`: Check for equality within numerical precision or exact equivalence (`expect_identical` built on `identical` function, which also checks for type)
+
+. . .
+
+- `expect_match`: Checks whether a string matches a regular expression
+
+- `expect_output`: Checks the output of a function the same way `expect_match` would
+```{r}
+a = list(1:10, letters)
+str(a)
+expect_output(str(a), "List of 2")
+expect_output(str(a), "int [1:10]", fixed = TRUE)
+```
+
+- `expect_warning`/`expect_error`: Checks whether the function gives an error or a warning.
+
+. . .
+
+- `expect_is`: Checks whether the function gives a result of the correct class (we'll talk more about classes in a couple weeks).
+
+. . .
+
+- `expect_true`/`expect_false`: Catch-alls for cases the other expectations don't cover.
+
+
+## Tests
+
+- For `testthat`, a test is just a group of expectations.
+
+- You can group them however you like, but usually you think of them as covering one unit of functionality. Often this means one test per function.
+
+- Group expectations into tests so that when a test fails, it's easy to figure out what part of the code caused the error.
+
+
+## Advice on writing tests
+
+- When you add a new function/functionality, add a new test.
+
+- Write a test when you discover a bug. 
+
+- Most important to test code that is delicate: has complicated dependencies on other functions many edge cases, doing something complicated that you're not sure about. (In that case you might want to re-think your function design though.)
+
+- If tests are grouped according to the desired behavior of a function, they are easier to update later if you want to change the behavior of the function.
