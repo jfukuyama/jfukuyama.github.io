@@ -1,0 +1,468 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="http://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="http://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div id="object-oriented-programming" class="slide section level2">
+<h1>Object-oriented programming</h1>
+<p>Reading: Matloff, Chapter 9</p>
+<p>Agenda for today:</p>
+<ul>
+<li><p>Objects and classes in R</p></li>
+<li><p>Continue the bootstrap example</p></li>
+</ul>
+</div>
+<div id="what-is-object-oriented-programming" class="slide section level2">
+<h1>What is object-oriented programming?</h1>
+<p>Two main concepts, <em>classes</em> and <em>methods</em>.</p>
+<ul>
+<li><p>A class defines a type of object: what sort of data is associated with it, what are valid values for the data, what methods can be called on it.</p></li>
+<li><p>Every object is an instance of a class.</p></li>
+<li><p>A method is a function associated with a particular type of object.</p></li>
+</ul>
+</div>
+<div id="in-r" class="slide section level2">
+<h1>In R</h1>
+<ul>
+<li><p>S3: Very informal versions of classes, lists with a &quot;class&quot; attribute, allowing for one-argument method dispatch.</p></li>
+<li><p>S4: Formal classes, class definitions, methods, considered safer but with more overhead.</p></li>
+<li><p>Both types support <em>generic functions</em>: functions that have different behavior depending on the class of the arguments passed to them.</p></li>
+</ul>
+</div>
+<div id="s3-classes" class="slide section level2">
+<h1>S3 classes</h1>
+<ul>
+<li><p>An S3 class is a list with an extra class attribute.</p></li>
+<li><p>Class instantiation is by creating a list and setting the class attribute.</p></li>
+<li><p>Object orientation is only through generic functions.</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>For example:</p>
+<pre class="sourceCode r"><code class="sourceCode r">joe =<span class="st"> </span><span class="kw">list</span>(<span class="dt">name =</span> <span class="st">&quot;Joe&quot;</span>, <span class="dt">salary =</span> <span class="dv">55000</span>, <span class="dt">union =</span> <span class="ot">TRUE</span>)
+<span class="kw">class</span>(joe) =<span class="st"> &quot;employee&quot;</span>
+<span class="kw">attributes</span>(joe)</code></pre>
+<pre><code>## $names
+## [1] &quot;name&quot;   &quot;salary&quot; &quot;union&quot; 
+## 
+## $class
+## [1] &quot;employee&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">print</span>(joe)</code></pre>
+<pre><code>## $name
+## [1] &quot;Joe&quot;
+## 
+## $salary
+## [1] 55000
+## 
+## $union
+## [1] TRUE
+## 
+## attr(,&quot;class&quot;)
+## [1] &quot;employee&quot;</code></pre>
+</div>
+<div id="generic-functionsmethod-dispatch-for-s3-classes" class="slide section level2">
+<h1>Generic functions/method dispatch for S3 classes</h1>
+<ul>
+<li><p>A <em>generic function</em> is a function whose behavior depends on what class its arguments are.</p></li>
+<li><p>We have seen functions like <code>print</code>, <code>plot</code>, <code>summary</code>, all of which are generic.</p></li>
+<li><p>Generic functions are very simple: usually just a call to <code>UseMethod</code></p></li>
+</ul>
+<pre class="sourceCode r"><code class="sourceCode r">print</code></pre>
+<pre><code>## function (x, ...) 
+## UseMethod(&quot;print&quot;)
+## &lt;bytecode: 0x7fdd45973258&gt;
+## &lt;environment: namespace:base&gt;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">plot</code></pre>
+<pre><code>## standardGeneric for &quot;plot&quot; defined from package &quot;graphics&quot;
+## 
+## function (x, y, ...) 
+## standardGeneric(&quot;plot&quot;)
+## &lt;environment: 0x7fdd4583b660&gt;
+## Methods may be defined for arguments: x, y
+## Use  showMethods(&quot;plot&quot;)  for currently available ones.</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">mean</code></pre>
+<pre><code>## function (x, ...) 
+## UseMethod(&quot;mean&quot;)
+## &lt;bytecode: 0x7fdd482fcc28&gt;
+## &lt;environment: namespace:base&gt;</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>Methods:</p>
+<ul>
+<li><p>A <em>method</em> is the function that is actually called on a specific class.</p></li>
+<li><p>In S3, a method for a given class and generic function is just a function with name <code>generic.class</code>.</p></li>
+<li><p>For example: <code>print.lm</code>, <code>plot.lm</code> are the methods for the <code>lm</code> class associated with the <code>print</code> and <code>plot</code> generic functions.</p></li>
+<li><p>To see that they are really just normal functions, try typing <code>stats:::plot.lm</code> or <code>stats:::print.lm</code> in your R console.</p></li>
+<li><p>To define a method associated with a class you have created, define a function with name <code>generic.class</code></p></li>
+</ul>
+<div class="incremental">
+<p>Method dispatch:</p>
+<ul>
+<li><p>Method dispatch refers to how R decides what method to use when a generic functions is called.</p></li>
+<li><p>The <code>UseMethod</code> function is what does this for S3, and it just works by name matching.</p></li>
+</ul>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Example:</p>
+<pre class="sourceCode r"><code class="sourceCode r">print.employee =<span class="st"> </span>function(x) {
+    <span class="kw">cat</span>(x$name, <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)
+    <span class="kw">cat</span>(<span class="st">&quot;salary&quot;</span>, x$salary, <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)
+    <span class="kw">cat</span>(<span class="st">&quot;union member&quot;</span>, x$union, <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)
+}
+<span class="kw">print</span>(joe)</code></pre>
+<pre><code>## Joe 
+## salary 55000 
+## union member TRUE</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">joe</code></pre>
+<pre><code>## Joe 
+## salary 55000 
+## union member TRUE</code></pre>
+</div>
+<div id="s4-classes" class="slide section level2">
+<h1>S4 classes</h1>
+<p>S4 classes have three properties:</p>
+<ul>
+<li><p>A class <em>name</em></p></li>
+<li><p>A <em>representation</em>: A list of <em>slots</em> giving names and classes for the objects associated with the class.</p></li>
+<li><p>A vector of classes it inherits from (we won't use inheritance in this class, but you should know it's available to you).</p></li>
+</ul>
+</div>
+<div id="s4-class-definition" class="slide section level2">
+<h1>S4 class definition</h1>
+<p>Syntax: <code>setClass(class_name, class_representation, contains)</code></p>
+<ul>
+<li><p><code>class_name</code> is the name of the class.</p></li>
+<li><p><code>class_representation</code> is a list decribing the slots and their types.</p></li>
+<li><p><code>contains</code> describes the inheritance.</p></li>
+</ul>
+<p>For example:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">setClass</span>(<span class="st">&quot;employee&quot;</span>,
+         <span class="kw">representation</span>(
+             <span class="dt">name =</span> <span class="st">&quot;character&quot;</span>,
+             <span class="dt">salary =</span> <span class="st">&quot;numeric&quot;</span>,
+             <span class="dt">union =</span> <span class="st">&quot;logical&quot;</span>))</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>Note: This function breaks one of our rules from the beginning: it's called for its side effect. It assigns an object defining the class, and also returns invisibly a class generation function.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">rm</span>(<span class="dt">list =</span> <span class="kw">ls</span>(<span class="dt">all.names =</span> <span class="ot">TRUE</span>))
+<span class="kw">ls</span>(<span class="dt">all.names =</span> <span class="ot">TRUE</span>)</code></pre>
+<pre><code>## character(0)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">setClass</span>(<span class="st">&quot;employee&quot;</span>,
+         <span class="kw">representation</span>(
+             <span class="dt">name =</span> <span class="st">&quot;character&quot;</span>,
+             <span class="dt">salary =</span> <span class="st">&quot;numeric&quot;</span>,
+             <span class="dt">union =</span> <span class="st">&quot;logical&quot;</span>))
+<span class="kw">ls</span>(<span class="dt">all.names =</span> <span class="ot">TRUE</span>)</code></pre>
+<pre><code>## [1] &quot;.__C__employee&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">.__C__employee</code></pre>
+<pre><code>## Class &quot;employee&quot; [in &quot;.GlobalEnv&quot;]
+## 
+## Slots:
+##                                     
+## Name:       name    salary     union
+## Class: character   numeric   logical</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>Don't use <code>setClass</code> this way: it's just to show you that the method returns a class creation function.</p>
+<pre class="sourceCode r"><code class="sourceCode r">class_creation_fn =<span class="st"> </span><span class="kw">setClass</span>(<span class="st">&quot;employee&quot;</span>,
+         <span class="kw">representation</span>(
+             <span class="dt">name =</span> <span class="st">&quot;character&quot;</span>,
+             <span class="dt">salary =</span> <span class="st">&quot;numeric&quot;</span>,
+             <span class="dt">union =</span> <span class="st">&quot;logical&quot;</span>))
+jane =<span class="st"> </span><span class="kw">class_creation_fn</span>(<span class="dt">name =</span> <span class="st">&quot;Jane&quot;</span>, <span class="dt">salary =</span> <span class="dv">55000</span>, <span class="dt">union =</span> <span class="ot">FALSE</span>)
+jane</code></pre>
+<pre><code>## Jane has a salary of 55000 and is not in the union</code></pre>
+</div>
+<div id="s4-class-instantiation" class="slide section level2">
+<h1>S4 class instantiation</h1>
+<ul>
+<li><p>To make an object of a given S4 class, use <code>new</code></p></li>
+<li><p>Syntax: <code>new(class, representation)</code></p></li>
+</ul>
+<pre class="sourceCode r"><code class="sourceCode r">joe =<span class="st"> </span><span class="kw">new</span>(<span class="st">&quot;employee&quot;</span>, <span class="dt">name =</span> <span class="st">&quot;Joe&quot;</span>, <span class="dt">salary =</span> <span class="dv">55000</span>, <span class="dt">union =</span> <span class="ot">TRUE</span>)
+joe</code></pre>
+<pre><code>## Joe has a salary of 55000 and is in the union</code></pre>
+</div>
+<div id="data-access-in-s4-classes" class="slide section level2">
+<h1>Data access in S4 classes</h1>
+<p>Slot access is with <code>@</code>, not <code>$</code>: <code>object@slot</code> will give the data associated with <code>slot</code> in <code>object</code>.</p>
+<pre class="sourceCode r"><code class="sourceCode r">joe@salary</code></pre>
+<pre><code>## [1] 55000</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">joe$salary</code></pre>
+<pre><code>## Error in joe$salary: $ operator not defined for this S4 class</code></pre>
+</div>
+<div id="generic-functions-and-methods-for-s4-classes" class="slide section level2">
+<h1>Generic functions and methods for S4 classes</h1>
+<p>Remember:</p>
+<ul>
+<li><p>A generic function is a function whose behavior depends on the class of its arguments.</p></li>
+<li><p>A method is the function associated with a specific combination of generic function and argument classes.</p></li>
+</ul>
+<div class="incremental">
+<p>Syntax for setting a method associated with a generic function: <code>setMethod(generic, signature, fn)</code></p>
+<ul>
+<li><p><code>generic</code> is a string specifying the generic function for which we want to specify a class-specific method.</p></li>
+<li><p><code>signature</code> describes the classes of the arguments.</p></li>
+<li><p><code>fn</code> is the function we want to use for tha specified combination of generic function and argument classes.</p></li>
+</ul>
+</div>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<p>For example: <code>show</code> is a generic function used to print S4 objects.</p>
+<p>We can create a method associated with the <code>show</code> generic function and the <code>employee</code> S4 class as follows:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">setMethod</span>(<span class="st">&quot;show&quot;</span>, <span class="dt">signature =</span> <span class="kw">signature</span>(<span class="st">&quot;employee&quot;</span>), <span class="dt">definition =</span> function(object) {
+    inorout =<span class="st"> </span><span class="kw">ifelse</span>(object@union, <span class="st">&quot;is&quot;</span>, <span class="st">&quot;is not&quot;</span>)
+    <span class="kw">cat</span>(object@name, <span class="st">&quot;has a salary of&quot;</span>, object@salary, <span class="st">&quot;and&quot;</span>, inorout, <span class="st">&quot;in the union&quot;</span>, <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)
+})
+<span class="kw">show</span>(joe)</code></pre>
+<pre><code>## Joe has a salary of 55000 and is in the union</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">joe</code></pre>
+<pre><code>## Joe has a salary of 55000 and is in the union</code></pre>
+</div>
+</div>
+<div id="a-longer-example" class="slide section level2">
+<h1>A longer example</h1>
+<p>Remember our bootstrap example from last time?</p>
+<p>Now, in addition to computing confidence intervals, we want to plot the bootstrap sampling distributions.</p>
+<p>Last time we settled on the following set of functions.</p>
+<pre class="sourceCode r"><code class="sourceCode r">bootstrap_ci =<span class="st"> </span>function(data, estimator, alpha, B) {
+    boot_estimates =<span class="st"> </span><span class="kw">get_boot_estimates</span>(data, estimator, B)
+    boot_ci =<span class="st"> </span><span class="kw">get_ci</span>(boot_estimates, alpha)
+    <span class="kw">return</span>(boot_ci)
+}
+
+get_boot_estimates =<span class="st"> </span>function(data, estimator, B) {
+    boot_estimates =<span class="st"> </span><span class="kw">replicate</span>(B, <span class="dt">expr =</span> {
+        boot_data =<span class="st"> </span><span class="kw">get_bootstrap_sample</span>(data)
+        boot_estimate =<span class="st"> </span><span class="kw">estimator</span>(boot_data)
+        <span class="kw">return</span>(boot_estimate)
+    })
+    <span class="kw">return</span>(boot_estimates)
+}
+
+get_ci =<span class="st"> </span>function(estimates, alpha) {
+    ci_lo =<span class="st"> </span>alpha /<span class="st"> </span><span class="dv">2</span>
+    ci_hi =<span class="st"> </span><span class="dv">1</span> -<span class="st"> </span>(alpha /<span class="st"> </span><span class="dv">2</span>)
+    if(!<span class="kw">is.null</span>(<span class="kw">dim</span>(estimates))) {
+        ## if we have multi-dimensional estimates
+        cis =<span class="st"> </span>plyr::<span class="kw">aaply</span>(estimates, <span class="dv">1</span>, function(x) <span class="kw">quantile</span>(x, <span class="dt">probs =</span> <span class="kw">c</span>(ci_lo, ci_hi)))
+    } else {
+        ## if we have one-dimensional estimates
+        cis =<span class="st"> </span><span class="kw">quantile</span>(estimates, <span class="dt">probs =</span> <span class="kw">c</span>(ci_lo, ci_hi))
+    }
+    <span class="kw">return</span>(cis)
+}
+
+get_bootstrap_sample =<span class="st"> </span>function(data) {
+    if(!<span class="kw">is.null</span>(<span class="kw">dim</span>(data))) {
+        ## in this case, data is rectangular, and we want to sample rows
+        n =<span class="st"> </span><span class="kw">dim</span>(data)[<span class="dv">1</span>]
+        boot_idx =<span class="st"> </span><span class="kw">sample</span>(<span class="dv">1</span>:n, <span class="dt">size =</span> n, <span class="dt">replace =</span> <span class="ot">TRUE</span>)
+        bootstrap_sample =<span class="st"> </span>data[boot_idx,]
+    } else {
+        ## in this case, data is a vector and we want to sample elements of the vector
+        n =<span class="st"> </span><span class="kw">length</span>(data)
+        boot_idx =<span class="st"> </span><span class="kw">sample</span>(<span class="dv">1</span>:n, <span class="dt">size =</span> n, <span class="dt">replace =</span> <span class="ot">TRUE</span>)
+        bootstrap_sample =<span class="st"> </span>data[boot_idx]
+    }
+    <span class="kw">return</span>(bootstrap_sample)
+}</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>Notice that the output from <code>get_boot_estimates</code> could be used for a lot of different tasks</p>
+<ul>
+<li><p>Last time we used it to get bootstrap confidence intervals</p></li>
+<li><p>We could also use it to get bootstrap standard errors, or make plots, or do anything else that depends on the set of bootstrap samples.</p></li>
+<li><p>Let's try making it into its own class and setting some methods for common operations.</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>First step: Modify the function so it returns something with a <code>class</code> attribute.</p>
+<pre class="sourceCode r"><code class="sourceCode r">get_boot_estimates =<span class="st"> </span>function(data, estimator, B) {
+    boot_estimates =<span class="st"> </span><span class="kw">replicate</span>(B, <span class="dt">expr =</span> {
+        boot_data =<span class="st"> </span><span class="kw">get_bootstrap_sample</span>(data)
+        boot_estimate =<span class="st"> </span><span class="kw">estimator</span>(boot_data)
+        <span class="kw">return</span>(boot_estimate)
+    })
+    <span class="kw">class</span>(boot_estimates) =<span class="st"> &quot;boot_dist&quot;</span>
+    <span class="kw">return</span>(boot_estimates)
+}</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>Setond step: Create methods for the <code>boot_dist</code> class associated with the <code>plot</code> and <code>print</code> generic functions.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(ggplot2)
+plot.boot_dist =<span class="st"> </span>function(x) {
+    <span class="kw">ggplot</span>(<span class="kw">data.frame</span>(<span class="dt">boot_samples =</span> <span class="kw">as.vector</span>(x))) +
+<span class="st">        </span><span class="kw">geom_histogram</span>(<span class="kw">aes</span>(<span class="dt">x =</span> boot_samples)) +
+<span class="st">        </span><span class="kw">ggtitle</span>(<span class="st">&quot;Bootstrap distribution&quot;</span>)
+}
+print.boot_dist =<span class="st"> </span>function(x) {
+    n =<span class="st"> </span><span class="kw">length</span>(x)
+    <span class="kw">cat</span>(<span class="st">&quot;Bootstrap distribution object,&quot;</span>, n, <span class="st">&quot;bootstrap samples</span><span class="ch">\n</span><span class="st">&quot;</span>)
+    <span class="kw">cat</span>(<span class="st">&quot;Bootstrap standard error:&quot;</span>, <span class="kw">sd</span>(x), <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)
+}</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>Check whether it works:</p>
+<pre class="sourceCode r"><code class="sourceCode r">boot_dist =<span class="st"> </span><span class="kw">get_boot_estimates</span>(<span class="kw">rnorm</span>(<span class="dv">1</span>:<span class="dv">10</span>), <span class="dt">estimator =</span> mean, <span class="dt">B =</span> <span class="dv">10000</span>)
+boot_dist</code></pre>
+<pre><code>## Bootstrap distribution object, 10000 bootstrap samples
+## Bootstrap standard error: 0.2735983</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(boot_dist)</code></pre>
+<pre><code>## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+<div class="figure">
+<img src="lecture-13-fig/unnamed-chunk-13-1.png" />
+</div>
+</div>
+<div id="example-with-s4-classes" class="slide section level2">
+<h1>Example with S4 classes</h1>
+<p>The functions above only work if we're getting bootstrap distributions for one parameter at a time.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data</span>(iris)
+iris_coef_estimator =<span class="st"> </span>function(d) {
+    iris_lm =<span class="st"> </span><span class="kw">lm</span>(Sepal.Length ~<span class="st"> </span>Sepal.Width +<span class="st"> </span>Petal.Length, <span class="dt">data =</span> d)
+    iris_coef =<span class="st"> </span><span class="kw">coef</span>(iris_lm)
+    <span class="kw">return</span>(iris_coef)
+}
+boot_dist =<span class="st"> </span><span class="kw">get_boot_estimates</span>(iris, iris_coef_estimator, <span class="dt">B =</span> <span class="dv">1000</span>)</code></pre>
+<p>For the next example, we'll both fix this problem and show how you would use S4 classes instead of S3 classes.</p>
+</div>
+<div class="slide section level2">
+
+<p>First step: set an S4 class for the bootstrap distribution.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">setClass</span>(<span class="st">&quot;boot_dist&quot;</span>,
+         <span class="dt">representation =</span> <span class="kw">list</span>(<span class="dt">boot_samples =</span> <span class="st">&quot;matrix&quot;</span>, <span class="dt">nparams =</span> <span class="st">&quot;numeric&quot;</span>, <span class="dt">nboot =</span> <span class="st">&quot;numeric&quot;</span>))
+<span class="kw">ls</span>(<span class="dt">all.names =</span> <span class="ot">TRUE</span>)</code></pre>
+<pre><code>##  [1] &quot;.__C__boot_dist&quot;      &quot;.__C__employee&quot;       &quot;.__T__show:methods&quot;  
+##  [4] &quot;.Random.seed&quot;         &quot;boot_dist&quot;            &quot;bootstrap_ci&quot;        
+##  [7] &quot;class_creation_fn&quot;    &quot;get_boot_estimates&quot;   &quot;get_bootstrap_sample&quot;
+## [10] &quot;get_ci&quot;               &quot;iris&quot;                 &quot;iris_coef_estimator&quot; 
+## [13] &quot;jane&quot;                 &quot;joe&quot;                  &quot;plot.boot_dist&quot;      
+## [16] &quot;print.boot_dist&quot;</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>Then we modify the <code>get_boot_estimates</code> function to return an object of the <code>boot_dist</code> class.</p>
+<pre class="sourceCode r"><code class="sourceCode r">get_boot_estimates =<span class="st"> </span>function(data, estimator, B) {
+    boot_estimates =<span class="st"> </span><span class="kw">replicate</span>(B, <span class="dt">expr =</span> {
+        boot_data =<span class="st"> </span><span class="kw">get_bootstrap_sample</span>(data)
+        boot_estimate =<span class="st"> </span><span class="kw">estimator</span>(boot_data)
+        <span class="kw">return</span>(boot_estimate)
+    })
+    boot_dist_object =<span class="st"> </span><span class="kw">make_bd_object</span>(boot_estimates)
+    <span class="kw">return</span>(boot_dist_object)
+}</code></pre>
+</div>
+<div class="slide section level2">
+
+<pre class="sourceCode r"><code class="sourceCode r">## takes either a vector or a matrix and creates a boot_dist object
+make_bd_object &lt;-<span class="st"> </span>function(estimates) {
+    if(<span class="kw">is.null</span>(<span class="kw">dim</span>(estimates))) { ## if estimates is a vector
+        nparams =<span class="st"> </span><span class="dv">1</span>
+        nboot =<span class="st"> </span><span class="kw">length</span>(estimates)
+        estimates =<span class="st"> </span><span class="kw">matrix</span>(estimates, <span class="dt">nrow =</span> <span class="dv">1</span>)
+    } else { ## if estimates is a matrix
+        nparams =<span class="st"> </span><span class="kw">nrow</span>(estimates)
+        nboot =<span class="st"> </span><span class="kw">ncol</span>(estimates)
+    }
+    bd =<span class="st"> </span><span class="kw">new</span>(<span class="st">&quot;boot_dist&quot;</span>, <span class="dt">boot_samples =</span> estimates, <span class="dt">nparams =</span> nparams, <span class="dt">nboot =</span> nboot)
+    <span class="kw">return</span>(bd)
+}</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>Next step: set method corresponding to the <code>show</code> generic:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">setMethod</span>(<span class="st">&quot;show&quot;</span>, <span class="dt">signature =</span> <span class="st">&quot;boot_dist&quot;</span>, function(object) {
+    <span class="kw">cat</span>(<span class="st">&quot;Bootstrap distribution object,&quot;</span>, object@nboot, <span class="st">&quot;bootstrap samples</span><span class="ch">\n</span><span class="st">&quot;</span>)
+    <span class="kw">cat</span>(<span class="st">&quot;Number of parameters:&quot;</span>, object@nparams, <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)
+    <span class="kw">cat</span>(<span class="st">&quot;Bootstrap estimate of standard error:&quot;</span>, <span class="kw">apply</span>(object@boot_samples, <span class="dv">1</span>, sd), <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)
+})</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>Set method corresponding to the <code>plot</code> generic:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">setMethod</span>(<span class="st">&quot;plot&quot;</span>, <span class="dt">signature =</span> <span class="st">&quot;boot_dist&quot;</span>, function(x) {
+    melted_samples =<span class="st"> </span><span class="kw">melt</span>(x@boot_samples)
+    if(x@nparams ==<span class="st"> </span><span class="dv">1</span>) {
+        <span class="kw">ggplot</span>(melted_samples) +
+<span class="st">            </span><span class="kw">geom_histogram</span>(<span class="kw">aes</span>(<span class="dt">x =</span> value)) +
+<span class="st">            </span><span class="kw">ggtitle</span>(<span class="st">&quot;Bootstrap distribution&quot;</span>)
+    } else {        
+        <span class="kw">ggplot</span>(melted_samples) +
+<span class="st">            </span><span class="kw">geom_histogram</span>(<span class="kw">aes</span>(<span class="dt">x =</span> value)) +
+<span class="st">            </span><span class="kw">facet_wrap</span>(~<span class="st"> </span>Var1, <span class="dt">scales =</span> <span class="st">&quot;free&quot;</span>) +
+<span class="st">            </span><span class="kw">ggtitle</span>(<span class="st">&quot;Bootstrap distributions for each parameter&quot;</span>)
+    }
+})</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>And finally see whether it works:</p>
+<pre class="sourceCode r"><code class="sourceCode r">boot_dist =<span class="st"> </span><span class="kw">get_boot_estimates</span>(<span class="kw">rnorm</span>(<span class="dv">10</span>), <span class="dt">estimator =</span> mean, <span class="dt">B =</span> <span class="dv">100</span>)
+boot_dist</code></pre>
+<pre><code>## Bootstrap distribution object, 100 bootstrap samples
+## Number of parameters: 1 
+## Bootstrap estimate of standard error: 0.2194793</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(boot_dist)</code></pre>
+<pre><code>## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+<div class="figure">
+<img src="lecture-13-fig/unnamed-chunk-20-1.png" />
+</div>
+</div>
+<div class="slide section level2">
+
+<p>And for multiple parameters:</p>
+<pre class="sourceCode r"><code class="sourceCode r">boot_dist_iris_coef =<span class="st"> </span><span class="kw">get_boot_estimates</span>(iris, iris_coef_estimator, <span class="dt">B =</span> <span class="dv">1000</span>)
+boot_dist_iris_coef</code></pre>
+<pre><code>## Bootstrap distribution object, 1000 bootstrap samples
+## Number of parameters: 3 
+## Bootstrap estimate of standard error: 0.2337576 0.0655192 0.01708353</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(boot_dist_iris_coef)</code></pre>
+<pre><code>## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+<div class="figure">
+<img src="lecture-13-fig/unnamed-chunk-21-1.png" />
+</div>
+</div>
+</body>
+</html>

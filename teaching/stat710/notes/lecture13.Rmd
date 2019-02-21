@@ -1,0 +1,448 @@
+## Object-oriented programming
+
+
+```{r setup, echo = FALSE, message = FALSE}
+library(knitr)
+opts_chunk$set(fig.cap="",
+               fig.path="lecture-13-fig/")
+```
+
+
+Reading: Matloff, Chapter 9
+
+Agenda for today:
+
+- Objects and classes in R
+
+- Continue the bootstrap example
+
+-----
+
+## What is object-oriented programming?
+
+Two main concepts, _classes_ and _methods_.
+
+- A class defines a type of object: what sort of data is associated with it, what are valid values for the data, what methods can be called on it.
+
+- Every object is an instance of a class.
+
+- A method is a function associated with a particular type of object.
+
+
+## In R
+
+- S3: Very informal versions of classes, lists with a "class" attribute, allowing for one-argument method dispatch.
+
+- S4: Formal classes, class definitions, methods, considered safer but with more overhead.
+
+- Both types support _generic functions_: functions that have different behavior depending on the class of the arguments passed to them.
+
+## S3 classes
+
+- An S3 class is a list with an extra class attribute.
+
+- Class instantiation is by creating a list and setting the class attribute.
+
+- Object orientation is only through generic functions.
+
+-----
+
+For example:
+
+```{r}
+joe = list(name = "Joe", salary = 55000, union = TRUE)
+class(joe) = "employee"
+attributes(joe)
+print(joe)
+```
+
+## Generic functions/method dispatch for S3 classes
+
+- A _generic function_ is a function whose behavior depends on what class its arguments are.
+
+- We have seen functions like `print`, `plot`, `summary`, all of which are generic.
+
+- Generic functions are very simple: usually just a call to `UseMethod`
+
+```{r}
+print
+plot
+mean
+```
+
+------
+
+Methods:
+
+- A _method_ is the function that is actually called on a specific class.
+
+- In S3, a method for a given class and generic function is just a function with name `generic.class`.
+
+- For example: `print.lm`, `plot.lm` are the methods for the `lm` class associated with the `print` and `plot` generic functions.
+
+- To see that they are really just normal functions, try typing `stats:::plot.lm` or `stats:::print.lm` in your R console.
+
+- To define a method associated with a class you have created,  define a function with name `generic.class`
+
+. . .
+
+Method dispatch:
+
+- Method dispatch refers to how R decides what method to use when a
+generic functions is called.
+
+- The `UseMethod` function is what does this for S3, and it just works
+by name matching.
+
+-----
+
+Example:
+
+```{r}
+print.employee = function(x) {
+    cat(x$name, "\n")
+    cat("salary", x$salary, "\n")
+    cat("union member", x$union, "\n")
+}
+print(joe)
+joe
+```
+
+## S4 classes
+
+
+S4 classes have three properties:
+
+- A class _name_
+
+- A _representation_: A list of _slots_ giving names and classes for the objects associated with the class.
+
+- A vector of classes it inherits from (we won't use inheritance in this class, but you should know it's available to you).
+
+
+## S4 class definition
+
+Syntax: `setClass(class_name, class_representation, contains)`
+
+- `class_name` is the name of the class.
+
+- `class_representation` is a list decribing the slots and their types.
+
+- `contains` describes the inheritance.
+
+For example:
+
+```{r, eval = FALSE}
+setClass("employee",
+         representation(
+             name = "character",
+             salary = "numeric",
+             union = "logical"))
+```
+
+------
+
+Note: This function breaks one of our rules from the beginning: it's called for its side effect. It assigns an object defining the class, and also returns invisibly a class generation function.
+
+
+```{r}
+rm(list = ls(all.names = TRUE))
+ls(all.names = TRUE)
+setClass("employee",
+         representation(
+             name = "character",
+             salary = "numeric",
+             union = "logical"))
+ls(all.names = TRUE)
+.__C__employee
+```
+
+------
+
+Don't use `setClass` this way: it's just to show you that the method returns a class creation function.
+
+```{r}
+class_creation_fn = setClass("employee",
+         representation(
+             name = "character",
+             salary = "numeric",
+             union = "logical"))
+jane = class_creation_fn(name = "Jane", salary = 55000, union = FALSE)
+jane
+```
+
+## S4 class instantiation
+
+- To make an object of a given S4 class, use `new`
+
+- Syntax: `new(class, representation)`
+
+```{r}
+joe = new("employee", name = "Joe", salary = 55000, union = TRUE)
+joe
+```
+
+## Data access in S4 classes
+
+Slot access is with `@`, not `$`: `object@slot` will give the data associated with `slot` in `object`.
+
+```{r}
+joe@salary
+joe$salary
+```
+
+## Generic functions and methods for S4 classes
+
+Remember:
+
+- A generic function is a function whose behavior depends on the class of its arguments.
+
+- A method is the function associated with a specific combination of generic function and argument classes.
+
+. . .
+
+Syntax for setting a method associated with a generic function: `setMethod(generic, signature, fn)`
+
+- `generic` is a string specifying the generic function for which we want to specify a class-specific method.
+
+- `signature` describes the classes of the arguments.
+
+- `fn` is the function we want to use for tha specified combination of generic function and argument classes.
+
+
+------
+
+. . .
+
+For example: `show` is a generic function used to print S4 objects.
+
+We can create a method associated with the `show` generic function and the `employee` S4 class as follows:
+
+```{r}
+setMethod("show", signature = signature("employee"), definition = function(object) {
+    inorout = ifelse(object@union, "is", "is not")
+    cat(object@name, "has a salary of", object@salary, "and", inorout, "in the union", "\n")
+})
+show(joe)
+joe
+```
+
+## A longer example
+
+Remember our bootstrap example from last time?
+
+Now, in addition to computing confidence intervals, we want to plot the bootstrap sampling distributions.
+
+Last time we settled on the following set of functions.
+
+```{r}
+bootstrap_ci = function(data, estimator, alpha, B) {
+    boot_estimates = get_boot_estimates(data, estimator, B)
+    boot_ci = get_ci(boot_estimates, alpha)
+    return(boot_ci)
+}
+
+get_boot_estimates = function(data, estimator, B) {
+    boot_estimates = replicate(B, expr = {
+        boot_data = get_bootstrap_sample(data)
+        boot_estimate = estimator(boot_data)
+        return(boot_estimate)
+    })
+    return(boot_estimates)
+}
+
+get_ci = function(estimates, alpha) {
+    ci_lo = alpha / 2
+    ci_hi = 1 - (alpha / 2)
+    if(!is.null(dim(estimates))) {
+        ## if we have multi-dimensional estimates
+        cis = plyr::aaply(estimates, 1, function(x) quantile(x, probs = c(ci_lo, ci_hi)))
+    } else {
+        ## if we have one-dimensional estimates
+        cis = quantile(estimates, probs = c(ci_lo, ci_hi))
+    }
+    return(cis)
+}
+
+get_bootstrap_sample = function(data) {
+    if(!is.null(dim(data))) {
+        ## in this case, data is rectangular, and we want to sample rows
+        n = dim(data)[1]
+        boot_idx = sample(1:n, size = n, replace = TRUE)
+        bootstrap_sample = data[boot_idx,]
+    } else {
+        ## in this case, data is a vector and we want to sample elements of the vector
+        n = length(data)
+        boot_idx = sample(1:n, size = n, replace = TRUE)
+        bootstrap_sample = data[boot_idx]
+    }
+    return(bootstrap_sample)
+}
+```
+
+-----
+
+Notice that the output from `get_boot_estimates` could be used for a lot of different tasks
+
+- Last time we used it to get bootstrap confidence intervals
+
+- We could also use it to get bootstrap standard errors, or make plots, or do anything else that depends on the set of bootstrap samples.
+
+- Let's try making it into its own class and setting some methods for common operations.
+
+
+------
+
+First step: Modify the function so it returns something with a `class` attribute.
+
+```{r}
+get_boot_estimates = function(data, estimator, B) {
+    boot_estimates = replicate(B, expr = {
+        boot_data = get_bootstrap_sample(data)
+        boot_estimate = estimator(boot_data)
+        return(boot_estimate)
+    })
+    class(boot_estimates) = "boot_dist"
+    return(boot_estimates)
+}
+```
+
+-----
+
+Setond step: Create methods for the `boot_dist` class associated with the `plot` and `print` generic functions.
+
+```{r}
+library(ggplot2)
+plot.boot_dist = function(x) {
+    ggplot(data.frame(boot_samples = as.vector(x))) +
+        geom_histogram(aes(x = boot_samples)) +
+        ggtitle("Bootstrap distribution")
+}
+print.boot_dist = function(x) {
+    n = length(x)
+    cat("Bootstrap distribution object,", n, "bootstrap samples\n")
+    cat("Bootstrap standard error:", sd(x), "\n")
+}
+```
+
+-----
+
+Check whether it works:
+
+```{r}
+boot_dist = get_boot_estimates(rnorm(1:10), estimator = mean, B = 10000)
+boot_dist
+plot(boot_dist)
+```
+
+## Example with S4 classes
+
+The functions above only work if we're getting bootstrap distributions for one parameter at a time.
+
+```{r}
+data(iris)
+iris_coef_estimator = function(d) {
+    iris_lm = lm(Sepal.Length ~ Sepal.Width + Petal.Length, data = d)
+    iris_coef = coef(iris_lm)
+    return(iris_coef)
+}
+boot_dist = get_boot_estimates(iris, iris_coef_estimator, B = 1000)
+```
+
+For the next example, we'll both fix this problem and show how you would use S4 classes instead of S3 classes.
+
+-----
+
+First step: set an S4 class for the bootstrap distribution.
+
+```{r}
+setClass("boot_dist",
+         representation = list(boot_samples = "matrix", nparams = "numeric", nboot = "numeric"))
+ls(all.names = TRUE)
+```
+
+------
+
+Then we modify the `get_boot_estimates` function to return an object of the `boot_dist` class.
+
+```{r}
+get_boot_estimates = function(data, estimator, B) {
+    boot_estimates = replicate(B, expr = {
+        boot_data = get_bootstrap_sample(data)
+        boot_estimate = estimator(boot_data)
+        return(boot_estimate)
+    })
+    boot_dist_object = make_bd_object(boot_estimates)
+    return(boot_dist_object)
+}
+```
+
+-----
+
+```{r}
+## takes either a vector or a matrix and creates a boot_dist object
+make_bd_object <- function(estimates) {
+    if(is.null(dim(estimates))) { ## if estimates is a vector
+        nparams = 1
+        nboot = length(estimates)
+        estimates = matrix(estimates, nrow = 1)
+    } else { ## if estimates is a matrix
+        nparams = nrow(estimates)
+        nboot = ncol(estimates)
+    }
+    bd = new("boot_dist", boot_samples = estimates, nparams = nparams, nboot = nboot)
+    return(bd)
+}
+```
+
+-----
+
+Next step: set method corresponding to the `show` generic:
+
+```{r}
+setMethod("show", signature = "boot_dist", function(object) {
+    cat("Bootstrap distribution object,", object@nboot, "bootstrap samples\n")
+    cat("Number of parameters:", object@nparams, "\n")
+    cat("Bootstrap estimate of standard error:", apply(object@boot_samples, 1, sd), "\n")
+})
+```
+
+-----
+
+Set method corresponding to the `plot` generic:
+
+```{r}
+setMethod("plot", signature = "boot_dist", function(x) {
+    melted_samples = melt(x@boot_samples)
+    if(x@nparams == 1) {
+        ggplot(melted_samples) +
+            geom_histogram(aes(x = value)) +
+            ggtitle("Bootstrap distribution")
+    } else {        
+        ggplot(melted_samples) +
+            geom_histogram(aes(x = value)) +
+            facet_wrap(~ Var1, scales = "free") +
+            ggtitle("Bootstrap distributions for each parameter")
+    }
+})
+```
+
+-----
+
+And finally see whether it works:
+
+```{r}
+boot_dist = get_boot_estimates(rnorm(10), estimator = mean, B = 100)
+boot_dist
+plot(boot_dist)
+```
+
+-----
+
+And for multiple parameters:
+
+```{r, fig.width = 10, fig.height = 4}
+boot_dist_iris_coef = get_boot_estimates(iris, iris_coef_estimator, B = 1000)
+boot_dist_iris_coef
+plot(boot_dist_iris_coef)
+```
