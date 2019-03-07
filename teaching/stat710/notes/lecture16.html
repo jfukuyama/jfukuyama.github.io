@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="http://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+  <script src="http://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div id="newtons-method-variations" class="slide section level2">
+<h1>Newton's method variations</h1>
+<p>Agenda today</p>
+<ul>
+<li><p>Variations on Newton's method</p></li>
+<li><p>Iteratively reweighted least squares</p></li>
+<li><p>BFGS, other Hessian approximations</p></li>
+</ul>
+<p>Reading:</p>
+<ul>
+<li>Kenneth Lange, Numerical Analysis for Statisticians, Sections 13.3-13.6</li>
+</ul>
+</div>
+<div id="from-last-time" class="slide section level2">
+<h1>From last time</h1>
+<p>Newton's method:</p>
+<p>Relationship with statitsical quantities</p>
+<ul>
+<li><p>Derivative needed in Newton's method is the score</p></li>
+<li><p>Expected value of the Hessian in Newton's method is the expected information</p></li>
+</ul>
+<div class="incremental">
+<p>Potential problems:</p>
+<ul>
+<li>Hessian difficult to compute</li>
+</ul>
+</div>
+</div>
+<div id="fisher-scoring" class="slide section level2">
+<h1>Fisher Scoring</h1>
+<p>Idea: Use the expected information, <span class="math">\(J(\theta)= E[-d^2 \ell(\theta)]\)</span> instead of the observed information, <span class="math">\(d^2 \ell(\theta)\)</span>.</p>
+<p>Algorithm:</p>
+<ul>
+<li><p>Pick a starting parameter estimate <span class="math">\(\theta_0\)</span></p></li>
+<li><p>Set <span class="math">\(\theta_{n+1} = \theta_n + J(\theta)^{-1} d\ell(\theta_n)\)</span></p></li>
+</ul>
+<div class="incremental">
+<p><span class="math">\(J(\theta)\)</span> often coincides with <span class="math">\(-d^2 \ell(\theta)\)</span>, in which case Fisher Scoring is exactly the same as Newton's method.</p>
+<p>Sometimes <span class="math">\(J(\theta)\)</span> is easier to compute than <span class="math">\(-d^2 \ell(\theta)\)</span>.</p>
+</div>
+</div>
+<div id="exponential-families-and-generalized-linear-models" class="slide section level2">
+<h1>Exponential families and generalized linear models</h1>
+<p>Exponential families are families of probability distributions whose densities take the form <span class="math">\[
+f(y_i) = exp(y_i \theta_i - b(\theta_i) + c(y_i, \phi))
+\]</span></p>
+<p><span class="math">\(b\)</span> and <span class="math">\(c\)</span> are known functions that describe the family.</p>
+<p><span class="math">\(\theta_i\)</span> is the natural parameter.</p>
+<div class="incremental">
+<p>Properties that we'll need later:</p>
+<ul>
+<li><p><span class="math">\(E(y_i) = \mu_i = b&#39;(\theta_i)\)</span></p></li>
+<li><p><span class="math">\(\text{var}(y_i) = \sigma_i^2 = b&#39;&#39;(\theta_i)\)</span></p></li>
+</ul>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Why do we like them?</p>
+<ul>
+<li><p>Many commonly-used distributions: normal, exponential, Poisson, binomial, multinomial, etc.</p></li>
+<li><p>Easy to analyze</p></li>
+<li><p><span class="math">\(J(\theta)\)</span> available analytically</p></li>
+<li><p>They describe the stochasticity in generalized linear models</p></li>
+</ul>
+</div>
+<div id="generalized-linear-models" class="slide section level2">
+<h1>Generalized linear models</h1>
+<p>Models for independent observations, <span class="math">\(y_i, i = 1,\ldots, n\)</span></p>
+<p>Three components:</p>
+<ul>
+<li>Random component: <span class="math">\[
+y_i \sim f(y_i)
+\]</span> where <span class="math">\(f\)</span> is an exponential family</li>
+</ul>
+<div class="incremental">
+<ul>
+<li>Systematic component <span class="math">\[
+\eta_i = x_i^T \beta
+\]</span></li>
+</ul>
+</div>
+<div class="incremental">
+<ul>
+<li>Link function: links the mean to the natural parameter <span class="math">\[
+\eta_i = g(\mu_i)
+\]</span> <span class="math">\(g\)</span> is the link function. The relationship between the means and the predictors is then <span class="math">\[
+\mu_i = g^{-1} (x_i^T \beta)
+\]</span></li>
+</ul>
+</div>
+</div>
+<div id="choice-of-link-functions" class="slide section level2">
+<h1>Choice of link functions</h1>
+<p>The <em>canonical link</em> is the one that maps the mean to the natural parameter.</p>
+<ul>
+<li><p>Normal: Canonical link is the identity: <span class="math">\(g(x) = x\)</span></p></li>
+<li><p>Bernoulli: Canonical link is logit: <span class="math">\(g(x) = \log(x / (1 - x))\)</span></p></li>
+<li><p>Poisson: Canonical link is the log: <span class="math">\(g(x) = \log(x)\)</span></p></li>
+<li><p>For generalized linear models with the canonical link function, Fisher Scoring and Newton-Raphson are equivalent.</p></li>
+</ul>
+</div>
+<div id="iteratively-reweighted-least-squares" class="slide section level2">
+<h1>Iteratively Reweighted Least Squares</h1>
+<p>Equivalent to Fisher scoring, gives maximum likelihood estimates for generalized linear models</p>
+<div class="incremental">
+<ul>
+<li>Start with an estimate of the parameters <span class="math">\(\hat \beta\)</span>.</li>
+</ul>
+</div>
+<div class="incremental">
+<ul>
+<li><p>Find <span class="math">\(\hat \eta_i = x_i^T \hat \beta\)</span>, <span class="math">\(i = 1,\ldots, n\)</span></p></li>
+<li><p>Find <span class="math">\(\hat \mu_i = g^{-1} (\hat \eta_i)\)</span></p></li>
+</ul>
+</div>
+<div class="incremental">
+<ul>
+<li>Compute the &quot;working dependent variable&quot; <span class="math">\[
+z_i = \hat \eta_i + (y_i - \hat \mu_i) d\eta_i / d \mu_i
+\]</span></li>
+</ul>
+</div>
+<div class="incremental">
+<ul>
+<li>Compute iterative weights: <span class="math">\[
+w_i = (b&#39;&#39;(\theta_i) (d\eta_i / d \mu_i)^2)^{-1}
+\]</span> Here <span class="math">\(b&#39;&#39;&#39;(\theta_i)\)</span> is the second derivative of <span class="math">\(b(\theta_i)\)</span> evaluated at <span class="math">\(\hat \beta\)</span>, and is inversely proportional to the variance of <span class="math">\(z_i\)</span> given the current parameter estimates.</li>
+</ul>
+</div>
+<div class="incremental">
+<ul>
+<li>Obtain improved estimate of <span class="math">\(\beta\)</span> by regressing the working dependent variable <span class="math">\(z_i\)</span> on the predictors <span class="math">\(x_i\)</span> using weights <span class="math">\(w_i\)</span>: <span class="math">\[
+\hat \beta_{new} = (X^T W X)^{-1} X^T W z
+\]</span></li>
+</ul>
+</div>
+<div class="incremental">
+<ul>
+<li>Iterate until convergence</li>
+</ul>
+</div>
+</div>
+<div id="example-linear-regression" class="slide section level2">
+<h1>Example: Linear regression</h1>
+<p>Normal data, identity link, <span class="math">\(\eta_i = \mu_i\)</span>.</p>
+<div class="incremental">
+<ul>
+<li>Derivative <span class="math">\(d \eta_i / d \mu_i = 1\)</span></li>
+</ul>
+</div>
+<div class="incremental">
+<ul>
+<li>Working dependent variable <span class="math">\[
+z_i = \hat \mu_i + (y _i - \hat \mu_i) = y_i
+\]</span></li>
+</ul>
+</div>
+<div class="incremental">
+<ul>
+<li>Iterative weights: all equal to 1</li>
+</ul>
+</div>
+<div class="incremental">
+<ul>
+<li>Estimate is <span class="math">\(\hat \beta_{new} = (X^T X)^{-1} X^T y\)</span></li>
+</ul>
+</div>
+</div>
+<div id="example-logistic-regression" class="slide section level2">
+<h1>Example: logistic regression</h1>
+<p>Model <span class="math">\(x_i^T \beta = \eta_i = \text{logit}(\pi_i)\)</span></p>
+<p>Note that we have <span class="math">\(\eta_i = \log(\pi_i / (1 - \pi_i)) = \log(\mu_i / (n_i - \mu_i))\)</span></p>
+<p>For the update formulas we need <span class="math">\(d \eta_i / d \mu_i = 1 / \mu_i + 1 / (n_i - \mu_i)\)</span></p>
+</div>
+<div class="slide section level2">
+
+<p>Working dependent variables: <span class="math">\[
+z_i = \eta_i + (y_i - \mu_i) \frac{d\eta_i}{d \mu_i}\\
+= \eta_i + \frac{y_i - n_i \pi_i}{n_i \pi_i(1 - \pi_i)}
+\]</span></p>
+</div>
+<div class="slide section level2">
+
+<p>Iterative weights: <span class="math">\[
+w_i = (b&#39;&#39;(\theta_i) \frac{d\eta_i}{d\mu_i}^2)^{-1} \\
+= n_i \pi_i(1 - \pi_i)
+\]</span></p>
+</div>
+<div id="quasi-newton-methods" class="slide section level2">
+<h1>Quasi-Newton Methods</h1>
+<p>Idea: If you don't move very far in one step, the Hessian shouldn't change that much either.</p>
+<p>Instead of recomputing the Hessian at each step, compute an approximate update.</p>
+<ul>
+<li><p>Start with an initial guess at a parameter <span class="math">\(\theta_0\)</span>.</p></li>
+<li><p>Let <span class="math">\(A_0 = d^2 \ell(\theta)\)</span>.</p></li>
+<li><p>Set <span class="math">\(\theta_{n+1} = \theta_n - A_n^{-1} d \ell(\theta_n)\)</span></p></li>
+<li><p>Set <span class="math">\(A_{n+1} = A_n - c_n v_n v_n^T\)</span></p></li>
+</ul>
+<p><span class="math">\(A_n\)</span> are approximations to the Hessian.</p>
+</div>
+<div class="slide section level2">
+
+<p>Idea behind Hessian update: Taylor series again:</p>
+<p><span class="math">\[
+d\ell(\theta_n) \approx d\ell(\theta_{n+1}) + d^2 \ell(\theta_{n+1})(\theta_n - \theta_{n+1})
+\]</span></p>
+<div class="incremental">
+<p>Rearranging: <span class="math">\[
+d\ell(\theta_n) - d\ell(\theta_{n+1})\approx d^2 \ell(\theta_{n+1})(\theta_n - \theta_{n+1})
+\]</span></p>
+</div>
+<div class="incremental">
+<p>Finding an approximation <span class="math">\(A_{n+1}\)</span> <span class="math">\(\ell(\theta_{n+1})\)</span> that satisfies the equation above is called the <em>secant condition</em>.</p>
+<p>Several different ways to make the approximation:</p>
+<ul>
+<li><p>Symmetric rank-1 update is Davidson's method, described in Lange.</p></li>
+<li><p>Symmetric rank-2 update is BFGS (Broyden–Fletcher–Goldfarb–Shanno).</p></li>
+</ul>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Davidson's method is a symmetric rank-1 update.</p>
+<p><span class="math">\[
+A_{n+1} = A_n - c_n v_n v_n^T
+\]</span></p>
+<p>where <span class="math">\[
+c_n = \frac{1}{(g_n + A_n s_n)^T s_n} \\
+v_n = g_n + A_n s_n
+\]</span></p>
+<p>(verify on your own that this satisfies the secant condition)</p>
+</div>
+<div class="slide section level2">
+
+<p>BFGS is a symmetric rank-2 update.</p>
+<p><span class="math">\[
+A_{n_1} = A_n + \alpha u u^T + \beta v v^T
+\]</span></p>
+<p><span class="math">\(u = y_k\)</span>, <span class="math">\(v = A_n s_n\)</span>, <span class="math">\(\alpha = -1 / g_k^T s_k\)</span>, <span class="math">\(\beta = - 1 / s_k^T B_k s_k\)</span></p>
+<p>BFGS is in R's <code>optim</code>.</p>
+</div>
+<div class="slide section level2">
+
+<p>Considerations:</p>
+<ul>
+<li>The rank-1 updating method doesn't ensure that the approximate Hessian remains positive definite, while the rank-2 updating method (BFGS) does.</li>
+</ul>
+</div>
+</body>
+</html>
