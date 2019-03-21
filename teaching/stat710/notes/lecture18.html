@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="http://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+  <script src="http://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div id="descent-methods-for-unconstrained-problems" class="slide section level2">
+<h1>Descent methods for unconstrained problems</h1>
+<p>Agenda today</p>
+<ul>
+<li><p>Gradient descent and steepest descent for unconstrained problems</p></li>
+<li><p>Convergence analysis</p></li>
+<li><p>Relationship with Newton's method</p></li>
+</ul>
+<p>Reading:</p>
+<ul>
+<li>Boyd and Vandenberghe, Chapter 9.1-9.4</li>
+</ul>
+</div>
+<div id="the-problem-we-want-to-solve" class="slide section level2">
+<h1>The problem we want to solve</h1>
+<p><span class="math">\[
+\text{minimize}_x \quad f(x)
+\]</span></p>
+</div>
+<div id="descent-methods" class="slide section level2">
+<h1>Descent Methods</h1>
+<p>General algorithm:</p>
+<p>Start with a point <span class="math">\(x\)</span></p>
+<p>Repeat</p>
+<ul>
+<li><p>Choose a descent direction <span class="math">\(\Delta x\)</span></p></li>
+<li><p>Choose step size <span class="math">\(t\)</span>.</p></li>
+<li><p>Update: <span class="math">\(x \leftarrow x + t \Delta x\)</span></p></li>
+</ul>
+<p>Until the stopping criterion is satisfied, usually <span class="math">\(\|\nabla f(x)\|_2 \le \epsilon\)</span>.</p>
+</div>
+<div id="line-search-types-exact-line-search" class="slide section level2">
+<h1>Line search types: Exact line search</h1>
+<p>Step size <span class="math">\(t\)</span> found as <span class="math">\[
+t = \text{argmin}_{t &gt; 0}f(x + t \Delta x)
+\]</span></p>
+<p>This can be useful if there is an analytic or otherwise quick method of finding the minimum of the function restricted to a ray.</p>
+</div>
+<div id="line-search-types-backtracking-line-search" class="slide section level2">
+<h1>Line search types: Backtracking line search</h1>
+<ul>
+<li><p>Step size <span class="math">\(t\)</span> found with an iterative method.</p></li>
+<li><p>Parameters <span class="math">\(\alpha \in (0, 1/2)\)</span>, <span class="math">\(\beta \in (0,1)\)</span> that you specify.</p></li>
+<li><p>Algorithm: Start at <span class="math">\(t = 1\)</span>, repeat <span class="math">\(t \leftarrow \beta t\)</span> until <span class="math">\[
+f(x + t \Delta x) &lt; f(x) + \alpha t \nabla f(x)^T \Delta x
+\]</span></p></li>
+</ul>
+<div class="figure">
+<img src="backtracking-image.png" />
+</div>
+</div>
+<div id="gradient-descent" class="slide section level2">
+<h1>Gradient descent</h1>
+<p>In gradient descent, we take <span class="math">\(\Delta x = - \nabla f(x)\)</span>.</p>
+<p>Overall algorithm:</p>
+<p>Start with a point <span class="math">\(x\)</span></p>
+<p>Repeat</p>
+<ul>
+<li><p><span class="math">\(\Delta x \leftarrow - \nabla f(x)\)</span>.</p></li>
+<li><p>Line search: Choose step size <span class="math">\(t\)</span> by either backtracking line search or exact line search.</p></li>
+<li><p>Update: <span class="math">\(x \leftarrow x + t \Delta x\)</span></p></li>
+</ul>
+<p>Until the stopping criterion is satisfied, usually <span class="math">\(\|\nabla f(x)\|_2 \le \epsilon\)</span>.</p>
+</div>
+<div id="convergence-time-for-gradient-descent" class="slide section level2">
+<h1>Convergence time for gradient descent</h1>
+<p>If <span class="math">\(f\)</span> is strongly convex, we have the result <span class="math">\[
+f(x^{(k)}) - p^\star \le c^k (f(x^{(0)}) - p^\star)
+\]</span></p>
+<ul>
+<li><p><span class="math">\(c \in (0,1)\)</span> depends on properties of the function and the line search type</p></li>
+<li><p>Much slower (in terms of iterations) than Newton's method</p></li>
+<li><p>But: we don't have to compute a Hessian</p></li>
+</ul>
+</div>
+<div id="gradient-descent-example" class="slide section level2">
+<h1>Gradient descent example</h1>
+<div class="figure">
+<img src="gradient-descent-backtracking.png" />
+</div>
+<p>Iterates of gradient descent with backtracking line search, for minimizing <span class="math">\(f(x_1, x_2) = \exp(x_1 + 3 x_2 - .1) + \exp(x_1 - 3 x_2 - .1) + \exp(-x_1 - .1)\)</span></p>
+<p>Contours represent the boundaries of the <em>sublevel sets</em> of the function: <span class="math">\(\{x : f(x) \le a\}\)</span>.</p>
+</div>
+<div id="steepest-descent" class="slide section level2">
+<h1>Steepest descent</h1>
+<p>Steepest descent: modification of the descent direction.</p>
+<p>The normalized steepest descent direction is defined as <span class="math">\[
+\Delta x_{nsd} = \text{argmin}_x \{\nabla f(x)^T v : \|v\| = 1\}
+\]</span> for some norm <span class="math">\(\|\cdot \|\)</span>.</p>
+<p>Note: Steepest descent with the standard norm (<span class="math">\(\|\cdot\|_2\)</span>) is the same as gradient descent.</p>
+</div>
+<div id="steepest-descent-algorithm" class="slide section level2">
+<h1>Steepest descent algorithm</h1>
+<p>The same as gradient descent, but with a different descent direction:</p>
+<p>Start with a point <span class="math">\(x\)</span></p>
+<p>Repeat</p>
+<ul>
+<li><p><span class="math">\(\Delta x \leftarrow \Delta x_{sd}\)</span>.</p></li>
+<li><p>Line search: Choose step size <span class="math">\(t\)</span> by either backtracking line search or exact line search.</p></li>
+<li><p>Update: <span class="math">\(x \leftarrow x + t \Delta x_{sd}\)</span></p></li>
+</ul>
+<p>Until the stopping criterion is satisfied, usually <span class="math">\(\|\nabla f(x)\|_2 \le \epsilon\)</span>.</p>
+</div>
+<div id="normalized-steepest-descent-direction-for-a-quadratic-norm" class="slide section level2">
+<h1>Normalized steepest descent direction for a quadratic norm</h1>
+<div class="figure">
+<img src="steepest-descent-quadratic.png" />
+</div>
+<ul>
+<li><p>Ellipse is the set <span class="math">\(\{v: \|v\|_P \le 1\}\)</span></p></li>
+<li><p><span class="math">\(\Delta x_{nsd}\)</span> is the point in the ellipse that extends farthest in the direction of <span class="math">\(-\nabla f(x)\)</span>.</p></li>
+<li><p>Analytic solution for the steepest descent direction: <span class="math">\[
+\Delta x_{nsd} = -(\nabla f(x)^T P^{-1} \nabla f(x))^{-1/2} P^{-1}
+\nabla f(x)
+\]</span></p></li>
+<li><p>There is a standard way of normalizing, involving a dual norm (see the text if you're interested), the unnormalized steepest descent search direction is <span class="math">\[
+\Delta x_{sd}=  -P^{-1} \nabla f(x)
+\]</span></p></li>
+</ul>
+</div>
+<div id="normalized-steepest-descent-direction-for-the-ell_1-norm" class="slide section level2">
+<h1>Normalized steepest descent direction for the <span class="math">\(\ell_1\)</span> norm</h1>
+<div class="figure">
+<img src="steepest-descent-l1.png" />
+</div>
+<ul>
+<li><p>Ellipse is the set <span class="math">\(\{v: \|v\|_1 \le 1\}\)</span></p></li>
+<li><p><span class="math">\(\Delta x_{nsd}\)</span> is the point in norm ball that extends farthest in the direction of <span class="math">\(-\nabla f(x)\)</span>.</p></li>
+</ul>
+</div>
+<div id="examples-of-the-effect-of-the-norm" class="slide section level2">
+<h1>Examples of the effect of the norm</h1>
+<p><img src="norm-choice-1.png" /> <img src="norm-choice-2.png" /></p>
+<ul>
+<li><p>The choice of norm changes dramatically the number of steps needed to reach the optimum</p></li>
+<li><p>Steps show steepest descent/backtracking line search for quadratic norms</p></li>
+<li><p>Ellipses are the norm balls around each of the iterates</p></li>
+</ul>
+</div>
+<div id="when-can-we-expect-these-methods-to-do-well" class="slide section level2">
+<h1>When can we expect these methods to do well?</h1>
+<p>From the pictures, we saw that</p>
+<ul>
+<li><p>Gradient descent doesn't do well when the sublevel sets are far from spherical</p></li>
+<li><p>Steepest descent does well when the norm balls approximate the sub-level sets.</p></li>
+</ul>
+</div>
+<div id="condition-number-of-convex-sets" class="slide section level2">
+<h1>Condition number of convex sets</h1>
+<p>Let <span class="math">\(C \subseteq \mathbb R^n\)</span>, and let <span class="math">\(q\)</span> be a vector in <span class="math">\(\mathbb R^n\)</span> specifying a direction.</p>
+<ul>
+<li><p>The <em>width</em> of <span class="math">\(C\)</span> in the direction <span class="math">\(q\)</span> is <span class="math">\(W(C, q) = \sup_{z \in C} q^T z - \inf_{ \in C}q^T z\)</span>.</p></li>
+<li><p>The <em>minimum width</em> and <em>maximum width</em> of <span class="math">\(C\)</span> are <span class="math">\[
+W_{min} = \inf_{\|q\|_2 = 1} W(C, q)
+\]</span> and <span class="math">\[
+W_{max} = \sup_{\|q\|_2 = 1} W(C, q)
+\]</span></p></li>
+<li><p>The <em>condition number</em> of a convex set <span class="math">\(C\)</span> is <span class="math">\(\text{cond}(C) = \frac{W_{max}^2}{W_{min}^2}\)</span>.</p></li>
+<li><p>Measure of how far from spherical the set is.</p></li>
+</ul>
+</div>
+<div id="convergence-bounds-and-condition-number" class="slide section level2">
+<h1>Convergence bounds and condition number</h1>
+<p>Recall for gradient descent we had the following result: if <span class="math">\(f\)</span> is strongly convex, <span class="math">\[
+f(x^{(k)}) - p^\star \le c^k (f(x^{(0)}) - p^\star)
+\]</span> where <span class="math">\(x^{(k)}\)</span> is the <span class="math">\(k\)</span>th gradient descent iterate.</p>
+<ul>
+<li><p>The constant <span class="math">\(c\)</span> depends on the maximum condition number of the sublevel sets of <span class="math">\(f\)</span></p></li>
+<li><p>Large condition number corresponds to larger <span class="math">\(c\)</span></p></li>
+<li><p>Small condition number corresponds to smaller <span class="math">\(c\)</span>.</p></li>
+</ul>
+</div>
+<div id="quadratic-norms-as-a-gradient-descent-in-a-transformed-coordinate-system" class="slide section level2">
+<h1>Quadratic norms as a gradient descent in a transformed coordinate system</h1>
+<p>The quadratic norm <span class="math">\(\|\cdot\|_P\)</span> is defined as <span class="math">\(\|x\|_P = x^T P x\)</span>, where <span class="math">\(P\)</span> is a positive definite matrix.</p>
+<p>Steepest descent with the <span class="math">\(\|\cdot\|_P\)</span> norm is the same as gradient descent after a change of coordinates:</p>
+<ul>
+<li><p>Let <span class="math">\(\bar u = P^{1/2} u\)</span></p></li>
+<li><p><span class="math">\(\|u\|_P = \|\bar u\|_2\)</span></p></li>
+<li><p><span class="math">\(\bar f(\bar u) = f(P^{-1/2} \bar u) = f(u)\)</span></p></li>
+<li><p>Applying gradient descent to <span class="math">\(\bar f\)</span> is equivalent to applying steepest descent with the <span class="math">\(\|\cdot\|_P\)</span> norm to <span class="math">\(f\)</span>.</p></li>
+</ul>
+</div>
+<div id="for-example" class="slide section level2">
+<h1>For example</h1>
+<div class="figure">
+<img src="gradient-descent-coordinate-change.png" />
+</div>
+<ul>
+<li><p>Gradient descent on a transformed version of the problem before.</p></li>
+<li><p>Sublevel sets now much closer to spherical, and the algorithm converges quickly.</p></li>
+</ul>
+</div>
+<div id="re-interpretation-of-newtons-method" class="slide section level2">
+<h1>Re-interpretation of Newton's method</h1>
+<ul>
+<li><p>Recall the Newton step: <span class="math">\(-\nabla^2 f(x)^{-1} \nabla f(x)\)</span></p></li>
+<li><p>This search direction is the same as the steepest descent direction in the Hessian norm: <span class="math">\(\|\cdot\|_{\nabla^2 f(x)}\)</span></p></li>
+<li><p>Turns out the Hessian norm gives a good approximation of the contours of the sublevel sets around the optimal point: this is why it has such fast convergence.</p></li>
+</ul>
+</div>
+</body>
+</html>
