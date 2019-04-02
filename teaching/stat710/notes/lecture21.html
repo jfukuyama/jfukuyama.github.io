@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="http://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+  <script src="http://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div id="expectation-maximization" class="slide section level2">
+<h1>Expectation Maximization</h1>
+<p>Agenda today</p>
+<ul>
+<li><p>Last day of optimization section</p></li>
+<li><p>The EM algorithm</p></li>
+</ul>
+<p>Reading: Lang Chapter 10</p>
+</div>
+<div id="problem-for-today" class="slide section level2">
+<h1>Problem for today</h1>
+<p>Goal, as usual: Maximize a likelihood</p>
+<ul>
+<li><p>We've seen how we can do this in convex problems</p></li>
+<li><p>EM is for the non-convex case</p></li>
+<li><p>Particularly useful problems with &quot;hidden data&quot; or &quot;missing data&quot;</p></li>
+</ul>
+<div class="incremental">
+<p>The idea behind EM:</p>
+<ul>
+<li><p>There are some likelihoods that would be easy to maximize if we just had a littel bit of extra data</p></li>
+<li><p>We can guess at what the missing data should be and find the parameters that maximize the likelihood based on our guess.</p></li>
+<li><p>We then alternate between guessing at the missing data based on the current parameter estimates and estimating the parameters based on the guesses at the missing data.</p></li>
+</ul>
+</div>
+</div>
+<div id="for-example-clustering-with-normal-mixtures" class="slide section level2">
+<h1>For example: Clustering with normal mixtures</h1>
+<p>Suppose we have a set of points measured on one variable.</p>
+<p>We think that they come from two clusters, and we want to find the centers of those clusters.</p>
+<div class="figure">
+<img src="lecture-21-fig/unnamed-chunk-1-1.png" />
+</div>
+</div>
+<div class="slide section level2">
+
+<p>We can set up the following model for the data:</p>
+<p><span class="math">\[
+\begin{align*}
+z_i &amp;=\begin{cases}
+1 &amp; \text{w.p. } p\\
+0 &amp; \text{w.p. } 1 - p
+\end{cases}\\
+y_i \mid c_i &amp;\sim N(\theta_{c_i}, 1)
+\end{align*}
+\]</span></p>
+<ul>
+<li><p><span class="math">\(y_i\)</span>, <span class="math">\(i = 1,\ldots, n\)</span> are the observed data</p></li>
+<li><p><span class="math">\(z_i\)</span>, <span class="math">\(i = 1,\ldots, n\)</span> are the cluster assignments, or the &quot;missing&quot; or &quot;unobserved&quot; data.</p></li>
+<li><p>The goal is to get maximum likelihood estimates of <span class="math">\(\theta_0\)</span> and <span class="math">\(\theta_1\)</span>, the means of the two clusters, and <span class="math">\(p\)</span>, the probability of each cluster.</p></li>
+<li><p>If we observed the <span class="math">\(z_i\)</span>'s, this problem would be simple: <span class="math">\(\hat \theta_0\)</span> would be the mean of the <span class="math">\(y_i\)</span>'s for which <span class="math">\(z_i = 0\)</span>, and <span class="math">\(\hat \theta_1\)</span> would be the mean of the <span class="math">\(y_i\)</span>'s for which <span class="math">\(z_i = 1\)</span>.</p></li>
+</ul>
+</div>
+<div id="likelihood-for-the-normal-mixture-example" class="slide section level2">
+<h1>Likelihood for the normal mixture example</h1>
+<p>We will let <span class="math">\(\phi_\theta\)</span> be the normal pdf function, <span class="math">\[
+\phi_\theta(y) = \frac{1}{2\pi} \exp \left(\frac{(y - \theta)^2}{ 2} \right) 
+\]</span> so that we don't have to rewrite it every time.</p>
+<p>In this model, the observed-data likelihood for one point is: <span class="math">\[
+p \phi_{\theta_1}(y_i) + (1 -p)\phi_{\theta_0}(y_i)
+\]</span></p>
+<p>And the overall observed-data log likelihood is <span class="math">\[
+\log g(y \mid \theta) = \sum_{i=1}^n \log \left( p \phi_{\theta_1}(y_i) + (1 -p)\phi_{\theta_0}(y_i) \right)
+\]</span></p>
+<p>Note: that this is not convex, so we can't apply the tools we used before</p>
+</div>
+<div id="em-the-algorithm" class="slide section level2">
+<h1>EM: The algorithm</h1>
+<p>Suppose we have observed data <span class="math">\(Y\)</span>, missing data <span class="math">\(Z\)</span>, complete data <span class="math">\(X = (Y, Z)\)</span>, and parameters <span class="math">\(\theta\)</span>.</p>
+<p><span class="math">\(f(X\mid \theta)\)</span> is the complete-data likelihood, <span class="math">\(g(Y \mid \theta)\)</span> is the observed-data likelihood.</p>
+<p>We would like to maximize <span class="math">\(g(Y \mid \theta)\)</span> (or <span class="math">\(\log g(Y \mid \theta)\)</span>)</p>
+<ul>
+<li><p>Start with an initial estimate of the parameters <span class="math">\(\theta^{(0)}\)</span></p></li>
+<li><p>While you haven't converged yet, repeat the following two steps:</p></li>
+<li><p>E step: compute <span class="math">\[
+Q(\theta \mid \theta^{(n)}) = E[\log f(X \mid \theta) \mid Y, \theta^{(n)}]
+\]</span></p></li>
+<li><p>M step: Let <span class="math">\(\theta^{(n+1)}\)</span> be the solution to <span class="math">\[
+\text{maximize}_\theta Q(\theta \mid \theta^{(n)})
+\]</span></p></li>
+</ul>
+</div>
+<div id="example-e-step-in-normal-mixtures" class="slide section level2">
+<h1>Example: E step in normal mixtures</h1>
+<p>Our parameters are <span class="math">\(\theta\)</span> and <span class="math">\(p\)</span>, with current estimates <span class="math">\(\theta^{(n)}\)</span> and <span class="math">\(p^{(n)}\)</span>. The complete-data log likelihood is</p>
+<p><span class="math">\[
+\log f(Y, Z \mid \theta, p) = \sum_{i=1}^n (1 - z_i) \log(\phi_{\theta_0}(y_i)) + z_i \log(\phi_{\theta_1}(y_i)) + \sum_{i=1}^n [(1 - z_i) \log(1 - p) + z_i \log p]
+\]</span></p>
+<div class="incremental">
+<p>In the E step, we compute the expectation of <span class="math">\(\log f(y, z, \mid \theta)\)</span>, conditional on the observed values of <span class="math">\(y\)</span> and the current estimate of <span class="math">\(\theta\)</span>, <span class="math">\(\theta^{(n)}\)</span>.</p>
+<p><span class="math">\[
+\begin{align*}
+E[\log \;&amp;f(Y, Z \mid \theta, p)  \mid Y = y, \theta= \theta^{(n)}, p = p^{(n)}] \\
+&amp;= \sum_{i=1}^n (1 - E[z_i \mid Y = y, \theta= \theta^{(n)}]\log(\phi_{\theta^{(n)}_0}(y_i)) + E[z_i \mid  Y = y, \theta= \theta^{(n)}] \log(\phi_{\theta^{(n)}_1}(y_i)) +\\
+&amp;\quad  \sum_{i=1}^n\left [(1 - E[z_i \mid Y = y, \theta= \theta^{(n)}]) \log(1 - p^{(n)}) + E[z_i \mid Y = y, \theta= \theta^{(n)}]\log p^{(n)}\right]
+\end{align*}
+\]</span></p>
+</div>
+<div class="incremental">
+<p>Finally: <span class="math">\[
+E[z_i \mid Y = y, \theta= \theta^{(n)}])  = \frac{p^{(n)}\phi_{\theta^{(n)}_1}(y_i)}{p^{(n)}\phi_{\theta^{(n)}_1}(y_i) + (1 - p^{(n)})\phi_{\theta^{(n)}_0}(y_i)}
+\]</span></p>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Suppose our current estimates are <span class="math">\(\theta_0^{(n)} = -1\)</span>, <span class="math">\(\theta_2^{(n)} = 2\)</span>, and <span class="math">\(p^{(n)} = .5\)</span></p>
+<p>We can compute the quantities from the previous slide for the data we generated:</p>
+<pre class="sourceCode r"><code class="sourceCode r">theta0 =<span class="st"> </span>-<span class="dv">1</span>
+theta1 =<span class="st"> </span><span class="dv">2</span>
+p =<span class="st"> </span>.<span class="dv">5</span>
+expected_z =<span class="st"> </span>p *<span class="st"> </span>(<span class="kw">dnorm</span>(y, <span class="dt">mean =</span> theta1)) /
+<span class="st">    </span>(p *<span class="st"> </span>(<span class="kw">dnorm</span>(y, <span class="dt">mean =</span> theta1)) +<span class="st"> </span>(<span class="dv">1</span> -<span class="st"> </span>p) *<span class="st"> </span><span class="kw">dnorm</span>(y, <span class="dt">mean =</span> theta0))
+<span class="kw">round</span>(<span class="kw">head</span>(<span class="kw">cbind</span>(y, expected_z)), <span class="dt">digits =</span> <span class="dv">3</span>)</code></pre>
+<pre><code>##           y expected_z
+## [1,] -0.488      0.049
+## [2,] -1.610      0.002
+## [3,]  2.379      0.996
+## [4,]  0.785      0.702
+## [5,] -0.875      0.016
+## [6,]  2.955      0.999</code></pre>
+</div>
+<div id="example-m-step-in-normal-mixtures" class="slide section level2">
+<h1>Example: M step in normal mixtures</h1>
+<p>You can either go through the analysis, or you can notice that maximizing <span class="math">\(E[\log f(Y, Z \mid \theta, p) \mid Y = y, \theta = \theta^{(n)}, p = p^{(n)}]\)</span> is simply a problem of estimating the mean of a normal distribution with weights on the samples.</p>
+<p>If we let <span class="math">\(\gamma_i = E[z_i \mid Y = y, \theta= \theta^{(n)}]\)</span>, then our new parameters are <span class="math">\[
+\begin{align*}
+\theta^{(n+1)}_0 &amp;= \frac{\sum_{i=1}^n (1 - \gamma_i) y_i}{\sum_{i=1}^n (1 - \gamma_i)}\\
+\theta^{(n+1)}_1 &amp;= \frac{\sum_{i=1}^n \gamma_i y_i}{\sum_{i=1}^n \gamma_i}\\
+p^{(n+1)} &amp;= \sum_{i=1}^n \gamma_i / n
+\end{align*}
+\]</span></p>
+</div>
+<div class="slide section level2">
+
+<p>Let's look at what the M step looks like on our data.</p>
+<p>Remember our previous parameter estimates were <span class="math">\(\theta_0^{(n)} = -1\)</span>, <span class="math">\(\theta_2^{(n)} = 2\)</span>, and <span class="math">\(p^{(n)} = .5\)</span>. The true centers are at <span class="math">\(-2\)</span> and <span class="math">\(3\)</span>.</p>
+<pre class="sourceCode r"><code class="sourceCode r">(<span class="dt">theta1_updated =</span> <span class="kw">sum</span>(y *<span class="st"> </span>expected_z) /<span class="st"> </span><span class="kw">sum</span>(expected_z))</code></pre>
+<pre><code>## [1] 2.88475</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">(<span class="dt">theta0_updated =</span> <span class="kw">sum</span>(y *<span class="st"> </span>(<span class="dv">1</span> -<span class="st"> </span>expected_z)) /<span class="st"> </span><span class="kw">sum</span>(<span class="dv">1</span> -<span class="st"> </span>expected_z))</code></pre>
+<pre><code>## [1] -1.599996</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">(<span class="dt">p_updated =</span> <span class="kw">sum</span>(expected_z) /<span class="st"> </span>n_samples)</code></pre>
+<pre><code>## [1] 0.536838</code></pre>
+</div>
+<div id="some-notes" class="slide section level2">
+<h1>Some notes</h1>
+<ul>
+<li><p>We can prove that EM is an ascent algorithm</p></li>
+<li><p>Tends to converge rather slowly</p></li>
+<li><p>No guarantee of getting a global maximum of the likelihood (but sometimes this is a good thing...)</p></li>
+</ul>
+<p>When is this useful?</p>
+<ul>
+<li><p>When it is easy to get distributions over the missing variables given the current parameter estimates.</p></li>
+<li><p>When the problem simplifies after introduction of the missing variables.</p></li>
+<li><p>These two conditions often hold in latent variable models, which also tend not to be convex.</p></li>
+</ul>
+</div>
+</body>
+</html>
