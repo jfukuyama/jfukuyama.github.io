@@ -73,18 +73,18 @@ code > span.er { color: #ff0000; font-weight: bold; }
 <p>We can set up the following model for the data:</p>
 <p><span class="math">\[
 \begin{align*}
-z_i &amp;=\begin{cases}
+Z_i &amp;=\begin{cases}
 1 &amp; \text{w.p. } p\\
 0 &amp; \text{w.p. } 1 - p
 \end{cases}\\
-y_i \mid c_i &amp;\sim N(\theta_{c_i}, 1)
+Y_i \mid Z_i &amp;\sim N(\theta_{Z_i}, 1)
 \end{align*}
 \]</span></p>
 <ul>
-<li><p><span class="math">\(y_i\)</span>, <span class="math">\(i = 1,\ldots, n\)</span> are the observed data</p></li>
-<li><p><span class="math">\(z_i\)</span>, <span class="math">\(i = 1,\ldots, n\)</span> are the cluster assignments, or the &quot;missing&quot; or &quot;unobserved&quot; data.</p></li>
+<li><p><span class="math">\(Y_i\)</span>, <span class="math">\(i = 1,\ldots, n\)</span> are the observed data</p></li>
+<li><p><span class="math">\(Z_i\)</span>, <span class="math">\(i = 1,\ldots, n\)</span> are the cluster assignments, or the &quot;missing&quot; or &quot;unobserved&quot; data.</p></li>
 <li><p>The goal is to get maximum likelihood estimates of <span class="math">\(\theta_0\)</span> and <span class="math">\(\theta_1\)</span>, the means of the two clusters, and <span class="math">\(p\)</span>, the probability of each cluster.</p></li>
-<li><p>If we observed the <span class="math">\(z_i\)</span>'s, this problem would be simple: <span class="math">\(\hat \theta_0\)</span> would be the mean of the <span class="math">\(y_i\)</span>'s for which <span class="math">\(z_i = 0\)</span>, and <span class="math">\(\hat \theta_1\)</span> would be the mean of the <span class="math">\(y_i\)</span>'s for which <span class="math">\(z_i = 1\)</span>.</p></li>
+<li><p>If we observed the <span class="math">\(Z_i\)</span>'s, this problem would be simple: <span class="math">\(\hat \theta_0\)</span> would be the mean of the <span class="math">\(Y_i\)</span>'s for which <span class="math">\(Z_i = 0\)</span>, and <span class="math">\(\hat \theta_1\)</span> would be the mean of the <span class="math">\(Y_i\)</span>'s for which <span class="math">\(Z_i = 1\)</span>.</p></li>
 </ul>
 </div>
 <div id="likelihood-for-the-normal-mixture-example" class="slide section level2">
@@ -92,7 +92,7 @@ y_i \mid c_i &amp;\sim N(\theta_{c_i}, 1)
 <p>We will let <span class="math">\(\phi_\theta\)</span> be the normal pdf function, <span class="math">\[
 \phi_\theta(y) = \frac{1}{2\pi} \exp \left(\frac{(y - \theta)^2}{ 2} \right) 
 \]</span> so that we don't have to rewrite it every time.</p>
-<p>In this model, the observed-data likelihood for one point is: <span class="math">\[
+<p>Let <span class="math">\(y_i\)</span>, <span class="math">\(i = 1,\ldots, n\)</span> be the observed data. In this model, the observed-data likelihood for one point is: <span class="math">\[
 p \phi_{\theta_1}(y_i) + (1 -p)\phi_{\theta_0}(y_i)
 \]</span></p>
 <p>And the overall observed-data log likelihood is <span class="math">\[
@@ -127,14 +127,14 @@ Q(\theta \mid \theta^{(n)}) = E[\log f(X \mid \theta) \mid Y, \theta^{(n)}]
 <p><span class="math">\[
 \begin{align*}
 E[\log \;&amp;f(Y, Z \mid \theta, p)  \mid Y = y, \theta= \theta^{(n)}, p = p^{(n)}] \\
-&amp;= \sum_{i=1}^n (1 - E[z_i \mid Y = y, \theta= \theta^{(n)}]\log(\phi_{\theta^{(n)}_0}(y_i)) + E[z_i \mid  Y = y, \theta= \theta^{(n)}] \log(\phi_{\theta^{(n)}_1}(y_i)) +\\
+&amp;= \sum_{i=1}^n \left[(1 - E[z_i \mid Y = y, \theta= \theta^{(n)}])\log(\phi_{\theta^{(n)}_0}(y_i)) + E[z_i \mid  Y = y, \theta= \theta^{(n)}] \log(\phi_{\theta^{(n)}_1}(y_i))\right] +\\
 &amp;\quad  \sum_{i=1}^n\left [(1 - E[z_i \mid Y = y, \theta= \theta^{(n)}]) \log(1 - p^{(n)}) + E[z_i \mid Y = y, \theta= \theta^{(n)}]\log p^{(n)}\right]
 \end{align*}
 \]</span></p>
 </div>
 <div class="incremental">
 <p>Finally: <span class="math">\[
-E[z_i \mid Y = y, \theta= \theta^{(n)}])  = \frac{p^{(n)}\phi_{\theta^{(n)}_1}(y_i)}{p^{(n)}\phi_{\theta^{(n)}_1}(y_i) + (1 - p^{(n)})\phi_{\theta^{(n)}_0}(y_i)}
+E[z_i \mid Y = y, \theta= \theta^{(n)}]  = \frac{p^{(n)}\phi_{\theta^{(n)}_1}(y_i)}{p^{(n)}\phi_{\theta^{(n)}_1}(y_i) + (1 - p^{(n)})\phi_{\theta^{(n)}_0}(y_i)}
 \]</span></p>
 </div>
 </div>

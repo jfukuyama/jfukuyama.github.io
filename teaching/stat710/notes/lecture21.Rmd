@@ -59,21 +59,21 @@ We can set up the following model for the data:
 
 $$
 \begin{align*}
-z_i &=\begin{cases}
+Z_i &=\begin{cases}
 1 & \text{w.p. } p\\
 0 & \text{w.p. } 1 - p
 \end{cases}\\
-y_i \mid c_i &\sim N(\theta_{c_i}, 1)
+Y_i \mid Z_i &\sim N(\theta_{Z_i}, 1)
 \end{align*}
 $$
 
-- $y_i$, $i = 1,\ldots, n$ are the observed data
+- $Y_i$, $i = 1,\ldots, n$ are the observed data
 
-- $z_i$, $i = 1,\ldots, n$ are the cluster assignments, or the "missing" or "unobserved" data.
+- $Z_i$, $i = 1,\ldots, n$ are the cluster assignments, or the "missing" or "unobserved" data.
 
 - The goal is to get maximum likelihood estimates of $\theta_0$ and $\theta_1$, the means of the two clusters, and $p$, the probability of each cluster.
 
-- If we observed the $z_i$'s, this problem would be simple: $\hat \theta_0$ would be the mean of the $y_i$'s for which $z_i = 0$, and $\hat \theta_1$ would be the mean of the $y_i$'s for which $z_i = 1$.
+- If we observed the $Z_i$'s, this problem would be simple: $\hat \theta_0$ would be the mean of the $Y_i$'s for which $Z_i = 0$, and $\hat \theta_1$ would be the mean of the $Y_i$'s for which $Z_i = 1$.
 
 ## Likelihood for the normal mixture example
 
@@ -84,7 +84,7 @@ $$
 so that we don't have to rewrite it every time.
 
 
-In this model, the observed-data likelihood for one point is:
+Let $y_i$, $i = 1,\ldots, n$ be the observed data. In this model, the observed-data likelihood for one point is:
 $$
 p \phi_{\theta_1}(y_i) + (1 -p)\phi_{\theta_0}(y_i)
 $$
@@ -135,7 +135,7 @@ In the E step, we compute the expectation of $\log f(y, z, \mid \theta)$, condit
 $$
 \begin{align*}
 E[\log \;&f(Y, Z \mid \theta, p)  \mid Y = y, \theta= \theta^{(n)}, p = p^{(n)}] \\
-&= \sum_{i=1}^n (1 - E[z_i \mid Y = y, \theta= \theta^{(n)}]\log(\phi_{\theta^{(n)}_0}(y_i)) + E[z_i \mid  Y = y, \theta= \theta^{(n)}] \log(\phi_{\theta^{(n)}_1}(y_i)) +\\
+&= \sum_{i=1}^n \left[(1 - E[z_i \mid Y = y, \theta= \theta^{(n)}])\log(\phi_{\theta^{(n)}_0}(y_i)) + E[z_i \mid  Y = y, \theta= \theta^{(n)}] \log(\phi_{\theta^{(n)}_1}(y_i))\right] +\\
 &\quad  \sum_{i=1}^n\left [(1 - E[z_i \mid Y = y, \theta= \theta^{(n)}]) \log(1 - p^{(n)}) + E[z_i \mid Y = y, \theta= \theta^{(n)}]\log p^{(n)}\right]
 \end{align*}
 $$
@@ -144,7 +144,7 @@ $$
 
 Finally:
 $$
-E[z_i \mid Y = y, \theta= \theta^{(n)}])  = \frac{p^{(n)}\phi_{\theta^{(n)}_1}(y_i)}{p^{(n)}\phi_{\theta^{(n)}_1}(y_i) + (1 - p^{(n)})\phi_{\theta^{(n)}_0}(y_i)}
+E[z_i \mid Y = y, \theta= \theta^{(n)}]  = \frac{p^{(n)}\phi_{\theta^{(n)}_1}(y_i)}{p^{(n)}\phi_{\theta^{(n)}_1}(y_i) + (1 - p^{(n)})\phi_{\theta^{(n)}_0}(y_i)}
 $$
 
 -----
