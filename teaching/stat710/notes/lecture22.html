@@ -1,0 +1,327 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="http://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+  <script src="http://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div id="monte-carlo-methods-integration-and-cross-validation" class="slide section level2">
+<h1>Monte Carlo methods: integration and cross validation</h1>
+<p>Agenda today</p>
+<ul>
+<li><p>Start on Monte Carlo methods</p></li>
+<li><p>Monte Carlo Integration</p></li>
+<li><p>Cross validation</p></li>
+</ul>
+<p>Reading: Lange 21.1, 21.2</p>
+</div>
+<div id="monte-carlo-integration" class="slide section level2">
+<h1>Monte Carlo Integration</h1>
+<p>We have:</p>
+<ul>
+<li><p>A function <span class="math">\(f\)</span></p></li>
+<li><p>A distribution <span class="math">\(\mu\)</span></p></li>
+</ul>
+<p>We would like to approximate <span class="math">\[
+E[f(X)] = \int f(x) \, d\mu(x)
+\]</span></p>
+<div class="incremental">
+<p>Why not numerical integration?</p>
+<ul>
+<li><p>Works well for low-dimensional problems.</p></li>
+<li><p>Fails in high dimensions, the &quot;curse of dimensionality&quot;</p></li>
+</ul>
+</div>
+</div>
+<div id="monte-carlo-integration-1" class="slide section level2">
+<h1>Monte Carlo Integration</h1>
+<p>To estimate/approximate <span class="math">\[
+E[f(X)] = \int f(x) \, d\mu(x)
+\]</span></p>
+<ul>
+<li><p>Draw <span class="math">\(X_1, \ldots, X_n\)</span> iid from <span class="math">\(\mu\)</span></p></li>
+<li><p>Use <span class="math">\(\frac{1}{n} \sum_{i=1}^n f(X_i)\)</span> as the estimator</p></li>
+</ul>
+<div class="incremental">
+<p>Why is this reasonable?</p>
+<ul>
+<li>By the law of large numbers, the estimates converge to <span class="math">\(E[f(X)]\)</span> as <span class="math">\(n \to \infty\)</span></li>
+</ul>
+</div>
+</div>
+<div id="monte-carlo-integration-accuracy" class="slide section level2">
+<h1>Monte Carlo Integration: Accuracy</h1>
+<p>If <span class="math">\(f\)</span> is square integrable, we can apply the central limit theorem, which tells us that the estimator is approximately distributed <span class="math">\[
+\mathcal N \left( E[f(X)], \sqrt{\frac{\text{Var}[f(X)]}{n}} \right)
+\]</span></p>
+<div class="incremental">
+<ul>
+<li><p>Good thing: accuracy doesn't depend on the dimensionality of the problem</p></li>
+<li><p>Bad thing: Error declines at the <span class="math">\(n^{-1/2}\)</span> rate vs. <span class="math">\(n^{-k}\)</span>, <span class="math">\(k \ge 2\)</span> for the numerical integration methods.</p></li>
+<li><p>What to do? Try to decrease <span class="math">\(\text{Var}[f(X)]\)</span>.</p></li>
+</ul>
+</div>
+</div>
+<div id="importance-sampling" class="slide section level2">
+<h1>Importance Sampling</h1>
+<p>Importance sampling is based on the following equality: <span class="math">\[
+\int f(x) g(x)\, d \nu (x) = \int \frac{f(x) g(x)}{h(x)} h(x) \,d \nu(x)
+\]</span> where</p>
+<ul>
+<li><p><span class="math">\(f\)</span> is the function for which we would like to compute the expectation</p></li>
+<li><p><span class="math">\(\nu\)</span> is some base measure (Lebesgue or counting)</p></li>
+<li><p><span class="math">\(g\)</span> is the density of our target probability distribution relative to <span class="math">\(\nu\)</span> (so the measure <span class="math">\(\mu\)</span> from before is <span class="math">\(g d \nu\)</span>).</p></li>
+<li><p><span class="math">\(h\)</span> is the density of some other probability distribution relative to <span class="math">\(\nu\)</span></p></li>
+</ul>
+<div class="incremental">
+<p>Interpretation:</p>
+<ul>
+<li>If we draw <span class="math">\(Y_1, \ldots, Y_n\)</span> iid from the distribution <span class="math">\(h\)</span>, <span class="math">\[
+\frac{1}{n}\sum_{i=1}^n \frac{f(Y_i) g(Y_i)}{h(Y_i)}
+\]</span> is an estimate of <span class="math">\(\int f(x) g(x) \, d \nu(x)\)</span>.</li>
+</ul>
+</div>
+</div>
+<div id="when-is-this-useful" class="slide section level2">
+<h1>When is this useful?</h1>
+<p>The importance sampling estimator has a smaller variance than the naive estimator iff: <span class="math">\[
+\int \left[ \frac{f(x) g(x)}{h(x)} \right]^2 h(x) d\nu(x) \le \int f(x)^2 g(x) d\nu(x)
+\]</span></p>
+<div class="incremental">
+<ul>
+<li>If we choose <span class="math">\(h(x) = |f(x)| g(x) / \int |f(z)| g(z) d\nu(z)\)</span>, then an application of Cauchy Schwarz tells us that the condition above is satisfied and the importance sampling estimator will have smaller variance.</li>
+</ul>
+</div>
+<div class="incremental">
+<ul>
+<li>If <span class="math">\(f\)</span> is nonnegative and <span class="math">\(h\)</span> is chosen as above, the variance of the importance sampling estimator is 0.</li>
+</ul>
+</div>
+<div class="incremental">
+<ul>
+<li>We aren't able to choose <span class="math">\(h\)</span> according to the recipe above, but it implies that the variance will be reduced if <span class="math">\(h(x)\)</span> looks like <span class="math">\(|f(x)| g(x)\)</span>.</li>
+</ul>
+</div>
+</div>
+<div id="a-contrived-example" class="slide section level2">
+<h1>A contrived example</h1>
+<p>We are playing a terrible game:</p>
+<ul>
+<li><p>I draw from a uniform distribution on <span class="math">\([0,1]\)</span>.</p></li>
+<li><p>If the draw comes up less than <span class="math">\(.01\)</span>, you have to pay me $100.</p></li>
+<li><p>Otherwise nothing happens.</p></li>
+</ul>
+<p>What is your expected return to playing this game?</p>
+</div>
+<div class="slide section level2">
+
+<p>Naive Monte Carlo estimate:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set.seed</span>(<span class="dv">1</span>)
+f =<span class="st"> </span>function(x) {
+    if(x &lt;<span class="st"> </span>.<span class="dv">01</span>)
+        <span class="kw">return</span>(-<span class="dv">100</span>)
+    <span class="kw">return</span>(<span class="dv">0</span>)
+}
+mc_samples =<span class="st"> </span><span class="kw">runif</span>(<span class="dv">1000</span>)
+<span class="kw">mean</span>(<span class="kw">sapply</span>(mc_samples, f))</code></pre>
+<pre><code>## [1] -0.7</code></pre>
+<ul>
+<li><p>Not very good!</p></li>
+<li><p>Problem is that we don't have very many samples where <span class="math">\(x &lt; .01\)</span></p></li>
+<li><p>Try importance sampling from a distribution that is more likely to give <span class="math">\(x &lt; .01\)</span></p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>Recall Beta distributions: Supported on the interval <span class="math">\([0,1]\)</span>, can tune so that they put more weight in the middle or at the edges.</p>
+<p>Beta(1,10) has density:</p>
+<pre class="sourceCode r"><code class="sourceCode r">x =<span class="st"> </span><span class="kw">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dt">length.out =</span> <span class="dv">200</span>)
+beta_density =<span class="st"> </span><span class="kw">dbeta</span>(x, <span class="dt">shape1 =</span> <span class="dv">1</span>, <span class="dt">shape2 =</span> <span class="dv">10</span>)
+<span class="kw">plot</span>(beta_density ~<span class="st"> </span>x, <span class="dt">type =</span> <span class="st">&#39;l&#39;</span>)</code></pre>
+<div class="figure">
+<img src="lecture-22-fig/unnamed-chunk-2-1.png" />
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Importance sampling from Beta(1,10):</p>
+<pre class="sourceCode r"><code class="sourceCode r">mc_importance_samples =<span class="st"> </span><span class="kw">rbeta</span>(<span class="dv">1000</span>, <span class="dt">shape1 =</span> <span class="dv">1</span>, <span class="dt">shape2 =</span> <span class="dv">10</span>)
+importance_function =<span class="st"> </span>function(x) {
+    <span class="kw">return</span>(<span class="kw">f</span>(x) /<span class="st"> </span><span class="kw">dbeta</span>(x, <span class="dt">shape1 =</span> <span class="dv">1</span>, <span class="dt">shape2 =</span> <span class="dv">10</span>))
+}
+<span class="kw">mean</span>(<span class="kw">sapply</span>(mc_importance_samples, importance_function))</code></pre>
+<pre><code>## [1] -1.044691</code></pre>
+</div>
+<div id="more-realistic-examples" class="slide section level2">
+<h1>More realistic examples</h1>
+<ul>
+<li><p>Intuition from the game holds: if you have extreme returns from rare events, importance sampling by sampling more from regions with extreme returns helps</p></li>
+<li><p>Insurance</p></li>
+<li><p>Quantitative finance</p></li>
+</ul>
+</div>
+<div id="part-2-cross-validation" class="slide section level2">
+<h1>Part 2: Cross validation</h1>
+<div class="incremental">
+<p>We have:</p>
+<ul>
+<li><p>Data <span class="math">\(X_1, \ldots, X_n\)</span>.</p></li>
+<li><p>A tuning parameter <span class="math">\(\theta\)</span>. Each value of <span class="math">\(\theta\)</span> corresponds to a different set of models.</p></li>
+<li><p>A function <span class="math">\(L\)</span> that takes a fitted model and a data point and returns a measure of model quality.</p></li>
+</ul>
+<p>We would like to choose one model from the set of candidate models indexed by <span class="math">\(\theta\)</span>.</p>
+</div>
+</div>
+<div id="example-regression" class="slide section level2">
+<h1>Example: Regression</h1>
+<ul>
+<li><p>Data: Pairs of predictors and response variables, <span class="math">\((y_i, X_i)\)</span>, <span class="math">\(i = 1,\ldots, n\)</span>, <span class="math">\(y_i \in \mathbb R\)</span>, <span class="math">\(X_i \in \mathbb R^p\)</span></p></li>
+<li><p>Models: <span class="math">\(y_i = X \beta + \epsilon\)</span>, <span class="math">\(\beta_j = 0, j \in S_\theta\)</span>, where <span class="math">\(S_\theta \subseteq \{1,\ldots, p\}\)</span>.</p></li>
+<li><p>Model quality: Squared-error loss. If <span class="math">\(\hat \beta_\theta\)</span> are our estimates of the regression coefficients in model <span class="math">\(\theta\)</span>, model quality is measured by <span class="math">\[
+L(\hat \beta_\theta, (y_i, X_i)) = (y_i - X_i^T \hat \beta_\theta)^2
+\]</span></p></li>
+</ul>
+<p>We want to choose a subset of the predictors that do the best job of explaining the response.</p>
+<div class="incremental">
+<p>Naive solution: Find the model that has the lowest value for the squared-error loss.</p>
+<p>Why doesn't this work?</p>
+</div>
+</div>
+<div id="example-mixture-models" class="slide section level2">
+<h1>Example: Mixture models</h1>
+<ul>
+<li><p>Data: <span class="math">\(x_1,\ldots, x_n\)</span>, <span class="math">\(x_i \in \mathbb R\)</span></p></li>
+<li><p>Models: Gaussian mixture models with <span class="math">\(\theta\)</span> mixture components.</p></li>
+<li><p>Model quality: Negative log likelihood of the data. If <span class="math">\(\hat p_\theta\)</span> is the density of the fitted model with <span class="math">\(\theta\)</span> components, model quality is measured by <span class="math">\(L(\hat p_\theta, x_i) = -\log \hat p_\theta(x_i)\)</span>.</p></li>
+</ul>
+<p>We want to choose the number of mixture components that best explains the data.</p>
+<div class="incremental">
+<p>Naive solution: Choose the number of mixture components that minimizes the negative log likelihood of the data.</p>
+</div>
+</div>
+<div id="better-solution-cross-validation" class="slide section level2">
+<h1>Better Solution: Cross validation</h1>
+<p>Idea: Instead of measuring model quality on the same data we used to fit the model, we estimate model quality on new data.</p>
+<p>If we knew the true distribution of the data, we could simulate new data and use a Monte Carlo estimate based on the simulations.</p>
+<p>We can't actually get new data, and so we hold some back when we fit the model and then pretend that the held back data is new data.</p>
+</div>
+<div class="slide section level2">
+
+<p>Procedure:</p>
+<ul>
+<li><p>Divide the data into <span class="math">\(K\)</span> folds</p></li>
+<li><p>Let <span class="math">\(X^{(k)}\)</span> denote the data in fold <span class="math">\(k\)</span>, and let <span class="math">\(X^{(-k)}\)</span> denote the data in all the folds except for <span class="math">\(k\)</span>.</p></li>
+<li><p>For each fold and each value of the tuning parameter <span class="math">\(\theta\)</span>, fit the model on <span class="math">\(X^{(-k)}\)</span> to get <span class="math">\(\hat f_\theta^{(k)}\)</span></p></li>
+<li><p>Compute <span class="math">\[
+\text{CV}(\theta) = \frac{1}{n} \sum_{k=1}^K \sum_{x \in X^{(k)}} L(\hat f_\theta^{(k)}, x)
+\]</span></p></li>
+<li><p>Choose <span class="math">\(\hat \theta = \text{argmin}_{\theta} \text{CV}(\theta)\)</span></p></li>
+</ul>
+</div>
+<div id="example" class="slide section level2">
+<h1>Example</h1>
+<pre class="sourceCode r"><code class="sourceCode r">n =<span class="st"> </span><span class="dv">100</span>
+p =<span class="st"> </span><span class="dv">20</span>
+X =<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">rnorm</span>(n *<span class="st"> </span>p), <span class="dt">nrow =</span> n)
+y =<span class="st"> </span><span class="kw">rnorm</span>(n)
+get_rss_submodels =<span class="st"> </span>function(n_predictors, y, X) {
+    if(n_predictors ==<span class="st"> </span><span class="dv">0</span>) {
+        lm_submodel =<span class="st"> </span><span class="kw">lm</span>(y ~<span class="st"> </span><span class="dv">0</span>)
+    } else {
+        lm_submodel =<span class="st"> </span><span class="kw">lm</span>(y ~<span class="st"> </span><span class="dv">0</span> +<span class="st"> </span>X[,<span class="dv">1</span>:n_predictors, <span class="dt">drop =</span> <span class="ot">FALSE</span>])
+    }
+    <span class="kw">return</span>(<span class="kw">sum</span>(<span class="kw">residuals</span>(lm_submodel)^<span class="dv">2</span>))
+}
+p_vec =<span class="st"> </span><span class="dv">0</span>:p
+rss =<span class="st"> </span><span class="kw">sapply</span>(p_vec, get_rss_submodels, y, X)
+<span class="kw">plot</span>(rss ~<span class="st"> </span>p_vec)</code></pre>
+<div class="figure">
+<img src="lecture-22-fig/unnamed-chunk-4-1.png" />
+</div>
+</div>
+<div class="slide section level2">
+
+<pre class="sourceCode r"><code class="sourceCode r">get_cv_error =<span class="st"> </span>function(n_predictors, y, X, folds) {
+    cv_vec =<span class="st"> </span><span class="kw">numeric</span>(<span class="kw">length</span>(<span class="kw">unique</span>(folds)))
+    for(f in <span class="kw">unique</span>(folds)) {
+        cv_vec[f] =<span class="st"> </span><span class="kw">rss_on_held_out</span>(
+                  n_predictors,
+                  <span class="dt">y_train =</span> y[folds !=<span class="st"> </span>f],
+                  <span class="dt">X_train =</span> X[folds !=<span class="st"> </span>f,],
+                  <span class="dt">y_test =</span> y[folds ==<span class="st"> </span>f],
+                  <span class="dt">X_test =</span> X[folds ==<span class="st"> </span>f,])
+    }
+    <span class="kw">return</span>(<span class="kw">mean</span>(cv_vec))
+}
+
+rss_on_held_out =<span class="st"> </span>function(n_predictors, y_train, X_train, y_test, X_test) {
+    if(n_predictors ==<span class="st"> </span><span class="dv">0</span>) {
+        lm_submodel =<span class="st"> </span><span class="kw">lm</span>(y_train ~<span class="st"> </span><span class="dv">0</span>)
+        preds_on_test =<span class="st"> </span><span class="kw">rep</span>(<span class="dv">0</span>, <span class="kw">length</span>(y_test))
+    } else {
+        lm_submodel =<span class="st"> </span><span class="kw">lm</span>(y_train ~<span class="st"> </span><span class="dv">0</span> +<span class="st"> </span>X_train[,<span class="dv">1</span>:n_predictors, <span class="dt">drop =</span> <span class="ot">FALSE</span>])
+        preds_on_test =<span class="st"> </span>X_test[,<span class="dv">1</span>:n_predictors, drop=<span class="st"> </span><span class="ot">FALSE</span>] %*%<span class="st"> </span><span class="kw">coef</span>(lm_submodel)
+    }
+
+    <span class="kw">return</span>(<span class="kw">sum</span>((y_test -<span class="st"> </span>preds_on_test)^<span class="dv">2</span>))
+}
+K =<span class="st"> </span><span class="dv">5</span>
+## normally you would do this at random
+folds =<span class="st"> </span><span class="kw">rep</span>(<span class="dv">1</span>:K, <span class="dt">each =</span> n /<span class="st"> </span>K)
+p_vec =<span class="st"> </span><span class="dv">0</span>:p
+cv_errors =<span class="st"> </span><span class="kw">sapply</span>(p_vec, get_cv_error, y, X, folds)
+<span class="kw">plot</span>(cv_errors ~<span class="st"> </span>p_vec)</code></pre>
+<div class="figure">
+<img src="lecture-22-fig/unnamed-chunk-5-1.png" />
+</div>
+</div>
+<div id="choice-of-k" class="slide section level2">
+<h1>Choice of <span class="math">\(K\)</span></h1>
+<p>Considerations:</p>
+<ul>
+<li><p>Larger <span class="math">\(K\)</span> means more computation (although sometimes there is a shortcut for leave-one-out cross validation)</p></li>
+<li><p>Larger <span class="math">\(K\)</span> means less bias in the estimate of model accuracy</p></li>
+<li><p>Larger <span class="math">\(K\)</span> also means more variance in the estimate, so we don't necessarily want <span class="math">\(K = n\)</span></p></li>
+<li><p>Usually choose <span class="math">\(K = 5\)</span> or <span class="math">\(K = 10\)</span></p></li>
+<li><p>If your problem is structured (e.g. time series, spatial), you should choose the folds to respect the structure.</p></li>
+</ul>
+</div>
+<div id="summing-up" class="slide section level2">
+<h1>Summing up</h1>
+<ul>
+<li><p>We can use simulations to estimate arbitrary functions of our random variables.</p></li>
+<li><p>If we know the underlying distribution, we can simply simulate from it (Monte Carlo integration).</p></li>
+<li><p>If we don't know the underlying distribution, we can &quot;simulate&quot; from the data by resampling from the data (cross validation). Resampling methods will do well to the extent that the observed data reflect the true data-generating distribution.</p></li>
+</ul>
+</div>
+</body>
+</html>
