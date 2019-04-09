@@ -104,7 +104,7 @@ P(\theta \mid y_1,\ldots, y_n) &amp;= \frac{P(y_1,\ldots, y_n \mid \theta)\pi(\t
 <div class="incremental">
 <p>Sampling: for <span class="math">\(i = 1,\ldots, N\)</span>:</p>
 <ul>
-<li><p>Generate <span class="math">\(\theta^{(i)} \sim g(\theta)\)</span></p></li>
+<li><p>Generate <span class="math">\(\theta^{(i)} \sim \pi(\theta)\)</span></p></li>
 <li><p>Generate <span class="math">\(y^{(i)} \sim p(y \mid \theta^{(i)})\)</span></p></li>
 <li><p>If <span class="math">\(y^{(i)} = y_{\text{obs}}\)</span>, accept <span class="math">\(\theta^{(i)}\)</span></p></li>
 </ul>
@@ -164,7 +164,7 @@ observed_data =<span class="st"> </span><span class="dv">3</span>
 <div class="slide section level2">
 
 <div class="incremental">
-<pre class="sourceCode r"><code class="sourceCode r">## our posterior should be gamma(x + alpha, 1 + beta) or gamma(4, 2)
+<pre class="sourceCode r"><code class="sourceCode r">## our posterior should be gamma(y + alpha, 1 + beta) or gamma(4, 2)
 ## The mean of a gamma distribution is alpha / beta, so should be 2
 <span class="kw">mean</span>(posterior_samples)</code></pre>
 <pre><code>## [1] 2.037032</code></pre>
@@ -177,7 +177,7 @@ observed_data =<span class="st"> </span><span class="dv">3</span>
 <img src="lecture-23-fig/unnamed-chunk-3-1.png" />
 </div>
 <pre class="sourceCode r"><code class="sourceCode r">x_vec =<span class="st"> </span><span class="kw">seq</span>(<span class="dv">0</span>, <span class="dv">6</span>, <span class="dt">length.out =</span> <span class="dv">1000</span>)
-<span class="kw">plot</span>(<span class="kw">dgamma</span>(x_vec, <span class="dt">shape =</span> <span class="dv">4</span>, <span class="dt">rate =</span> <span class="dv">2</span>) ~<span class="st"> </span>x_vec, <span class="dt">type =</span> <span class="st">&#39;l&#39;</span>)</code></pre>
+<span class="kw">plot</span>(<span class="kw">dgamma</span>(x_vec, <span class="dt">shape =</span> <span class="dv">4</span>, <span class="dt">rate =</span> <span class="dv">2</span>) ~<span class="st"> </span>x_vec, <span class="dt">type =</span> <span class="st">&#39;l&#39;</span>, <span class="dt">ylab=</span><span class="st">&quot;true posterior density&quot;</span>)</code></pre>
 <div class="figure">
 <img src="lecture-23-fig/unnamed-chunk-3-2.png" />
 </div>
@@ -200,7 +200,7 @@ observed_data =<span class="st"> </span><span class="kw">rep</span>(<span class=
 <pre><code>## [1] 1.445692</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>(<span class="kw">replicate</span>(<span class="dt">n =</span> <span class="dv">1000</span>, <span class="kw">generate_abc_sample</span>(observed_data, prior_distribution, data_generating_function)))</code></pre>
 <pre><code>##    user  system elapsed 
-##   0.737   0.120   0.860</code></pre>
+##   0.767   0.119   0.889</code></pre>
 <p>(Try changing <code>n_samples</code> to something bigger on your own computer...)</p>
 </div>
 </div>
@@ -286,6 +286,7 @@ epsilon =<span class="st"> </span>.<span class="dv">1</span>
 <div class="slide section level2">
 
 <p>Checking on the posterior means and variances:</p>
+<div class="incremental">
 <pre class="sourceCode r"><code class="sourceCode r">(<span class="dt">true_posterior_mean =</span> (<span class="dv">1</span> +<span class="st"> </span><span class="kw">sum</span>(observed_data)) /<span class="st"> </span>(n_samples +<span class="st"> </span><span class="dv">1</span>))</code></pre>
 <pre><code>## [1] 2.818182</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mean</span>(posterior_samples)</code></pre>
@@ -294,6 +295,7 @@ epsilon =<span class="st"> </span>.<span class="dv">1</span>
 <pre><code>## [1] 0.2561983</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">var</span>(posterior_samples)</code></pre>
 <pre><code>## [1] 0.2605666</code></pre>
+</div>
 </div>
 <div class="slide section level2">
 

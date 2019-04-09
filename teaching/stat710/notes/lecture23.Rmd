@@ -94,7 +94,7 @@ Inputs:
 
 Sampling: for $i = 1,\ldots, N$:
 
-- Generate $\theta^{(i)} \sim g(\theta)$
+- Generate $\theta^{(i)} \sim \pi(\theta)$
 
 - Generate $y^{(i)} \sim p(y \mid \theta^{(i)})$
 
@@ -167,14 +167,14 @@ posterior_samples = replicate(n = 1000, generate_abc_sample(observed_data, prior
 . . .
 
 ```{r}
-## our posterior should be gamma(x + alpha, 1 + beta) or gamma(4, 2)
+## our posterior should be gamma(y + alpha, 1 + beta) or gamma(4, 2)
 ## The mean of a gamma distribution is alpha / beta, so should be 2
 mean(posterior_samples)
 ## The variance of a gamma distribution is alpha / beta^2, so should be 1
 var(posterior_samples)
 qplot(posterior_samples)
 x_vec = seq(0, 6, length.out = 1000)
-plot(dgamma(x_vec, shape = 4, rate = 2) ~ x_vec, type = 'l')
+plot(dgamma(x_vec, shape = 4, rate = 2) ~ x_vec, type = 'l', ylab="true posterior density")
 ```
 
 
@@ -300,7 +300,10 @@ posterior_samples = replicate(n = 1000,
 
 -----
 
+
 Checking on the posterior means and variances:
+
+. . .
 
 ```{r}
 (true_posterior_mean = (1 + sum(observed_data)) / (n_samples + 1))
