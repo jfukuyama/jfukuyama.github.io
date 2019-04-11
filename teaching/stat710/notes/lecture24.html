@@ -1,0 +1,357 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="http://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+  <script src="http://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div id="monte-carlo-methods-markov-chains" class="slide section level2">
+<h1>Monte Carlo methods: Markov Chains</h1>
+<p>Today: Markov Chains</p>
+<p>Our goals:</p>
+<ul>
+<li><p>Building towards Markov chain monte carlo</p></li>
+<li><p>We will eventually use Markov chains to get samples from arbitrary probability distributions</p></li>
+<li><p>Today we will just look at Markov chains, define them, establish some of their properties</p></li>
+</ul>
+<p>Reading: <a href="http://www.statslab.cam.ac.uk/~rrw1/markov/M.pdf">Notes from Richard Weber's course on Markov chains</a>, or Lange, Chapter 23.</p>
+<ul>
+<li><p>Weber's notes have proofs and examples, and much more detail than we'll use here. I'm following his notation.</p></li>
+<li><p>Lange Chapter 23 is quite succinct.</p></li>
+</ul>
+</div>
+<div id="a-silly-example" class="slide section level2">
+<h1>A silly example</h1>
+<div class="figure">
+<img src="Frog.png" />
+</div>
+<p>A frog hops around on some lily pads, choosing where to hop somewhat randomly.</p>
+<p>We would like to be able to make probability statements about where the frog is.</p>
+<ul>
+<li><p>After <span class="math">\(n\)</span> hops, what is the probability that the frog is on the 3rd lily pad?</p></li>
+<li><p>As <span class="math">\(n \to \infty\)</span>, what is the probability that the frog is on the 3rd lily pad? Does the starting location of the frog matter?</p></li>
+</ul>
+</div>
+<div id="definitions" class="slide section level2">
+<h1>Definitions</h1>
+<div class="incremental">
+<ul>
+<li><p>Let <span class="math">\(I\)</span> be a countable set, <span class="math">\(\{ i, j, k, \ldots \}\)</span>.</p></li>
+<li><p>Each <span class="math">\(i \in I\)</span> is called a <em>state</em> and <span class="math">\(I\)</span> is the <em>state space</em>.</p></li>
+<li><p>Let <span class="math">\(\lambda = (\lambda_i, i \in I)\)</span> be a row vector with <span class="math">\(i\)</span>th element <span class="math">\(\lambda_i\)</span> such that <span class="math">\(\sum_{i} \lambda_i = 1\)</span>. <span class="math">\(\lambda\)</span> defines the <em>initial distribution</em> over <span class="math">\(I\)</span>.</p></li>
+<li><p>Let <span class="math">\(P = (p_{ij}: i,j \in I)\)</span> with <span class="math">\(p_{ij} \ge 0\)</span> for all <span class="math">\(i,j\)</span> and such that <span class="math">\(\sum_{j \in I} p_{ij} = 1\)</span>. <span class="math">\(P\)</span> is a transition probability matrix.</p></li>
+<li><p>A sequence of random variables, <span class="math">\((X_n)_{n \ge 0}\)</span> is a <em>Markov chain</em> with initial distribution <span class="math">\(\lambda\)</span> and transition matrix <span class="math">\(P\)</span> if for all <span class="math">\(n \ge 0\)</span>, and all <span class="math">\(i \in I\)</span>:</p></li>
+<li><p><span class="math">\(P(X_0 = i) = \lambda_i\)</span></p></li>
+<li><p><span class="math">\(P(X_{n+1}= i_{n+1}\mid X_0 = i_0, \ldots, X_n = i_n) = P(X_{n+1} = i_{n+1} \mid X_{n} = i_n) = p_{i_n, i_{n+1}}\)</span></p></li>
+</ul>
+</div>
+</div>
+<div id="a-silly-example-1" class="slide section level2">
+<h1>A silly example</h1>
+<div class="figure">
+<img src="Frog.png" />
+</div>
+<p>A frog hops around on some lily pads, choosing where to hop somewhat randomly.</p>
+<ul>
+<li><p>State space: <span class="math">\(I = \{1,2,3\}\)</span> (the three lily pads)</p></li>
+<li><p>Starting distribution <span class="math">\(\lambda = (1, 0,0)\)</span> (starts on lily pad 1)</p></li>
+<li><p>Transition matrix: <span class="math">\(P = \begin{pmatrix} 0 &amp; 1 &amp; 0 \\ 0 &amp; .5 &amp; .5 \\ .5 &amp; 0 &amp; .5 \end{pmatrix}\)</span></p></li>
+</ul>
+</div>
+<div id="n-step-transition-matrix" class="slide section level2">
+<h1>n-step transition matrix</h1>
+<p>Given a starting distribution <span class="math">\(\lambda\)</span>, we would like to know <span class="math">\(P(X_n = j)\)</span>.</p>
+<p>We will use the notation <span class="math">\(P_i(A) = P(A \mid X_0 = i)\)</span> for <span class="math">\(A\)</span> any event.</p>
+<div class="incremental">
+<p>For <span class="math">\(n = 1\)</span>, we know that <span class="math">\[
+P(X_1 = j) = \sum_{i \in I} \lambda_i P_i(X_1 = j) = \sum_{i \in I} \lambda_i p_{ij} = (\lambda P)_j
+\]</span></p>
+</div>
+<div class="incremental">
+<p>For <span class="math">\(n = 2\)</span>, we can write <span class="math">\[
+P_i(X_2 = j) = \sum_k P_i(X_1 = k, X_2 = j) = \sum_k p_{ik} p_{kj} = (P^2)_{ij}
+\]</span></p>
+</div>
+<div class="incremental">
+<p><span class="math">\[
+P(X_2 = j) = \sum_{i,k} \lambda_i P_i(X_1 = k, X_2 = j) = \sum_{i,k} \lambda_i p_{ik} p_{kj} = (\lambda P^2)_j
+\]</span></p>
+</div>
+<div class="incremental">
+<p>So in general, if <span class="math">\(\delta_i\)</span> is the vector with a 1 at index <span class="math">\(i\)</span> and 0's everywhere else, <span class="math">\[
+P_i(X_n = j) = (\delta_i P^n)_j = (P^n)_{ij}
+\]</span> and <span class="math">\[
+P(X_n = j) = \sum_i \lambda_i P_i(X_n = j) = (\lambda P^n)_j
+\]</span></p>
+</div>
+<div class="incremental">
+<p>So the <span class="math">\(n\)</span>-step transition matrix is simply <span class="math">\(P^n\)</span>.</p>
+</div>
+</div>
+<div id="example-of-n-step-transition-matrix-computations" class="slide section level2">
+<h1>Example of n-step transition matrix computations</h1>
+<div class="figure">
+<img src="Frog.png" />
+</div>
+<pre class="sourceCode r"><code class="sourceCode r">P =<span class="st"> </span><span class="kw">matrix</span>(<span class="dv">0</span>, <span class="dt">nrow =</span> <span class="dv">3</span>, <span class="dt">ncol =</span> <span class="dv">3</span>)
+P[<span class="dv">1</span>,<span class="dv">2</span>] =<span class="st"> </span><span class="dv">1</span>
+P[<span class="dv">2</span>,<span class="dv">2</span>] =<span class="st"> </span>P[<span class="dv">2</span>,<span class="dv">3</span>] =<span class="st"> </span>P[<span class="dv">3</span>,<span class="dv">1</span>] =<span class="st"> </span>P[<span class="dv">3</span>,<span class="dv">3</span>] =<span class="st"> </span><span class="dv">1</span>/<span class="dv">2</span>
+P</code></pre>
+<pre><code>##      [,1] [,2] [,3]
+## [1,]  0.0  1.0  0.0
+## [2,]  0.0  0.5  0.5
+## [3,]  0.5  0.0  0.5</code></pre>
+<div class="incremental">
+<pre class="sourceCode r"><code class="sourceCode r">lambda =<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">0</span>)
+lambda %*%<span class="st"> </span>P</code></pre>
+<pre><code>##      [,1] [,2] [,3]
+## [1,]    0    1    0</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">lambda %*%<span class="st"> </span>P %*%<span class="st"> </span>P</code></pre>
+<pre><code>##      [,1] [,2] [,3]
+## [1,]    0  0.5  0.5</code></pre>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>What happens after a long time?</p>
+<div class="incremental">
+<pre class="sourceCode r"><code class="sourceCode r">## computes P^(2^k)
+pow_P =<span class="st"> </span>function(P, k) {
+    for(i in <span class="dv">1</span>:k) {
+        P =<span class="st"> </span>P %*%<span class="st"> </span>P
+    }
+    <span class="kw">return</span>(P)
+}
+## 8-step probabilities 
+lambda %*%<span class="st"> </span><span class="kw">pow_P</span>(P, <span class="dv">3</span>)</code></pre>
+<pre><code>##          [,1]      [,2]      [,3]
+## [1,] 0.203125 0.3984375 0.3984375</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">## 16-step probabilities 
+lambda %*%<span class="st"> </span><span class="kw">pow_P</span>(P, <span class="dv">4</span>)</code></pre>
+<pre><code>##           [,1]      [,2]      [,3]
+## [1,] 0.2000122 0.3999939 0.3999939</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">## 32-step probabilities 
+lambda %*%<span class="st"> </span><span class="kw">pow_P</span>(P, <span class="dv">5</span>)</code></pre>
+<pre><code>##      [,1] [,2] [,3]
+## [1,]  0.2  0.4  0.4</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">## 64-step probabilities 
+lambda %*%<span class="st"> </span><span class="kw">pow_P</span>(P, <span class="dv">6</span>)</code></pre>
+<pre><code>##      [,1] [,2] [,3]
+## [1,]  0.2  0.4  0.4</code></pre>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>What if the frog starts at a different location?</p>
+<div class="incremental">
+<pre class="sourceCode r"><code class="sourceCode r">## 2^6-step probabilities, starting at 2
+lambda =<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">1</span>,<span class="dv">0</span>)
+lambda %*%<span class="st"> </span><span class="kw">pow_P</span>(P, <span class="dv">6</span>)</code></pre>
+<pre><code>##      [,1] [,2] [,3]
+## [1,]  0.2  0.4  0.4</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">## 2^6-step probabilities, starting at 3
+lambda =<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">1</span>)
+lambda %*%<span class="st"> </span><span class="kw">pow_P</span>(P, <span class="dv">6</span>)</code></pre>
+<pre><code>##      [,1] [,2] [,3]
+## [1,]  0.2  0.4  0.4</code></pre>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>In this case, no matter where the frog starts, we get the same probabilities:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">pow_P</span>(P, <span class="dv">6</span>)</code></pre>
+<pre><code>##      [,1] [,2] [,3]
+## [1,]  0.2  0.4  0.4
+## [2,]  0.2  0.4  0.4
+## [3,]  0.2  0.4  0.4</code></pre>
+</div>
+<div id="another-example" class="slide section level2">
+<h1>Another example</h1>
+<div class="figure">
+<img src="Frog-big.png" />
+</div>
+<pre class="sourceCode r"><code class="sourceCode r">P_big =<span class="st"> </span><span class="kw">matrix</span>(<span class="dv">0</span>, <span class="dt">nrow =</span> <span class="dv">7</span>, <span class="dt">ncol =</span> <span class="dv">7</span>)
+P_big[<span class="dv">1</span>:<span class="dv">3</span>,<span class="dv">1</span>:<span class="dv">3</span>] =<span class="st"> </span>P
+P_big[<span class="dv">4</span>,<span class="dv">3</span>:<span class="dv">5</span>] =<span class="st"> </span><span class="kw">c</span>(.<span class="dv">25</span>, .<span class="dv">5</span>, .<span class="dv">25</span>)
+P_big[<span class="dv">5</span>, <span class="dv">6</span>:<span class="dv">7</span>] =<span class="st"> </span><span class="kw">c</span>(.<span class="dv">5</span>, .<span class="dv">5</span>)
+P_big[<span class="dv">6</span>,<span class="dv">4</span>] =<span class="st"> </span><span class="dv">1</span>
+P_big[<span class="dv">7</span>,<span class="dv">7</span>] =<span class="st"> </span><span class="dv">1</span>
+P_big</code></pre>
+<pre><code>##      [,1] [,2] [,3] [,4] [,5] [,6] [,7]
+## [1,]  0.0  1.0 0.00  0.0 0.00  0.0  0.0
+## [2,]  0.0  0.5 0.50  0.0 0.00  0.0  0.0
+## [3,]  0.5  0.0 0.50  0.0 0.00  0.0  0.0
+## [4,]  0.0  0.0 0.25  0.5 0.25  0.0  0.0
+## [5,]  0.0  0.0 0.00  0.0 0.00  0.5  0.5
+## [6,]  0.0  0.0 0.00  1.0 0.00  0.0  0.0
+## [7,]  0.0  0.0 0.00  0.0 0.00  0.0  1.0</code></pre>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<p>Let's do the same thing: if we start the frog at different locations, compute the probability of being at any of the lily pads after 64 steps.</p>
+<pre class="sourceCode r"><code class="sourceCode r">## 2^6-step probabilities, starting at 1
+lambda =<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>, <span class="kw">rep</span>(<span class="dv">0</span>, <span class="dv">6</span>))
+lambda %*%<span class="st"> </span><span class="kw">pow_P</span>(P_big, <span class="dv">6</span>)</code></pre>
+<pre><code>##      [,1] [,2] [,3] [,4] [,5] [,6] [,7]
+## [1,]  0.2  0.4  0.4    0    0    0    0</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">## 2^6-step probabilities, starting at 7
+lambda =<span class="st"> </span><span class="kw">c</span>(<span class="kw">rep</span>(<span class="dv">0</span>, <span class="dv">6</span>), <span class="dv">1</span>)
+lambda %*%<span class="st"> </span><span class="kw">pow_P</span>(P_big, <span class="dv">6</span>)</code></pre>
+<pre><code>##      [,1] [,2] [,3] [,4] [,5] [,6] [,7]
+## [1,]    0    0    0    0    0    0    1</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">## 2^6-step probabilities, starting at 6
+lambda =<span class="st"> </span><span class="kw">c</span>(<span class="kw">rep</span>(<span class="dv">0</span>, <span class="dv">5</span>), <span class="dv">1</span>, <span class="dv">0</span>)
+lambda %*%<span class="st"> </span><span class="kw">pow_P</span>(P_big, <span class="dv">6</span>)</code></pre>
+<pre><code>##           [,1]      [,2]      [,3]         [,4]         [,5]         [,6]
+## [1,] 0.1333333 0.2666667 0.2666667 1.905188e-09 6.499812e-10 4.435003e-10
+##           [,7]
+## [1,] 0.3333333</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">round</span>(<span class="kw">pow_P</span>(P_big, <span class="dv">6</span>), <span class="dt">digits =</span> <span class="dv">2</span>)</code></pre>
+<pre><code>##      [,1] [,2] [,3] [,4] [,5] [,6] [,7]
+## [1,] 0.20 0.40 0.40    0    0    0 0.00
+## [2,] 0.20 0.40 0.40    0    0    0 0.00
+## [3,] 0.20 0.40 0.40    0    0    0 0.00
+## [4,] 0.13 0.27 0.27    0    0    0 0.33
+## [5,] 0.07 0.13 0.13    0    0    0 0.67
+## [6,] 0.13 0.27 0.27    0    0    0 0.33
+## [7,] 0.00 0.00 0.00    0    0    0 1.00</code></pre>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Our next goal is to find the conditions under which this convergence occurs.</p>
+<p>We'll need two concepts:</p>
+<ul>
+<li><p>Communicating classes/irreducibility</p></li>
+<li><p>Invariant distributions</p></li>
+</ul>
+</div>
+<div id="class-structure" class="slide section level2">
+<h1>Class structure</h1>
+<p>We say state <span class="math">\(i\)</span> leads to <span class="math">\(j\)</span>, <span class="math">\(i \to j\)</span> if <span class="math">\[
+P_i(X_n = j \text{ for some } n \ge 0) &gt; 0
+\]</span></p>
+<div class="incremental">
+<p>We say that <span class="math">\(i\)</span> communicates with <span class="math">\(j\)</span> and write <span class="math">\(i \leftrightarrow j\)</span> if <span class="math">\(i \to j\)</span> and <span class="math">\(j \to i\)</span>.</p>
+</div>
+</div>
+<div id="communicating-classes" class="slide section level2">
+<h1>Communicating classes</h1>
+<p>From what we saw before, we can see that</p>
+<ul>
+<li><span class="math">\(i \leftrightarrow j\)</span> and <span class="math">\(j \leftrightarrow k\)</span> implies <span class="math">\(i \leftrightarrow k\)</span></li>
+</ul>
+<p>If we add that <span class="math">\(i \leftrightarrow i\)</span>, <span class="math">\(\leftrightarrow\)</span> satisfies the conditions for an <a href="https://en.wikipedia.org/wiki/Equivalence_relation">equivalence relation</a>.</p>
+<p>We use <span class="math">\(\leftrightarrow\)</span> to partition the state space <span class="math">\(I\)</span> into communicating clases.</p>
+<div class="incremental">
+<div class="figure">
+<img src="Frog-big.png" />
+</div>
+</div>
+</div>
+<div id="irreducibility" class="slide section level2">
+<h1>Irreducibility</h1>
+<p>We will want Markov chains that are <em>irreducible</em>.</p>
+<p>A chain with transition matrix <span class="math">\(P\)</span> is <em>irreducible</em> if the state space <span class="math">\(I\)</span> forms a single class.</p>
+<div class="incremental">
+<p>Is the little frog Markov chain irreducible?</p>
+<div class="figure">
+<img src="Frog.png" />
+</div>
+</div>
+</div>
+<div id="invariant-distributions" class="slide section level2">
+<h1>Invariant distributions</h1>
+<p>Definition:</p>
+<ul>
+<li><p>Let <span class="math">\(\lambda \in \mathbb R^n\)</span> be a row vector such that <span class="math">\(\sum_i \lambda_i = 1\)</span>.</p></li>
+<li><p><span class="math">\(\lambda\)</span> is an invariant distribution if <span class="math">\(\lambda P = \lambda\)</span>.</p></li>
+</ul>
+<div class="incremental">
+<p>Interpretation:</p>
+<ul>
+<li>If we start a chain by choosing <span class="math">\(X_0\)</span> with probabilities as given in <span class="math">\(\lambda\)</span>, <span class="math">\(P(X_n = i) = \lambda_i\)</span> for any <span class="math">\(n, i\)</span>.</li>
+</ul>
+</div>
+</div>
+<div id="convergence-of-chains-to-equilibrium" class="slide section level2">
+<h1>Convergence of chains to equilibrium</h1>
+<p>(Theorem 9.8 in the linked notes)</p>
+<p>Let <span class="math">\(P\)</span> be irreducible, positive recurrent, and aperiodic (we haven't defined positive recurrent or aperiodic here, but you can look in the notes), with invariant distribution <span class="math">\(\pi\)</span>.</p>
+<p>Then for any initial distribution, <span class="math">\(P(X_n = j) \to \pi_j\)</span> as <span class="math">\(n \to \infty\)</span>.</p>
+<div class="incremental">
+<p>Interpretation: No matter where we start, the chain converges to a unique distribution.</p>
+<ul>
+<li><p>We saw in the 3-lily-pad frog example that we got this convergence to an equilibrium distribution.</p></li>
+<li><p>In the 7-lily-pad example, the starting position of the frog mattered.</p></li>
+</ul>
+</div>
+</div>
+<div id="ergodic-theorem" class="slide section level2">
+<h1>Ergodic theorem</h1>
+<p>Let <span class="math">\((X_n)_{0 \le n \le N}\)</span> be a Markov chain with transition matrix <span class="math">\(P\)</span>.</p>
+<p>If <span class="math">\(P\)</span> is irreducible and positive recurrent, then for any bounded function <span class="math">\(f\)</span> we have <span class="math">\[
+P(\frac{1}{n} \sum_{k=1}^n f(X_k) \to \bar f \text{ as } n \to \infty) = 1
+\]</span> where <span class="math">\[
+\bar f = \sum_{x} \pi_i f(i)
+\]</span> and <span class="math">\(\pi\)</span> is the unique invariant distribution.</p>
+<div class="incremental">
+<p>Why is this useful?</p>
+<ul>
+<li><p>We can use this like we use the law of large numbers.</p></li>
+<li><p>If we want to compute <span class="math">\(E_{X \sim \pi}[(f(X))]\)</span>, we can run a Markov chain with stationary distribution <span class="math">\(\pi\)</span> and use <span class="math">\(\frac{1}{n} \sum_{i=1}^n f(X_i)\)</span> as an estimate.</p></li>
+</ul>
+</div>
+</div>
+<div id="looking-forward" class="slide section level2">
+<h1>Looking forward</h1>
+<p>Now we know:</p>
+<ul>
+<li><p>Markov chains, under certain conditions, have stationary distributions.</p></li>
+<li><p>If we have a Markov chain and know its stationary distribution, we can use it to approximate expected values of random variables taken from that distribution.</p></li>
+</ul>
+<p>Next time:</p>
+<ul>
+<li><p>Given a target distribution (usually a posterior), we will construct a Markov chain that has that target distribution as the stationary distribution.</p></li>
+<li><p>The Markov chain won't give us independent samples from the distribution, but it will allow us to approximate expected values of functions under that distribution.</p></li>
+</ul>
+<div class="incremental">
+<p>By the way:</p>
+<ul>
+<li><p>This semester we're just using Markov chains to sample from probability distributions, but they are interesting models in their own right</p></li>
+<li><p>The frog example seems silly, but it's actually the model behind the initial version of google's web page indexing algorithm. Lily pads are websites, connections between lily pads are links between websites. See the linked notes for a little more detail.</p></li>
+</ul>
+</div>
+</div>
+</body>
+</html>
