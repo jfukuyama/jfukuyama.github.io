@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="http://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+  <script src="http://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div id="metropolis-hastings" class="slide section level2">
+<h1>Metropolis Hastings</h1>
+<p>Today: Metropolis Hastings</p>
+<p>Reading:</p>
+<ul>
+<li><p>Lange, Chapter 24.1, 24.2</p></li>
+<li><p>More fun: <a href="https://math.uchicago.edu/~shmuel/Network-course-readings/MCMCRev.pdf">Section 1 of this paper has an interesting example</a></p></li>
+<li><p>Some practical advice about using Markov chains by Charles Geyer: <a href="http://users.stat.umn.edu/~geyer/mcmc/one.html">One long run</a>, <a href="http://users.stat.umn.edu/~geyer/mcmc/burn.html">Burn in is unnecessary</a>, <a href="http://users.stat.umn.edu/~geyer/mcmc/diag.html">Bogosity of MCMC diagnostics</a></p></li>
+</ul>
+</div>
+<div id="our-goals" class="slide section level2">
+<h1>Our goals</h1>
+<ul>
+<li><p>Sample from any probability distribution <span class="math">\(\pi\)</span>.</p></li>
+<li><p>Compute expected value of functions of random variables drawn from these distributions, <span class="math">\(E_{X \sim \pi}(f(X))\)</span></p></li>
+</ul>
+<div class="incremental">
+<ul>
+<li><p>Last time we saw that if a Markov chain has a stationary distribution <span class="math">\(\pi\)</span>, we can estimate <span class="math">\(E_{X \sim \pi}(f(X))\)</span> as <span class="math">\(\frac{1}{n} f(X_i)\)</span>, where <span class="math">\(X_1,X_2, \ldots, X_n\)</span> are drawn from the Markov chain.</p></li>
+<li><p>Metropolis-Hastings will let us specify a stationary distribution <span class="math">\(\pi\)</span> and build a Markov chain having <span class="math">\(\pi\)</span> as its stationary distribution.</p></li>
+</ul>
+</div>
+</div>
+<div id="metropolis-hastings-the-idea" class="slide section level2">
+<h1>Metropolis-Hastings: The Idea</h1>
+<ul>
+<li><p>Start off with a Markov chain that has the wrong stationary distribution, e.g., a random walk</p></li>
+<li><p>Modify the chain so that it spends more time in regions of high probability under the target distribution.</p></li>
+</ul>
+</div>
+<div id="metropolis-hastings-algorithm" class="slide section level2">
+<h1>Metropolis-Hastings: Algorithm</h1>
+<p>Given:</p>
+<ul>
+<li><p>A proposal distribution <span class="math">\(q_{ij} = q(i \mid j)\)</span></p></li>
+<li><p>A target stationary distribution <span class="math">\(\pi\)</span></p></li>
+</ul>
+<div class="incremental">
+<p>Pick a starting value for the chain <span class="math">\(X_0\)</span>.</p>
+<p>For <span class="math">\(i = 1, \ldots, n\)</span>:</p>
+<ul>
+<li><p>Pick a proposed move from <span class="math">\(Y \sim q(i \mid X_{i-1})\)</span></p></li>
+<li><p>Compute the acceptance probability: <span class="math">\[
+a = \text{min} \left \{ \frac{\pi(Y) q(X_{i-1} \mid Y)}{\pi(X_{i-1}) q(Y \mid X_{i-1})} \right\}
+\]</span></p></li>
+<li><p>Let <span class="math">\(X_i\)</span> be <span class="math">\[
+X_i = \begin{cases}
+Y &amp; \text{w.p. } a \\
+X_{i-1} &amp; \text{w.p. }1 - a
+\end{cases}
+\]</span></p></li>
+</ul>
+</div>
+</div>
+<div id="simple-example-normal-distribution" class="slide section level2">
+<h1>Simple Example: Normal Distribution</h1>
+<ul>
+<li><p>Proposal distribution: <span class="math">\(q(x \mid y) = N(y, .3)\)</span></p></li>
+<li><p>Target distribution: <span class="math">\(\pi(x) = N(0,1)\)</span></p></li>
+<li><p>Start at <span class="math">\(X_0 = -10\)</span></p></li>
+</ul>
+<div class="incremental">
+<ul>
+<li>Notice that <span class="math">\(q\)</span> is symmetric, and so the acceptance probability for moving from <span class="math">\(X\)</span> to <span class="math">\(Y\)</span> is <span class="math">\(\pi(Y) / \pi(X)\)</span></li>
+</ul>
+<pre class="sourceCode r"><code class="sourceCode r">sample_with_symmetric_proposal =
+<span class="st">    </span>function(proposal_function, target_distribution, current_state) {
+        proposal =<span class="st"> </span><span class="kw">proposal_function</span>(current_state)
+        acceptance_probability =<span class="st"> </span><span class="kw">target_distribution</span>(proposal) /<span class="st"> </span><span class="kw">target_distribution</span>(current_state)
+        if(<span class="kw">runif</span>(<span class="dv">1</span>) &lt;=<span class="st"> </span>acceptance_probability) {
+            <span class="kw">return</span>(proposal)
+        } else {
+            <span class="kw">return</span>(current_state)
+        }   
+}</code></pre>
+</div>
+</div>
+<div class="slide section level2">
+
+<pre class="sourceCode r"><code class="sourceCode r">## The proposal distribution is normal, centered at the current state, standard deviation .3
+proposal_function =<span class="st"> </span>function(x) <span class="kw">rnorm</span>(<span class="dt">n =</span> <span class="dv">1</span>, <span class="dt">mean =</span> x, <span class="dt">sd =</span> .<span class="dv">3</span>)
+## The target distribution is N(0,1)
+target_distribution =<span class="st"> </span>dnorm
+## check the sampling:
+<span class="kw">sample_with_symmetric_proposal</span>(proposal_function, target_distribution, -<span class="dv">10</span>)</code></pre>
+<pre><code>## [1] -10</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">n_samples =<span class="st"> </span><span class="dv">1000</span>
+chain_output =<span class="st"> </span><span class="kw">numeric</span>(n_samples)
+chain_output[<span class="dv">1</span>] =<span class="st"> </span>-<span class="dv">10</span>
+for(i in <span class="dv">2</span>:n_samples) {
+    chain_output[i] =<span class="st"> </span><span class="kw">sample_with_symmetric_proposal</span>(proposal_function, target_distribution, chain_output[i<span class="dv">-1</span>])
+}
+<span class="kw">plot</span>(chain_output)</code></pre>
+<div class="figure">
+<img src="lecture-25-fig/unnamed-chunk-2-1.png" />
+</div>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mean</span>(chain_output)</code></pre>
+<pre><code>## [1] -0.9162604</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sd</span>(chain_output)</code></pre>
+<pre><code>## [1] 1.871455</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>Notice:</p>
+<ul>
+<li><p>We see that before about 200 steps, the chain has not converged to its stationary distribution.</p></li>
+<li><p>Even after it has converged, the elements in the chain are not independent.</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>Let's run the chain longer and discard the first 200 steps as &quot;burn-in&quot;</p>
+<pre class="sourceCode r"><code class="sourceCode r">n_samples =<span class="st"> </span><span class="dv">10000</span>
+chain_output =<span class="st"> </span><span class="kw">numeric</span>(n_samples)
+chain_output[<span class="dv">1</span>] =<span class="st"> </span>-<span class="dv">10</span>
+for(i in <span class="dv">2</span>:n_samples) {
+    chain_output[i] =<span class="st"> </span><span class="kw">sample_with_symmetric_proposal</span>(proposal_function, target_distribution, chain_output[i<span class="dv">-1</span>])
+}
+chain_no_burnin =<span class="st"> </span>chain_output[<span class="dv">201</span>:n_samples]
+<span class="kw">plot</span>(chain_no_burnin)</code></pre>
+<div class="figure">
+<img src="lecture-25-fig/unnamed-chunk-3-1.png" />
+</div>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mean</span>(chain_no_burnin)</code></pre>
+<pre><code>## [1] -0.03140313</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sd</span>(chain_no_burnin)</code></pre>
+<pre><code>## [1] 1.019056</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>Note:</p>
+<ul>
+<li><p>This chain looks like it has reached its stationary distribution, and we can confirm that by checking that the sample expected values match what they should be for a <span class="math">\(N(0,1)\)</span> distribution.</p></li>
+<li><p>The ergodic theorem doesn't require that we discard the burn-in period, but people often do anyway.</p></li>
+</ul>
+</div>
+<div id="example-2-mixture-distributions" class="slide section level2">
+<h1>Example 2: Mixture distributions</h1>
+<ul>
+<li><p>Proposal distribution: <span class="math">\(q(x \mid y) = N(y, .3)\)</span></p></li>
+<li><p>Target distribution: Let <span class="math">\(\phi_{\mu, \sigma}(x)\)</span> be the pdf for a <span class="math">\(N(\mu, \sigma)\)</span> random variable. Our target distribution is <span class="math">\(\pi(x) = .25 \phi_{1, 1}(x) + .75 \phi_{5,.2}(x)\)</span>.</p></li>
+<li><p>Start at <span class="math">\(X_0 = -10\)</span></p></li>
+</ul>
+<div class="incremental">
+<pre class="sourceCode r"><code class="sourceCode r">## The proposal distribution is normal, centered at the current state, standard deviation .3
+proposal_function =<span class="st"> </span>function(x) <span class="kw">rnorm</span>(<span class="dt">n =</span> <span class="dv">1</span>, <span class="dt">mean =</span> x, <span class="dt">sd =</span> .<span class="dv">3</span>)
+## The target distribution is N(0,1)
+target_distribution =<span class="st"> </span>function(x) .<span class="dv">25</span> *<span class="st"> </span><span class="kw">dnorm</span>(x, <span class="dt">mean =</span> <span class="dv">1</span>, <span class="dt">sd =</span> <span class="dv">1</span>) +<span class="st"> </span>.<span class="dv">75</span> *<span class="st"> </span><span class="kw">dnorm</span>(x, <span class="dt">mean =</span> <span class="dv">5</span>, <span class="dt">sd =</span> .<span class="dv">2</span>)
+n_samples =<span class="st"> </span><span class="dv">1000</span>
+chain_output =<span class="st"> </span><span class="kw">numeric</span>(n_samples)
+chain_output[<span class="dv">1</span>] =<span class="st"> </span>-<span class="dv">10</span>
+for(i in <span class="dv">2</span>:n_samples) {
+    chain_output[i] =<span class="st"> </span><span class="kw">sample_with_symmetric_proposal</span>(proposal_function, target_distribution, chain_output[i<span class="dv">-1</span>])
+}
+<span class="kw">plot</span>(chain_output)</code></pre>
+<div class="figure">
+<img src="lecture-25-fig/unnamed-chunk-4-1.png" />
+</div>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mean</span>(chain_output)</code></pre>
+<pre><code>## [1] 0.3720607</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sd</span>(chain_output)</code></pre>
+<pre><code>## [1] 2.266502</code></pre>
+</div>
+<div class="incremental">
+<p>Notice:</p>
+<ul>
+<li><p>Still takes about 200 steps to get to something that looks like a stationary distribution</p></li>
+<li><p>No samples with values above 2!</p></li>
+</ul>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Let's try running the chain a lot longer:</p>
+<pre class="sourceCode r"><code class="sourceCode r">n_samples =<span class="st"> </span><span class="dv">100000</span>
+chain_output =<span class="st"> </span><span class="kw">numeric</span>(n_samples)
+chain_output[<span class="dv">1</span>] =<span class="st"> </span>-<span class="dv">10</span>
+for(i in <span class="dv">2</span>:n_samples) {
+    chain_output[i] =<span class="st"> </span><span class="kw">sample_with_symmetric_proposal</span>(proposal_function, target_distribution, chain_output[i<span class="dv">-1</span>])
+}
+<span class="kw">plot</span>(chain_output)</code></pre>
+<div class="figure">
+<img src="lecture-25-fig/unnamed-chunk-5-1.png" />
+</div>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mean</span>(chain_output)</code></pre>
+<pre><code>## [1] 4.042973</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sd</span>(chain_output)</code></pre>
+<pre><code>## [1] 1.780207</code></pre>
+<p>What's happening?</p>
+</div>
+<div class="slide section level2">
+
+<p>Another way to fix this: change the proposal distribution.</p>
+<pre class="sourceCode r"><code class="sourceCode r">proposal_function =<span class="st"> </span>function(x) <span class="kw">rnorm</span>(<span class="dt">n =</span> <span class="dv">1</span>, <span class="dt">mean =</span> x, <span class="dt">sd =</span> <span class="dv">2</span>)
+n_samples =<span class="st"> </span><span class="dv">1000</span>
+chain_output =<span class="st"> </span><span class="kw">numeric</span>(n_samples)
+chain_output[<span class="dv">1</span>] =<span class="st"> </span>-<span class="dv">10</span>
+for(i in <span class="dv">2</span>:n_samples) {
+    chain_output[i] =<span class="st"> </span><span class="kw">sample_with_symmetric_proposal</span>(proposal_function, target_distribution, chain_output[i<span class="dv">-1</span>])
+}
+<span class="kw">plot</span>(chain_output)</code></pre>
+<div class="figure">
+<img src="lecture-25-fig/unnamed-chunk-6-1.png" />
+</div>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mean</span>(chain_output)</code></pre>
+<pre><code>## [1] 3.376655</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sd</span>(chain_output)</code></pre>
+<pre><code>## [1] 2.2654</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>Why not always have a really diffuse proposal distribution?</p>
+<ul>
+<li><p>Tradeoff between exploring the space well and proposing high probability moves.</p></li>
+<li><p>With a diffuse proposal distribution, many of the proposals are to low-probability areas, and the chain stays in the same place a lot.</p></li>
+</ul>
+<div class="incremental">
+<p>Plot below shows how far the chain moved on each step when we used the diffuse proposal distribution:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(<span class="kw">diff</span>(chain_output))</code></pre>
+<div class="figure">
+<img src="lecture-25-fig/unnamed-chunk-7-1.png" />
+</div>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Overall:</p>
+<ul>
+<li><p>Choosing the proposal distribution involves balancing between moving long distances and having a high proportion of the moves accepted.</p></li>
+<li><p>This will be problem-specific, and you often have to experiment with different proposal distributions.</p></li>
+<li><p>There are more formal diagnostics for assessing convergence, but you should really look at the plots of the parameters.</p></li>
+<li><p>You can never be sure that your chain isn't completely missing part of the space.</p></li>
+</ul>
+</div>
+<div id="summing-up" class="slide section level2">
+<h1>Summing up</h1>
+<p>Metropolis Hastings is a simple, general-purpose method for creating a Markov chain with a specified stationary distribution. It is particularly useful when:</p>
+<ul>
+<li><p>You only know the target distribution up to a constant of proportionality.</p></li>
+<li><p>All the regions of high density in the target distribution are connected to each other.</p></li>
+<li><p>The target distribution is high dimensional.</p></li>
+</ul>
+<div class="incremental">
+<p>You should be scared because:</p>
+<ul>
+<li><p>You can never be sure that your chain has explored the space adequately</p></li>
+<li><p>There is theory on convergence times, but they tend to say you have to run your chain past the heat death of the universe.</p></li>
+</ul>
+</div>
+<div class="incremental">
+<p>Next time:</p>
+<ul>
+<li><p>Gibbs sampling</p></li>
+<li><p>More interesting examples</p></li>
+</ul>
+</div>
+</div>
+</body>
+</html>
