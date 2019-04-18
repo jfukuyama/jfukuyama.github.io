@@ -1,0 +1,674 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="http://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+  <script src="http://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div id="applications" class="slide section level2">
+<h1>Applications</h1>
+<p>Today:</p>
+<ul>
+<li><p>Examples of Bayesian analysis using MCMC</p></li>
+<li><p>We will use stan</p></li>
+</ul>
+<p>Reading:</p>
+<ul>
+<li>Examples are all taken from &quot;Bayesian Cognitive Modeling: A Practical Course&quot; by Lee and Wagenmakers, and the implementations in stan are taken from the <code>rstan</code> <a href="https://github.com/stan-dev/example-models/tree/master/Bayesian_Cognitive_Modeling">package</a></li>
+</ul>
+</div>
+<div id="the-bayesian-setup" class="slide section level2">
+<h1>The Bayesian Setup</h1>
+<p>Given:</p>
+<ul>
+<li><p>Data: <span class="math">\(x_1, \ldots, x_n\)</span></p></li>
+<li><p>A set of parameters <span class="math">\(\theta\)</span></p></li>
+<li><p>A model <span class="math">\(P(x_1,\ldots, x_n\mid \theta)\)</span> giving the likelihood of the data given the parameters</p></li>
+<li><p>A prior distribution over the parameters <span class="math">\(\theta\)</span>, <span class="math">\(P(\theta)\)</span></p></li>
+</ul>
+</div>
+<div id="the-bayesian-goal" class="slide section level2">
+<h1>The Bayesian Goal</h1>
+<p>In Bayesian inference, we want to compute the posterior distribution over the parameters: <span class="math">\[
+P(\theta \mid x_1,\ldots, x_n) = \frac{P(x_1, \ldots, x_n \mid \theta)P(\theta)}{P(x_1,\ldots, x_n)}
+\]</span></p>
+<div class="incremental">
+<p>Notes:</p>
+<ul>
+<li><p>Sometimes there is an analytic solution.</p></li>
+<li><p>If there is no analytic solution, we try to sample from <span class="math">\(P(\theta \mid x_1,\ldots, x_n)\)</span> instead.</p></li>
+<li><p>Most of the time it is hard to compute <span class="math">\(P(x_1, \ldots, x_n)\)</span>.</p></li>
+<li><p>To use Metropolis-Hastings to sample from <span class="math">\(P(\theta \mid x_1,\ldots, x_n)\)</span>, we only need to be able to compute <span class="math">\(P(x_1, \ldots, x_n \mid \theta)P(\theta)\)</span>.</p></li>
+</ul>
+</div>
+</div>
+<div id="example-1-estimating-a-correlation" class="slide section level2">
+<h1>Example 1: Estimating a correlation</h1>
+<p>(Example 5.2 in the book). We have two variables measured on <span class="math">\(n\)</span> cases, and we would like to estimate the correlation between them.</p>
+<p>For this problem, we have</p>
+<ul>
+<li><p>Data: <span class="math">\(x_i \in \mathbb R^2\)</span>, <span class="math">\(i = 1,\ldots, n\)</span></p></li>
+<li><p>Model: <span class="math">\[
+P(x_i \mid \mu_1, \mu_2, \sigma_1, \sigma_2, r) = \mathcal N_2 \left( \begin{pmatrix}\mu_1 \\ \mu_2 \end{pmatrix}, \begin{pmatrix} \sigma_1^2 &amp; r \sigma_1 \sigma_2 \\ r \sigma_1 \sigma_2 &amp; \sigma_2^2 \end{pmatrix} \right)
+\]</span></p></li>
+<li><p>Parameters: <span class="math">\(\mu_1, \mu_2, \sigma_1, \sigma_2, r\)</span></p></li>
+<li><p>Prior on the parameters: <span class="math">\[
+\begin{align*}
+P(\mu_1) &amp;= \mathcal N(0, 1000)\\
+P(\mu_2) &amp;= \mathcal N(0, 1000)\\
+P(\sigma_1) &amp;= \text{InvSqrtGamma}(.001, .001)\\
+P(\sigma_2) &amp;= \text{InvSqrtGamma}(.001, .001)\\
+P(r) &amp;= \text{Uniform}(-1,1)
+\end{align*}
+\]</span></p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>Posterior distribution on the parameters: <span class="math">\[
+P(\mu_1, \mu_2,\sigma_1, \sigma_2, r \mid x_1, \ldots, x_n) \propto \prod_{i=1}^n P(x_i \mid \mu_1, \mu_2, \sigma_1, \sigma_2, r) P(\mu_1) P(\mu_2) P(\sigma_1) P(\sigma_2) P(r)
+\]</span></p>
+<p>Everything on the right-hand side is easily computable, and that is all we need for MCMC.</p>
+</div>
+<div class="slide section level2">
+
+<p>What would Metropolis-Hastings look like here?</p>
+<p>Start with some initial values of the parameters: <span class="math">\(\mu_1^{(0)}, \mu_2^{(0)}, \sigma_1^{(0)}, \sigma_2^{(0)}, r^{(0)}\)</span></p>
+<p>For i in 1 to as many iterations as desired:</p>
+<ul>
+<li><p>Propose a new set of parameters <span class="math">\(\mu_1^{(i)}, \mu_2^{(i)}, \sigma_1^{(i)}, \sigma_2^{(i)}, r^{(i)}\)</span> from a proposal distribution around <span class="math">\(\mu_1^{(i-1)}, \mu_2^{(i-1)}, \sigma_1^{(i-1)}, \sigma_2^{(i-1)}, r^{(i-1)}\)</span>.</p></li>
+<li><p>Compute the ratio <span class="math">\[
+\begin{align*}
+a = &amp;\frac{P(\mu_1^{(i)}, \mu_2^{(i)}, \sigma_1^{(i)}, \sigma_2^{(i)}, r^{(i)} \mid x_1,\ldots, x_n)}{P(\mu_1^{(i)}, \mu_2^{(i)}, \sigma_1^{(i)}, \sigma_2^{(i)}, r^{(i)} \mid x_1,\ldots, x_n )} \\
+\quad &amp;= \frac{ \prod_{i=1}^n P(x_i \mid \mu_1^{(i)}, \mu_2^{(i)}, \sigma_1^{(i)}, \sigma_2^{(i)}, r^{(i)}) P(\mu_1^{(i)}) P(\mu_2^{(i)}) P(\sigma_1^{(i)}) P(\sigma_2^{(i)}) P(r^{(i)})}{ \prod_{i=1}^n P(x_i \mid \mu_1^{(i-1)}, \mu_2^{(i-1)}, \sigma_1^{(i-1)}, \sigma_2^{(i-1)}, r^{(i-1)}) P(\mu_1^{(i-1)}) P(\mu_2^{(i-1)}) P(\sigma_1^{(i-1)}) P(\sigma_2^{(i-1)}) P(r^{(i-1)})}
+\end{align*}
+\]</span></p></li>
+<li><p>If <span class="math">\(a &gt; 1\)</span>, move to the proposed set of parameters, otherwise move to the proposed set of parameters with probability <span class="math">\(a\)</span> and stay at the current set with probability <span class="math">\(1 - a\)</span></p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<pre class="sourceCode r"><code class="sourceCode r">model_correlation &lt;-<span class="st"> &quot;</span>
+<span class="st">// Pearson Correlation</span>
+<span class="st">data { </span>
+<span class="st">  int&lt;lower=0&gt; n;</span>
+<span class="st">  vector[2] x[n];</span>
+<span class="st">}</span>
+<span class="st">parameters {</span>
+<span class="st">  vector[2] mu;</span>
+<span class="st">  vector&lt;lower=0&gt;[2] lambda;</span>
+<span class="st">  real&lt;lower=-1,upper=1&gt; r;</span>
+<span class="st">} </span>
+<span class="st">transformed parameters {</span>
+<span class="st">  vector&lt;lower=0&gt;[2] sigma;</span>
+<span class="st">  cov_matrix[2] T;</span>
+<span class="st">  // Reparameterization</span>
+<span class="st">  sigma[1] = inv_sqrt(lambda[1]);</span>
+<span class="st">  sigma[2] = inv_sqrt(lambda[2]);</span>
+<span class="st">  T[1,1] = square(sigma[1]);</span>
+<span class="st">  T[1,2] = r * sigma[1] * sigma[2];</span>
+<span class="st">  T[2,1] = r * sigma[1] * sigma[2];</span>
+<span class="st">  T[2,2] = square(sigma[2]);</span>
+<span class="st">}</span>
+<span class="st">model {</span>
+<span class="st">  // Priors</span>
+<span class="st">  mu ~ normal(0, inv_sqrt(.001));</span>
+<span class="st">  lambda ~ gamma(.001, .001);</span>
+<span class="st">  </span>
+<span class="st">  // Data</span>
+<span class="st">  x ~ multi_normal(mu, T);</span>
+<span class="st">}&quot;</span>
+
+<span class="co"># The dataset:</span>
+  x &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">c</span>( .<span class="dv">8</span>, <span class="dv">102</span>, 
+                <span class="fl">1.0</span>,  <span class="dv">98</span>, 
+                 .<span class="dv">5</span>, <span class="dv">100</span>,
+                 .<span class="dv">9</span>, <span class="dv">105</span>, 
+                 .<span class="dv">7</span>, <span class="dv">103</span>, 
+                 .<span class="dv">4</span>, <span class="dv">110</span>,
+                <span class="fl">1.2</span>,  <span class="dv">99</span>, 
+                <span class="fl">1.4</span>,  <span class="dv">87</span>,
+                 .<span class="dv">6</span>, <span class="dv">113</span>,
+                <span class="fl">1.1</span>,  <span class="dv">89</span>,
+                <span class="fl">1.3</span>,  <span class="dv">93</span>), <span class="dt">nrow=</span><span class="dv">11</span>, <span class="dt">ncol=</span><span class="dv">2</span>, <span class="dt">byrow=</span>T) 
+
+n &lt;-<span class="st"> </span><span class="kw">nrow</span>(x) <span class="co"># number of people/units measured</span>
+
+data &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">x=</span>x, <span class="dt">n=</span>n) <span class="co"># to be passed on to Stan</span>
+myinits &lt;-<span class="st"> </span><span class="kw">list</span>(
+  <span class="kw">list</span>(<span class="dt">r=</span><span class="dv">0</span>, <span class="dt">mu=</span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">0</span>), <span class="dt">lambda=</span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">1</span>)))
+
+<span class="co"># parameters to be monitored: </span>
+parameters &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;r&quot;</span>, <span class="st">&quot;mu&quot;</span>, <span class="st">&quot;sigma&quot;</span>)
+
+samples &lt;-<span class="st"> </span><span class="kw">stan</span>(<span class="dt">model_code=</span>model_correlation,   
+                <span class="dt">data=</span>data, 
+                <span class="dt">init=</span>myinits,
+                <span class="dt">pars=</span>parameters,
+                <span class="dt">iter=</span><span class="dv">10000</span>, 
+                <span class="dt">chains=</span><span class="dv">1</span>, 
+                <span class="dt">thin=</span><span class="dv">1</span>)</code></pre>
+<pre><code>## 
+## SAMPLING FOR MODEL &#39;31aefbc6f9701279b306e349956c379c&#39; NOW (CHAIN 1).
+## Chain 1: 
+## Chain 1: Gradient evaluation took 9.8e-05 seconds
+## Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.98 seconds.
+## Chain 1: Adjust your expectations accordingly!
+## Chain 1: 
+## Chain 1: 
+## Chain 1: Iteration:    1 / 10000 [  0%]  (Warmup)
+## Chain 1: Iteration: 1000 / 10000 [ 10%]  (Warmup)
+## Chain 1: Iteration: 2000 / 10000 [ 20%]  (Warmup)
+## Chain 1: Iteration: 3000 / 10000 [ 30%]  (Warmup)
+## Chain 1: Iteration: 4000 / 10000 [ 40%]  (Warmup)
+## Chain 1: Iteration: 5000 / 10000 [ 50%]  (Warmup)
+## Chain 1: Iteration: 5001 / 10000 [ 50%]  (Sampling)
+## Chain 1: Iteration: 6000 / 10000 [ 60%]  (Sampling)
+## Chain 1: Iteration: 7000 / 10000 [ 70%]  (Sampling)
+## Chain 1: Iteration: 8000 / 10000 [ 80%]  (Sampling)
+## Chain 1: Iteration: 9000 / 10000 [ 90%]  (Sampling)
+## Chain 1: Iteration: 10000 / 10000 [100%]  (Sampling)
+## Chain 1: 
+## Chain 1:  Elapsed Time: 1.90805 seconds (Warm-up)
+## Chain 1:                1.98601 seconds (Sampling)
+## Chain 1:                3.89406 seconds (Total)
+## Chain 1:</code></pre>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<pre class="sourceCode r"><code class="sourceCode r">r &lt;-<span class="st"> </span><span class="kw">extract</span>(samples)$r
+<span class="kw">plot</span>(r)</code></pre>
+<div class="figure">
+<img src="lecture-26-fig/unnamed-chunk-2-1.png" />
+</div>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">qplot</span>(r, <span class="dt">geom =</span> <span class="st">&quot;density&quot;</span>)</code></pre>
+<div class="figure">
+<img src="lecture-26-fig/unnamed-chunk-2-2.png" />
+</div>
+<pre class="sourceCode r"><code class="sourceCode r">## 95% credible interval
+<span class="kw">quantile</span>(r, <span class="kw">c</span>(.<span class="dv">025</span>, .<span class="dv">975</span>))</code></pre>
+<pre><code>##       2.5%      97.5% 
+## -0.9196590 -0.2799391</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">## posterior mean
+<span class="kw">mean</span>(r)</code></pre>
+<pre><code>## [1] -0.7021456</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co">#Frequentist point-estimate of r:</span>
+(freq.r &lt;-<span class="st"> </span><span class="kw">cor</span>(x[,<span class="dv">1</span>],x[,<span class="dv">2</span>]))</code></pre>
+<pre><code>## [1] -0.8109671</code></pre>
+</div>
+</div>
+<div id="estimating-a-correlation-with-measurement-error" class="slide section level2">
+<h1>Estimating a correlation with measurement error</h1>
+<p>(Example 5.2 in the book)</p>
+<p>Problem: Suppose that our data come from a study of the relationship between &quot;response time on a semantic verification task&quot; and IQ.</p>
+<ul>
+<li><p>The researchers want to estimate the correlation between response time and IQ.</p></li>
+<li><p>The problem is that the IQ measurement has some uncertainty associated with it, and so the previous mode we used to estimate the correlation is incorrect.</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>For the model with uncertainy in measurements, we again have two variables (response time and IQ) measured on <span class="math">\(n\)</span> cases, and we would like to estimate the correlation between them.</p>
+<ul>
+<li><p>Data: <span class="math">\(x_i \in \mathbb R^2\)</span>, <span class="math">\(i = 1,\ldots, n\)</span></p></li>
+<li><p>Model: <span class="math">\[
+\begin{align*}
+P(y_i \mid \mu_1, \mu_2, \sigma_1, \sigma_2, r) &amp;= \mathcal N_2 \left( \begin{pmatrix}\mu_1 \\ \mu_2 \end{pmatrix}, \begin{pmatrix} \sigma_1^2 &amp; r \sigma_1 \sigma_2 \\ r \sigma_1 \sigma_2 &amp; \sigma_2^2 \end{pmatrix} \right)\\
+P(x_{i} \mid y_{i}) &amp;= \mathcal N_2\left(y_{i}, \begin{pmatrix} \sigma^e_1 &amp; 0 \\ 0 &amp; \sigma_2^e \end{pmatrix} \right)
+\end{align*}
+\]</span></p></li>
+<li><p>Parameters: <span class="math">\(\mu_1, \mu_2, \sigma_1, \sigma_2, r\)</span> (we assume that the measurement errors, <span class="math">\(\sigma^e_1, \sigma^e_2\)</span>, are known)</p></li>
+<li><p>Prior on the parameters: <span class="math">\[
+\begin{align*}
+P(\mu_1) &amp;= \mathcal N(0, 1000)\\
+P(\mu_2) &amp;= \mathcal N(0, 1000)\\
+P(\sigma_1) &amp;= \text{InvSqrtGamma}(.001, .001)\\
+P(\sigma_2) &amp;= \text{InvSqrtGamma}(.001, .001)\\
+P(r) &amp;= \text{Uniform}(-1,1)
+\end{align*}
+\]</span></p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>Posterior distribution:</p>
+<p><span class="math">\[
+P(x_1,\ldots, x_n \mid \mu_1, \mu_2, \sigma_1, \sigma_2, r) \propto \prod_{i=1}^n P(x_i \mid y_i) P(y_i \mid \mu_1, \mu_2, \sigma_1, \sigma_2, r) P(\mu_1)P(\mu_2)P(\sigma_1)P(\sigma_2)P(r)
+\]</span></p>
+<p>Again, everything is easily computable, and we can use MCMC to obtain samples from the posterior distribution.</p>
+</div>
+<div class="slide section level2">
+
+<pre class="sourceCode r"><code class="sourceCode r">model &lt;-<span class="st"> &quot;</span>
+<span class="st">// Pearson Correlation With Uncertainty in Measurement</span>
+<span class="st">data { </span>
+<span class="st">  int&lt;lower=0&gt; n;</span>
+<span class="st">  vector[2] x[n];</span>
+<span class="st">  vector[2] sigmaerror;</span>
+<span class="st">}</span>
+<span class="st">parameters {</span>
+<span class="st">  vector[2] mu;</span>
+<span class="st">  vector&lt;lower=0&gt;[2] lambda;</span>
+<span class="st">  real&lt;lower=-1,upper=1&gt; r;</span>
+<span class="st">  vector[2] y[n];</span>
+<span class="st">} </span>
+<span class="st">transformed parameters {</span>
+<span class="st">  vector&lt;lower=0&gt;[2] sigma;</span>
+<span class="st">  cov_matrix[2] T;</span>
+<span class="st">  // Reparameterization</span>
+<span class="st">  sigma[1] = inv_sqrt(lambda[1]);</span>
+<span class="st">  sigma[2] = inv_sqrt(lambda[2]);</span>
+<span class="st">  </span>
+<span class="st">  T[1,1] = square(sigma[1]);</span>
+<span class="st">  T[1,2] = r * sigma[1] * sigma[2];</span>
+<span class="st">  T[2,1] = r * sigma[1] * sigma[2];</span>
+<span class="st">  T[2,2] = square(sigma[2]);</span>
+<span class="st">}</span>
+<span class="st">model {</span>
+<span class="st">  // Priors</span>
+<span class="st">  mu ~ normal(0, inv_sqrt(.001));</span>
+<span class="st">  lambda ~ gamma(.001, .001);</span>
+<span class="st">  // Data</span>
+<span class="st">  y ~ multi_normal(mu, T);</span>
+<span class="st">  for (i in 1:n)</span>
+<span class="st">    x[i] ~ normal(y[i], sigmaerror);</span>
+<span class="st">}&quot;</span>
+
+x &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">c</span>( .<span class="dv">8</span>, <span class="dv">102</span>, 
+              <span class="fl">1.0</span>,  <span class="dv">98</span>, 
+               .<span class="dv">5</span>, <span class="dv">100</span>,
+               .<span class="dv">9</span>, <span class="dv">105</span>, 
+               .<span class="dv">7</span>, <span class="dv">103</span>, 
+               .<span class="dv">4</span>, <span class="dv">110</span>,
+              <span class="fl">1.2</span>,  <span class="dv">99</span>, 
+              <span class="fl">1.4</span>,  <span class="dv">87</span>,
+               .<span class="dv">6</span>, <span class="dv">113</span>,
+              <span class="fl">1.1</span>,  <span class="dv">89</span>,
+              <span class="fl">1.3</span>,  <span class="dv">93</span>), <span class="dt">nrow=</span><span class="dv">11</span>, <span class="dt">ncol=</span><span class="dv">2</span>, <span class="dt">byrow=</span>T) 
+
+n &lt;-<span class="st"> </span><span class="kw">nrow</span>(x) <span class="co"># number of people/units measured</span>
+
+<span class="co"># precision of measurement:</span>
+sigmaerror =<span class="st"> </span><span class="kw">c</span>(.<span class="dv">03</span>, <span class="dv">5</span>)
+
+data &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">x=</span>x, <span class="dt">n=</span>n, <span class="dt">sigmaerror=</span>sigmaerror) <span class="co"># to be passed on to Stan</span>
+myinits &lt;-<span class="st"> </span><span class="kw">list</span>(
+  <span class="kw">list</span>(<span class="dt">r=</span><span class="dv">0</span>, <span class="dt">mu=</span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">0</span>), <span class="dt">lambda=</span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">1</span>), <span class="dt">y=</span><span class="kw">matrix</span>(<span class="kw">c</span>(<span class="kw">rep</span>(<span class="dv">1</span>, n), <span class="kw">rep</span>(<span class="dv">100</span>, n)), n, <span class="dv">2</span>)))
+
+<span class="co"># parameters to be monitored:  </span>
+parameters &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;r&quot;</span>, <span class="st">&quot;mu&quot;</span>, <span class="st">&quot;sigma&quot;</span>)
+samples &lt;-<span class="st"> </span><span class="kw">stan</span>(<span class="dt">model_code=</span>model,   
+                <span class="dt">data=</span>data, 
+                <span class="dt">init=</span>myinits,
+                <span class="dt">pars=</span>parameters,
+                <span class="dt">iter=</span><span class="dv">20000</span>, 
+                <span class="dt">chains=</span><span class="dv">1</span>, 
+                <span class="dt">thin=</span><span class="dv">1</span>)</code></pre>
+<pre><code>## 
+## SAMPLING FOR MODEL &#39;ca98a184003e9d2907fcd31a07a7d500&#39; NOW (CHAIN 1).
+## Chain 1: 
+## Chain 1: Gradient evaluation took 8.9e-05 seconds
+## Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.89 seconds.
+## Chain 1: Adjust your expectations accordingly!
+## Chain 1: 
+## Chain 1: 
+## Chain 1: Iteration:     1 / 20000 [  0%]  (Warmup)
+## Chain 1: Iteration:  2000 / 20000 [ 10%]  (Warmup)
+## Chain 1: Iteration:  4000 / 20000 [ 20%]  (Warmup)
+## Chain 1: Iteration:  6000 / 20000 [ 30%]  (Warmup)
+## Chain 1: Iteration:  8000 / 20000 [ 40%]  (Warmup)
+## Chain 1: Iteration: 10000 / 20000 [ 50%]  (Warmup)
+## Chain 1: Iteration: 10001 / 20000 [ 50%]  (Sampling)
+## Chain 1: Iteration: 12000 / 20000 [ 60%]  (Sampling)
+## Chain 1: Iteration: 14000 / 20000 [ 70%]  (Sampling)
+## Chain 1: Iteration: 16000 / 20000 [ 80%]  (Sampling)
+## Chain 1: Iteration: 18000 / 20000 [ 90%]  (Sampling)
+## Chain 1: Iteration: 20000 / 20000 [100%]  (Sampling)
+## Chain 1: 
+## Chain 1:  Elapsed Time: 12.5317 seconds (Warm-up)
+## Chain 1:                8.41942 seconds (Sampling)
+## Chain 1:                20.9511 seconds (Total)
+## Chain 1:</code></pre>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<pre class="sourceCode r"><code class="sourceCode r">r =<span class="st"> </span><span class="kw">extract</span>(samples)$r
+<span class="kw">plot</span>(r)</code></pre>
+<div class="figure">
+<img src="lecture-26-fig/unnamed-chunk-4-1.png" />
+</div>
+<pre class="sourceCode r"><code class="sourceCode r">## posterior density for r
+<span class="kw">qplot</span>(r, <span class="dt">geom =</span> <span class="st">&quot;density&quot;</span>)</code></pre>
+<div class="figure">
+<img src="lecture-26-fig/unnamed-chunk-4-2.png" />
+</div>
+<pre class="sourceCode r"><code class="sourceCode r">## 95% credible interval
+<span class="kw">quantile</span>(r, <span class="kw">c</span>(.<span class="dv">025</span>, .<span class="dv">975</span>))</code></pre>
+<pre><code>##       2.5%      97.5% 
+## -0.9845225 -0.2478574</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">## posterior mean
+<span class="kw">mean</span>(r)</code></pre>
+<pre><code>## [1] -0.7832858</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co">#Frequentist point-estimate of r:</span>
+(freq.r &lt;-<span class="st"> </span><span class="kw">cor</span>(x[,<span class="dv">1</span>],x[,<span class="dv">2</span>]))</code></pre>
+<pre><code>## [1] -0.8109671</code></pre>
+</div>
+</div>
+<div id="example-3-seven-scientists" class="slide section level2">
+<h1>Example 3: Seven scientists</h1>
+<p>(Example 4.2 in the book). Seven scientists with dramatically different capabilities run an experiment to measure a certain quantity.</p>
+<p>The get the results: -27.020, 3.570, 8.191, 9.898, 9.603, 9.945, 10.056</p>
+<p>We would like to combine their results to get an estimate of the true value of the quantity they were trying to measure.</p>
+<p>We can model this as:</p>
+<ul>
+<li><p>The result each of the scientists obtained comes from a normal distribution</p></li>
+<li><p>All seven distributions have the same mean</p></li>
+<li><p>All seven distributions have different variances</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>Listing everything out:</p>
+<ul>
+<li><p>Data: <span class="math">\(x_i \in \mathbb R^1\)</span>, <span class="math">\(i = 1,\ldots, 7\)</span></p></li>
+<li><p>Likelihood: <span class="math">\[
+P(x_i \mid \mu, \lambda_i ) = \mathcal N(\mu, \lambda_i^{-1})
+\]</span></p></li>
+<li><p>Parameters: <span class="math">\(\mu, \lambda_1,\ldots, \lambda_7\)</span></p></li>
+<li><p>Prior: <span class="math">\[
+\begin{align*}
+P(\mu) &amp;= \mathcal N(0, 1000) \\
+P(\lambda_i) &amp;= \text{Gamma}(.001, .001)
+\end{align*}
+\]</span></p></li>
+</ul>
+<div class="incremental">
+<p>Posterior: <span class="math">\[
+P(\mu, \lambda_1,\ldots, \lambda_7  \mid x_1,\ldots, x_7) \propto \prod_{i=1}^7 P(x_i \mid \mu, \lambda_1,\ldots, \lambda_7) P(\mu) \prod_{i=1}^7 P(\lambda_i)
+\]</span></p>
+<p>Again, everything on the right can be evaluated easily, and we can use MCMC to sample from the distribution.</p>
+</div>
+</div>
+<div class="slide section level2">
+
+<pre class="sourceCode r"><code class="sourceCode r">model_seven_scientists =<span class="st"> &quot;</span>
+<span class="st">// The Seven Scientists</span>
+<span class="st">data { </span>
+<span class="st">  int&lt;lower=1&gt; n;</span>
+<span class="st">  vector[n] x;</span>
+<span class="st">}</span>
+<span class="st">parameters {</span>
+<span class="st">  real mu;</span>
+<span class="st">  vector&lt;lower=0&gt;[n] lambda;</span>
+<span class="st">} </span>
+<span class="st">transformed parameters {</span>
+<span class="st">  vector[n] sigma;</span>
+<span class="st">  </span>
+<span class="st">  for (i in 1:n)</span>
+<span class="st">    sigma[i] = inv_sqrt(lambda[i]);</span>
+<span class="st">}</span>
+<span class="st">model {</span>
+<span class="st">  // Priors</span>
+<span class="st">  mu ~ normal(0, sqrt(1000));</span>
+<span class="st">  lambda ~ gamma(.001, .001);</span>
+<span class="st">  </span>
+<span class="st">  // Data Come From Gaussians With Common Mean But Different Precisions</span>
+<span class="st">  x ~ normal(mu, sigma);</span>
+<span class="st">}&quot;</span>
+
+x &lt;-<span class="st"> </span><span class="kw">c</span>(-<span class="fl">27.020</span>, <span class="fl">3.570</span>, <span class="fl">8.191</span>, <span class="fl">9.898</span>, <span class="fl">9.603</span>, <span class="fl">9.945</span>, <span class="fl">10.056</span>)
+n &lt;-<span class="st"> </span><span class="kw">length</span>(x)
+
+data &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">x=</span>x, <span class="dt">n=</span>n) <span class="co"># to be passed on to Stan</span>
+myinits &lt;-<span class="st"> </span><span class="kw">list</span>(
+  <span class="kw">list</span>(<span class="dt">mu=</span><span class="dv">0</span>, <span class="dt">lambda=</span><span class="kw">rep</span>(<span class="dv">1</span>,n)))
+
+<span class="co"># parameters to be monitored:  </span>
+parameters &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;mu&quot;</span>, <span class="st">&quot;sigma&quot;</span>)
+
+samples_seven_scientists &lt;-<span class="st"> </span><span class="kw">stan</span>(<span class="dt">model_code=</span>model_seven_scientists,   
+                <span class="dt">data=</span>data, 
+                <span class="dt">init=</span>myinits,
+                <span class="dt">pars=</span>parameters,
+                <span class="dt">iter=</span><span class="dv">20000</span>, 
+                <span class="dt">chains=</span><span class="dv">1</span>, 
+                <span class="dt">thin=</span><span class="dv">1</span>)</code></pre>
+<pre><code>## 
+## SAMPLING FOR MODEL &#39;0ad4c94821220e5bc1c79495c2929f20&#39; NOW (CHAIN 1).
+## Chain 1: 
+## Chain 1: Gradient evaluation took 1.8e-05 seconds
+## Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.18 seconds.
+## Chain 1: Adjust your expectations accordingly!
+## Chain 1: 
+## Chain 1: 
+## Chain 1: Iteration:     1 / 20000 [  0%]  (Warmup)
+## Chain 1: Iteration:  2000 / 20000 [ 10%]  (Warmup)
+## Chain 1: Iteration:  4000 / 20000 [ 20%]  (Warmup)
+## Chain 1: Iteration:  6000 / 20000 [ 30%]  (Warmup)
+## Chain 1: Iteration:  8000 / 20000 [ 40%]  (Warmup)
+## Chain 1: Iteration: 10000 / 20000 [ 50%]  (Warmup)
+## Chain 1: Iteration: 10001 / 20000 [ 50%]  (Sampling)
+## Chain 1: Iteration: 12000 / 20000 [ 60%]  (Sampling)
+## Chain 1: Iteration: 14000 / 20000 [ 70%]  (Sampling)
+## Chain 1: Iteration: 16000 / 20000 [ 80%]  (Sampling)
+## Chain 1: Iteration: 18000 / 20000 [ 90%]  (Sampling)
+## Chain 1: Iteration: 20000 / 20000 [100%]  (Sampling)
+## Chain 1: 
+## Chain 1:  Elapsed Time: 0.860444 seconds (Warm-up)
+## Chain 1:                0.910903 seconds (Sampling)
+## Chain 1:                1.77135 seconds (Total)
+## Chain 1:</code></pre>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<pre class="sourceCode r"><code class="sourceCode r">samples_extracted =<span class="st"> </span><span class="kw">extract</span>(samples_seven_scientists)
+## show the chain
+<span class="kw">plot</span>(samples_extracted$mu)</code></pre>
+<div class="figure">
+<img src="lecture-26-fig/unnamed-chunk-6-1.png" />
+</div>
+<pre class="sourceCode r"><code class="sourceCode r">## posterior mean of mu
+<span class="kw">mean</span>(samples_extracted$mu)</code></pre>
+<pre><code>## [1] 9.91404</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">## frequentist mean of mu
+<span class="kw">mean</span>(x)</code></pre>
+<pre><code>## [1] 3.463286</code></pre>
+</div>
+</div>
+<div id="example-4-changepoint-detection" class="slide section level2">
+<h1>Example 4: Changepoint detection</h1>
+<p>(Example 5.4 in the book)</p>
+<p>We have data on frontal lobe activity in a study of adults with ADHD.</p>
+<p>In the experiment, we expect to see a &quot;changepoint&quot; in the measure of frontal lobe activity. The mean activity level will be different before and after the changepoint, and we want to estimate both the time of the change and the mean activity level before and after.</p>
+<pre class="sourceCode r"><code class="sourceCode r">c =<span class="st"> </span><span class="kw">scan</span>(<span class="st">&quot;changepointdata.txt&quot;</span>)
+<span class="kw">ggplot</span>(<span class="kw">data.frame</span>(<span class="dt">activity =</span> c, <span class="dt">time =</span> <span class="dv">1</span>:<span class="kw">length</span>(c))) +<span class="st"> </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> time, <span class="dt">y =</span> activity))</code></pre>
+<div class="figure">
+<img src="lecture-26-fig/unnamed-chunk-7-1.png" />
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Listing everything out:</p>
+<ul>
+<li><p>Data: <span class="math">\(x_i \in \mathbb R\)</span>, <span class="math">\(i = 1,\ldots, n\)</span></p></li>
+<li><p>Likelihood: <span class="math">\[
+P(x_i \mid \mu_1, \mu_2, \tau, \lambda ) = \begin{cases}
+\mathcal N(\mu_1, \lambda^{-1}) &amp; i \le \tau \\
+\mathcal N(\mu_2, \lambda^{-1}) &amp; i &gt; \tau
+\end{cases}
+\]</span></p></li>
+<li><p>Parameters: <span class="math">\(\mu_1, \mu_2, \tau, \lambda\)</span></p></li>
+<li><p>Prior: <span class="math">\[
+\begin{align*}
+P(\mu_1) &amp;= \mathcal N(0, 1000) \\
+P(\mu_2) &amp;= \mathcal N(0, 1000) \\
+P(\lambda) &amp;= \text{Gamma}(.001, .001)\\
+P(\tau) &amp;= \text{Uniform}(0, n)
+\end{align*}
+\]</span></p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>Posterior: <span class="math">\[
+P(\mu_1, \mu_2, \lambda, \tau \mid x_1,\ldots, x_n) \propto \prod_{i=1}^n P(x_i \mid \mu_1, \mu_2 \lambda, \tau) P(\mu_1) P(\mu_2) P(\lambda) P(\tau)
+\]</span></p>
+<p>Again, everything on the right can be evaluated easily, and we can use MCMC to sample from the distribution.</p>
+</div>
+<div class="slide section level2">
+
+<pre class="sourceCode r"><code class="sourceCode r">model_changepoint &lt;-<span class="st"> &quot;</span>
+<span class="st">// Change Detection</span>
+<span class="st">data { </span>
+<span class="st">  int n;</span>
+<span class="st">  vector[n] t;</span>
+<span class="st">  vector[n] c;</span>
+<span class="st">}</span>
+<span class="st">parameters {</span>
+<span class="st">  vector[2] mu;</span>
+<span class="st">  real&lt;lower=0&gt; lambda;</span>
+<span class="st">  real&lt;lower=0,upper=n&gt; tau;</span>
+<span class="st">} </span>
+<span class="st">transformed parameters {</span>
+<span class="st">  real&lt;lower=0&gt; sigma;</span>
+<span class="st">  sigma &lt;- inv_sqrt(lambda);</span>
+<span class="st">}</span>
+<span class="st">model { </span>
+<span class="st">  // Group Means</span>
+<span class="st">  mu ~ normal(0, inv_sqrt(.001));</span>
+<span class="st">  // Common Precision</span>
+<span class="st">  lambda ~ gamma(.001, .001);</span>
+<span class="st">    </span>
+<span class="st">  // Which Side is Time of Change Point?</span>
+<span class="st">  // Data Come From A Gaussian</span>
+<span class="st">  for (i in 1:n) {</span>
+<span class="st">    if ((t[i] - tau) &lt; 0.0)</span>
+<span class="st">      c[i] ~ normal(mu[1], sigma);</span>
+<span class="st">    else </span>
+<span class="st">      c[i] ~ normal(mu[2], sigma);</span>
+<span class="st">  }</span>
+<span class="st">}&quot;</span>
+
+c &lt;-<span class="st"> </span><span class="kw">scan</span>(<span class="st">&quot;changepointdata.txt&quot;</span>)
+n &lt;-<span class="st"> </span><span class="kw">length</span>(c)
+t &lt;-<span class="st"> </span><span class="dv">1</span>:n
+
+data &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">c=</span>c, <span class="dt">n=</span>n, <span class="dt">t=</span>t) <span class="co"># to be passed on to Stan</span>
+myinits &lt;-<span class="st"> </span><span class="kw">list</span>(
+  <span class="kw">list</span>(<span class="dt">mu=</span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">1</span>), <span class="dt">lambda=</span><span class="dv">1</span>, <span class="dt">tau=</span>n /<span class="st"> </span><span class="dv">2</span>))
+
+<span class="co"># parameters to be monitored:  </span>
+parameters &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;mu&quot;</span>, <span class="st">&quot;sigma&quot;</span>, <span class="st">&quot;tau&quot;</span>)
+
+samples_changepoint &lt;-<span class="st"> </span><span class="kw">stan</span>(<span class="dt">model_code=</span>model_changepoint,   
+                <span class="dt">data=</span>data, 
+                <span class="dt">init=</span>myinits,
+                <span class="dt">pars=</span>parameters,
+                <span class="dt">iter=</span><span class="dv">250</span>, 
+                <span class="dt">chains=</span><span class="dv">1</span>, 
+                <span class="dt">thin=</span><span class="dv">1</span>,
+                <span class="dt">warmup =</span> <span class="dv">150</span>,
+                            <span class="dt">seed =</span> <span class="dv">1</span>)</code></pre>
+<pre><code>## DIAGNOSTIC(S) FROM PARSER:
+## Info (non-fatal): assignment operator &lt;- deprecated in the Stan language; use = instead.
+## 
+## 
+## SAMPLING FOR MODEL &#39;6be547ad16619cfe59f852b122ee76ef&#39; NOW (CHAIN 1).
+## Chain 1: 
+## Chain 1: Gradient evaluation took 0.000143 seconds
+## Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 1.43 seconds.
+## Chain 1: Adjust your expectations accordingly!
+## Chain 1: 
+## Chain 1: 
+## Chain 1: Iteration:   1 / 250 [  0%]  (Warmup)
+## Chain 1: Iteration:  25 / 250 [ 10%]  (Warmup)
+## Chain 1: Iteration:  50 / 250 [ 20%]  (Warmup)
+## Chain 1: Iteration:  75 / 250 [ 30%]  (Warmup)
+## Chain 1: Iteration: 100 / 250 [ 40%]  (Warmup)
+## Chain 1: Iteration: 125 / 250 [ 50%]  (Warmup)
+## Chain 1: Iteration: 150 / 250 [ 60%]  (Warmup)
+## Chain 1: Iteration: 151 / 250 [ 60%]  (Sampling)
+## Chain 1: Iteration: 175 / 250 [ 70%]  (Sampling)
+## Chain 1: Iteration: 200 / 250 [ 80%]  (Sampling)
+## Chain 1: Iteration: 225 / 250 [ 90%]  (Sampling)
+## Chain 1: Iteration: 250 / 250 [100%]  (Sampling)
+## Chain 1: 
+## Chain 1:  Elapsed Time: 13.0408 seconds (Warm-up)
+## Chain 1:                10.3236 seconds (Sampling)
+## Chain 1:                23.3645 seconds (Total)
+## Chain 1:</code></pre>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Now the values for the monitored parameters are in the &quot;samples&quot; object, </span>
+<span class="co"># ready for inspection.</span>
+<span class="kw">plot</span>(<span class="kw">extract</span>(samples_changepoint)$tau)</code></pre>
+<div class="figure">
+<img src="lecture-26-fig/unnamed-chunk-9-1.png" />
+</div>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(<span class="kw">extract</span>(samples_changepoint)$mu[,<span class="dv">1</span>])</code></pre>
+<div class="figure">
+<img src="lecture-26-fig/unnamed-chunk-9-2.png" />
+</div>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(<span class="kw">extract</span>(samples_changepoint)$mu[,<span class="dv">2</span>])</code></pre>
+<div class="figure">
+<img src="lecture-26-fig/unnamed-chunk-9-3.png" />
+</div>
+<pre class="sourceCode r"><code class="sourceCode r">(mean.tau &lt;-<span class="st"> </span><span class="kw">mean</span>(<span class="kw">extract</span>(samples_changepoint)$tau))</code></pre>
+<pre><code>## [1] 731.1781</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">(mean.mu1 &lt;-<span class="st"> </span><span class="kw">mean</span>(<span class="kw">extract</span>(samples_changepoint)$mu[,<span class="dv">1</span>]))</code></pre>
+<pre><code>## [1] 39.5996</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">(mean.mu2 &lt;-<span class="st"> </span><span class="kw">mean</span>(<span class="kw">extract</span>(samples_changepoint)$mu[,<span class="dv">2</span>]))</code></pre>
+<pre><code>## [1] 27.11919</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">time_data =<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">activity =</span> c, <span class="dt">time =</span> <span class="dv">1</span>:<span class="kw">length</span>(c))
+time_data$activity_fitted =<span class="st"> </span><span class="kw">ifelse</span>(time_data$time &lt;=<span class="st"> </span>mean.tau, mean.mu1, mean.mu2)
+<span class="kw">ggplot</span>(time_data) +<span class="st"> </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> time, <span class="dt">y =</span> activity)) +
+<span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">x =</span> time, <span class="dt">y =</span> activity_fitted), <span class="dt">color =</span> <span class="st">&quot;red&quot;</span>)</code></pre>
+<div class="figure">
+<img src="lecture-26-fig/unnamed-chunk-10-1.png" />
+</div>
+</div>
+</div>
+<div id="summing-up" class="slide section level2">
+<h1>Summing up</h1>
+<ul>
+<li><p>Bayesian modeling is very flexible</p></li>
+<li><p>The MCMC methods we've looked at allow us to sample easily from pretty the posterior distribution in pretty much any Bayesian model we can write down</p></li>
+<li><p>The samples from the posterior give us estimates of parameters and their uncertainties.</p></li>
+</ul>
+</div>
+</body>
+</html>
