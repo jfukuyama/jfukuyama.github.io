@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="http://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+  <script src="http://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div id="neural-netsdeep-learning" class="slide section level2">
+<h1>Neural nets/Deep learning</h1>
+<p>Agenda today:</p>
+<ul>
+<li><p>More nets</p></li>
+<li><p>Please evaluate the class</p></li>
+</ul>
+<p>Reading: Elements of Statistical Learning, Chapter 11.3-11.8</p>
+</div>
+<div id="example-zip-code-data" class="slide section level2">
+<h1>Example: zip code data</h1>
+<div class="figure">
+<img src="zip-code-data.png" />
+</div>
+<p>Goal: Given images representing digits, classify them correctly.</p>
+<p>Input data, <span class="math">\(x_i\)</span>, are <span class="math">\(16 \times 16\)</span> grayscale images, represented as vectors in <span class="math">\(\mathbb R^{256}\)</span></p>
+<p>Responses <span class="math">\(y_i\)</span> give the digit in the image.</p>
+<p>Encode this as a classification problem, use neural nets with different architectures to fit</p>
+</div>
+<div id="some-net-architectures" class="slide section level2">
+<h1>Some net architectures</h1>
+<div class="figure">
+<img src="zip-code-architectures.png" />
+</div>
+<p>All cases: 10 output units, corresponding to the 10 possible digits. In all cases the output unit is sigmoidal.</p>
+<ul>
+<li><p>Net 1: No hidden layer, equivalent to multinomial logistic regression</p></li>
+<li><p>Net 2: One hidden layer, 12 hidden units. Each of the hidden units is connected to each of the 256 input variables and to each of the 10 output variables.</p></li>
+<li><p>Net 3: Two hidden layers</p>
+<ul>
+<li><p>First hidden layer: 64 hidden units arranged in an 8 x 8 grid. Each hidden unit is connected to a 3x3 patch of the input variables.</p></li>
+<li><p>Secand hidden layer: 16 hidden units arranged in a 4 x 4 grid. Each hidden unit is connected to a 5 x 5 patch in the first hidden layer.</p></li>
+</ul></li>
+<li><p>Net 4: Two hidden layers with weight sharing in the first layer.</p>
+<ul>
+<li><p>First hidden layer: 128 hidden units, conceptualized as two 8 x 8 grids, each connected to a 3x3 patch of the input variables, similar to Net 3. Additional constraint that each of the units within the 8 x 8 feature map have the same set of 9 weights.</p></li>
+<li><p>Second hidden layer: 16 hidden units arranged in a 4 x 4 grid, each connected to a 5 x 5 patch in each of the two 8 x 8 grids in the first hidden layer (so each hidden unit connected to 50 units in the first hidden layer).</p></li>
+</ul></li>
+<li><p>Net 5: Two hidden layers with weight sharing in both layers:</p>
+<ul>
+<li><p>First hidden layer: Same is in Net 4.</p></li>
+<li><p>Second hidden layer: 64 hidden units arranged as four 4 x 4 grids. Each unit connected to a 5 x 5 patch of the fisrt hidden layer, and within each 4 x 4 grid, the weights connecting that unit to the previous input unit are the same.</p></li>
+</ul></li>
+</ul>
+<p>Idea behind weight constraints: Each unit computes the same functional of the previous layer, so they are extracting the same features from different parts of the image. A net with this sort of weight sharing is referred to as a <em>convolutional</em> network.</p>
+</div>
+<div class="slide section level2">
+
+<div class="figure">
+<img src="zip-code-training.png" />
+</div>
+</div>
+<div id="if-you-want-to-play-with-this-in-r" class="slide section level2">
+<h1>If you want to play with this in R</h1>
+<ul>
+<li><p>R package called <a href="https://keras.rstudio.com/">keras</a></p></li>
+<li><p>This is an interface to the python version of <a href="https://keras.io/">keras</a></p></li>
+<li><p>Which is itself a frontend for a couple of lower-level packages (TensorFlow, CNTK, Theano)</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>Example: the same zip code data</p>
+<pre class="sourceCode r"><code class="sourceCode r">## if you want to do this you&#39;ll have to install some the python version of keras first, which requires you to have TensorFlow, CNTK, or Theano installed as well
+<span class="kw">library</span>(keras)
+mnist =<span class="st"> </span><span class="kw">dataset_mnist</span>()
+x_train =<span class="st"> </span>mnist$train$x
+y_train =<span class="st"> </span>mnist$train$y
+y_train_matrix =<span class="st"> </span><span class="kw">to_categorical</span>(y_train, <span class="dt">num_classes =</span> <span class="dv">10</span>)
+x_test =<span class="st"> </span>mnist$test$x
+y_test =<span class="st"> </span>mnist$test$y</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>Let's look at some of the images:</p>
+<pre class="sourceCode r"><code class="sourceCode r">## function to rearrange things so that we can plot them
+flip_image =<span class="st"> </span>function(x) {
+    n =<span class="st"> </span><span class="kw">nrow</span>(x)
+    <span class="kw">return</span>(<span class="kw">t</span>(x[n:<span class="dv">1</span>,]))
+}
+<span class="kw">par</span>(<span class="dt">mfrow =</span> <span class="kw">c</span>(<span class="dv">3</span>,<span class="dv">3</span>))
+for(i in <span class="dv">1</span>:<span class="dv">9</span>) {
+    <span class="kw">image</span>(<span class="kw">flip_image</span>(x_train[i,,]), <span class="dt">col =</span> <span class="kw">topo.colors</span>(<span class="dv">100</span>), <span class="dt">axes =</span> <span class="ot">FALSE</span>,
+          <span class="dt">main =</span> y_train[i])
+}</code></pre>
+<div class="figure">
+<img src="lecture-28-fig/unnamed-chunk-2-1.png" />
+</div>
+</div>
+<div class="slide section level2">
+
+<pre class="sourceCode r"><code class="sourceCode r">model =<span class="st"> </span><span class="kw">keras_model_sequential</span>()
+model %&gt;%
+<span class="st">  </span><span class="kw">layer_flatten</span>(<span class="dt">input_shape =</span> <span class="kw">c</span>(<span class="dv">28</span>, <span class="dv">28</span>)) %&gt;%
+<span class="st">  </span><span class="kw">layer_dense</span>(<span class="dt">units =</span> <span class="dv">128</span>, <span class="dt">activation =</span> <span class="st">&#39;relu&#39;</span>) %&gt;%
+<span class="st">  </span><span class="kw">layer_dense</span>(<span class="dt">units =</span> <span class="dv">10</span>, <span class="dt">activation =</span> <span class="st">&#39;softmax&#39;</span>)
+model %&gt;%<span class="st"> </span><span class="kw">compile</span>(
+    <span class="dt">optimizer =</span> <span class="st">&#39;adam&#39;</span>, 
+    <span class="dt">loss =</span> loss_categorical_crossentropy,
+    <span class="dt">metrics =</span> <span class="st">&#39;accuracy&#39;</span>
+)
+model</code></pre>
+<pre><code>## Model
+## ___________________________________________________________________________
+## Layer (type)                     Output Shape                  Param #     
+## ===========================================================================
+## flatten (Flatten)                (None, 784)                   0           
+## ___________________________________________________________________________
+## dense (Dense)                    (None, 128)                   100480      
+## ___________________________________________________________________________
+## dense_1 (Dense)                  (None, 10)                    1290        
+## ===========================================================================
+## Total params: 101,770
+## Trainable params: 101,770
+## Non-trainable params: 0
+## ___________________________________________________________________________</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">## number of parameters for the first layer: each hidden unit has a weight associated with each of the 784 predictor units, plus a bias term
+(<span class="dv">784</span> +<span class="st"> </span><span class="dv">1</span>) *<span class="st"> </span><span class="dv">128</span></code></pre>
+<pre><code>## [1] 100480</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">## number of parameters for the second layer: each output unit has a weight associated with each of the 128 hidden units, plus a bias term
+(<span class="dv">128</span> +<span class="st"> </span><span class="dv">1</span>)*<span class="st"> </span><span class="dv">10</span></code></pre>
+<pre><code>## [1] 1290</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>Fit the model, look at the predictions:</p>
+<pre class="sourceCode r"><code class="sourceCode r">model %&gt;%<span class="st"> </span><span class="kw">fit</span>(<span class="dt">x =</span> x_train, <span class="dt">y =</span> y_train_matrix, <span class="dt">epochs =</span> <span class="dv">15</span>)
+test_predictions =<span class="st"> </span>model %&gt;%<span class="st"> </span><span class="kw">predict_classes</span>(x_test)
+<span class="kw">par</span>(<span class="dt">mfrow =</span> <span class="kw">c</span>(<span class="dv">3</span>,<span class="dv">3</span>))
+for(i in <span class="dv">1</span>:<span class="dv">9</span>) {
+    <span class="kw">image</span>(<span class="kw">flip_image</span>(x_test[i,,]), <span class="dt">col =</span> <span class="kw">topo.colors</span>(<span class="dv">100</span>), <span class="dt">axes =</span> <span class="ot">FALSE</span>,
+          <span class="dt">main =</span> <span class="kw">sprintf</span>(<span class="st">&quot;True digit: %i, Prediction: %i&quot;</span>, y_test[i], test_predictions[i]))
+}</code></pre>
+<div class="figure">
+<img src="lecture-28-fig/unnamed-chunk-4-1.png" />
+</div>
+</div>
+<div id="summing-up" class="slide section level2">
+<h1>Summing up</h1>
+<ul>
+<li><p>Deep learning = neural nets with more than one hidden layer. In practice, these work better than the single-hidden-layer networks.</p></li>
+<li><p>Think of as predictors that can fit complex functions of the input variables</p></li>
+<li><p>Also able to handle other kinds of output, e.g. sequences (natural language processing, machine translation)</p></li>
+<li><p>Good when you have a lot of data, are interested solely in prediction</p></li>
+<li><p>Not as good when you don't have so much data or need an interpretation of the relationship between the predictors and response.</p></li>
+<li><p>No measure of uncertainty: the models look like regression models, but standard nets don't give measures of predictive accuracy.</p></li>
+<li><p>There are ways of using them to model uncertainty: e.g. have a net try to predict a posterior distribution instead of a response.</p></li>
+</ul>
+</div>
+</body>
+</html>
