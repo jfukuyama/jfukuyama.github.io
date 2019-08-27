@@ -108,7 +108,7 @@ Julia Fukuyama
 <li><p>A couple of times over the course of the semester there will be a lab.</p></li>
 <li><p>Lab will be a script that you can work through, longer/more complicated examples of things we covered in class, will be posted so you can go through them at home if you prefer.</p></li>
 <li><p>Tentative dates on the website.</p></li>
-<li><p>We have space reserved Thursdays 4-5:30 and Fridays 11-12:30, will use whichever one is better for your collective schedules.</p></li>
+<li><p>We have space reserved Thursdays 4-5:30 and Fridays 11:15-12:45, will use whichever one is better for your collective schedules.</p></li>
 </ul>
 </div>
 <div class="slide section level1">
@@ -473,24 +473,24 @@ Julia Fukuyama
 <div class="sourceCode" id="cb119"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb119-1"><a href="#cb119-1"></a>z =<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">sample</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">12</span>), <span class="dt">nrow =</span> <span class="dv">4</span>)</span>
 <span id="cb119-2"><a href="#cb119-2"></a>z</span></code></pre></div>
 <pre><code>##      [,1] [,2] [,3]
-## [1,]    8   12    4
-## [2,]    3    6    9
-## [3,]   10    2   11
-## [4,]    7    1    5</code></pre>
+## [1,]    3    4    5
+## [2,]   12    2   11
+## [3,]   10    6    9
+## [4,]    8    1    7</code></pre>
 <div class="sourceCode" id="cb121"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb121-1"><a href="#cb121-1"></a>z[,<span class="dv">2</span><span class="op">:</span><span class="dv">3</span>] <span class="co">## extract the 2nd and 3rd columns</span></span></code></pre></div>
 <pre><code>##      [,1] [,2]
-## [1,]   12    4
-## [2,]    6    9
-## [3,]    2   11
-## [4,]    1    5</code></pre>
+## [1,]    4    5
+## [2,]    2   11
+## [3,]    6    9
+## [4,]    1    7</code></pre>
 <div class="sourceCode" id="cb123"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb123-1"><a href="#cb123-1"></a>z[<span class="dv">2</span><span class="op">:</span><span class="dv">3</span>, <span class="dv">2</span>] <span class="co">## extract the 2nd and 3rd rows of the 2nd column</span></span></code></pre></div>
-<pre><code>## [1] 6 2</code></pre>
+<pre><code>## [1] 2 6</code></pre>
 <div class="sourceCode" id="cb125"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb125-1"><a href="#cb125-1"></a>z[,<span class="op">-</span><span class="dv">1</span>] <span class="co">## negative subscripts work the same way as with vectors</span></span></code></pre></div>
 <pre><code>##      [,1] [,2]
-## [1,]   12    4
-## [2,]    6    9
-## [3,]    2   11
-## [4,]    1    5</code></pre>
+## [1,]    4    5
+## [2,]    2   11
+## [3,]    6    9
+## [4,]    1    7</code></pre>
 </div>
 </div>
 <div class="slide section level1">
