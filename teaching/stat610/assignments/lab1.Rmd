@@ -1,0 +1,107 @@
+# Lab 1: Text manipulation
+
+In this lab, you'll get some more practice with text manipulation.
+For this and all of the labs, I strongly suggest actually typing in the commands instead of copying and pasting.
+You should also try to examine the objects you create: for each one, ask what kind of object it is, what its component parts are, what the content looks like.
+
+Here we are going to practice text manipulation by trying to extract some data from an html file.
+The `nyt.html` file comes from an article on the New York Times, and we can try to extract the body of the article, remove the html markup, and check for the number of ads present in the article.
+
+Here we're just looking at one article, but if we created a function based on the code here, we could potentially apply it to all the articles we could get our hands on and use it for something a bit more interesting.
+
+## 1: Reading in the data
+
+We can read in the file using the `readLines` function.
+
+```{r}
+nyt = readLines("nyt.html")
+```
+
+Questions:
+
+- What type of object is `nyt`?
+
+- How long is it?
+
+- What is each element?
+
+## 2: Extracting the body of the article 
+
+I want to just get the body of the article out, and I know that the
+line containing the article will have the string `<section name =
+"articleBody"`.
+
+I can use `grep` to find the line corresponding to the article.
+
+```{r}
+article_body_index = grep("<section name=\"articleBody\"", nyt)
+```
+Questions:
+
+- Why do I need the "\" characters?
+
+- What happens if I leave them out?
+
+We want the text of the article, not just its position. in the file.
+
+We know it's going to be between something that looks like `<section name="articleBody"` and `</section>`, so we create a regular expression for that sort of string and use `regmatches` and `gregexpr`.
+
+```{r}
+article_with_mark_up = regmatches(nyt[article_body_index],
+    gregexpr("<section name=\"articleBody\".+</section>", nyt[article_body_index]))
+```
+
+Questions: 
+
+- What type of object is `article_with_mark_up`?
+
+- Did we need to use `gregexpr` here?
+
+- What would have happened if we used `regexpr`?
+
+Look through the output of `article_with_mark_up`: The text of the article should be mostly there, with some extra html tags corresponding to other objects that were inserted into the text.
+
+## 3: More text processing
+
+Then let's try to split the article on paragraphs.
+In html, a paragraph begins with `<p>` and ends with `</p>`.
+Inside the opening `<p>` can be some extra information about the paragraph.
+Look through the `article_with_mark_up` text to find some examples.
+
+To split on paragraphs, we can try
+```{r}
+paragraphs = strsplit(article_with_mark_up[[1]], "(<p[^>]*>)|(</p>)")
+```
+
+Questions:
+
+- Why `article_with_mark_up[[1]]` and not `article_with_mark_up`?
+
+- What, in English, does the `[^>]*` in the regular expression mean?
+
+- Why are we using it?
+
+- Is there another regular expression that would give us the same result?
+
+If you look through the `paragraphs` object, you'll see that there's still some extra html tags (things of the form `<>` with stuff in the middle) that we might like to replace.
+We can try removing them with the following:
+
+```{r}
+paragraphs_no_tags = gsub(pattern = "<.+?>", replacement = "", x = paragraphs[[1]])
+```
+
+Questions:
+
+- What is the purpose of the `?` in the regular expression above?
+
+- What happens if we don't use it? Hint: Try it the other way, with `pattern = <.+?>`, and compare.
+
+Once the article is formatted a little better, we can do things like
+count the number of ads placed in the body of the article.
+
+```{r}
+grep("Advertisement", paragraphs_no_tags)
+```
+
+Seems like a lot!
+
