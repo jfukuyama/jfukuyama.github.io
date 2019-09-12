@@ -1,0 +1,403 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title>Stat 610 Lecture 6: More on functions</title>
+  <style type="text/css">
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <style type="text/css">
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="https://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-AMS_CHTML-full" type="text/javascript"></script>
+  <script src="https://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div class="slide titlepage">
+  <h1 class="title">Stat 610 Lecture 6: More on functions</h1>
+</div>
+<div id="writing-and-calling-functions" class="slide section level2">
+<h1>Writing and calling functions</h1>
+<p>Agenda for today:</p>
+<ul>
+<li><p>Finish up from last time</p></li>
+<li><p>We’ll write some functions that let us investigate the birthday problem.</p></li>
+</ul>
+</div>
+<div id="function-from-last-time" class="slide section level2">
+<h1>Function from last time</h1>
+<p>When a function is called, its body is evaluated in an execution environment whose parent is the function’s environment.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>w =<span class="st"> </span><span class="dv">12</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a>f =<span class="st"> </span><span class="cf">function</span>(y) {</span>
+<span id="cb1-3"><a href="#cb1-3"></a>    d =<span class="st"> </span><span class="dv">8</span></span>
+<span id="cb1-4"><a href="#cb1-4"></a>    h =<span class="st"> </span><span class="cf">function</span>() {</span>
+<span id="cb1-5"><a href="#cb1-5"></a>        <span class="kw">return</span>(d <span class="op">*</span><span class="st"> </span>(w <span class="op">+</span><span class="st"> </span>y))</span>
+<span id="cb1-6"><a href="#cb1-6"></a>    }</span>
+<span id="cb1-7"><a href="#cb1-7"></a>    <span class="kw">cat</span>(<span class="st">&quot;h&#39;s environment: &quot;</span>, <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb1-8"><a href="#cb1-8"></a>    <span class="kw">print</span>(<span class="kw">environment</span>(h))</span>
+<span id="cb1-9"><a href="#cb1-9"></a>    <span class="kw">cat</span>(<span class="st">&quot;h&#39;s parent environment:&quot;</span>, <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb1-10"><a href="#cb1-10"></a>    <span class="kw">print</span>(<span class="kw">parent.env</span>(<span class="kw">environment</span>(h)))</span>
+<span id="cb1-11"><a href="#cb1-11"></a>    output =<span class="st"> </span><span class="kw">h</span>()</span>
+<span id="cb1-12"><a href="#cb1-12"></a>    <span class="kw">return</span>(output)</span>
+<span id="cb1-13"><a href="#cb1-13"></a>}</span>
+<span id="cb1-14"><a href="#cb1-14"></a><span class="kw">f</span>(<span class="dv">1</span>)</span></code></pre></div>
+<pre><code>## h&#39;s environment:  
+## &lt;environment: 0x7f832e55c190&gt;
+## h&#39;s parent environment: 
+## &lt;environment: R_GlobalEnv&gt;</code></pre>
+<pre><code>## [1] 104</code></pre>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="kw">environment</span>(f)</span></code></pre></div>
+<pre><code>## &lt;environment: R_GlobalEnv&gt;</code></pre>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<p>Compare with:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a>f =<span class="st"> </span><span class="cf">function</span>(y) {</span>
+<span id="cb6-2"><a href="#cb6-2"></a>    d =<span class="st"> </span><span class="dv">8</span></span>
+<span id="cb6-3"><a href="#cb6-3"></a>    output =<span class="st"> </span><span class="kw">h</span>()</span>
+<span id="cb6-4"><a href="#cb6-4"></a>    <span class="kw">return</span>(output)</span>
+<span id="cb6-5"><a href="#cb6-5"></a>}</span>
+<span id="cb6-6"><a href="#cb6-6"></a></span>
+<span id="cb6-7"><a href="#cb6-7"></a>h =<span class="st"> </span><span class="cf">function</span>() {</span>
+<span id="cb6-8"><a href="#cb6-8"></a>    <span class="kw">cat</span>(<span class="st">&quot;h&#39;s environment:&quot;</span>, <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb6-9"><a href="#cb6-9"></a>    <span class="kw">print</span>(<span class="kw">environment</span>(h))</span>
+<span id="cb6-10"><a href="#cb6-10"></a>    <span class="kw">cat</span>(<span class="st">&quot;h&#39;s parent environment:&quot;</span>, <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb6-11"><a href="#cb6-11"></a>    <span class="kw">print</span>(<span class="kw">parent.env</span>(<span class="kw">environment</span>(h)))</span>
+<span id="cb6-12"><a href="#cb6-12"></a>    <span class="kw">return</span>(d <span class="op">*</span><span class="st"> </span>(w <span class="op">+</span><span class="st"> </span>y))</span>
+<span id="cb6-13"><a href="#cb6-13"></a>}</span>
+<span id="cb6-14"><a href="#cb6-14"></a><span class="kw">f</span>(<span class="dv">5</span>)</span></code></pre></div>
+<pre><code>## h&#39;s environment: 
+## &lt;environment: R_GlobalEnv&gt;
+## h&#39;s parent environment: 
+## &lt;environment: package:knitr&gt;
+## attr(,&quot;name&quot;)
+## [1] &quot;package:knitr&quot;
+## attr(,&quot;path&quot;)
+## [1] &quot;/Users/jfukuyam/Library/R/3.5/library/knitr&quot;</code></pre>
+<pre><code>## Error in h(): object &#39;d&#39; not found</code></pre>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>This perhaps seems overly baroque, but the take-home points about environments (and the reason why they are set up the way they are) are:</p>
+<ul>
+<li><p>Commands called in the body of the function usually have access to values of the variables in that function plus variables at higher levels.</p></li>
+<li><p>Variables defined in the body of a function go away after the function exits.</p></li>
+</ul>
+</div>
+<div id="side-effects" class="slide section level2">
+<h1>Side effects</h1>
+<p>A function has a <em>side effect</em> if it does anything other than compute a return value, for instance, if it changes the values of other variables in the environment it is defined in, or adds variables to the environment.</p>
+<p>We generally don’t want functions to have side effects, because they make code more confusing and more difficult to test.</p>
+<p>In R, functions <em>can</em> have side effects, but it is discouraged by both the language itself and by programming norms.</p>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<p>Remember that functions can see variables defined in the parent environments.</p>
+<p>What they can’t do is change the values of those variables (except with a special operator).</p>
+<p>For example:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a>w =<span class="st"> </span><span class="dv">12</span></span>
+<span id="cb9-2"><a href="#cb9-2"></a>f =<span class="st"> </span><span class="cf">function</span>(y) {</span>
+<span id="cb9-3"><a href="#cb9-3"></a>   d =<span class="st"> </span><span class="dv">8</span></span>
+<span id="cb9-4"><a href="#cb9-4"></a>   w =<span class="st"> </span>w <span class="op">+</span><span class="st"> </span><span class="dv">1</span></span>
+<span id="cb9-5"><a href="#cb9-5"></a>   y =<span class="st"> </span>y <span class="op">-</span><span class="st"> </span><span class="dv">2</span></span>
+<span id="cb9-6"><a href="#cb9-6"></a>   <span class="kw">cat</span>(<span class="kw">sprintf</span>(<span class="st">&quot;Value of w: %i&quot;</span>, w))</span>
+<span id="cb9-7"><a href="#cb9-7"></a>   h =<span class="st"> </span><span class="cf">function</span>() {</span>
+<span id="cb9-8"><a href="#cb9-8"></a>      <span class="kw">return</span>(d<span class="op">*</span>(w<span class="op">+</span>y))</span>
+<span id="cb9-9"><a href="#cb9-9"></a>   }</span>
+<span id="cb9-10"><a href="#cb9-10"></a>   <span class="kw">return</span>(<span class="kw">h</span>())</span>
+<span id="cb9-11"><a href="#cb9-11"></a>}</span>
+<span id="cb9-12"><a href="#cb9-12"></a>t =<span class="st"> </span><span class="dv">4</span></span>
+<span id="cb9-13"><a href="#cb9-13"></a><span class="kw">f</span>(t)</span></code></pre></div>
+<pre><code>## Value of w: 13</code></pre>
+<pre><code>## [1] 120</code></pre>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a>w</span></code></pre></div>
+<pre><code>## [1] 12</code></pre>
+<p>It looks like the value of <code>w</code> changed inside the function, but the value in the global environment was not actually changed.</p>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Primary exceptions to the no side effects rule:</p>
+<ul>
+<li><p>Plotting</p></li>
+<li><p>Data export</p></li>
+</ul>
+</div>
+<div id="the-complement-of-the-no-side-effects-rule" class="slide section level2">
+<h1>The complement of the no side effects rule</h1>
+<ul>
+<li><p>No side effects says in part that functions shouldn’t change variables in the global environment (or any other environment).</p></li>
+<li><p>Your functions also should not read from environments other than the function’s execution environment.</p></li>
+</ul>
+<p>This rule isn’t as strong/there are more exceptions, but in general all the variables your function uses should be given as arguments to the function.</p>
+</div>
+<div id="some-rules-for-writing-functions" class="slide section level2">
+<h1>Some rules for writing functions</h1>
+<ul>
+<li><p>“The first rule of functions is that they should be small. The second rule of functions is that <em>they should be smaller than that</em>.”</p></li>
+<li><p>Functions should <em>do one thing</em>. Multiple tasks = multiple functions.</p></li>
+<li><p>Related functions should have consistent interfaces: if they take the same input, they should have the same arguments in the same order. If they make the same output, they should give output in the same way.</p></li>
+<li><p>No side effects.</p></li>
+<li><p>No <a href="https://en.wikipedia.org/wiki/Magic_number_(programming)#Unnamed_numerical_constants">magic numbers</a>.</p></li>
+</ul>
+<div class="incremental">
+<p>But, like <a href="http://languagelog.ldc.upenn.edu/nll/?p=992">Orwell’s last rule for effective writing</a>: break any of these rules rather than write something outright barbarous.</p>
+</div>
+</div>
+<div id="example-the-birthday-problem" class="slide section level2">
+<h1>Example: <a href="https://en.wikipedia.org/wiki/Birthday_problem">The birthday problem</a></h1>
+<p>Suppose:</p>
+<ul>
+<li><p>We have a randomly chosen set of <span class="math inline">\(n\)</span> people</p></li>
+<li><p>Each person has a birthday</p></li>
+<li><p>Birthdays are distributed uniformly, so every day of the year is equally likely to be a given person’s birthday</p></li>
+</ul>
+<p>Question: What is the probability that at least two people share a birthday?</p>
+<div class="incremental">
+<p>Logic says: “At least two people share a birthday” is the same as “It’s not true that all the birthdays are distinct”.</p>
+<p>Probability says:</p>
+<ul>
+<li><p><span class="math inline">\(P(\text{All birthdays are distinct}) = \prod \frac{365}{365} \frac{364}{365} \cdots \frac{365-(n-1)}{365}\)</span></p></li>
+<li><p><span class="math inline">\(P(\text{At least two people share a birthday}) = 1 - P(\text{All birthdays are distinct}) = \prod \frac{365}{365} \frac{364}{365} \cdots \frac{365-(n-1)}{365}\)</span></p></li>
+</ul>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>We can write a function that computes these probabilities as a function of the number of people:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a>compute_birthday_probability =<span class="st"> </span><span class="cf">function</span>(n_people) {</span>
+<span id="cb14-2"><a href="#cb14-2"></a>    p_all_distinct =<span class="st"> </span><span class="kw">prod</span>(<span class="kw">seq</span>(<span class="dv">365</span><span class="op">-</span>(n_people<span class="dv">-1</span>), <span class="dv">365</span>)) <span class="op">/</span><span class="st"> </span>(<span class="dv">365</span><span class="op">^</span>n_people)</span>
+<span id="cb14-3"><a href="#cb14-3"></a>    p_match =<span class="st"> </span><span class="dv">1</span> <span class="op">-</span><span class="st"> </span>p_all_distinct</span>
+<span id="cb14-4"><a href="#cb14-4"></a>    <span class="kw">return</span>(p_match)</span>
+<span id="cb14-5"><a href="#cb14-5"></a>}</span>
+<span id="cb14-6"><a href="#cb14-6"></a><span class="kw">compute_birthday_probability</span>(<span class="dv">1</span>)</span></code></pre></div>
+<pre><code>## [1] 0</code></pre>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a><span class="kw">compute_birthday_probability</span>(<span class="dv">2</span>)</span></code></pre></div>
+<pre><code>## [1] 0.002739726</code></pre>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a><span class="kw">compute_birthday_probability</span>(<span class="dv">22</span>)</span></code></pre></div>
+<pre><code>## [1] 0.4756953</code></pre>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a><span class="kw">compute_birthday_probability</span>(<span class="dv">23</span>)</span></code></pre></div>
+<pre><code>## [1] 0.5072972</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>Suppose we don’t know any probability.</p>
+<p>We can try simulating to solve the birthday problem.</p>
+<p>As we did before, we can simulate birthdays from different numbers of people and check whether any of them share a birthday.</p>
+<p>For just one simulation, we can do:</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1"></a>n_people =<span class="st"> </span><span class="dv">23</span></span>
+<span id="cb22-2"><a href="#cb22-2"></a>birthdays =<span class="st"> </span><span class="kw">sample</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">365</span>, n_people, <span class="dt">replace =</span> <span class="ot">TRUE</span>)</span>
+<span id="cb22-3"><a href="#cb22-3"></a>birthday_table =<span class="st"> </span><span class="kw">table</span>(birthdays)</span>
+<span id="cb22-4"><a href="#cb22-4"></a><span class="cf">if</span>(<span class="kw">max</span>(birthday_table) <span class="op">&gt;=</span><span class="st"> </span><span class="dv">2</span>) {</span>
+<span id="cb22-5"><a href="#cb22-5"></a>    <span class="kw">print</span>(<span class="st">&quot;At least two people share a birthday&quot;</span>)</span>
+<span id="cb22-6"><a href="#cb22-6"></a>} <span class="cf">else</span> {</span>
+<span id="cb22-7"><a href="#cb22-7"></a>    <span class="kw">print</span>(<span class="st">&quot;No two people share a birthday&quot;</span>)</span>
+<span id="cb22-8"><a href="#cb22-8"></a>}</span></code></pre></div>
+<pre><code>## [1] &quot;At least two people share a birthday&quot;</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>If we wanted to do lots of simulations to get an estimate of the probability of a match, we <em>could</em> use a for loop:</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1"></a>n_sim =<span class="st"> </span><span class="dv">1000</span></span>
+<span id="cb24-2"><a href="#cb24-2"></a>n_people =<span class="st"> </span><span class="dv">23</span></span>
+<span id="cb24-3"><a href="#cb24-3"></a>match_vector =<span class="st"> </span><span class="kw">character</span>(n_sim)</span>
+<span id="cb24-4"><a href="#cb24-4"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span>n_sim) {</span>
+<span id="cb24-5"><a href="#cb24-5"></a>    birthdays =<span class="st"> </span><span class="kw">sample</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">365</span>, n_people, <span class="dt">replace =</span> <span class="ot">TRUE</span>)</span>
+<span id="cb24-6"><a href="#cb24-6"></a>    birthday_table =<span class="st"> </span><span class="kw">table</span>(birthdays)</span>
+<span id="cb24-7"><a href="#cb24-7"></a>    <span class="cf">if</span>(<span class="kw">max</span>(birthday_table) <span class="op">&gt;=</span><span class="st"> </span><span class="dv">2</span>) {</span>
+<span id="cb24-8"><a href="#cb24-8"></a>        match_vector[i] =<span class="st"> &quot;birthdays match&quot;</span></span>
+<span id="cb24-9"><a href="#cb24-9"></a>    } <span class="cf">else</span> {</span>
+<span id="cb24-10"><a href="#cb24-10"></a>        match_vector[i] =<span class="st"> &quot;all unique&quot;</span></span>
+<span id="cb24-11"><a href="#cb24-11"></a>    }</span>
+<span id="cb24-12"><a href="#cb24-12"></a>}</span>
+<span id="cb24-13"><a href="#cb24-13"></a>p_match =<span class="st"> </span><span class="kw">sum</span>(match_vector <span class="op">==</span><span class="st"> &quot;birthdays match&quot;</span>) <span class="op">/</span><span class="st"> </span><span class="kw">length</span>(match_vector)</span>
+<span id="cb24-14"><a href="#cb24-14"></a>p_match</span></code></pre></div>
+<pre><code>## [1] 0.504</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>Since we will want to use this code many times and run it for different values of <code>n_people</code>, we can write a function that takes <code>n_people</code> as an argument.</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1"></a>do_birthdays_match =<span class="st"> </span><span class="cf">function</span>(n_people) {</span>
+<span id="cb26-2"><a href="#cb26-2"></a>    birthdays =<span class="st"> </span><span class="kw">sample</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">365</span>, n_people, <span class="dt">replace =</span> <span class="ot">TRUE</span>)</span>
+<span id="cb26-3"><a href="#cb26-3"></a>    birthday_table =<span class="st"> </span><span class="kw">table</span>(birthdays)</span>
+<span id="cb26-4"><a href="#cb26-4"></a>    <span class="cf">if</span>(<span class="kw">max</span>(birthday_table) <span class="op">&gt;=</span><span class="st"> </span><span class="dv">2</span>) {</span>
+<span id="cb26-5"><a href="#cb26-5"></a>        <span class="kw">return</span>(<span class="st">&quot;birthdays match&quot;</span>)</span>
+<span id="cb26-6"><a href="#cb26-6"></a>    } <span class="cf">else</span> {</span>
+<span id="cb26-7"><a href="#cb26-7"></a>        <span class="kw">return</span>(<span class="st">&quot;all unique&quot;</span>)</span>
+<span id="cb26-8"><a href="#cb26-8"></a>    }</span>
+<span id="cb26-9"><a href="#cb26-9"></a>}</span></code></pre></div>
+</div>
+<div class="slide section level2">
+
+<p>Once we have this, we can write a more readable function that estimates the probability of a match.</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1"></a>estimate_birthday_match_probability =<span class="st"> </span><span class="cf">function</span>(n_people, <span class="dt">n_sim =</span> <span class="dv">1000</span>) {</span>
+<span id="cb27-2"><a href="#cb27-2"></a>    match_vector =<span class="st"> </span><span class="kw">character</span>(n_sim)</span>
+<span id="cb27-3"><a href="#cb27-3"></a>    <span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span>n_sim) {</span>
+<span id="cb27-4"><a href="#cb27-4"></a>        match_vector[i] =<span class="st"> </span><span class="kw">do_birthdays_match</span>(n_people)</span>
+<span id="cb27-5"><a href="#cb27-5"></a>    }</span>
+<span id="cb27-6"><a href="#cb27-6"></a>    p_match =<span class="st"> </span><span class="kw">sum</span>(match_vector <span class="op">==</span><span class="st"> &quot;birthdays match&quot;</span>) <span class="op">/</span><span class="st"> </span><span class="kw">length</span>(match_vector)</span>
+<span id="cb27-7"><a href="#cb27-7"></a>    <span class="kw">return</span>(p_match)</span>
+<span id="cb27-8"><a href="#cb27-8"></a>}</span>
+<span id="cb27-9"><a href="#cb27-9"></a><span class="kw">estimate_birthday_match_probability</span>(<span class="dt">n_people =</span> <span class="dv">1</span>)</span></code></pre></div>
+<pre><code>## [1] 0</code></pre>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1"></a><span class="kw">estimate_birthday_match_probability</span>(<span class="dt">n_people =</span> <span class="dv">23</span>)</span></code></pre></div>
+<pre><code>## [1] 0.499</code></pre>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1"></a><span class="kw">estimate_birthday_match_probability</span>(<span class="dt">n_people =</span> <span class="dv">365</span>)</span></code></pre></div>
+<pre><code>## [1] 1</code></pre>
+</div>
+<div id="a-more-complicated-problem" class="slide section level2">
+<h1>A more complicated problem</h1>
+<p>The initial formulation of the birthday problem assumes that every birthday is equally likely.</p>
+<p>We know this isn’t true though: more babies are born on weekdays, and they tend not to be born on major holidays.</p>
+<p>Finding the solution to the birthday problem with unequal birthday probabilities is a hard problem for the probabilists, but easy for us.</p>
+</div>
+<div class="slide section level2">
+
+<p>Step 1: Modify simulation function to sample birthdays with unequal probabilities</p>
+<p>Remember the old version:</p>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1"></a>do_birthdays_match =<span class="st"> </span><span class="cf">function</span>(n_people) {</span>
+<span id="cb33-2"><a href="#cb33-2"></a>    birthdays =<span class="st"> </span><span class="kw">sample</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">365</span>, n_people, <span class="dt">replace =</span> <span class="ot">TRUE</span>)</span>
+<span id="cb33-3"><a href="#cb33-3"></a>    birthday_table =<span class="st"> </span><span class="kw">table</span>(birthdays)</span>
+<span id="cb33-4"><a href="#cb33-4"></a>    <span class="cf">if</span>(<span class="kw">max</span>(birthday_table) <span class="op">&gt;=</span><span class="st"> </span><span class="dv">2</span>) {</span>
+<span id="cb33-5"><a href="#cb33-5"></a>        <span class="kw">return</span>(<span class="st">&quot;birthdays match&quot;</span>)</span>
+<span id="cb33-6"><a href="#cb33-6"></a>    } <span class="cf">else</span> {</span>
+<span id="cb33-7"><a href="#cb33-7"></a>        <span class="kw">return</span>(<span class="st">&quot;all unique&quot;</span>)</span>
+<span id="cb33-8"><a href="#cb33-8"></a>    }</span>
+<span id="cb33-9"><a href="#cb33-9"></a>}</span></code></pre></div>
+<div class="incremental">
+<p>We can add another argument, giving the probability of each day of the year:</p>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1"></a>do_birthdays_match =<span class="st"> </span><span class="cf">function</span>(n_people, birthday_probabilities) {</span>
+<span id="cb34-2"><a href="#cb34-2"></a>    birthdays =<span class="st"> </span><span class="kw">sample</span>(<span class="dv">1</span><span class="op">:</span><span class="kw">length</span>(birthday_probabilities),</span>
+<span id="cb34-3"><a href="#cb34-3"></a>                       <span class="dt">size =</span> n_people,</span>
+<span id="cb34-4"><a href="#cb34-4"></a>               <span class="dt">prob =</span> birthday_probabilities,</span>
+<span id="cb34-5"><a href="#cb34-5"></a>               <span class="dt">replace =</span> <span class="ot">TRUE</span>)</span>
+<span id="cb34-6"><a href="#cb34-6"></a>    birthday_table =<span class="st"> </span><span class="kw">table</span>(birthdays)</span>
+<span id="cb34-7"><a href="#cb34-7"></a>    <span class="cf">if</span>(<span class="kw">max</span>(birthday_table) <span class="op">&gt;=</span><span class="st"> </span><span class="dv">2</span>) {</span>
+<span id="cb34-8"><a href="#cb34-8"></a>        <span class="kw">return</span>(<span class="st">&quot;birthdays match&quot;</span>)</span>
+<span id="cb34-9"><a href="#cb34-9"></a>    } <span class="cf">else</span> {</span>
+<span id="cb34-10"><a href="#cb34-10"></a>        <span class="kw">return</span>(<span class="st">&quot;all unique&quot;</span>)</span>
+<span id="cb34-11"><a href="#cb34-11"></a>    }</span>
+<span id="cb34-12"><a href="#cb34-12"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1"></a><span class="kw">do_birthdays_match</span>(<span class="dt">n_people =</span> <span class="dv">23</span>, <span class="dt">birthday_probabilities =</span> <span class="kw">c</span>(<span class="dv">1</span>, <span class="kw">rep</span>(<span class="dv">0</span>, <span class="dv">365</span>)))</span></code></pre></div>
+<pre><code>## [1] &quot;birthdays match&quot;</code></pre>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>We can add the same argument to our probability estimation function:</p>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1"></a>estimate_birthday_match_probability =<span class="st"> </span><span class="cf">function</span>(n_people, birthday_probabilities, <span class="dt">n_sim =</span> <span class="dv">1000</span>) {</span>
+<span id="cb37-2"><a href="#cb37-2"></a>    match_vector =<span class="st"> </span><span class="kw">character</span>(n_sim)</span>
+<span id="cb37-3"><a href="#cb37-3"></a>    <span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span>n_sim) {</span>
+<span id="cb37-4"><a href="#cb37-4"></a>        match_vector[i] =<span class="st"> </span><span class="kw">do_birthdays_match</span>(n_people, birthday_probabilities)</span>
+<span id="cb37-5"><a href="#cb37-5"></a>    }</span>
+<span id="cb37-6"><a href="#cb37-6"></a>    p_match =<span class="st"> </span><span class="kw">sum</span>(match_vector <span class="op">==</span><span class="st"> &quot;birthdays match&quot;</span>) <span class="op">/</span><span class="st"> </span><span class="kw">length</span>(match_vector)</span>
+<span id="cb37-7"><a href="#cb37-7"></a>    <span class="kw">return</span>(p_match)</span>
+<span id="cb37-8"><a href="#cb37-8"></a>}</span>
+<span id="cb37-9"><a href="#cb37-9"></a>uniform_birthday_probs =<span class="st"> </span><span class="kw">rep</span>(<span class="dv">1</span> <span class="op">/</span><span class="st"> </span><span class="dv">365</span>, <span class="dv">365</span>)</span>
+<span id="cb37-10"><a href="#cb37-10"></a>weekend_vs_weekday_likelihoods =<span class="st"> </span><span class="kw">c</span>(<span class="dv">2</span>,<span class="dv">2</span>,<span class="dv">2</span>,<span class="dv">2</span>,<span class="dv">2</span>,<span class="dv">1</span>,<span class="dv">1</span>)</span>
+<span id="cb37-11"><a href="#cb37-11"></a>nonuniform_birthday_likelihoods =<span class="st"> </span><span class="kw">rep</span>(weekend_vs_weekday_likelihoods, <span class="dt">length.out =</span> <span class="dv">365</span>)</span>
+<span id="cb37-12"><a href="#cb37-12"></a>nonuniform_birthday_probs =<span class="st"> </span>nonuniform_birthday_likelihoods <span class="op">/</span><span class="st"> </span><span class="kw">sum</span>(nonuniform_birthday_likelihoods)</span></code></pre></div>
+<div class="incremental">
+<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1"></a><span class="kw">estimate_birthday_match_probability</span>(<span class="dt">n_people =</span> <span class="dv">23</span>,</span>
+<span id="cb38-2"><a href="#cb38-2"></a>    <span class="dt">birthday_probabilities =</span> uniform_birthday_probs,</span>
+<span id="cb38-3"><a href="#cb38-3"></a>    <span class="dt">n_sim =</span> <span class="dv">10000</span>)</span></code></pre></div>
+<pre><code>## [1] 0.5103</code></pre>
+<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1"></a><span class="kw">estimate_birthday_match_probability</span>(<span class="dt">n_people =</span> <span class="dv">23</span>,</span>
+<span id="cb40-2"><a href="#cb40-2"></a>    <span class="dt">birthday_probabilities =</span> nonuniform_birthday_probs,</span>
+<span id="cb40-3"><a href="#cb40-3"></a>    <span class="dt">n_sim =</span> <span class="dv">10000</span>)</span></code></pre></div>
+<pre><code>## [1] 0.5378</code></pre>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>From the end of Chapter 3 of <em>Clean Code</em>:</p>
+<blockquote>
+<p>Master programmers think of systems as stories to be told rather than programs to be written.</p>
+</blockquote>
+<blockquote>
+<p>They use the facilities of their chosen programming language to construct a much richer and more expressive language that can be used to tell that story.</p>
+</blockquote>
+<blockquote>
+<p>Part of that domain-specific language is the hierarchy of functions that describe all the actions that take place within that system.</p>
+</blockquote>
+<blockquote>
+<p>In an artful act of recursion those actions are written to use the very domain-specific language they define to tell their own small part of the story.</p>
+</blockquote>
+</div>
+</body>
+</html>

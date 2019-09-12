@@ -1,0 +1,348 @@
+```{r, echo=FALSE}
+set.seed(0)
+```
+
+## Writing and calling functions
+
+Agenda for today:
+
+- Finish up from last time
+
+- We'll write some functions that let us investigate the birthday problem.
+
+## Function from last time
+
+When a function is called, its body is evaluated in an execution environment whose parent is the function's environment.
+
+```{r}
+w = 12
+f = function(y) {
+    d = 8
+    h = function() {
+        return(d * (w + y))
+    }
+    cat("h's environment: ", "\n")
+    print(environment(h))
+    cat("h's parent environment:", "\n")
+    print(parent.env(environment(h)))
+    output = h()
+    return(output)
+}
+f(1)
+environment(f)
+```
+
+-----
+
+. . .
+
+Compare with:
+
+```{r}
+f = function(y) {
+    d = 8
+    output = h()
+    return(output)
+}
+
+h = function() {
+    cat("h's environment:", "\n")
+    print(environment(h))
+    cat("h's parent environment:", "\n")
+    print(parent.env(environment(h)))
+    return(d * (w + y))
+}
+f(5)
+```
+
+
+-----
+
+This perhaps seems overly baroque, but the take-home points about environments (and the reason why they are set up the way they are) are:
+
+- Commands called in the body of the function usually have access to values of the variables in that function plus variables at higher levels.
+
+- Variables defined in the body of a function go away after the function exits.
+
+----
+
+
+## Side effects
+
+A function has a _side effect_ if it does anything other than compute a return value, for instance, if it changes the values of other variables in the environment it is defined in, or adds variables to the environment.
+
+We generally don't want functions to have side effects, because they make code more confusing and more difficult to test.
+
+In R, functions _can_ have side effects, but it is discouraged by both the language itself and by programming norms.
+
+
+-----
+
+. . .
+
+Remember that functions can see variables defined in the parent environments.
+
+What they can't do is change the values of those variables (except with a special operator).
+
+For example:
+
+
+```{r}
+w = 12
+f = function(y) {
+   d = 8
+   w = w + 1
+   y = y - 2
+   cat(sprintf("Value of w: %i", w))
+   h = function() {
+      return(d*(w+y))
+   }
+   return(h())
+}
+t = 4
+f(t)
+w
+```
+
+It looks like the value of `w` changed inside the function, but the value in the global environment was not actually changed.
+
+-----
+
+Primary exceptions to the no side effects rule:
+
+- Plotting
+
+- Data export
+
+## The complement of the no side effects rule
+
+- No side effects says in part that functions shouldn't change variables in the global environment (or any other environment).
+
+- Your functions also should not read from environments other than the function's execution environment.
+
+This rule isn't as strong/there are more exceptions, but in general all the variables your function uses should be given as arguments to the function.
+
+
+## Some rules for writing functions
+
+- "The first rule of functions is that they should be small. The second rule of functions is that _they should be smaller than that_."
+
+- Functions should _do one thing_. Multiple tasks = multiple functions.
+
+- Related functions should have consistent interfaces: if they take the same input, they should have the same arguments in the same order. If they make the same output, they should give output in the same way.
+
+- No side effects.
+
+- No [magic numbers](https://en.wikipedia.org/wiki/Magic_number_(programming)#Unnamed_numerical_constants).
+
+. . .
+
+But, like [Orwell's last rule for effective writing](http://languagelog.ldc.upenn.edu/nll/?p=992): break any of these rules rather than write something outright barbarous.
+
+## Example: [The birthday problem](https://en.wikipedia.org/wiki/Birthday_problem)
+
+Suppose:
+
+- We have a randomly chosen set of $n$ people
+
+- Each person has a birthday
+
+- Birthdays are distributed uniformly, so every day of the year is equally likely to be a given person's birthday
+
+Question: What is the probability that at least two people share a birthday?
+
+. . .
+
+Logic says: "At least two people share a birthday" is the same as "It's not true that all the birthdays are distinct".
+
+Probability says:
+
+- $P(\text{All birthdays are distinct}) = \prod \frac{365}{365} \frac{364}{365} \cdots \frac{365-(n-1)}{365}$
+
+- $P(\text{At least two people share a birthday}) = 1 - P(\text{All birthdays are distinct}) = \prod \frac{365}{365} \frac{364}{365} \cdots \frac{365-(n-1)}{365}$
+
+
+-----
+
+We can write a function that computes these probabilities as a function of the number of people:
+
+```{r}
+compute_birthday_probability = function(n_people) {
+    p_all_distinct = prod(seq(365-(n_people-1), 365)) / (365^n_people)
+    p_match = 1 - p_all_distinct
+    return(p_match)
+}
+compute_birthday_probability(1)
+compute_birthday_probability(2)
+compute_birthday_probability(22)
+compute_birthday_probability(23)
+```
+
+
+-----
+
+Suppose we don't know any probability.
+
+We can try simulating to solve the birthday problem.
+
+As we did before, we can simulate birthdays from different numbers of people and check whether any of them share a birthday.
+
+For just one simulation, we can do:
+
+```{r}
+n_people = 23
+birthdays = sample(1:365, n_people, replace = TRUE)
+birthday_table = table(birthdays)
+if(max(birthday_table) >= 2) {
+    print("At least two people share a birthday")
+} else {
+    print("No two people share a birthday")
+}
+```
+
+-----
+
+If we wanted to do lots of simulations to get an estimate of the probability of a match, we _could_ use a for loop:
+
+```{r}
+n_sim = 1000
+n_people = 23
+match_vector = character(n_sim)
+for(i in 1:n_sim) {
+    birthdays = sample(1:365, n_people, replace = TRUE)
+    birthday_table = table(birthdays)
+    if(max(birthday_table) >= 2) {
+        match_vector[i] = "birthdays match"
+    } else {
+        match_vector[i] = "all unique"
+    }
+}
+p_match = sum(match_vector == "birthdays match") / length(match_vector)
+p_match
+```
+
+-----
+
+Since we will want to use this code many times and run it for different values of `n_people`, we can write a function that takes `n_people` as an argument.
+
+```{r}
+do_birthdays_match = function(n_people) {
+    birthdays = sample(1:365, n_people, replace = TRUE)
+    birthday_table = table(birthdays)
+    if(max(birthday_table) >= 2) {
+        return("birthdays match")
+    } else {
+        return("all unique")
+    }
+}
+```
+
+-----
+
+Once we have this, we can write a more readable function that estimates the probability of a match.
+
+```{r}
+estimate_birthday_match_probability = function(n_people, n_sim = 1000) {
+    match_vector = character(n_sim)
+    for(i in 1:n_sim) {
+        match_vector[i] = do_birthdays_match(n_people)
+    }
+    p_match = sum(match_vector == "birthdays match") / length(match_vector)
+    return(p_match)
+}
+estimate_birthday_match_probability(n_people = 1)
+estimate_birthday_match_probability(n_people = 23)
+estimate_birthday_match_probability(n_people = 365)
+```
+
+## A more complicated problem
+
+The initial formulation of the birthday problem assumes that every birthday is equally likely.
+
+We know this isn't true though: more babies are born on weekdays, and they tend not to be born on major holidays.
+
+Finding the solution to the birthday problem with unequal birthday probabilities is a hard problem for the probabilists, but easy for us.
+
+-----
+
+Step 1: Modify simulation function to sample birthdays with unequal probabilities
+
+Remember the old version:
+
+```{r}
+do_birthdays_match = function(n_people) {
+    birthdays = sample(1:365, n_people, replace = TRUE)
+    birthday_table = table(birthdays)
+    if(max(birthday_table) >= 2) {
+        return("birthdays match")
+    } else {
+        return("all unique")
+    }
+}
+```
+
+. . .
+
+We can add another argument, giving the probability of each day of the year:
+
+```{r}
+do_birthdays_match = function(n_people, birthday_probabilities) {
+    birthdays = sample(1:length(birthday_probabilities),
+                       size = n_people,
+		       prob = birthday_probabilities,
+		       replace = TRUE)
+    birthday_table = table(birthdays)
+    if(max(birthday_table) >= 2) {
+        return("birthdays match")
+    } else {
+        return("all unique")
+    }
+}
+```
+
+```{r}
+do_birthdays_match(n_people = 23, birthday_probabilities = c(1, rep(0, 365)))
+```
+
+-----
+
+We can add the same argument to our probability estimation function:
+
+```{r}
+estimate_birthday_match_probability = function(n_people, birthday_probabilities, n_sim = 1000) {
+    match_vector = character(n_sim)
+    for(i in 1:n_sim) {
+        match_vector[i] = do_birthdays_match(n_people, birthday_probabilities)
+    }
+    p_match = sum(match_vector == "birthdays match") / length(match_vector)
+    return(p_match)
+}
+uniform_birthday_probs = rep(1 / 365, 365)
+weekend_vs_weekday_likelihoods = c(2,2,2,2,2,1,1)
+nonuniform_birthday_likelihoods = rep(weekend_vs_weekday_likelihoods, length.out = 365)
+nonuniform_birthday_probs = nonuniform_birthday_likelihoods / sum(nonuniform_birthday_likelihoods)
+```
+
+. . .
+
+```{r}
+estimate_birthday_match_probability(n_people = 23,
+    birthday_probabilities = uniform_birthday_probs,
+    n_sim = 10000)
+estimate_birthday_match_probability(n_people = 23,
+    birthday_probabilities = nonuniform_birthday_probs,
+    n_sim = 10000)
+```
+
+
+-----
+
+From the end of Chapter 3 of _Clean Code_:
+
+>Master programmers think of systems as stories to be told rather than programs to be written.
+
+>They use the facilities of their chosen programming language to construct a much richer and more expressive language that can be used to tell that story.
+
+>Part of that domain-specific language is the hierarchy of functions that describe all the actions that take place within that system.
+
+>In an artful act of recursion those actions are written to use the very domain-specific language they define to tell their own small part of the story.
