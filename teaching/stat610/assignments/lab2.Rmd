@@ -1,0 +1,83 @@
+## Lab 2: Functions and Environments
+
+
+We are interested in the impact of different diets on chicken growth.
+We have a dataset giving the weights of chickens on each of four different diets over the first several weeks of life in the `ChickWeight` dataset.
+
+We can first look at the data and get a summary:
+
+```{r}
+data(ChickWeight)
+head(ChickWeight)
+summary(ChickWeight)
+```
+
+Questions:
+
+- What type of object is `ChickWeight`?
+
+- What types of data are the columns of `ChickWeight`? What happens when you try querying with either `typeof` or `class`? Do you get different results? Why?
+
+We can also make a plot to see what's going on a little better.
+Don't worry about `ggplot` for this class --- it's a nice plotting package, and if you take Exploratory Data Analysis you'll use it more, but you won't have to know about it for our class.
+```{r}
+library(ggplot2)
+ggplot(ChickWeight, aes(x = Time, y = weight, color = Diet, group = Chick)) +
+    geom_point() +
+    geom_line() +
+    facet_wrap(~ Diet)
+```
+
+Suppose we are interested in how much weight the chickens have put on after four days on diet 1.
+We write the following code:
+```{r}
+time_zero_indices = ChickWeight$Time == 0 & ChickWeight$Diet == 1
+end_time_indices = ChickWeight$Time == 4 & ChickWeight$Diet == 1
+end_weight = mean(ChickWeight$weight[end_time_indices])
+initial_weight = mean(ChickWeight$weight[time_zero_indices])
+end_weight - initial_weight
+```
+
+We then decide that we might want to be able to compute this value for any diet and any end time, and so we would like to write a function to do so.
+We try to do so in the following way:
+```{r}
+n_diets = length(unique(ChickWeight$Diet))
+weight_gained_vector = rep(NA, n_diets)
+set_weight_gained = function(diet, end_time) {
+    time_zero_indices = ChickWeight$Time == 0 & ChickWeight$Diet == diet
+    end_time_indices = ChickWeight$Time == end_time & ChickWeight$Diet == diet
+    end_weight = mean(ChickWeight$weight[end_time_indices])
+    initial_weight = mean(ChickWeight$weight[time_zero_indices])
+    weight_gained_vector[diet] = end_weight - initial_weight
+}
+for(diet in 1:4) {
+    set_weight_gained(diet = diet, end_time = 4)
+}
+```
+
+Questions:
+
+- What happens when you run the code above? Does the `weight_gained_vector` change after calling the `set_weight_gained` function? Why or why not?
+
+- Map out the environments that are used when we call the `set_weight_gained` vector, and describe which environment each variable is in.
+
+- Explain what the `diet = diet` part of the code in the for loop means. What is the formal argument and what is the actual argument?
+
+The `ls()` function lists all of the variables present in the environment `ls` is called from.
+We can use it to see what variables are present inside the function call by printing out the result from `ls` in the middle of the function.
+Try that in the `set_weight_gained` function:
+```{r}
+set_weight_gained = function(diet, end_time) {
+    time_zero_indices = ChickWeight$Time == 0 & ChickWeight$Diet == diet
+    end_time_indices = ChickWeight$Time == end_time & ChickWeight$Diet == diet
+    end_weight = mean(ChickWeight$weight[end_time_indices])
+    initial_weight = mean(ChickWeight$weight[time_zero_indices])
+    print(ls())
+    weight_gained_vector[diet] = end_weight - initial_weight
+}
+set_weight_gained(diet = diet, end_time = 4)
+```
+We will see better tools for investigating the variables available in function environments when we talk about debugging, but for now this gives us a peek at what is happening when the function is called.
+
+Your final task: Make a function that computes the average amount of weight gained by chickens on one of the diets after a given period of time.
+That is, make a function that takes `diet` and `end_time`, like `set_weight_gained` did, but that returns the weight gained instead of trying to assign the output to a variable in the global environment.
