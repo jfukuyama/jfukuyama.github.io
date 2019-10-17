@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title>lecture15</title>
+  <style type="text/css">
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="https://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="https://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div id="lecture-15-version-control-and-git" class="slide section level1">
+<h1>Lecture 15: Version control and git</h1>
+<p>Reading (if you want more detail):</p>
+<p><a href="https://git-scm.com/book/en/v2">Pro Git</a>, Chapters 1, 2, 3, 10.</p>
+</div>
+<div id="git" class="slide section level1">
+<h1>Git</h1>
+<p>Basic idea:</p>
+<ul>
+<li><p>Stores snapshots of the directory, these are <em>commits</em></p></li>
+<li><p>If you’ve changed some things and don’t like the results, you can go back to an older version and start over</p></li>
+<li><p>You can easily display differences between states of the directory at different points in time</p></li>
+<li><p>Allows multiple people to work on the same project</p></li>
+<li><p>Allows for resolving simultaneous changes as easily as possible</p></li>
+<li><p>We have a complete history of who changed what and why</p></li>
+</ul>
+<div class="incremental">
+<p>Important conceptually are <em>commits</em> and <em>branches</em></p>
+</div>
+</div>
+<div id="commits" class="slide section level1">
+<h1>Commits</h1>
+<p>A <em>commit</em> records the state of the repository at a particular point in time</p>
+<p>Contains:</p>
+<ul>
+<li><p>Hash of the tree object for the top level directory</p></li>
+<li><p>Hash of the parent commit</p></li>
+<li><p>Meta-information about the commit (author, commit message, date, etc.)</p></li>
+</ul>
+<p>You should think of git as storing a set of commits.</p>
+</div>
+<div id="branches" class="slide section level1">
+<h1>Branches</h1>
+<ul>
+<li><p>A <em>branch</em> is a pointer to one commit.</p></li>
+<li><p>By default, you start off with a branch called <code>master</code>, but you can make more, and with any names you want.</p></li>
+<li><p>There is nothing special about the <code>master</code> branch.</p></li>
+</ul>
+<div class="incremental">
+<p>Problem: if you’re making changes (= adding commits), you probably want a pointer to the most recent commit. We would like branches to move when we make a new commit.</p>
+</div>
+</div>
+<div id="head" class="slide section level1">
+<h1>HEAD</h1>
+<p>HEAD solves the problem of updating branches after commits.</p>
+<ul>
+<li><p>HEAD is a pointer to a branch.</p></li>
+<li><p>When you make a new commit, the branch HEAD points to moves to the new commit.</p></li>
+</ul>
+<p>The <code>checkout</code> function allows you to change the branch HEAD points to.</p>
+</div>
+<div class="slide section level1">
+
+<p>Start with three commits, two branches</p>
+<p><img src="head_1.png" /></p>
+</div>
+<div class="slide section level1">
+
+<p>Add a commit:</p>
+<p><img src="head_2.png" /></p>
+</div>
+<div class="slide section level1">
+
+<p>Switch branches with checkout:</p>
+<p><img src="head_3.png" /></p>
+</div>
+<div id="merging-and-rebasing" class="slide section level1">
+<h1>Merging and rebasing</h1>
+<p>Setup:</p>
+<ul>
+<li><p>You have a branching commit history</p></li>
+<li><p>You want to incorporate both sets of changes</p></li>
+</ul>
+<div class="incremental">
+<p>Solutions:</p>
+<ul>
+<li><p>Merge: Make a new commit with two parents</p></li>
+<li><p>Rebase: Applies changes from one branch onto another</p></li>
+</ul>
+</div>
+</div>
+<div id="merge" class="slide section level1">
+<h1>Merge</h1>
+<p>Starting out:</p>
+<p><img src="merge_1.png" /></p>
+</div>
+<div class="slide section level1">
+
+<p>How we want the merge to look:</p>
+<p><img src="merge_2.png" /></p>
+</div>
+<div class="slide section level1">
+
+<p>After running</p>
+<pre><code>git checkout master
+git merge iss53</code></pre>
+<p><img src="merge_3.png" /></p>
+</div>
+<div id="rebase" class="slide section level1">
+<h1>Rebase</h1>
+<p>Rebasing <code>branch2</code> onto <code>branch1</code>:</p>
+<ul>
+<li><p>Find the most recent common ancestor of <code>branch1</code> and <code>branch2</code></p></li>
+<li><p>Find all the differences between <code>branch2</code> and the most recent common ancestor</p></li>
+<li><p>Apply those changes to <code>branch1</code></p></li>
+</ul>
+</div>
+<div class="slide section level1">
+
+<p>Starting out:</p>
+<p><img src="rebase_1.png" /></p>
+</div>
+<div class="slide section level1">
+
+<p>After running:</p>
+<pre><code>git checkout experiment
+git rebase master</code></pre>
+<p><img src="rebase_2.png" /></p>
+</div>
+<div class="slide section level1">
+
+<p>After running:</p>
+<pre><code>git checkout master
+git merge experiment</code></pre>
+<p><img src="rebase_3.png" /></p>
+</div>
+<div id="how-all-the-data-is-stored" class="slide section level1">
+<h1>How all the data is stored</h1>
+<p>Three basic types of objects:</p>
+<ul>
+<li><p>blobs: contents of a file</p></li>
+<li><p>trees: an object describing the contents of a directory</p></li>
+<li><p>commits: an object describing the state of the repository at a particular point in time</p></li>
+</ul>
+<p>All these objects are stored by their <em>hash</em></p>
+</div>
+<div id="hashes" class="slide section level1">
+<h1>Hashes</h1>
+<ul>
+<li><p>A <em>hash</em> is a tool from computer security for checking whether data has been tampered with</p></li>
+<li><p>Git uses <a href="https://en.wikipedia.org/wiki/SHA-1">SHA1</a></p></li>
+<li><p>This is a function that takes data of any size and produces a 20-byte hash value.</p></li>
+<li><p>This is usually displayed as a 40-digit hexadecimal number.</p></li>
+<li><p>Idea behind a hash function is that small perturbations in the data lead to large changes in the hash value, and the function is designed to be difficult to invert (if you’re given a hash value, it’s hard to create a file that has that value)</p></li>
+<li><p>Every object is referred to by its hash value</p></li>
+</ul>
+</div>
+<div id="blobs" class="slide section level1">
+<h1>Blobs</h1>
+<ul>
+<li><p>Blobs store the contents of a file</p></li>
+<li><p>Name is the hash value of the contents of the file</p></li>
+</ul>
+</div>
+<div id="trees" class="slide section level1">
+<h1>Trees</h1>
+<ul>
+<li><p>Blobs just store the contents of the file</p></li>
+<li><p>Trees store the file name and the directory structure</p></li>
+</ul>
+<p>To see the tree, you can use:</p>
+<pre><code>git cat-file -p master^{tree}</code></pre>
+<p>And the output might look like this:</p>
+<pre><code>100644 blob 01b480b010b7fe66e312e1271dd24e128f3a0290    .gitmodules
+100644 blob 1d17afb2a980076fc389f3d2747b0bfefd4df839    Dockerfile
+100644 blob 716007c1456163b933cb086acae151fc6a24ca6d    README.md
+100644 blob 9af5513cf53dfbdedbc69ec43865dec054de0ccd    SConstruct
+040000 tree 100d47915afe22615ff111d390170c7265900b7a    analysis</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>Conceptually, if we have a directory containing</p>
+<ul>
+<li><p><code>README</code>,</p></li>
+<li><p><code>Rakefile</code>,</p></li>
+<li><p>A subdirectory called <code>lib</code>,</p></li>
+<li><p>A file <code>samplegit.rb</code> in <code>lib</code>,</p></li>
+</ul>
+<p>Git would store a snapshot of the directory as three blobs and two trees:</p>
+<p><img src="tree_1.png" /></p>
+</div>
+<div id="commits-1" class="slide section level1">
+<h1>Commits</h1>
+<ul>
+<li><p>Commits are also referred to by their hashes.</p></li>
+<li><p>They are files with information about the parent commit, the hash of the tree describing the directory structure for that commit, and some metadata about the commit.</p></li>
+</ul>
+</div>
+<div class="slide section level1">
+
+<p>Putting everything together, we get a graph that describes the files that were present at different commits:</p>
+<p><img src="commits.png" /></p>
+</div>
+<div id="how-to-create-a-commit" class="slide section level1">
+<h1>How to create a commit</h1>
+<p>Remember: a commit is a snapshot of the directory structure</p>
+<ul>
+<li><p>You don’t necessarily want to record <em>all</em> of the changes you’ve made since the previous commit.</p></li>
+<li><p>To allow you to specify which changes you want to record for the commit, git uses a <em>staging area</em> (also called the <em>index</em>).</p></li>
+<li><p>When you modify files that you want to commit, you add them to the staging area.</p></li>
+<li><p>Once you have the staging area in a state you like, you can commit the stages from the staging area and they are added to the repository.</p></li>
+</ul>
+<p><img src="index.gif" /></p>
+</div>
+<div class="slide section level1">
+
+<p>For example:</p>
+<pre><code>git init test
+cd test
+git status
+echo &quot;test file&quot; &gt; test.txt
+git status</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>Now we have one untracked file, which means it is not in the staging area.</p>
+<p>If we run</p>
+<pre><code>git add test.txt
+git status</code></pre>
+<p>We get output</p>
+<pre><code>On branch master
+
+No commits yet
+
+Changes to be committed:
+  (use &quot;git rm --cached &lt;file&gt;...&quot; to unstage)
+
+    new file:   test.txt
+</code></pre>
+<p>which tells us that <code>test.txt</code> is now in the staging area.</p>
+</div>
+<div class="slide section level1">
+
+<p>We can now commit what we have in the staging area:</p>
+<pre><code>git commit -m &quot;first commit&quot;</code></pre>
+<p>which will give us:</p>
+<pre><code>[master (root-commit) 8e9c4cc] first commit
+ 1 file changed, 1 insertion(+)
+ create mode 100644 test.txt</code></pre>
+<div class="incremental">
+<p>This tells us:</p>
+<ul>
+<li><p>Our repository now contains a new commit, whose hash starts with <code>8e9c4cc</code></p></li>
+<li><p>We’ve changed one file</p></li>
+<li><p>We’ve added a new object to the repository, <code>test.txt</code></p></li>
+</ul>
+</div>
+</div>
+<div id="overall" class="slide section level1">
+<h1>Overall</h1>
+<ul>
+<li><p>A git repository contains a set of commits, which describe the contents of a directory at a certain point in time</p></li>
+<li><p>The main things we want to be able to do are add new commits and move to different commits</p></li>
+<li><p>A branch is just a name for a specific commit, and it allows us to move between different commits without referring to them by their name/hash</p></li>
+</ul>
+</div>
+</body>
+</html>
