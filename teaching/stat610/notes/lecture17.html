@@ -154,19 +154,22 @@ f&#39;(\theta) = b + 2 c \theta
 \]</span></p>
 </div>
 <div class="incremental">
-<p>If we want <span class="math inline">\(b + 2c \theta = 0\)</span>, we take <span class="math inline">\(\theta = -\frac{b }{2c}\)</span></p>
+<p>If we want <span class="math inline">\(b + 2c \theta^\star = 0\)</span>, we take <span class="math inline">\(\theta^\star = -\frac{b }{2c}\)</span></p>
 </div>
 </div>
 <div class="slide section level2">
 
-<p>Recast this result as a “step” instead of a single optimization:</p>
+<p>Recast this result as a “step” from <span class="math inline">\(\theta_0\)</span> instead of a single optimization:</p>
 <ul>
 <li><p>We start at <span class="math inline">\(\theta_0\)</span></p></li>
 <li><p><span class="math inline">\(\theta_1\)</span> should be <span class="math inline">\(-\frac{b}{2c}\)</span></p></li>
-<li><p>The step is <span class="math inline">\(\theta_1 - \theta_0\)</span>, which is <br><br> <span class="math display">\[
-\theta_1 - \theta_0 = -\frac{b}{2c} - \theta_0 \\
-= -\frac{b + 2c \theta_0}{2c} \\
-= -\frac{ f&#39;(\theta_0)}{f&#39;&#39;(\theta_0)}
+<li><p>We want to write <span class="math inline">\(\theta_1 = \theta_0 + ???\)</span> <br><br> <span class="math display">\[
+\begin{align*}
+\theta_1 &amp;= \theta_0 + (\theta_1 - \theta_0) \\
+&amp;=\theta_0 -\frac{b}{2c} - \theta_0 \\
+&amp;=\theta_0 -\frac{b + 2c \theta_0}{2c} \\
+&amp;=\theta_0 -\frac{ f&#39;(\theta_0)}{f&#39;&#39;(\theta_0)}
+\end{align*}
 \]</span> <br><br> since <span class="math inline">\(f&#39;(\theta_0) = b + 2c\theta_0\)</span> and <span class="math inline">\(f&#39;&#39;(\theta_0) = 2c\)</span></p></li>
 </ul>
 </div>
@@ -217,6 +220,9 @@ L(\theta) = \prod_{i=1}^n \frac{1}{\sqrt{2\pi}} \exp \left(-\frac{1}{2} (x_i - \
 &amp;= \sum_{i=1}^n x_i / n
 \end{align*}
 \]</span></p>
+<div class="incremental">
+<p>This puts us at the maximum, as you can check by evaluating first and second derivatives.</p>
+</div>
 </div>
 <div class="slide section level2">
 
@@ -276,8 +282,8 @@ L(\theta) &amp;= \prod_{i=1}^n \frac{(x_i + \theta - 1)!}{(\theta-1)! x_i!} \lef
 <p>Newton step:</p>
 <p><span class="math display">\[
 \begin{align*}
-\theta_1 &amp;= \theta_0 -\ell&#39;(\theta_0) / \ell&#39;&#39;(\theta_0)\\
-&amp;= \theta_0 - \frac{\sum_{i=1}^n(\psi^{(0)}(x_i + \theta)- \psi^{(0)} (\theta) + \log(1/2))}{\sum_{i=1}^n (\psi^{(1)} (x_i + \theta) - \psi^{(1)} (\theta)) }
+\theta_{m+1} &amp;= \theta_m -\ell&#39;(\theta_m) / \ell&#39;&#39;(\theta_m)\\
+&amp;= \theta_m - \frac{\sum_{i=1}^n(\psi^{(0)}(x_i + \theta_m)- \psi^{(0)} (\theta_m) + \log(1/2))}{\sum_{i=1}^n (\psi^{(1)} (x_i + \theta_m) - \psi^{(1)} (\theta_m)) }
 \end{align*}
 \]</span></p>
 </div>
@@ -387,8 +393,8 @@ L(\theta) = \prod_{i=1}^n (\theta \phi_1(x_i) + (1 - \theta)\phi_2(x_i))
 <p>Newton step:</p>
 <p><span class="math display">\[
 \begin{align*}
-\theta_1 &amp;= \theta_0 -\ell&#39;(\theta_0) / \ell&#39;&#39;(\theta_0)\\
-&amp;= \theta_0 - \frac{\sum_{i=1}^n \frac{\phi_1(x_i) - \phi_2(x_i)}{\theta_0 \phi_1(x_i) + (1 - \theta_0) \phi_2(x_i)}}{\sum_{i=1}^n\frac{ (\phi_1(x_i) - \phi_2(x_i))^2}{(\theta_0 \phi_1(x_i) + (1 - \theta_0) \phi_2(x_i))^2}}
+\theta_{m+1} &amp;= \theta_m -\ell&#39;(\theta_m) / \ell&#39;&#39;(\theta_m)\\
+&amp;= \theta_m - \frac{\sum_{i=1}^n \frac{\phi_1(x_i) - \phi_2(x_i)}{\theta_m \phi_1(x_i) + (1 - \theta_m) \phi_2(x_i)}}{\sum_{i=1}^n\frac{ (\phi_1(x_i) - \phi_2(x_i))^2}{(\theta_m \phi_1(x_i) + (1 - \theta_m) \phi_2(x_i))^2}}
 \end{align*}
 \]</span></p>
 </div>

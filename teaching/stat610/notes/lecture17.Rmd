@@ -88,22 +88,25 @@ $$
 
 . . .
 
-If we want $b + 2c \theta = 0$, we take $\theta = -\frac{b }{2c}$
+If we want $b + 2c \theta^\star = 0$, we take $\theta^\star = -\frac{b }{2c}$
 
 -----
 
-Recast this result as a "step" instead of a single optimization:
+Recast this result as a "step" from $\theta_0$ instead of a single optimization:
 
 - We start at $\theta_0$
 
 - $\theta_1$ should be $-\frac{b}{2c}$
 
-- The step is $\theta_1 - \theta_0$, which is
+- We want to write $\theta_1 = \theta_0 + ???$
 <br><br>
 $$
-\theta_1 - \theta_0 = -\frac{b}{2c} - \theta_0 \\
-= -\frac{b + 2c \theta_0}{2c} \\
-= -\frac{ f'(\theta_0)}{f''(\theta_0)}
+\begin{align*}
+\theta_1 &= \theta_0 + (\theta_1 - \theta_0) \\
+&=\theta_0 -\frac{b}{2c} - \theta_0 \\
+&=\theta_0 -\frac{b + 2c \theta_0}{2c} \\
+&=\theta_0 -\frac{ f'(\theta_0)}{f''(\theta_0)}
+\end{align*}
 $$
 <br><br>
 since $f'(\theta_0) = b + 2c\theta_0$ and $f''(\theta_0) = 2c$
@@ -166,6 +169,10 @@ $$
 &= \sum_{i=1}^n x_i / n
 \end{align*}
 $$
+
+. . .
+
+This puts us at the maximum, as you can check by evaluating first and second derivatives.
 
 -----
 
@@ -240,8 +247,8 @@ Newton step:
 
 $$
 \begin{align*}
-\theta_1 &= \theta_0 -\ell'(\theta_0) / \ell''(\theta_0)\\
-&= \theta_0 - \frac{\sum_{i=1}^n(\psi^{(0)}(x_i + \theta)- \psi^{(0)} (\theta) + \log(1/2))}{\sum_{i=1}^n (\psi^{(1)} (x_i + \theta) - \psi^{(1)} (\theta)) }
+\theta_{m+1} &= \theta_m -\ell'(\theta_m) / \ell''(\theta_m)\\
+&= \theta_m - \frac{\sum_{i=1}^n(\psi^{(0)}(x_i + \theta_m)- \psi^{(0)} (\theta_m) + \log(1/2))}{\sum_{i=1}^n (\psi^{(1)} (x_i + \theta_m) - \psi^{(1)} (\theta_m)) }
 \end{align*}
 $$
 
@@ -378,8 +385,8 @@ Newton step:
 
 $$
 \begin{align*}
-\theta_1 &= \theta_0 -\ell'(\theta_0) / \ell''(\theta_0)\\
-&= \theta_0 - \frac{\sum_{i=1}^n \frac{\phi_1(x_i) - \phi_2(x_i)}{\theta_0 \phi_1(x_i) + (1 - \theta_0) \phi_2(x_i)}}{\sum_{i=1}^n\frac{ (\phi_1(x_i) - \phi_2(x_i))^2}{(\theta_0 \phi_1(x_i) + (1 - \theta_0) \phi_2(x_i))^2}}
+\theta_{m+1} &= \theta_m -\ell'(\theta_m) / \ell''(\theta_m)\\
+&= \theta_m - \frac{\sum_{i=1}^n \frac{\phi_1(x_i) - \phi_2(x_i)}{\theta_m \phi_1(x_i) + (1 - \theta_m) \phi_2(x_i)}}{\sum_{i=1}^n\frac{ (\phi_1(x_i) - \phi_2(x_i))^2}{(\theta_m \phi_1(x_i) + (1 - \theta_m) \phi_2(x_i))^2}}
 \end{align*}
 $$
 
