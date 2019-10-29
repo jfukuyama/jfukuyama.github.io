@@ -32,6 +32,7 @@
 <li><p>Newton’s method for multivariate problems</p></li>
 <li><p>Generalized linear models and exponential familiies</p></li>
 <li><p>Iteratively reweighted least squares for maximum likelihood in generalized linear models</p></li>
+<li><p>Remote repositories for git/github</p></li>
 </ul>
 <p>Reading:</p>
 <ul>
@@ -62,9 +63,9 @@
 L(\theta) = (2\pi)^{-n/2} \sigma^{-n}\exp(-(y - X\theta)^T (y - X\theta) / 2)
 \]</span></p>
 <p>Log likelihood: <span class="math display">\[
-\ell(\theta) = -n \log(2\pi) / 2 - n \log \sigma - (y - X \theta)^T (y - X \theta)
+\ell(\theta) = -n \log(2\pi) / 2 - n \log \sigma - (y - X \theta)^T (y - X \theta) / 2
 \]</span></p>
-<p><span class="math inline">\(d\ell(\theta))\)</span>: <span class="math display">\[
+<p><span class="math inline">\(d\ell(\theta)\)</span>: <span class="math display">\[
 X^T (y - X \theta)
 \]</span></p>
 <p><span class="math inline">\(d^2 \ell(\theta)\)</span>: <span class="math display">\[
@@ -74,9 +75,9 @@ X^T (y - X \theta)
 <div class="incremental">
 <p>Newton step: <span class="math display">\[
 \begin{align*}
-\theta^{(1)} &amp;= \theta^{(0)} - d^2 \ell(\theta^{(0)} d \ell(\theta^{(0)})\\
-&amp;= \theta^{(0)} + (-X^T X)^{-1} X^T(y - X \theta^{(0)}) \\
-&amp;= \theta^{(0)} + (X^T X)^{-1)} X^T y - (X^T X)^{-1} X^T X \theta^{(0)} \\
+\theta^{(1)} &amp;= \theta^{(0)} - d^2 \ell(\theta^{(0)})^{-1} d \ell(\theta^{(0)})\\
+&amp;= \theta^{(0)} - (-X^T X)^{-1} X^T(y - X \theta^{(0)}) \\
+&amp;= \theta^{(0)} + (X^T X)^{-1} X^T y - (X^T X)^{-1} X^T X \theta^{(0)} \\
 &amp;= (X^T X)^{-1} X^T y
 \end{align*}
 \]</span></p>
@@ -84,12 +85,11 @@ X^T (y - X \theta)
 </div>
 <div id="newtons-method-for-logistic-regression" class="slide section level2">
 <h1>Newton’s method for logistic regression</h1>
-<p>Linear regression model:</p>
+<p>Logistic regression model:</p>
 <ul>
-<li><span class="math inline">\(y \in \mathbb R^n\)</span>,</li>
+<li><span class="math inline">\(y \in \{0,1\}^n\)</span>,</li>
 <li><span class="math inline">\(X \in \mathbb R^{n \times p}\)</span>,</li>
 <li><span class="math inline">\(\theta \in \mathbb R^p\)</span>,</li>
-<li><span class="math inline">\(\sigma \in \mathbb R^+\)</span></li>
 <li><span class="math inline">\(y_i \sim \text{Bern}(\exp(x_i^T \theta) / (1 + \exp(x_i^T \theta)))\)</span></li>
 <li>Let <span class="math inline">\(p_i=\exp(x_i^T \theta) / (1 + \exp(x_i^T \theta)\)</span></li>
 </ul>
@@ -107,7 +107,7 @@ L(\theta) = \prod_{i=1}^n p_i^{y_i} (1 - p_i)^{1 - y_i}
 \]</span></p>
 <p>First derivatives: <span class="math display">\[
 \begin{align*}
-d\ell(\theta)) &amp;= \sum_{i=1}^n \left(y_i x_i - \frac{\exp(x_i^T \theta)}{1 + \exp(x_i^T \theta)} x_i\right) \\
+d\ell(\theta) &amp;= \sum_{i=1}^n \left(y_i x_i - \frac{\exp(x_i^T \theta)}{1 + \exp(x_i^T \theta)} x_i\right) \\
 &amp;= \sum_{i=1}^n (y_i - p_i) x_i \\
 &amp;= X^T (y - p)
 \end{align*}
@@ -115,7 +115,7 @@ d\ell(\theta)) &amp;= \sum_{i=1}^n \left(y_i x_i - \frac{\exp(x_i^T \theta)}{1 +
 <p>Second derivatives: <span class="math display">\[
 \begin{align*}
 d^2 \ell(\theta) &amp;= \sum_{i=1}^n p_i(1 - p_i) x_i x_i^T \\
-&amp;= X^T W X
+&amp;= -X^T W X
 \end{align*}
 \]</span> if <span class="math inline">\(W = \text{diag}(p_1(1 - p_1), \ldots, p_n(1 - p_n))\)</span></p>
 </div>
@@ -124,13 +124,13 @@ d^2 \ell(\theta) &amp;= \sum_{i=1}^n p_i(1 - p_i) x_i x_i^T \\
 <p>Newton step: <span class="math display">\[
 \begin{align*}
 \theta^{(m+1)} &amp;= \theta^{(m)} - (d^2 \ell(\theta))^{-1} d \ell(\theta) \\
-&amp;= \theta^{(m)} - (X^T W^{(m)} X)^{-1} X^T (y - p^{(m)})
+&amp;= \theta^{(m)} + (X^T W^{(m)} X)^{-1} X^T (y - p^{(m)})
 \end{align*}
 \]</span></p>
 </div>
 <div id="exponential-families-and-generalized-linear-models" class="slide section level2">
 <h1>Exponential families and generalized linear models</h1>
-<p>Exponential families are families of probability distributions whose densities take the form <span class="math display">\[
+<p><a href="https://people.eecs.berkeley.edu/~jordan/courses/260-spring10/other-readings/chapter8.pdf">Exponential families</a> are families of probability distributions whose densities take the form <span class="math display">\[
 f(x | \eta) = h(x) exp(\eta^T T(x) - A(\eta))
 \]</span></p>
 <p><span class="math inline">\(T\)</span> and <span class="math inline">\(A\)</span> are known functions that describe the family.</p>
@@ -190,12 +190,9 @@ y_i \sim f(\eta_i)
 </div>
 <div id="iteratively-reweighted-least-squares" class="slide section level2">
 <h1>Iteratively Reweighted Least Squares</h1>
-<p>Equivalent to Newton-Raphson for maximum likelihood estimates for generalized linear models with the canonical link</p>
-<div class="incremental">
 <ul>
 <li>Start with an estimate of the parameters <span class="math inline">\(\theta^{(0)}\)</span>.</li>
 </ul>
-</div>
 <div class="incremental">
 <ul>
 <li><p>Find <span class="math inline">\(\eta_i^{(m)} = x_i^T \theta^{(m)}\)</span>, <span class="math inline">\(i = 1,\ldots, n\)</span></p></li>
@@ -244,7 +241,7 @@ w_i^{(m)}  = (A&#39;&#39;(\eta_i^{(m)}) (d\eta_i / d \mu_i)^2)^{-1}
 <h1>Example: Linear regression</h1>
 <ul>
 <li><p>Random component: normal distribution, <span class="math inline">\(y_i \sim N(\eta_i, 1)\)</span> (variance 1 for ease of notation, everything goes through analogously with unknown variance <span class="math inline">\(\sigma\)</span>)</p></li>
-<li><p>Exponential family representation of the normal distribution has <span class="math inline">\(A(\eta) = \eta_1^2 / 2\)</span></p></li>
+<li><p>Exponential family representation of the normal distribution has <span class="math inline">\(A(\eta) = \eta^2 / 2\)</span></p></li>
 <li><p>Systematic component: <span class="math inline">\(\eta_i = x_i^T \theta\)</span></p></li>
 <li><p>Canonical link function for the normal distribution is <span class="math inline">\(g(x) = x\)</span>, so <span class="math inline">\(\eta_i = \mu_i\)</span></p></li>
 <li><p>Identity link means <span class="math inline">\(E(y_i) = g^{-1}(\eta_i) = g^{-1}(x_i^T \theta) = x_i^T \theta\)</span></p></li>
@@ -339,7 +336,7 @@ w_i &amp;= (A&#39;&#39;(\eta_i) (\frac{d\eta_i}{d\mu_i})^2)^{-1} \\
 \theta^{(m+1)} &amp;= (X^T W^{(m)} X)^{-1} X^T W^{(m)} z^{(m)} \\
 &amp;= (X^T W^{(m)} X)^{-1} X^T W^{(m)} (\eta^{(m)} + \frac{y^{(m)} - \mu^{(m)}}{\mu^{(w)}(1 - \mu^{(m)})}) \\
 &amp;= (X^T W^{(m)} X)^{-1} X^T W^{(m)} (X\theta^{(m)} + (W^{(m)})^{-1}(y - \mu^{(m)}))\\
-&amp;= \theta^{(m)} - (X^T W^{(m)} X)^{-1} X^T (y - \mu^{(m)})
+&amp;= \theta^{(m)} + (X^T W^{(m)} X)^{-1} X^T (y - \mu^{(m)})
 \end{align*}
 \]</span></p>
 <p>Remember Newton-Raphson for logistic regression?</p>
