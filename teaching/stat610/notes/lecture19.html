@@ -487,6 +487,15 @@ f(x + t \Delta x) &lt; f(x) + \alpha t \nabla f(x)^T \Delta x
 <li><p>Sublevel sets now much closer to spherical, and the algorithm converges quickly.</p></li>
 </ul>
 </div>
+<div id="convergence-theorem" class="slide section level2">
+<h1>Convergence theorem</h1>
+<p>Suppose <span class="math inline">\(f\)</span> is strongly convex, so that there are constants <span class="math inline">\(m\)</span> and <span class="math inline">\(M\)</span> such that <span class="math inline">\(mI \preceq d^2 f \preceq MI\)</span>.</p>
+<p>Let <span class="math inline">\(x^{(k)}\)</span> be the solution after <span class="math inline">\(k\)</span> steps of gradient descent with exact line search, and let <span class="math inline">\(p^\star\)</span> be the minimizing value of <span class="math inline">\(f\)</span>.</p>
+<p>Then <span class="math display">\[
+f(x^{(k)}) - p^\star \le (1 - m/M)^k (f(x^{(0)}) - p^\star)
+\]</span></p>
+<p>(Equation 9.18 in Boyd and Vandenberghe)</p>
+</div>
 <div id="re-interpretation-of-newtons-method" class="slide section level2">
 <h1>Re-interpretation of Newton’s method</h1>
 <ul>
