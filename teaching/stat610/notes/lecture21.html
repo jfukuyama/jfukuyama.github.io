@@ -347,7 +347,7 @@ z^2 &amp; z\le M \\
 <h1>Variable selection</h1>
 <p>A popular way of doing variable selection in high-dimensional regression problems is with the lasso.</p>
 <p>The Lasso is a simple modification of the least squares problem: <span class="math display">\[
-\text{minimize}_{\beta} \sum_{i=1}^n (y_i - \sum_{j=1}^p X_{ij} \beta_j) + \sum_{j=1}^p |\beta_j|
+\text{minimize}_{\beta} \sum_{i=1}^n (y_i - \sum_{j=1}^p X_{ij} \beta_j)^2 + \lambda\sum_{j=1}^p |\beta_j|
 \]</span></p>
 <p>The resulting coefficient vector tends to be “sparse”, with many of the coefficients being estimated as exactly 0.</p>
 <p>This is helpful when you want a model for your response that only incorporates a subset of the predictors.</p>
@@ -470,7 +470,7 @@ z^2 &amp; z\le M \\
 <h1>Both together now!</h1>
 <p>What if we want to do both robust regression (we’re worried about outliers or corrupted data) and variable selection?</p>
 <p>We can use the Huber loss on the residuals and the lasso penalty on the coefficients: <span class="math display">\[
-\text{minimize}_{\beta} \sum_{i=1}^n H(y_i - \sum_{j=1}^pX_{ij}\beta_j, M)+ \sum_{j=1}^p |\beta_j|
+\text{minimize}_{\beta} \sum_{i=1}^n H(y_i - \sum_{j=1}^pX_{ij}\beta_j, M)+ \lambda \sum_{j=1}^p |\beta_j|
 \]</span></p>
 <p>I don’t know if there’s an actual implementation of this in an R package, but it’s easy to do with cvx.</p>
 </div>
