@@ -1,5 +1,7 @@
 ## Monte Carlo methods: integration and cross validation
 
+## Look at the notes before copying this
+
 ```{r setup, echo = FALSE, message = FALSE}
 library(knitr)
 opts_chunk$set(fig.cap="",
