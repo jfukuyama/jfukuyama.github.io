@@ -1,0 +1,480 @@
+## Applications and cvx
+
+```{r setup, echo = FALSE, message = FALSE}
+library(knitr)
+opts_chunk$set(fig.cap="",
+               fig.path="lecture-21-fig/",
+               fig.width=6, fig.height=4, dpi=150,
+               warning = FALSE)
+```
+
+
+Agenda today
+
+- cvx, package for fitting convex problems in general
+
+- Optimization applications in statistics
+
+## Convex optimization problem
+
+In a convex optimization problem, we minimize a convex function over a convex set.
+
+. . .
+
+Standard form for an optimization problem is:
+
+$$
+\begin{align*}
+\text{minimize} \quad &f_0(x) \\
+\text{subject to}\quad  &f_i(x) \le 0, \quad i = 1,\ldots, m\\
+&a_j^T x = b_j, \quad j = 1,\ldots, n
+\end{align*}
+$$
+
+- $x \in \mathbb R^n$ is the optimization variable
+
+- $f_0: \mathbb R^n \to \mathbb R$ is the objective function
+
+- $f_i : \mathbb R^n \to \mathbb R$ are the inequality constraint functions
+
+- $a_j^T x = b_j$ are the equality constraints
+
+
+## Regression
+
+Standard least squares problem is convex:
+$$
+\text{minimize} \|y - X \beta\|_2^2
+$$
+
+## Regularized regression
+
+Any "regularization" with a convex function $P$ will still be convex:
+
+$$
+\text{minimize} \|y - X \beta\|_2^2 + P(\beta)
+$$
+
+
+## Covariance estimation
+
+Let $S$ denote the sample covariance and $\Theta$ be the inverse covariance matrix.
+
+Up to constant factors, the log-likelihood of the data given a Gaussian distribution is 
+
+$$
+\log \det \Theta - \text{tr}(S \Theta)
+$$
+
+Covariance estimation would be by maximizing the log likelihood or minimizing the negative log likelihood.
+
+. . .
+
+- $\log \det$ is concave, $\text{tr}(S \Theta)$ is linear
+
+- Restriction of $\Theta$ to be positive definite is a restriction to a convex set
+
+- Convex problem; remains convex if we add convex penalties to $\Theta$
+
+
+## Summing up
+
+If you can show an optimization problem is convex, you're very likely able to solve it efficiently
+
+Many statistical estimation problems are naturally convex
+
+You have a couple of options for checking convexity:
+
+- Check the definition
+
+- Check first-order conditions (not usually as useful)
+
+- Check second-order conditions (good option if the function is differentiable)
+
+- Check restriction to a line
+
+- Check whether the function can be re-expressed as a combination of convex functions and convexity-preserving operations
+
+
+
+## Defining an optimization problem in cvx
+
+Remember how we defined a convex optimization problem:
+
+$$
+\begin{align*}
+\text{minimize} \quad &f_0(x) \\
+\text{subject to}\quad &f_i(x) \le 0, \quad i = 1,\ldots, m\\
+&a_j^T x = b_j, \quad j = 1,\ldots, n
+\end{align*}
+$$
+
+Components:
+
+- Variables to minimize over ($x$ in the formulation above, can be multi-dimensional)
+
+- Objective function ($f_0$ above, what we want to minimize)
+
+- Constraints on the variables
+
+In the cvx package, we define these three components, create a problem out of them, and the solver will do the rest.
+
+
+## Example
+
+For example, suppose our problem is:
+$$
+\begin{align*}
+\text{minimize}_{x, y} \quad &x^2 + y^2 \\
+\text{subject to} \quad &x \ge 0\\
+& 2x + y = 1
+\end{align*}
+$$
+
+How do we set this up in cvx/R?
+
+-----
+
+Define the variables to be minimized over:
+
+```{r}
+library(CVXR)
+# Variables minimized over
+x = Variable(1)
+y = Variable(1)
+x
+class(x)
+```
+
+-----
+
+Define the objective function:
+
+```{r}
+# The function we want to minimize
+objective = Minimize(x^2 + y^2)
+objective
+class(objective)
+```
+
+-----
+
+Define the constraints:
+
+```{r}
+## The constraints
+constraints = list(x >= 0, 2*x + y == 1)
+constraints
+```
+
+-----
+
+The optimization problem is then composed of the objective and the constraints:
+
+```{r}
+## Problem definition
+prob <- Problem(objective, constraints)
+```
+
+-----
+
+To perform the optimization we use `solve(problem)`
+
+```{r}
+# Problem solution
+solution = solve(prob)
+solution$status
+solution$getValue(x)
+solution$getValue(y)
+## check that the solution satisfies the constraints
+solution$getValue(x) >= 0
+2 * solution$getValue(x) + solution$getValue(y)
+```
+
+
+## Least squares
+
+We'll start off with the least squares problem and work up to more elaborate problems.
+
+We are doing regression, so we have a response variable $y \in \mathbb R^n$ and predictor variables stored as the rows of a matrix $X \in \mathbb R^{n \times p}$.
+
+The least squares problem is
+$$
+\text{minimize}_{\beta} \|y - X \beta\|_2^2
+$$
+or, written without matrix notation:
+$$
+\text{minimize}_{\beta} \sum_{i=1}^n (y_i - \sum_{j=1}^pX_{ij} \beta_j)^2
+$$
+
+This is a very simple convex optimization problem, just an objective function to be minimized, no constraints on the parameters.
+
+## Example dataset
+
+The data set dating (in `lattice.RData`) contains paired observations giving the estimated ages of 19 coral samples in thousands of years using both carbon dating (the traditional method) and thorium dating (a modern and purportedly more accurate method.)
+
+We want to know about the difference between these two methods.
+
+We can set this up as a linear model:
+```{r}
+load("lattice.RData")
+dating_lm = lm(thorium - carbon ~ carbon, data = dating)
+round(coef(dating_lm), digits = 2)
+```
+
+-----
+
+. . .
+
+Let's try to solve the same problem with cvx.
+
+First set up the data:
+```{r}
+y = dating$thorium - dating$carbon
+X = cbind(1, dating$carbon)
+```
+
+Define the optimization variables:
+```{r}
+betahat = Variable(2)
+```
+
+Define the objective function:
+```{r}
+objective = Minimize(sum((y - X %*% betahat)^2))
+```
+
+Solve the problem and get the fitted values:
+```{r}
+problem = Problem(objective)
+result = solve(problem)
+round(result$getValue(betahat), digits = 2)
+round(coef(dating_lm), digits = 2)
+```
+
+## Robust Regression 
+
+If we look more carefully at our data, we see that there appear to be some outliers: most of the points follow one trend line, and the other two are far off.
+
+This means that the least squares line doesn't do a good job of capturing either the bulk of the data or the outliers.
+
+To deal with this situation, we sometimes use robust regression.
+
+```{r}
+ggplot(dating) + geom_point(aes(x = carbon, y = thorium - carbon)) +
+    geom_abline(aes(intercept = result$getValue(betahat)[1], slope = result$getValue(betahat)[2]))
+```
+
+
+-----
+
+Robust regression is a modification of least squares that is meant to deal with outliers.
+
+The coefficients in the Huber version of robust regression are the solutions to the problem
+$$
+\text{minimize}_\beta \quad \sum_{i=1}^n H(y_i - \sum_{j=1}^p X_{ij} \beta_j, M)
+$$
+where $H$ is the Huber loss function:
+$$
+H(z, M) = \begin{cases}
+z^2 & z\le M \\
+2M|z| - M^2 & z > M
+\end{cases}
+$$
+
+-----
+
+. . .
+
+Let's set up the problem in cvx.
+
+Define the variables to optimize over:
+```{r}
+betahat = Variable(2)
+```
+
+Define the objective function
+```{r}
+objective = Minimize(sum(huber(y - X %*% betahat, M = .46)))
+```
+
+Solve the problem and get the fitted values for the regression coefficients:
+```{r}
+problem = Problem(objective)
+result = solve(problem)
+result$getValue(betahat)
+fitted_betahat = result$getValue(betahat)
+```
+
+-----
+
+Compare the regression line from robust regression to the standard regression line:
+```{r}
+ggplot(dating) + geom_point(aes(x = carbon, y = thorium - carbon)) +
+    geom_abline(aes(slope = fitted_betahat[2], intercept = fitted_betahat[1]), color = 'red') +
+    geom_abline(aes(slope = coef(dating_lm)[2], intercept = coef(dating_lm)[1]))
+```
+
+
+## Variable selection
+
+A popular way of doing variable selection in high-dimensional regression problems is with the lasso.
+
+The Lasso is a simple modification of the least squares problem:
+$$
+\text{minimize}_{\beta} \sum_{i=1}^n (y_i - \sum_{j=1}^p X_{ij} \beta_j) + \sum_{j=1}^p |\beta_j|
+$$
+
+The resulting coefficient vector tends to be "sparse", with many of the coefficients being estimated as exactly 0.
+
+This is helpful when you want a model for your response that only incorporates a subset of the predictors.
+
+## Diabetes example
+
+Ten baseline variables: age, sex, bmi, average blood pressure, plus six blood serum measurements.
+
+Want to use this to predict "a quantitative measure of disease progression" in 442 patients.
+
+We don't necessarily think that all of the measured variables are important, and we want to get a model that uses only a subset of the variables but still gives us good predictive accuracy.
+
+This is exactly what the lasso is for!
+
+-----
+
+First set up the data:
+```{r}
+library(lars)
+data(diabetes)
+head(diabetes$x)
+## re-doing this because diabetes has a funny class
+X = matrix(diabetes$x, nrow = nrow(diabetes$x), ncol = ncol(diabetes$x))
+## changing X so each column has mean 0 and standard deviation 1
+X = scale(X)
+Y = diabetes$y
+n = nrow(X)
+p = ncol(X)
+```
+
+-----
+
+. . .
+
+Let's set up the problem in cvx. Define the variables:
+
+```{r}
+beta_lasso = Variable(p)
+```
+
+Define the objective function:
+```{r}
+lambda = 1
+objective = Minimize(sum(n^(-1) * (Y - X %*% beta_lasso)^2) + lambda * sum(abs(beta_lasso)))
+```
+
+Define the problem and solve:
+```{r}
+problem = Problem(objective)
+result = solve(problem)
+round(result$getValue(beta_lasso), digits = 2)
+```
+
+-----
+
+Let's look at what happens to the coefficients with different values of $\lambda$:
+
+```{r}
+lambda_search = 10^(seq(-2, 2, length.out = 40))
+get_beta_hat_lasso = function(lambda) {
+    objective = Minimize(sum(n^(-1) * (Y - X %*% beta_lasso)^2) + lambda * sum(abs(beta_lasso)))
+    problem = Problem(objective)
+    result = solve(problem)
+    result$getValue(beta_lasso)
+}
+beta_hats = plyr::aaply(lambda_search, 1, get_beta_hat_lasso)
+colnames(beta_hats) = colnames(diabetes$x)
+beta_hats = cbind(lambda = lambda_search, beta_hats)
+round(beta_hats, digits = 2)
+```
+
+-----
+
+Plot of the coefficients for different values of $\lambda$:
+
+```{r}
+beta_melted = reshape2::melt(data.frame(beta_hats), id.vars = "lambda", value.name = "coefficient")
+ggplot(beta_melted) +
+    geom_line(aes(x = lambda, y = coefficient, color = variable, lty = variable)) +
+    scale_x_log10()
+```
+
+## Both together now!
+
+What if we want to do both robust regression (we're worried about outliers or corrupted data) and variable selection?
+
+We can use the Huber loss on the residuals and the lasso penalty on the coefficients:
+$$
+\text{minimize}_{\beta} \sum_{i=1}^n H(y_i - \sum_{j=1}^pX_{ij}\beta_j, M)+ \sum_{j=1}^p |\beta_j|
+$$
+
+I don't know if there's an actual implementation of this in an R package, but it's easy to do with cvx.
+
+
+-----
+
+. . .
+
+Define the variable to be optimized over:
+```{r}
+betahat = Variable(p)
+```
+
+Define the objective:
+```{r}
+lambda = 10^(-4)
+objective = Minimize(sum(huber(Y - X %*% betahat)) + lambda * sum(abs(betahat)))
+```
+
+Define the problem and solve it:
+```{r}
+problem = Problem(objective)
+result = solve(problem)
+round(result$getValue(betahat), digits = 2)
+```
+
+-----
+
+Searching over a grid of $\lambda$:
+
+```{r}
+lambda_search = 10^(seq(-6, -3, length.out = 40))
+get_beta_hat_lasso = function(lambda) {
+    objective = Minimize(sum(huber(Y - X %*% beta_lasso)) + lambda * sum(abs(beta_lasso)))
+    problem = Problem(objective)
+    result = solve(problem)
+    result$getValue(beta_lasso)
+}
+beta_hats = plyr::aaply(lambda_search, 1, get_beta_hat_lasso)
+colnames(beta_hats) = colnames(diabetes$x)
+beta_hats = cbind(lambda = lambda_search, beta_hats)
+round(beta_hats, digits = 2)
+```
+
+-----
+
+Plot of the coefficients for different values of $\lambda$:
+
+```{r}
+beta_melted = reshape2::melt(data.frame(beta_hats), id.vars = "lambda", value.name = "coefficient")
+ggplot(beta_melted) +
+    geom_line(aes(x = lambda, y = coefficient, color = variable, lty = variable)) +
+    scale_x_log10()
+```
+
+
+## Summing up
+
+- Many statistical problems and variations can be expressed as convex optimization problems.
+
+- These are cheap and easy to fit, and you don't need to rely on your exact problem being implemented by someone else.
+
+- Cvx behind the scenes is using some of the methods that we've been discussing the past couple of weeks.

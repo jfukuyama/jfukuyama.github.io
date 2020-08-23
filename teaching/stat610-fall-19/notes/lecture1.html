@@ -1,0 +1,756 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <meta name="author" content="Julia Fukuyama" />
+  <title>Stat 610 Lecture 1: Basic Data Types</title>
+  <style type="text/css">
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <style type="text/css">
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="https://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="https://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div class="slide titlepage">
+  <h1 class="title">Stat 610 Lecture 1: Basic Data Types</h1>
+  <p class="author">
+Julia Fukuyama
+  </p>
+</div>
+<div id="course-mechanics" class="slide section level1">
+<h1>Course Mechanics</h1>
+<p>Course goals: Be able to write clean, accurate, maintainable code. Learn how the algorithms you will use as a statistician work so that you can diagnose problems and extend or tweak them to fit your needs.</p>
+<ul>
+<li><p>First half of the course focuses on software engineering, some specifics of R, and how to write good code.</p></li>
+<li><p>Second half of the course focuses on algorithms.</p></li>
+<li><p>Course website: <a href="jfukuyama.github.io/teaching/stat610">jfukuyama.github.io/teaching/stat610</a> will have slides, assignments, and any additional readings.</p></li>
+<li><p>Homework submitted through canvas.</p></li>
+</ul>
+</div>
+<div class="slide section level1">
+
+<p>Lab:</p>
+<ul>
+<li><p>A couple of times over the course of the semester there will be a lab.</p></li>
+<li><p>Lab will be a script that you can work through, longer/more complicated examples of things we covered in class, will be posted so you can go through them at home if you prefer.</p></li>
+<li><p>Tentative dates on the website.</p></li>
+<li><p>We have space reserved Thursdays 4-5:30 and Fridays 11:15-12:45, will use whichever one is better for your collective schedules.</p></li>
+</ul>
+</div>
+<div class="slide section level1">
+
+<p>Assessment:</p>
+<ul>
+<li><p>40% homework. Homeworks will generally be posted on Sunday and due the following Tuesday, 9 days later.</p></li>
+<li><p>30% midterm. In class Tuesday October 15, written.</p></li>
+<li><p>30% final project. Due on the last day of class.</p></li>
+</ul>
+</div>
+<div class="slide section level1">
+
+<h2 id="textbooks">Textbooks</h2>
+<p>Main text for the first half of the class is Matloff, <em>The Art of R Programming</em>. <em>The R Cookbook</em>, by Paul Teetor, will also be useful.</p>
+<p>Main text for the second half of the class is Lange, <em>Numerical Analysis for Statisticians</em>.</p>
+<p>How to read the Matloff:</p>
+<ul>
+<li><p>Matloff has example code, you should have an R session open and actually type in the commands, make sure that you get the same results.</p></li>
+<li><p>Don’t worry about the analogies to C (unless you have a lot of experience in C and you find that helpful!)</p></li>
+<li><p>You can generally skip the extended examples.</p></li>
+</ul>
+</div>
+<div class="slide section level1">
+
+<h2 id="reading-for-today">Reading for today</h2>
+<p>Reading: Matloff Chapter 1, 2, 3.1, 3.2, 3.4, 3.5, 3.6, 3.7, 4.1, 4.2, 4.3, 5.1, 5.2 , 6.1</p>
+<p>Chapter 1: Don’t worry about understanding everything in detail, but it gives a good overview and will help you have a slot for everything later.</p>
+<p>Also, you should probably not use his advice on getting help, the real way is to google your problem + R and click on the first stackoverflow link.</p>
+<p>It’s almost never a good idea to ask for help on the mailing list.</p>
+</div>
+<div id="data-types-and-data-structures" class="slide section level1">
+<h1>Data types and data structures</h1>
+<p>Goal today: Learn about the ways R stores data and how to access and manipulate data in those structures.</p>
+<p>Why is this important?</p>
+<ul>
+<li><p>R is object-oriented and functional (we’ll discuss this more later in the course).</p></li>
+<li><p>This sometimes makes it seem like magic: the <code>plot</code> function does completely different things in different contexts. How does R know?</p></li>
+</ul>
+<p>Data types for today:</p>
+<ul>
+<li><p>Vectors</p></li>
+<li><p>Matrices</p></li>
+<li><p>Lists</p></li>
+</ul>
+</div>
+<div id="vectors" class="slide section level1">
+<h1>Vectors</h1>
+<p>Fundamental data type in R, scalars are actually just vectors of length 1.</p>
+<div class="incremental">
+<p>Creating a vector of length 1:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>x =<span class="st"> </span><span class="dv">1</span></span></code></pre></div>
+</div>
+<div class="incremental">
+<p>Creating a vector of length &gt; 1: easiest way to make a vector is with the <code>c</code> function (for “concatenate”):</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>x =<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">168</span>, <span class="fl">.3</span>)</span>
+<span id="cb2-2"><a href="#cb2-2"></a>x</span></code></pre></div>
+<pre><code>## [1]   1.0 168.0   0.3</code></pre>
+</div>
+</div>
+<div class="slide section level1">
+
+<p>The <code>:</code> operator will also make a vector of numbers separated by 1:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a>y =<span class="st"> </span><span class="dv">5</span><span class="op">:</span><span class="dv">10</span></span>
+<span id="cb4-2"><a href="#cb4-2"></a>y</span></code></pre></div>
+<pre><code>## [1]  5  6  7  8  9 10</code></pre>
+<p>What do you think <code>y = 5.1:10</code> will do?</p>
+</div>
+<div class="slide section level1">
+
+<p><code>seq</code> makes a vector containing units with arbitrary spacing:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a><span class="kw">seq</span>(<span class="dt">from =</span> <span class="dv">12</span>, <span class="dt">to =</span> <span class="dv">30</span>, <span class="dt">by =</span> <span class="dv">3</span>)</span></code></pre></div>
+<pre><code>## [1] 12 15 18 21 24 27 30</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>You can specify the length you want instead of the spacing:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a><span class="kw">seq</span>(<span class="dt">from =</span> <span class="fl">1.1</span>, <span class="dt">to =</span> <span class="dv">2</span>, <span class="dt">length =</span> <span class="dv">10</span>)</span></code></pre></div>
+<pre><code>##  [1] 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0</code></pre>
+</div>
+<div class="slide section level1">
+
+<p><code>rep</code> will give a vector of repeated elements:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a><span class="kw">rep</span>(<span class="dv">1</span>, <span class="dt">times =</span> <span class="dv">5</span>)</span></code></pre></div>
+<pre><code>## [1] 1 1 1 1 1</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>You can repeat vectors instead of single numbers:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a><span class="kw">rep</span>(<span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">5</span>, <span class="dv">7</span>), <span class="dt">times =</span> <span class="dv">3</span>)</span></code></pre></div>
+<pre><code>## [1] 1 5 7 1 5 7 1 5 7</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>Specifying <code>each</code> instead of <code>times</code> changes how the repeats work: the first element in the vector is repeated <code>each</code> times, then the second, then the third:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a><span class="kw">rep</span>(<span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">5</span>, <span class="dv">7</span>), <span class="dt">each =</span> <span class="dv">3</span>)</span></code></pre></div>
+<pre><code>## [1] 1 1 1 5 5 5 7 7 7</code></pre>
+</div>
+<div class="slide section level1">
+
+<h2 id="some-vector-operations">Some vector operations</h2>
+<p>Vectors can be added, subtracted, multiplied, etc.</p>
+<p>If the vectors are the same size, this will be done element-wise.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a>x =<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">4</span>)</span>
+<span id="cb16-2"><a href="#cb16-2"></a>x <span class="op">+</span><span class="st"> </span><span class="kw">c</span>(<span class="dv">5</span>, <span class="dv">0</span>, <span class="dv">-1</span>)</span></code></pre></div>
+<pre><code>## [1] 6 2 3</code></pre>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a>x <span class="op">*</span><span class="st"> </span><span class="kw">c</span>(<span class="dv">5</span>, <span class="dv">0</span>, <span class="dv">-1</span>)</span></code></pre></div>
+<pre><code>## [1]  5  0 -4</code></pre>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a>x <span class="op">/</span><span class="st"> </span><span class="kw">c</span>(<span class="dv">5</span>, <span class="dv">4</span>, <span class="dv">-1</span>)</span></code></pre></div>
+<pre><code>## [1]  0.2  0.5 -4.0</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>What if the vectors are not the same size?</p>
+<p>Remember that scalars in R are just vectors, so in the following code we are actually adding two vectors:</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1"></a>x =<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">4</span>)</span>
+<span id="cb22-2"><a href="#cb22-2"></a>x <span class="op">+</span><span class="st"> </span><span class="dv">2</span></span></code></pre></div>
+<pre><code>## [1] 3 4 6</code></pre>
+</div>
+<div class="slide section level1">
+
+<h2 id="vector-recycling">Vector recycling</h2>
+<p><em>This is weird and important!</em></p>
+<p>If a vector operation requires the vectors to be the same length, R automatically repeats the shorter one until it is long enough to match the longer one.</p>
+<p>That is what happened in the example above: the longer vector, <code>x</code>, had length 3, and the shorter vector, <code>2</code>, had length 1. What really happened was more like</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1"></a>x =<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">4</span>)</span>
+<span id="cb24-2"><a href="#cb24-2"></a>x <span class="op">+</span><span class="st"> </span><span class="kw">rep</span>(<span class="dv">2</span>, <span class="dt">times =</span> <span class="dv">3</span>)</span></code></pre></div>
+<pre><code>## [1] 3 4 6</code></pre>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1"></a>x <span class="op">+</span><span class="st"> </span><span class="dv">2</span> <span class="co"># notice that these give the same results</span></span></code></pre></div>
+<pre><code>## [1] 3 4 6</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>This makes sense for adding a vector and a scalar (= vector of length 1).</p>
+<p>It can give results you’re not expecting if you have vectors of different lengths:</p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1"></a><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">4</span>) <span class="op">+</span><span class="st"> </span><span class="kw">c</span>(<span class="dv">6</span>, <span class="dv">0</span>, <span class="dv">9</span>, <span class="dv">20</span>, <span class="dv">22</span>)</span></code></pre></div>
+<pre><code>## Warning in c(1, 2, 4) + c(6, 0, 9, 20, 22): longer object length is not a
+## multiple of shorter object length</code></pre>
+<pre><code>## [1]  7  2 13 21 24</code></pre>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1"></a><span class="co">## same as</span></span>
+<span id="cb31-2"><a href="#cb31-2"></a><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">1</span>, <span class="dv">2</span>) <span class="op">+</span><span class="st"> </span><span class="kw">c</span>(<span class="dv">6</span>, <span class="dv">0</span>, <span class="dv">9</span>, <span class="dv">20</span>, <span class="dv">22</span>)</span></code></pre></div>
+<pre><code>## [1]  7  2 13 21 24</code></pre>
+<p>If the vector lengths are not multiples of one another R will warn you about the recycling. Otherwise, it does it without complaint:</p>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1"></a><span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">7</span>, <span class="dv">8</span>) <span class="op">+</span><span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>)</span></code></pre></div>
+<pre><code>## [1] 2 4 7 9</code></pre>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1"></a><span class="co">## same as</span></span>
+<span id="cb35-2"><a href="#cb35-2"></a><span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">7</span>, <span class="dv">8</span>) <span class="op">+</span><span class="st"> </span><span class="kw">rep</span>(<span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>), <span class="dt">times =</span> <span class="dv">2</span>)</span></code></pre></div>
+<pre><code>## [1] 2 4 7 9</code></pre>
+</div>
+<div class="slide section level1">
+
+<h2 id="logical-operations">Logical operations</h2>
+<p><code>&gt;</code>, <code>&lt;</code>, <code>&lt;=</code>, <code>&gt;=</code>, <code>==</code> are all vector operations and work like the arithmetic operators:</p>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1"></a><span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">5</span>, <span class="dv">7</span>) <span class="op">&gt;</span><span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">8</span>)</span></code></pre></div>
+<pre><code>## [1]  TRUE  TRUE FALSE</code></pre>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1"></a><span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">5</span>, <span class="dv">7</span>) <span class="op">&lt;</span><span class="st"> </span><span class="dv">8</span></span></code></pre></div>
+<pre><code>## [1] TRUE TRUE TRUE</code></pre>
+</div>
+<div class="slide section level1">
+
+<p><code>all</code> and <code>any</code> work on boolean vectors (vectors of <code>TRUE</code> and <code>FALSE</code>), and do what is implied by their name:</p>
+<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1"></a><span class="kw">any</span>(<span class="kw">c</span>(<span class="ot">TRUE</span>, <span class="ot">FALSE</span>))</span></code></pre></div>
+<pre><code>## [1] TRUE</code></pre>
+<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1"></a><span class="kw">all</span>(<span class="kw">c</span>(<span class="ot">TRUE</span>, <span class="ot">FALSE</span>))</span></code></pre></div>
+<pre><code>## [1] FALSE</code></pre>
+<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1"></a>x =<span class="st"> </span><span class="dv">1</span><span class="op">:</span><span class="dv">10</span></span>
+<span id="cb45-2"><a href="#cb45-2"></a><span class="kw">any</span>(x <span class="op">&gt;</span><span class="st"> </span><span class="dv">8</span>)</span></code></pre></div>
+<pre><code>## [1] TRUE</code></pre>
+<div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1"></a><span class="kw">any</span>(x <span class="op">&gt;</span><span class="st"> </span><span class="dv">88</span>)</span></code></pre></div>
+<pre><code>## [1] FALSE</code></pre>
+<div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1"></a><span class="kw">all</span>(x <span class="op">&gt;</span><span class="st"> </span><span class="dv">88</span>)</span></code></pre></div>
+<pre><code>## [1] FALSE</code></pre>
+<div class="sourceCode" id="cb51"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1"></a><span class="kw">all</span>(x <span class="op">&gt;</span><span class="st"> </span><span class="dv">0</span>)</span></code></pre></div>
+<pre><code>## [1] TRUE</code></pre>
+</div>
+<div class="slide section level1">
+
+<h2 id="testing-vector-equality">Testing vector equality</h2>
+<p>We can’t use <code>==</code> to test whether vectors are the same because <code>==</code> will give us a boolean vector.</p>
+<div class="sourceCode" id="cb53"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1"></a>x =<span class="st"> </span><span class="dv">1</span><span class="op">:</span><span class="dv">3</span></span>
+<span id="cb53-2"><a href="#cb53-2"></a>y =<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">4</span>)</span>
+<span id="cb53-3"><a href="#cb53-3"></a>x <span class="op">==</span><span class="st"> </span>y</span></code></pre></div>
+<pre><code>## [1]  TRUE FALSE FALSE</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>Two ways around this <code>all</code> and <code>identical</code>:</p>
+<div class="sourceCode" id="cb55"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1"></a><span class="kw">all</span>(x <span class="op">==</span><span class="st"> </span>y)</span></code></pre></div>
+<pre><code>## [1] FALSE</code></pre>
+<div class="sourceCode" id="cb57"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1"></a><span class="kw">identical</span>(x, y)</span></code></pre></div>
+<pre><code>## [1] FALSE</code></pre>
+<div class="incremental">
+<p>You need to be a bit careful with identical though:</p>
+<div class="sourceCode" id="cb59"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1"></a><span class="kw">identical</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">3</span>, <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>))</span></code></pre></div>
+<pre><code>## [1] FALSE</code></pre>
+<div class="sourceCode" id="cb61"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1"></a><span class="co">## why?</span></span>
+<span id="cb61-2"><a href="#cb61-2"></a><span class="kw">typeof</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">3</span>)</span></code></pre></div>
+<pre><code>## [1] &quot;integer&quot;</code></pre>
+<div class="sourceCode" id="cb63"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1"></a><span class="kw">typeof</span>(<span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>))</span></code></pre></div>
+<pre><code>## [1] &quot;double&quot;</code></pre>
+</div>
+</div>
+<div class="slide section level1">
+
+<h2 id="vector-access">Vector access</h2>
+<p>To get a subvector, we can use <code>[]</code>.</p>
+<p>The format is <code>vector1[vector2]</code>, where <code>vector2</code> gives the indices we want to pick out of <code>vector1</code>.</p>
+<div class="sourceCode" id="cb65"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1"></a>y =<span class="st"> </span><span class="kw">c</span>(<span class="fl">1.2</span>, <span class="fl">3.9</span>, <span class="fl">0.4</span>, <span class="fl">0.12</span>)</span>
+<span id="cb65-2"><a href="#cb65-2"></a>y[<span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">3</span>)]  <span class="co"># extract elements 1 and 3 of y</span></span></code></pre></div>
+<pre><code>## [1] 1.2 0.4</code></pre>
+<div class="sourceCode" id="cb67"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb67-1"><a href="#cb67-1"></a>y[<span class="dv">2</span><span class="op">:</span><span class="dv">3</span>]</span></code></pre></div>
+<pre><code>## [1] 3.9 0.4</code></pre>
+<div class="sourceCode" id="cb69"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb69-1"><a href="#cb69-1"></a>v =<span class="st"> </span><span class="dv">3</span><span class="op">:</span><span class="dv">4</span></span>
+<span id="cb69-2"><a href="#cb69-2"></a>y[v]</span></code></pre></div>
+<pre><code>## [1] 0.40 0.12</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>We are allowed to repeat indices:</p>
+<div class="sourceCode" id="cb71"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb71-1"><a href="#cb71-1"></a>y</span></code></pre></div>
+<pre><code>## [1] 1.20 3.90 0.40 0.12</code></pre>
+<div class="sourceCode" id="cb73"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb73-1"><a href="#cb73-1"></a>y[<span class="kw">rep</span>(<span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">3</span>), <span class="dt">each =</span> <span class="dv">3</span>)]</span></code></pre></div>
+<pre><code>## [1] 1.2 1.2 1.2 0.4 0.4 0.4</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>To exclude indices instead of include them, we can use <code>-</code>:</p>
+<div class="sourceCode" id="cb75"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb75-1"><a href="#cb75-1"></a>z =<span class="st"> </span><span class="kw">c</span>(<span class="dv">5</span>, <span class="dv">12</span>, <span class="dv">13</span>)</span>
+<span id="cb75-2"><a href="#cb75-2"></a>z[<span class="op">-</span><span class="dv">1</span>]  <span class="co"># exclude element 1</span></span></code></pre></div>
+<pre><code>## [1] 12 13</code></pre>
+<div class="sourceCode" id="cb77"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb77-1"><a href="#cb77-1"></a>z[<span class="op">-</span><span class="dv">1</span><span class="op">:-</span><span class="dv">2</span>]  <span class="co"># exclude elements 1 through 2</span></span></code></pre></div>
+<pre><code>## [1] 13</code></pre>
+</div>
+<div class="slide section level1">
+
+<h2 id="filtering">Filtering</h2>
+<p>We will often want a sub-vector, but we won’t know in advance which elements we want.</p>
+<p>As a contrived example, suppose we want to extract just the elements of the vector whose square is greater than 8.</p>
+<p>We could use the following code to do so:</p>
+<div class="sourceCode" id="cb79"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb79-1"><a href="#cb79-1"></a>z =<span class="st"> </span><span class="kw">c</span>(<span class="dv">5</span>, <span class="dv">2</span>, <span class="dv">-3</span>, <span class="dv">8</span>)</span>
+<span id="cb79-2"><a href="#cb79-2"></a>w =<span class="st"> </span>z[z <span class="op">*</span><span class="st"> </span>z <span class="op">&gt;</span><span class="st"> </span><span class="dv">8</span>]</span>
+<span id="cb79-3"><a href="#cb79-3"></a>w</span></code></pre></div>
+<pre><code>## [1]  5 -3  8</code></pre>
+</div>
+<div class="slide section level1">
+
+<div class="incremental">
+<p>What’s happening here?</p>
+<div class="sourceCode" id="cb81"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb81-1"><a href="#cb81-1"></a>z</span></code></pre></div>
+<pre><code>## [1]  5  2 -3  8</code></pre>
+<div class="sourceCode" id="cb83"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb83-1"><a href="#cb83-1"></a>z <span class="op">*</span><span class="st"> </span>z</span></code></pre></div>
+<pre><code>## [1] 25  4  9 64</code></pre>
+<div class="sourceCode" id="cb85"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb85-1"><a href="#cb85-1"></a>z <span class="op">*</span><span class="st"> </span>z <span class="op">&gt;</span><span class="st"> </span><span class="dv">8</span></span></code></pre></div>
+<pre><code>## [1]  TRUE FALSE  TRUE  TRUE</code></pre>
+<div class="sourceCode" id="cb87"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb87-1"><a href="#cb87-1"></a>z[<span class="kw">c</span>(<span class="ot">TRUE</span>, <span class="ot">FALSE</span>, <span class="ot">TRUE</span>, <span class="ot">TRUE</span>)]</span></code></pre></div>
+<pre><code>## [1]  5 -3  8</code></pre>
+<div class="sourceCode" id="cb89"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb89-1"><a href="#cb89-1"></a>z[z <span class="op">*</span><span class="st"> </span>z <span class="op">&gt;</span><span class="st"> </span><span class="dv">8</span>]</span></code></pre></div>
+<pre><code>## [1]  5 -3  8</code></pre>
+</div>
+</div>
+<div class="slide section level1">
+
+<p>Another simple way to extract only some of the values of a vector is with <code>subset</code>:</p>
+<div class="sourceCode" id="cb91"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb91-1"><a href="#cb91-1"></a>z =<span class="st"> </span><span class="kw">c</span>(<span class="dv">5</span>, <span class="dv">2</span>, <span class="dv">-3</span>, <span class="dv">8</span>)</span>
+<span id="cb91-2"><a href="#cb91-2"></a>z[z <span class="op">*</span><span class="st"> </span>z <span class="op">&gt;</span><span class="st"> </span><span class="dv">8</span>]</span></code></pre></div>
+<pre><code>## [1]  5 -3  8</code></pre>
+<div class="sourceCode" id="cb93"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb93-1"><a href="#cb93-1"></a><span class="kw">subset</span>(z, z <span class="op">*</span><span class="st"> </span>z <span class="op">&gt;</span><span class="st"> </span><span class="dv">8</span>) <span class="co">## gives the same result</span></span></code></pre></div>
+<pre><code>## [1]  5 -3  8</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>We can also use <code>which</code>. <code>which</code> just gives us the positions at which the condition occurs, and we can use those positions to get the relevant subvector:</p>
+<div class="sourceCode" id="cb95"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb95-1"><a href="#cb95-1"></a>z =<span class="st"> </span><span class="kw">c</span>(<span class="dv">5</span>, <span class="dv">2</span>, <span class="dv">-3</span>, <span class="dv">8</span>)</span>
+<span id="cb95-2"><a href="#cb95-2"></a><span class="kw">which</span>(z <span class="op">*</span><span class="st"> </span>z <span class="op">&gt;</span><span class="st"> </span><span class="dv">8</span>)</span></code></pre></div>
+<pre><code>## [1] 1 3 4</code></pre>
+<div class="sourceCode" id="cb97"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb97-1"><a href="#cb97-1"></a>z[<span class="kw">which</span>(z <span class="op">*</span><span class="st"> </span>z <span class="op">&gt;</span><span class="st"> </span><span class="dv">8</span>)]</span></code></pre></div>
+<pre><code>## [1]  5 -3  8</code></pre>
+</div>
+<div id="matrices" class="slide section level1">
+<h1>Matrices</h1>
+<p>Matrices in R turn out to just be vectors with an additional attribute giving the dimensions.</p>
+</div>
+<div class="slide section level1">
+
+<h2 id="matrix-creation">Matrix creation</h2>
+<p>Most basic way of creating a matrix is with the <code>matrix</code> function.</p>
+<p>It takes a vector giving the values that should go in the matrix plus number of rows and number of columns.</p>
+<p>By default, the values are arranged in column-major order, but you can specify that the data is coming in in row-major order instead:</p>
+<div class="sourceCode" id="cb99"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb99-1"><a href="#cb99-1"></a>y =<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>), <span class="dt">nrow =</span> <span class="dv">2</span>, <span class="dt">ncol =</span> <span class="dv">2</span>)</span>
+<span id="cb99-2"><a href="#cb99-2"></a>y</span></code></pre></div>
+<pre><code>##      [,1] [,2]
+## [1,]    1    3
+## [2,]    2    4</code></pre>
+<div class="sourceCode" id="cb101"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb101-1"><a href="#cb101-1"></a>y =<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>), <span class="dt">nrow =</span> <span class="dv">2</span>, <span class="dt">ncol =</span> <span class="dv">2</span>, <span class="dt">byrow =</span> <span class="ot">TRUE</span>)</span>
+<span id="cb101-2"><a href="#cb101-2"></a>y</span></code></pre></div>
+<pre><code>##      [,1] [,2]
+## [1,]    1    2
+## [2,]    3    4</code></pre>
+<p>Note that <code>byrow = TRUE</code> doesn’t change the way the matrix is stored behind the scenes.</p>
+</div>
+<div class="slide section level1">
+
+<p>You can specify just a number of rows or just a number of columns, and R will figure out what the dimensions of the matrix should be for you:</p>
+<div class="sourceCode" id="cb103"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb103-1"><a href="#cb103-1"></a>y =<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>), <span class="dt">nrow =</span> <span class="dv">2</span>)</span>
+<span id="cb103-2"><a href="#cb103-2"></a>y</span></code></pre></div>
+<pre><code>##      [,1] [,2]
+## [1,]    1    3
+## [2,]    2    4</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>What we learned about vector recycling applies to matrices too:</p>
+<div class="sourceCode" id="cb105"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb105-1"><a href="#cb105-1"></a>y =<span class="st"> </span><span class="kw">matrix</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>, <span class="dt">nrow =</span> <span class="dv">2</span>, <span class="dt">ncol =</span> <span class="dv">5</span>)</span>
+<span id="cb105-2"><a href="#cb105-2"></a>y</span></code></pre></div>
+<pre><code>##      [,1] [,2] [,3] [,4] [,5]
+## [1,]    1    1    1    1    1
+## [2,]    2    2    2    2    2</code></pre>
+<div class="sourceCode" id="cb107"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb107-1"><a href="#cb107-1"></a>y =<span class="st"> </span><span class="kw">matrix</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">3</span>, <span class="dt">nrow =</span> <span class="dv">2</span>, <span class="dt">ncol =</span> <span class="dv">5</span>)</span></code></pre></div>
+<pre><code>## Warning in matrix(1:3, nrow = 2, ncol = 5): data length [3] is not a sub-
+## multiple or multiple of the number of rows [2]</code></pre>
+<div class="sourceCode" id="cb109"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb109-1"><a href="#cb109-1"></a>y</span></code></pre></div>
+<pre><code>##      [,1] [,2] [,3] [,4] [,5]
+## [1,]    1    3    2    1    3
+## [2,]    2    1    3    2    1</code></pre>
+<p>What happens with <code>matrix(1:3, nrow = 2)</code>?</p>
+</div>
+<div class="slide section level1">
+
+<h2 id="matrix-operations">Matrix operations</h2>
+<p>These work pretty much the same way vector operations do.</p>
+<p>With matrices we get matrix multiplication, <code>%*%</code> in addition to the operations available for vectors.</p>
+<div class="sourceCode" id="cb111"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb111-1"><a href="#cb111-1"></a>y =<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>), <span class="dt">nrow =</span> <span class="dv">2</span>)</span>
+<span id="cb111-2"><a href="#cb111-2"></a>y</span></code></pre></div>
+<pre><code>##      [,1] [,2]
+## [1,]    1    3
+## [2,]    2    4</code></pre>
+<div class="sourceCode" id="cb113"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb113-1"><a href="#cb113-1"></a>y <span class="op">%*%</span><span class="st"> </span>y</span></code></pre></div>
+<pre><code>##      [,1] [,2]
+## [1,]    7   15
+## [2,]   10   22</code></pre>
+<div class="sourceCode" id="cb115"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb115-1"><a href="#cb115-1"></a>y <span class="op">*</span><span class="st"> </span><span class="dv">3</span></span></code></pre></div>
+<pre><code>##      [,1] [,2]
+## [1,]    3    9
+## [2,]    6   12</code></pre>
+<div class="sourceCode" id="cb117"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb117-1"><a href="#cb117-1"></a>y <span class="op">+</span><span class="st"> </span>y</span></code></pre></div>
+<pre><code>##      [,1] [,2]
+## [1,]    2    6
+## [2,]    4    8</code></pre>
+</div>
+<div class="slide section level1">
+
+<h2 id="matrix-indexing">Matrix indexing</h2>
+<p>Getting sub-matrices is analogous to getting sub-vectors.</p>
+<p>We still use <code>[]</code>, but now we have two indices.</p>
+<p>The syntax is <code>matrix[rowIndices, colIndices]</code>, where <code>rowIndices</code> is a vector describing the rows you want to take and <code>colIndices</code> is a vector describing the columns you want to take.</p>
+<p>Leaving one empty means that you want to take all the available indices.</p>
+</div>
+<div class="slide section level1">
+
+<div class="incremental">
+<p>Let’s see how this works:</p>
+<div class="sourceCode" id="cb119"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb119-1"><a href="#cb119-1"></a>z =<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">sample</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">12</span>), <span class="dt">nrow =</span> <span class="dv">4</span>)</span>
+<span id="cb119-2"><a href="#cb119-2"></a>z</span></code></pre></div>
+<pre><code>##      [,1] [,2] [,3]
+## [1,]    3    4    5
+## [2,]   12    2   11
+## [3,]   10    6    9
+## [4,]    8    1    7</code></pre>
+<div class="sourceCode" id="cb121"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb121-1"><a href="#cb121-1"></a>z[,<span class="dv">2</span><span class="op">:</span><span class="dv">3</span>] <span class="co">## extract the 2nd and 3rd columns</span></span></code></pre></div>
+<pre><code>##      [,1] [,2]
+## [1,]    4    5
+## [2,]    2   11
+## [3,]    6    9
+## [4,]    1    7</code></pre>
+<div class="sourceCode" id="cb123"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb123-1"><a href="#cb123-1"></a>z[<span class="dv">2</span><span class="op">:</span><span class="dv">3</span>, <span class="dv">2</span>] <span class="co">## extract the 2nd and 3rd rows of the 2nd column</span></span></code></pre></div>
+<pre><code>## [1] 2 6</code></pre>
+<div class="sourceCode" id="cb125"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb125-1"><a href="#cb125-1"></a>z[,<span class="op">-</span><span class="dv">1</span>] <span class="co">## negative subscripts work the same way as with vectors</span></span></code></pre></div>
+<pre><code>##      [,1] [,2]
+## [1,]    4    5
+## [2,]    2   11
+## [3,]    6    9
+## [4,]    1    7</code></pre>
+</div>
+</div>
+<div class="slide section level1">
+
+<p>We can assign values to submatrices using this indexing as well:</p>
+<div class="sourceCode" id="cb127"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb127-1"><a href="#cb127-1"></a>y =<span class="st"> </span><span class="kw">matrix</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">6</span>, <span class="dt">nrow =</span> <span class="dv">3</span>)</span>
+<span id="cb127-2"><a href="#cb127-2"></a>y</span></code></pre></div>
+<pre><code>##      [,1] [,2]
+## [1,]    1    4
+## [2,]    2    5
+## [3,]    3    6</code></pre>
+<div class="sourceCode" id="cb129"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb129-1"><a href="#cb129-1"></a>y[<span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">3</span>),] =<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">8</span>, <span class="dv">12</span>), <span class="dt">nrow =</span> <span class="dv">2</span>)</span>
+<span id="cb129-2"><a href="#cb129-2"></a>y</span></code></pre></div>
+<pre><code>##      [,1] [,2]
+## [1,]    1    8
+## [2,]    2    5
+## [3,]    1   12</code></pre>
+</div>
+<div class="slide section level1">
+
+<h2 id="filtering-1">Filtering</h2>
+<p>As with vectors, we can filter to submatrices by generating indices that we want to keep.</p>
+<p>As a simple example, suppose we want just the rows of the matrix for which the second column is at least 3.</p>
+<p>We could do that as follows:</p>
+<div class="sourceCode" id="cb131"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb131-1"><a href="#cb131-1"></a>x =<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>), <span class="dt">nrow =</span> <span class="dv">3</span>)</span>
+<span id="cb131-2"><a href="#cb131-2"></a>x</span></code></pre></div>
+<pre><code>##      [,1] [,2]
+## [1,]    1    2
+## [2,]    2    3
+## [3,]    3    4</code></pre>
+<div class="sourceCode" id="cb133"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb133-1"><a href="#cb133-1"></a>x[x[,<span class="dv">2</span>] <span class="op">&gt;=</span><span class="st"> </span><span class="dv">3</span>, ]</span></code></pre></div>
+<pre><code>##      [,1] [,2]
+## [1,]    2    3
+## [2,]    3    4</code></pre>
+</div>
+<div class="slide section level1">
+
+<div class="incremental">
+<p>What is happening?</p>
+<div class="sourceCode" id="cb135"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb135-1"><a href="#cb135-1"></a>x</span></code></pre></div>
+<pre><code>##      [,1] [,2]
+## [1,]    1    2
+## [2,]    2    3
+## [3,]    3    4</code></pre>
+<div class="sourceCode" id="cb137"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb137-1"><a href="#cb137-1"></a>x[,<span class="dv">2</span>]</span></code></pre></div>
+<pre><code>## [1] 2 3 4</code></pre>
+<div class="sourceCode" id="cb139"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb139-1"><a href="#cb139-1"></a>x[,<span class="dv">2</span>] <span class="op">&gt;=</span><span class="st"> </span><span class="dv">3</span></span></code></pre></div>
+<pre><code>## [1] FALSE  TRUE  TRUE</code></pre>
+<div class="sourceCode" id="cb141"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb141-1"><a href="#cb141-1"></a>x[<span class="kw">c</span>(<span class="ot">FALSE</span>, <span class="ot">TRUE</span>, <span class="ot">TRUE</span>), ]</span></code></pre></div>
+<pre><code>##      [,1] [,2]
+## [1,]    2    3
+## [2,]    3    4</code></pre>
+<div class="sourceCode" id="cb143"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb143-1"><a href="#cb143-1"></a>x[x[,<span class="dv">2</span>] <span class="op">&gt;=</span><span class="st"> </span><span class="dv">3</span>, ]</span></code></pre></div>
+<pre><code>##      [,1] [,2]
+## [1,]    2    3
+## [2,]    3    4</code></pre>
+</div>
+</div>
+<div class="slide section level1">
+
+<h2 id="avoiding-unintended-dimension-reduction">Avoiding unintended dimension reduction</h2>
+<p>Notice what happens if we try to make a sub-matrix corresponding to just one row of <code>x</code>:</p>
+<div class="sourceCode" id="cb145"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb145-1"><a href="#cb145-1"></a>x</span></code></pre></div>
+<pre><code>##      [,1] [,2]
+## [1,]    1    2
+## [2,]    2    3
+## [3,]    3    4</code></pre>
+<div class="sourceCode" id="cb147"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb147-1"><a href="#cb147-1"></a>r =<span class="st"> </span>x[<span class="dv">2</span>,]</span>
+<span id="cb147-2"><a href="#cb147-2"></a>r</span></code></pre></div>
+<pre><code>## [1] 2 3</code></pre>
+<p>What happened?</p>
+</div>
+<div class="slide section level1">
+
+<div class="sourceCode" id="cb149"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb149-1"><a href="#cb149-1"></a><span class="kw">attributes</span>(x)</span></code></pre></div>
+<pre><code>## $dim
+## [1] 3 2</code></pre>
+<div class="sourceCode" id="cb151"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb151-1"><a href="#cb151-1"></a><span class="kw">attributes</span>(r)</span></code></pre></div>
+<pre><code>## NULL</code></pre>
+<div class="sourceCode" id="cb153"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb153-1"><a href="#cb153-1"></a><span class="kw">str</span>(x)</span></code></pre></div>
+<pre><code>##  num [1:3, 1:2] 1 2 3 2 3 4</code></pre>
+<div class="sourceCode" id="cb155"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb155-1"><a href="#cb155-1"></a><span class="kw">str</span>(r)</span></code></pre></div>
+<pre><code>##  num [1:2] 2 3</code></pre>
+<p><code>r</code> is a vector!</p>
+</div>
+<div class="slide section level1">
+
+<p><code>drop = FALSE</code> lets us avoid this behavior.</p>
+<div class="sourceCode" id="cb157"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb157-1"><a href="#cb157-1"></a>r =<span class="st"> </span>x[<span class="dv">2</span>,,drop =<span class="st"> </span><span class="ot">FALSE</span>]</span>
+<span id="cb157-2"><a href="#cb157-2"></a>r</span></code></pre></div>
+<pre><code>##      [,1] [,2]
+## [1,]    2    3</code></pre>
+<div class="sourceCode" id="cb159"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb159-1"><a href="#cb159-1"></a><span class="kw">attributes</span>(r)</span></code></pre></div>
+<pre><code>## $dim
+## [1] 1 2</code></pre>
+<div class="sourceCode" id="cb161"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb161-1"><a href="#cb161-1"></a><span class="kw">str</span>(r)</span></code></pre></div>
+<pre><code>##  num [1, 1:2] 2 3</code></pre>
+</div>
+<div id="lists" class="slide section level1">
+<h1>Lists</h1>
+<ul>
+<li><p>Lists are technically vectors.</p></li>
+<li><p>The vectors from before were called <em>atomic</em> vectors, which means that their components couldn’t be broken down into smaller components.</p></li>
+<li><p>In R, the main purpose of lists is to lump together data of different types. Atomic vectors require all their elements to be of the same type, but lists can have any sort of elements (including lists!).</p></li>
+</ul>
+</div>
+<div class="slide section level1">
+
+<h2 id="creating-lists">Creating lists</h2>
+<p>You can create a list with the <code>list</code> function…</p>
+<div class="sourceCode" id="cb163"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb163-1"><a href="#cb163-1"></a>j =<span class="st"> </span><span class="kw">list</span>(<span class="dt">name =</span> <span class="st">&quot;Joe&quot;</span>, <span class="dt">salary =</span> <span class="dv">55000</span>, <span class="dt">union =</span> <span class="ot">TRUE</span>)</span>
+<span id="cb163-2"><a href="#cb163-2"></a>j</span></code></pre></div>
+<pre><code>## $name
+## [1] &quot;Joe&quot;
+## 
+## $salary
+## [1] 55000
+## 
+## $union
+## [1] TRUE</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>The component names (<em>tags</em>) are not necessary, but it is good practice to use them.</p>
+<div class="sourceCode" id="cb165"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb165-1"><a href="#cb165-1"></a><span class="kw">list</span>(<span class="st">&quot;Joe&quot;</span>, <span class="dv">55000</span>, <span class="ot">TRUE</span>)</span></code></pre></div>
+<pre><code>## [[1]]
+## [1] &quot;Joe&quot;
+## 
+## [[2]]
+## [1] 55000
+## 
+## [[3]]
+## [1] TRUE</code></pre>
+</div>
+<div class="slide section level1">
+
+<h2 id="list-access">List access</h2>
+<p>Suppose we want to get Joe’s salary. There are at least three different ways to do so:</p>
+<div class="sourceCode" id="cb167"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb167-1"><a href="#cb167-1"></a>j<span class="op">$</span>salary</span></code></pre></div>
+<pre><code>## [1] 55000</code></pre>
+<div class="sourceCode" id="cb169"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb169-1"><a href="#cb169-1"></a>j[[<span class="st">&quot;salary&quot;</span>]]</span></code></pre></div>
+<pre><code>## [1] 55000</code></pre>
+<div class="sourceCode" id="cb171"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb171-1"><a href="#cb171-1"></a>j[[<span class="dv">2</span>]]</span></code></pre></div>
+<pre><code>## [1] 55000</code></pre>
+<p>The double brackets <code>[[]]</code> allow us access to an element of the list.</p>
+<p>Note that if we didn’t use the tags, we would only be able to access the salary using <code>j[[2]]</code>.</p>
+</div>
+<div class="slide section level1">
+
+<div class="incremental">
+<h2 id="sublist-vs.-element-of-list">Sublist vs. Element of list</h2>
+<p>Very important: <code>[[]]</code> and <code>[]</code> are different operations:</p>
+<ul>
+<li><p><code>[[]]</code> gives an <em>element</em> of the list</p></li>
+<li><p><code>[]</code> gives a sublist</p></li>
+</ul>
+<div class="sourceCode" id="cb173"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb173-1"><a href="#cb173-1"></a>j[[<span class="dv">2</span>]]</span></code></pre></div>
+<pre><code>## [1] 55000</code></pre>
+<div class="sourceCode" id="cb175"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb175-1"><a href="#cb175-1"></a><span class="kw">class</span>(j[[<span class="dv">2</span>]])</span></code></pre></div>
+<pre><code>## [1] &quot;numeric&quot;</code></pre>
+<div class="sourceCode" id="cb177"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb177-1"><a href="#cb177-1"></a>j[<span class="dv">2</span>]</span></code></pre></div>
+<pre><code>## $salary
+## [1] 55000</code></pre>
+<div class="sourceCode" id="cb179"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb179-1"><a href="#cb179-1"></a><span class="kw">class</span>(j[<span class="dv">2</span>])</span></code></pre></div>
+<pre><code>## [1] &quot;list&quot;</code></pre>
+</div>
+</div>
+<div class="slide section level1">
+
+<h2 id="list-manipulation">List manipulation</h2>
+<p>We can add to a list by tag:</p>
+<div class="sourceCode" id="cb181"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb181-1"><a href="#cb181-1"></a>j<span class="op">$</span>hobby =<span class="st"> &quot;sailing&quot;</span></span>
+<span id="cb181-2"><a href="#cb181-2"></a>j</span></code></pre></div>
+<pre><code>## $name
+## [1] &quot;Joe&quot;
+## 
+## $salary
+## [1] 55000
+## 
+## $union
+## [1] TRUE
+## 
+## $hobby
+## [1] &quot;sailing&quot;</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>We can add to a list by index:</p>
+<div class="sourceCode" id="cb183"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb183-1"><a href="#cb183-1"></a>j[[<span class="dv">5</span>]] =<span class="st"> </span><span class="dv">1</span><span class="op">:</span><span class="dv">5</span></span>
+<span id="cb183-2"><a href="#cb183-2"></a>j</span></code></pre></div>
+<pre><code>## $name
+## [1] &quot;Joe&quot;
+## 
+## $salary
+## [1] 55000
+## 
+## $union
+## [1] TRUE
+## 
+## $hobby
+## [1] &quot;sailing&quot;
+## 
+## [[5]]
+## [1] 1 2 3 4 5</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>We can remove an element from a list by setting it to <code>NULL</code>:</p>
+<div class="sourceCode" id="cb185"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb185-1"><a href="#cb185-1"></a>j[[<span class="dv">5</span>]] =<span class="st"> </span><span class="ot">NULL</span></span>
+<span id="cb185-2"><a href="#cb185-2"></a>j</span></code></pre></div>
+<pre><code>## $name
+## [1] &quot;Joe&quot;
+## 
+## $salary
+## [1] 55000
+## 
+## $union
+## [1] TRUE
+## 
+## $hobby
+## [1] &quot;sailing&quot;</code></pre>
+<div class="sourceCode" id="cb187"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb187-1"><a href="#cb187-1"></a>j<span class="op">$</span>hobby =<span class="st"> </span><span class="ot">NULL</span></span>
+<span id="cb187-2"><a href="#cb187-2"></a>j</span></code></pre></div>
+<pre><code>## $name
+## [1] &quot;Joe&quot;
+## 
+## $salary
+## [1] 55000
+## 
+## $union
+## [1] TRUE</code></pre>
+</div>
+<div class="slide section level1">
+
+<h2 id="extracting-names-and-values">Extracting names and values</h2>
+<p>Names are easy, just use the <code>names</code> function:</p>
+<div class="sourceCode" id="cb189"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb189-1"><a href="#cb189-1"></a><span class="kw">names</span>(j)</span></code></pre></div>
+<pre><code>## [1] &quot;name&quot;   &quot;salary&quot; &quot;union&quot;</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>To get values, we use <code>unlist</code>.</p>
+<p>This is another function you have to be careful with, because it doesn’t necessarily do what you think it will.</p>
+<ul>
+<li><p>It returns an atomic vector.</p></li>
+<li><p>That means all the elements have to be of the same class, and so data often gets coerced to a different type.</p></li>
+<li><p>If we unlist <code>j</code>, we get back a character vector. This is essentially because R knows how to convert numbers and booleans to characters but doesn’t know how to convert characters to numbers or booleans.</p></li>
+</ul>
+<div class="sourceCode" id="cb191"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb191-1"><a href="#cb191-1"></a><span class="kw">unlist</span>(j)</span></code></pre></div>
+<pre><code>##    name  salary   union 
+##   &quot;Joe&quot; &quot;55000&quot;  &quot;TRUE&quot;</code></pre>
+<p>You can see the text for the coercion hierarchy.</p>
+</div>
+<div class="slide section level1">
+
+<p>Note that <code>unlist</code> gives an atomic vector even for recursive lists (lists of lists), for example:</p>
+<div class="sourceCode" id="cb193"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb193-1"><a href="#cb193-1"></a>complex_list =<span class="st"> </span><span class="kw">list</span>(<span class="dt">a =</span> <span class="kw">list</span>(<span class="dv">1</span>), <span class="dt">b =</span> <span class="dv">1</span><span class="op">:</span><span class="dv">5</span>, <span class="dt">c =</span> (<span class="kw">list</span>(<span class="dt">a =</span> <span class="dv">1</span>, <span class="dt">b =</span> <span class="dv">2</span>)))</span>
+<span id="cb193-2"><a href="#cb193-2"></a><span class="kw">unlist</span>(complex_list)</span></code></pre></div>
+<pre><code>##   a  b1  b2  b3  b4  b5 c.a c.b 
+##   1   1   2   3   4   5   1   2</code></pre>
+</div>
+</body>
+</html>

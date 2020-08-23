@@ -1,0 +1,369 @@
+## Regular expressions
+
+Reading: Matloff Chapter 11.2.
+
+There are also many tutorials about regular expressions online, many
+of them not very good.
+
+[Wikipedia](https://en.wikipedia.org/wiki/Regular_expression) actually has a good treatment if you go through it slowly.
+
+You can also find formal treatments of regular expressions in books on
+the foundations of computing, e.g. Hopcroft, Motwani, and Ullman (2000). _Introduction to Automata Theory, Languages, and Computation_.
+
+
+## What is a regular expression?
+
+A way of specifying a set of strings.
+
+- For example, the regular expression
+
+`, *`
+
+is the set of strings that
+start with a comma and are followed by any number (including zero) of
+spaces.
+
+-----
+
+Why do we need them?
+
+- Parsimony: We can express sets of strings more compactly.
+<br><br>
+For example: `(J.|Julia) Fukuyama` represents the set containing
+`J. Fukuyama` and `Julia Fukuyama`
+
+- Allows us to specify infinite-size sets in finite space.
+<br><br>
+For example: our `, *` expression from before.
+
+## Regular expressions abstractly
+
+The formal definition of a regular expression is inductive. Suppose
+that we have a finite alphabet $\Sigma$.
+
+We start with specifying the following as regular expressions:
+
+- $\emptyset$: The empty set
+
+- $\varepsilon$: The set containing the empty string `""`
+
+- Literal character $a$: The one-element set $\{a\}$, for $a \in \Sigma$
+
+----
+
+The following operations, performed on regular expressions, yield
+regular expressions:
+
+- Concatenation: If $R$ and $S$ are regular expressions, $RS$ denotes
+the set of strings that can be formed by concatenating a string in $R$
+followed by a string in $S$.
+<br><br>
+If $R = \{good, bad\}$ and $S = \{boy, girl\}$, then $RS =
+\{goodboy, goodgirl, badboy, badgirl\}$.
+
+. . .
+
+- Alternation (boolean or): If $R$ and $S$ are regular expressions,
+$R|S$ denotes the set of strings formed by taking either an element of
+$R$ or an element of $S$. This is the same as the set union.
+<br><br>
+Same example: If $R = \{good, bad\}$ and $S = \{boy, girl\}$, then $R|S =
+\{good, bad, boy, girl\}$.
+
+. . .
+
+- Kleene star: If $R$ is a regular expression, $R^\star$ denotes the set of
+strings created by concatenating any finite number (including zero) of
+the strings in $R$.
+<br><br>
+If $R = \{good, bad\}$, $R^\star$ contains , good, goodgood,
+goodbad, bad, badgood, badbadgood, and so on
+
+
+. . .
+
+Order of operations: Kleene star has highest priority, followed by
+concatenation, followed by alternation.
+
+If a different grouping is desired, use parentheses `()`.
+
+
+
+-----
+
+Examples:
+
+- `a|b`: `{"a", "b"}`
+
+- `a|b*`: `{ε, "a", "b", "bb", "bbb", ...}`
+
+. . .
+
+- `(a|b)*`: The set of all string containing only `a` and `b`, `{ε, "a", "b", "aa", "ab", "ba", "bb", "aaa", ...}` 
+
+. . .
+
+- `ab*(c|ε)`: The set of strings starting with a single `a`,
+followed by zero or more `b`'s, optionally ending with a `c`, `{"a", "ac", "ab", "abc", "abb", "abbc", ...}`
+
+
+
+## How they are actually implemented
+
+Actual implementations of regular expressions have many more symbols
+and operators, but they are mostly just shorthand for some common
+operations that would take longer to express using only the three
+operations in the formal definition.
+
+
+
+## Quantification operations
+
+- `*`: Same as in the formal definition: zero or more times.
+
+- `?`: Zero or one occurrence of the preceding element. `colou?r`
+matches `color` and `colour`.
+
+- `+`: One or more occurrences of the preceding element.
+
+- `{m}`: Exactly m occurrences of the preceding element.
+
+- `{m,}`: At least m occurrences of the preceding element.
+
+- `{m,n}`: Between m and n occurrences of the preceding element, inclusive.
+
+## Alternatives to |
+
+- `[]`: Matches any single character inside the brackets.
+
+- `[^ ]`: Negation, matches anything _except_ the set of characters
+inside the brackets.
+
+- `.`: Wildcard, matches any character.
+
+- Character classes, defined differently for the different
+implementations. See
+[https://en.wikipedia.org/wiki/Regular_expression#Character_classes](https://en.wikipedia.org/wiki/Regular_expression#Character_classes),
+the POSIX column.
+
+## What do we do with regular expressions?
+
+- Check whether a string contains a regular expression
+
+- Extract the portion of the string that matches a regular expression
+
+- Split a string into pieces delimited by a regular expression
+
+
+## Finding regular expressions
+
+`grep`
+
+- syntax: `grep(regex, string)`.
+
+- `regex` is a regular expression
+
+- `string` is a character vector
+
+- The function will return the indices in string that match `regex`
+
+. . .
+
+`grepl` (for grep logical): Same as `grep`, but returns a Boolean vector describing the
+match indices.
+
+. . .
+
+Pedantic note:
+
+- A regular expression describes a set of strings.
+
+- If I say a string `s` "contains" or "matches" a regular expression `re`, I mean that a substring of `s` is present in the set described by `re`.
+
+-----
+
+. . .
+
+```{r}
+grep("(K|k)ansas", state.name)
+grepl("(K|k)ansas", state.name)
+```
+
+
+-----
+
+`grep` and `grepl` just tell us if the regular expression is
+present. What if you want to know where it is within the string?
+
+. . .
+
+`regexpr`
+
+- Syntax: `regexpr(regex, string)`
+
+- `regex` is a regular expression.
+
+- `string` is a character vector.
+
+- Gives the location of the first occurrence of the `regex`
+expression in `string`.
+
+. . .
+
+`gregexpr`: Same syntax as `regexpr`, but gives the locations of _all_
+the occurrences of `regex` instead of just the first.
+
+
+
+-----
+
+Example:
+
+. . .
+
+```{r}
+fruits = "apple|banana|fruit"
+regexpr(fruits, "fruit flies like a banana")
+```
+
+```{r}
+gregexpr(fruits, "fruit flies like a banana")
+```
+
+-----
+
+
+If you want the text that matches the regular expression, you need `regmatches`
+
+Syntax: `regmatches(text, match)`
+
+- `match` is the output from `regexpr` or `gregexpr`, describing the
+locations of the regular expressions.
+
+- `text` is the character vector you passed to `regexpr` or
+`gregexpr`.
+
+. . .
+
+The pattern you use to extract the text is
+
+`regmatches(text, regexpr(re, text))`
+
+
+-----
+
+Example: We have some sentence fragments and we would like to extract all the fruits from the text.
+
+```{r}
+fruit_fly_text = "drosophila like bananas"
+wasp_text = "wasps like bananas and baby fruit flies"
+fruits
+```
+
+. . .
+
+```{r}
+regmatches(fruit_fly_text, regexpr(fruits, fruit_fly_text))
+regmatches(wasp_text, regexpr(fruits, wasp_text))
+regmatches(fruit_fly_text, gregexpr(fruits, fruit_fly_text))
+regmatches(wasp_text, gregexpr(fruits, wasp_text))
+```
+
+
+## Splitting on regular expressions
+
+Syntax: `strsplit(s, split)`
+
+- `s` is a character vector (can have length greater than 1), and the
+function vectorizes.
+
+- `split` gives the regular expression we want to split on: every element of `s`
+will be split into pieces separated by the regex `split`.
+
+. . .
+
+Two other arguments you should know about, `fixed` and `perl`:
+
+- `fixed = TRUE` means to
+treat `split` as the literal string instead of a regular expression, `fixed =
+FALSE` is the default and means that we treat the splitting expression
+as a regular expression.
+
+- `perl` relates to the flavor of regular expressions used.
+
+
+-----
+
+. . .
+
+[1](http://itre.cis.upenn.edu/myl/languagelog/archives/002932.html) [2](https://en.wikipedia.org/wiki/Serial_comma)
+
+```{r}
+strsplit("my parents, Ayn Rand, and God", ",[[:space:]]*(and)?[[:space:]]+")
+strsplit("my parents, Ayn Rand and God", ",[[:space:]]*(and)?[[:space:]]+")
+strsplit("my parents, Ayn Rand and God", "(,[[:space:]]*)|([[:space:]]+and[[:space:]]+)")
+```
+
+## Two more ideas
+
+- Greedy quantification: There can be more than one match of a string to a regular expression that begins at the same place. Which one do you want?
+
+- Anchoring: Can constrain the expression to match at certain places in words or lines.
+
+## Greedy quantification
+
+By default, quantifiers are greedy, meaning they match the longest
+substring possible.
+
+We can make them have the opposite behavior by modifying them with the
+`?` character: in that case, they match the shortest substring
+possible.
+
+```{r}
+regmatches("[i][j]", regexpr("\\[.*\\]", "[i][j]"))
+regmatches("[i][j]", regexpr("\\[.*?\\]", "[i][j]"))
+```
+
+. . .
+
+Note: Escaping
+
+- The special characters used for regular expressions need to be escaped using `\\`.
+
+- One `\` is the normal escape character, its function is to tell the string processing tools that the next character should be read in a special way.
+
+- When we create a regular expression, we need a literal `\`, and so we need to escape the escape character.
+
+
+## Anchoring
+
+- `^` (not inside square brackets) means that what comes after must be
+at the start of a line.
+
+- `$` means that what comes before must be at the end of a line.
+
+- `\<` anchors to the beginning of a word.
+
+- `\>` anchors to the end of a word. Note that when you create a
+string using this operator, you will have to escape the `\`
+
+- `\b` anchors to the boundary of words (beginning or ending)
+
+- `\B` anchors to anywhere aside from the boundary
+
+-----
+
+. . .
+
+```{r}
+grepl("\\<a", "hat at")
+grepl("\\<a", "hat cat")
+grepl("\\bnana", "bananas")
+grepl("\\Bnana", "bananas")
+```
+
+
+## A final note
+
+[They're
+not for everything](https://stackoverflow.com/questions/201323/how-to-validate-an-email-address-using-a-regular-expression)

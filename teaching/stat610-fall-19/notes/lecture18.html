@@ -1,0 +1,380 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title>lecture18</title>
+  <style type="text/css">
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="https://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-AMS_CHTML-full" type="text/javascript"></script>
+  <script src="https://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div id="variations-on-newtons-method" class="slide section level2">
+<h1>Variations on Newton’s Method</h1>
+<p>Logistics:</p>
+<ul>
+<li><p>New homework posted</p></li>
+<li><p>Extend deadline for this homework to Friday</p></li>
+</ul>
+<p>Agenda today</p>
+<ul>
+<li><p>Newton’s method for multivariate problems</p></li>
+<li><p>Generalized linear models and exponential familiies</p></li>
+<li><p>Iteratively reweighted least squares for maximum likelihood in generalized linear models</p></li>
+<li><p>Remote repositories for git/github</p></li>
+</ul>
+<p>Reading:</p>
+<ul>
+<li>Kenneth Lange, Numerical Analysis for Statisticians, Sections 13.3-13.6</li>
+</ul>
+</div>
+<div id="from-last-time" class="slide section level2">
+<h1>From last time</h1>
+<p>Newton’s method:</p>
+<ul>
+<li><p>Pick some starting value <span class="math inline">\(\theta^{(0)}\)</span></p></li>
+<li><p>Iterate: <span class="math inline">\(\theta^{(m+1)} = \theta^{(m)} - d^2 \ell(\theta^{(m)}) d \ell(\theta^{(m)})\)</span></p></li>
+<li><p>Stop when <span class="math inline">\(d\ell(\theta^{(m)})\)</span> is sufficiently close to 0.</p></li>
+</ul>
+</div>
+<div id="newtons-method-for-linear-regression" class="slide section level2">
+<h1>Newton’s method for linear regression</h1>
+<p>Linear regression model:</p>
+<ul>
+<li><span class="math inline">\(y \in \mathbb R^n\)</span>,</li>
+<li><span class="math inline">\(X \in \mathbb R^{n \times p}\)</span>,</li>
+<li><span class="math inline">\(\theta \in \mathbb R^p\)</span>,</li>
+<li><span class="math inline">\(\sigma \in \mathbb R^+\)</span></li>
+<li><span class="math inline">\(y \sim N(X \theta, \sigma^2)\)</span></li>
+</ul>
+<div class="incremental">
+<p>Likelihood: <span class="math display">\[
+L(\theta) = (2\pi)^{-n/2} \sigma^{-n}\exp(-(y - X\theta)^T (y - X\theta) / 2)
+\]</span></p>
+<p>Log likelihood: <span class="math display">\[
+\ell(\theta) = -n \log(2\pi) / 2 - n \log \sigma - (y - X \theta)^T (y - X \theta) / 2
+\]</span></p>
+<p><span class="math inline">\(d\ell(\theta)\)</span>: <span class="math display">\[
+X^T (y - X \theta)
+\]</span></p>
+<p><span class="math inline">\(d^2 \ell(\theta)\)</span>: <span class="math display">\[
+-X^T X
+\]</span></p>
+</div>
+<div class="incremental">
+<p>Newton step: <span class="math display">\[
+\begin{align*}
+\theta^{(1)} &amp;= \theta^{(0)} - d^2 \ell(\theta^{(0)})^{-1} d \ell(\theta^{(0)})\\
+&amp;= \theta^{(0)} - (-X^T X)^{-1} X^T(y - X \theta^{(0)}) \\
+&amp;= \theta^{(0)} + (X^T X)^{-1} X^T y - (X^T X)^{-1} X^T X \theta^{(0)} \\
+&amp;= (X^T X)^{-1} X^T y
+\end{align*}
+\]</span></p>
+</div>
+</div>
+<div id="newtons-method-for-logistic-regression" class="slide section level2">
+<h1>Newton’s method for logistic regression</h1>
+<p>Logistic regression model:</p>
+<ul>
+<li><span class="math inline">\(y \in \{0,1\}^n\)</span>,</li>
+<li><span class="math inline">\(X \in \mathbb R^{n \times p}\)</span>,</li>
+<li><span class="math inline">\(\theta \in \mathbb R^p\)</span>,</li>
+<li><span class="math inline">\(y_i \sim \text{Bern}(\exp(x_i^T \theta) / (1 + \exp(x_i^T \theta)))\)</span></li>
+<li>Let <span class="math inline">\(p_i=\exp(x_i^T \theta) / (1 + \exp(x_i^T \theta)\)</span></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>Likelihood: <span class="math display">\[
+L(\theta) = \prod_{i=1}^n p_i^{y_i} (1 - p_i)^{1 - y_i}
+\]</span></p>
+<p>Log likelihood: <span class="math display">\[
+\begin{align*}
+\ell(\theta)&amp;= \sum_{i=1}^n (y_i \log p_i + (1 - y_i) \log(1 - p_i)) \\
+&amp;= \sum_{i=1}^n (y_i x_i^T \theta - \log(1 + \exp(x_i^T \theta)))
+\end{align*}
+\]</span></p>
+<p>First derivatives: <span class="math display">\[
+\begin{align*}
+d\ell(\theta) &amp;= \sum_{i=1}^n \left(y_i x_i - \frac{\exp(x_i^T \theta)}{1 + \exp(x_i^T \theta)} x_i\right) \\
+&amp;= \sum_{i=1}^n (y_i - p_i) x_i \\
+&amp;= X^T (y - p)
+\end{align*}
+\]</span></p>
+<p>Second derivatives: <span class="math display">\[
+\begin{align*}
+d^2 \ell(\theta) &amp;= \sum_{i=1}^n p_i(1 - p_i) x_i x_i^T \\
+&amp;= -X^T W X
+\end{align*}
+\]</span> if <span class="math inline">\(W = \text{diag}(p_1(1 - p_1), \ldots, p_n(1 - p_n))\)</span></p>
+</div>
+<div class="slide section level2">
+
+<p>Newton step: <span class="math display">\[
+\begin{align*}
+\theta^{(m+1)} &amp;= \theta^{(m)} - (d^2 \ell(\theta))^{-1} d \ell(\theta) \\
+&amp;= \theta^{(m)} + (X^T W^{(m)} X)^{-1} X^T (y - p^{(m)})
+\end{align*}
+\]</span></p>
+</div>
+<div id="exponential-families-and-generalized-linear-models" class="slide section level2">
+<h1>Exponential families and generalized linear models</h1>
+<p><a href="https://people.eecs.berkeley.edu/~jordan/courses/260-spring10/other-readings/chapter8.pdf">Exponential families</a> are families of probability distributions whose densities take the form <span class="math display">\[
+f(x | \eta) = h(x) exp(\eta^T T(x) - A(\eta))
+\]</span></p>
+<p><span class="math inline">\(T\)</span> and <span class="math inline">\(A\)</span> are known functions that describe the family.</p>
+<p><span class="math inline">\(\eta\)</span> is the natural parameter.</p>
+<div class="incremental">
+<p>Properties that we’ll need later:</p>
+<ul>
+<li><p><span class="math inline">\(E(X) = A&#39;(\eta)\)</span></p></li>
+<li><p><span class="math inline">\(\text{var}(X)= A&#39;&#39;(\eta)\)</span></p></li>
+</ul>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Why do we like them?</p>
+<ul>
+<li><p>Many commonly-used distributions: normal, exponential, Poisson, binomial, multinomial, etc.</p></li>
+<li><p>Easy to analyze</p></li>
+<li><p>They describe the stochasticity in generalized linear models</p></li>
+</ul>
+</div>
+<div id="generalized-linear-models" class="slide section level2">
+<h1>Generalized linear models</h1>
+<p>Models for independent observations, <span class="math inline">\(y_i, i = 1,\ldots, n\)</span></p>
+<p>Three components:</p>
+<ul>
+<li>Random component: <span class="math display">\[
+y_i \sim f(\eta_i)
+\]</span> where <span class="math inline">\(f\)</span> is an exponential family, <span class="math inline">\(\eta_i\)</span> the natural parameter</li>
+</ul>
+<div class="incremental">
+<ul>
+<li>Systematic component <span class="math display">\[
+\eta_i = x_i^T \theta
+\]</span></li>
+</ul>
+</div>
+<div class="incremental">
+<ul>
+<li>Link function: links the mean to the natural parameter <span class="math display">\[
+\eta_i = g(\mu_i)
+\]</span> <span class="math inline">\(g\)</span> is the link function. The relationship between the means and the predictors is then <span class="math display">\[
+\mu_i = g^{-1} (x_i^T \theta)
+\]</span></li>
+</ul>
+</div>
+</div>
+<div id="choice-of-link-functions" class="slide section level2">
+<h1>Choice of link functions</h1>
+<p>The <em>canonical link</em> is the one that maps the mean to the natural parameter.</p>
+<ul>
+<li><p>Normal: Canonical link is the identity: <span class="math inline">\(g(x) = x\)</span></p></li>
+<li><p>Bernoulli: Canonical link is logit: <span class="math inline">\(g(x) = \log(x / (1 - x))\)</span></p></li>
+<li><p>Poisson: Canonical link is the log: <span class="math inline">\(g(x) = \log(x)\)</span></p></li>
+<li><p>Gamma: Canonical link is inverse: <span class="math inline">\(g(x) = x^{-1}\)</span></p></li>
+</ul>
+</div>
+<div id="iteratively-reweighted-least-squares" class="slide section level2">
+<h1>Iteratively Reweighted Least Squares</h1>
+<ul>
+<li>Start with an estimate of the parameters <span class="math inline">\(\theta^{(0)}\)</span>.</li>
+</ul>
+<div class="incremental">
+<ul>
+<li><p>Find <span class="math inline">\(\eta_i^{(m)} = x_i^T \theta^{(m)}\)</span>, <span class="math inline">\(i = 1,\ldots, n\)</span></p></li>
+<li><p>Find <span class="math inline">\(\mu_i^{(m)} = g^{-1} (\eta_i^{(m)})\)</span></p></li>
+</ul>
+</div>
+<div class="incremental">
+<ul>
+<li>Compute the vector <span class="math inline">\(z^{(m)} \in \mathbb R^n\)</span> of “working dependent variables”: <span class="math display">\[
+z_i^{(m)} = \eta_i^{(m)} + (y_i -  \mu_i^{(m)}) d\eta_i / d \mu_i
+\]</span></li>
+</ul>
+</div>
+<div class="incremental">
+<ul>
+<li>Compute iterative weights: <span class="math display">\[
+w_i^{(m)}  = (A&#39;&#39;(\eta_i^{(m)}) (d\eta_i / d \mu_i)^2)^{-1}
+\]</span> and let <span class="math inline">\(W^{(m)} \in \mathbb R^{n \times n}\)</span> be a diagonal matrix with <span class="math inline">\(W^{(m)}_{ii} = w_i^{(m)}\)</span></li>
+</ul>
+</div>
+<div class="incremental">
+<ul>
+<li>Obtain <span class="math inline">\(\theta^{(m+1)}\)</span> by regressing the working dependent variable <span class="math inline">\(z_i\)</span> on the predictors <span class="math inline">\(x_i\)</span> using weights <span class="math inline">\(w_i\)</span>: <span class="math display">\[
+\theta^{(m+1)} = (X^T W^{(m)} X)^{-1} X^T W^{(m)} z^{(m)}
+\]</span></li>
+</ul>
+</div>
+<div class="incremental">
+<ul>
+<li>Iterate until convergence</li>
+</ul>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Idea:</p>
+<ul>
+<li><p>The problem is linear in the natural parameter space, so try to do least squares there</p></li>
+<li><p>“Working dependent variable” is like <span class="math inline">\(y_i\)</span> mapped to the natural parameter space.</p></li>
+<li><p>In general, a random variable taken from an exponential family distribution will have variance that depends on the natural parameter.</p></li>
+<li><p>The weights are inversely proportional to the variance of the response at the current guess for <span class="math inline">\(\theta\)</span>.</p></li>
+<li><p>Samples for which the variance should be smaller have larger weights, samples for which the variance should be larger get smaller weights</p></li>
+</ul>
+</div>
+<div id="example-linear-regression" class="slide section level2">
+<h1>Example: Linear regression</h1>
+<ul>
+<li><p>Random component: normal distribution, <span class="math inline">\(y_i \sim N(\eta_i, 1)\)</span> (variance 1 for ease of notation, everything goes through analogously with unknown variance <span class="math inline">\(\sigma\)</span>)</p></li>
+<li><p>Exponential family representation of the normal distribution has <span class="math inline">\(A(\eta) = \eta^2 / 2\)</span></p></li>
+<li><p>Systematic component: <span class="math inline">\(\eta_i = x_i^T \theta\)</span></p></li>
+<li><p>Canonical link function for the normal distribution is <span class="math inline">\(g(x) = x\)</span>, so <span class="math inline">\(\eta_i = \mu_i\)</span></p></li>
+<li><p>Identity link means <span class="math inline">\(E(y_i) = g^{-1}(\eta_i) = g^{-1}(x_i^T \theta) = x_i^T \theta\)</span></p></li>
+</ul>
+<div class="incremental">
+<ul>
+<li>Derivative <span class="math inline">\(\frac{d\eta}{d\mu}= 1\)</span></li>
+</ul>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Working dependent variable at iteration <span class="math inline">\(0\)</span> <span class="math display">\[
+\begin{align*}
+z_i^{(0)} &amp;= \eta_i^{(0)} + (y_i - \mu_i^{(0)}) d \eta_i^{(0)}/ d\mu\\
+&amp;= \mu_i^{(0)} + (y _i - \mu_i^{(0)}) = y_i
+\end{align*}
+\]</span></p>
+<div class="incremental">
+<p>Iterative weights: <span class="math display">\[
+\begin{align*}
+w_i^{(0)} &amp;= (A&#39;&#39;(\eta_i^{(0)}) d\eta_i^{(0)} / d\mu)^{-1} \\
+&amp;= 1
+\end{align*}
+\]</span></p>
+</div>
+<div class="incremental">
+<p>New estimate is <span class="math display">\[
+\begin{align*}
+\theta^{(1)} &amp;= (X^T W^{(0)} X)^{-1} X^T W^{(0)} z\\
+&amp;= (X^T X)^{-1} X^T y
+\end{align*}
+\]</span></p>
+</div>
+</div>
+<div id="example-logistic-regression" class="slide section level2">
+<h1>Example: logistic regression</h1>
+<ul>
+<li><p>Random component: Bernoulli distribution, <span class="math inline">\(y_i \sim \text{Bernoulli}(\mu_i)\)</span>, <span class="math inline">\(\mu_i \in (0,1)\)</span></p></li>
+<li><p>Systematic component: <span class="math inline">\(\eta_i = x_i^T \theta\)</span></p></li>
+<li><p>Canonical link for Bernoulli is <span class="math inline">\(g(x) = \log(x / (1 - x))\)</span>, so <span class="math inline">\(\eta_i = \log(\mu_i / (1 - \mu_i))\)</span></p></li>
+<li><p>Exponential family representation of Bernoulli has <span class="math inline">\(A(\eta) = \log (1 + e^\eta)\)</span></p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>Quantities we will need: <span class="math display">\[
+\eta = \log (\mu / (1 - \mu))
+\]</span></p>
+<p><span class="math display">\[
+d\eta / d\mu = 1/\mu + 1 / (1 - \mu) = 1 / (\mu(1 - \mu))
+\]</span></p>
+<p><span class="math display">\[
+A(\eta) = \log(1 + e^\eta)
+\]</span></p>
+<p><span class="math display">\[
+A&#39;(\eta) = \frac{e^\eta}{1 + e^\eta}
+\]</span></p>
+<p><span class="math display">\[
+\begin{align*}
+A&#39;&#39;(\eta) &amp;= \frac{e^\eta}{(1 + e^\eta)^2}\\
+&amp;= \mu(1 - \mu)
+\end{align*}
+\]</span></p>
+</div>
+<div class="slide section level2">
+
+<p>Working dependent variables: <span class="math display">\[
+z_i = \eta_i + (y_i - \mu_i) \frac{d\eta_i}{d \mu_i}\\
+= \eta_i + \frac{y_i - \mu_i}{\mu_i(1 - \mu_i)}
+\]</span></p>
+<div class="incremental">
+<p>Iterative weights: <span class="math display">\[
+\begin{align*}
+w_i &amp;= (A&#39;&#39;(\eta_i) (\frac{d\eta_i}{d\mu_i})^2)^{-1} \\
+&amp;= (\mu_i(1 - \mu_i) (\mu_i(1 - \mu_i))^{-2})^{-1}\\
+&amp;=  \mu_i(1 - \mu_i)
+\end{align*}
+\]</span></p>
+</div>
+<div class="incremental">
+<p>Update formula:</p>
+<p><span class="math display">\[
+\theta^{(m+1)} = (X^T W^{(m)} X)^{-1} X^T W^{(m)} z^{(m)} 
+\]</span></p>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Notice that we can rewrite this: <span class="math display">\[
+\begin{align*}
+\theta^{(m+1)} &amp;= (X^T W^{(m)} X)^{-1} X^T W^{(m)} z^{(m)} \\
+&amp;= (X^T W^{(m)} X)^{-1} X^T W^{(m)} (\eta^{(m)} + \frac{y^{(m)} - \mu^{(m)}}{\mu^{(w)}(1 - \mu^{(m)})}) \\
+&amp;= (X^T W^{(m)} X)^{-1} X^T W^{(m)} (X\theta^{(m)} + (W^{(m)})^{-1}(y - \mu^{(m)}))\\
+&amp;= \theta^{(m)} + (X^T W^{(m)} X)^{-1} X^T (y - \mu^{(m)})
+\end{align*}
+\]</span></p>
+<p>Remember Newton-Raphson for logistic regression?</p>
+</div>
+<div id="why-irls" class="slide section level2">
+<h1>Why IRLS?</h1>
+<ul>
+<li><p>Different from Newton-Raphson if you use a non-canonical link</p></li>
+<li><p>One example: probit regression instead of logistic regression</p></li>
+<li><p>Interpretation of Newton-Raphson suggests algorithms for other models</p></li>
+</ul>
+</div>
+<div id="git-local-and-remote-repositories" class="slide section level2">
+<h1>Git: local and remote repositories</h1>
+<p><img src="general-drawing.png" /></p>
+<p>When using github, you have two repositories: the one on your computer, and the one on the server.</p>
+</div>
+<div id="what-happens-when-you-clone" class="slide section level2">
+<h1>What happens when you clone?</h1>
+<p><img src="clone.png" /></p>
+<p>Data from the remote repository is put in your working directory and local repository.</p>
+</div>
+<div id="how-do-you-update-the-remote-repository" class="slide section level2">
+<h1>How do you update the remote repository?</h1>
+<p><img src="add-commit-push.png" /></p>
+<p>You make changes locally using <code>git add</code> and <code>git commit</code></p>
+<p>You can upload your local commits to the remote repository using `git push</p>
+</div>
+<div id="how-do-you-get-changes-from-the-remote-repository" class="slide section level2">
+<h1>How do you get changes from the remote repository?</h1>
+<p><img src="fetch.png" /></p>
+<p>You can use <code>git fetch</code>, but that will only add the new commits to your repository, it won’t change your working directory.</p>
+</div>
+<div class="slide section level2">
+
+<p><img src="pull.png" /></p>
+<p><code>git pull</code> is like <code>git fetch</code> + <code>git merge</code>: it fetches the new commits and then updates your working directory to correspond with the most recent commits from the server.</p>
+<p>Note: all the pictures from <a href="https://rachelcarmena.github.io/2018/12/12/how-to-teach-git.html">Rachel Carmena</a>, some good resources at that website.</p>
+</div>
+</body>
+</html>

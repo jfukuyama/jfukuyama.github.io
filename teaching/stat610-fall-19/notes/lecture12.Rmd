@@ -1,0 +1,416 @@
+## Top-down design (and the bootstrap)
+
+
+## What does it mean?
+
+General approach to problem solving.
+
+- Identify the problem you want to solve.
+
+- Break the problem up into a couple of smaller pieces.
+
+- Put the pieces together so that they solve the problem.
+
+- Solve each of the smaller pieces in the same way.
+
+-----
+
+For example, if you're designing a house, you might think:
+
+- Problem to solve: Create a layout for the house.
+
+- Sub-problems: Layouts for each of the rooms.
+
+- Put the pieces together: Assuming that we have layouts for each of the rooms, decide on how to fit them together.
+
+- Then think about the detailed layout of each of the rooms.
+
+------
+
+In programming:
+
+```{r, eval = FALSE}
+big_function = function(arguments) {
+    piece_1 = get_piece_1(some_arguments)
+    piece_2 = get_piece_2(other_arguments)
+    output = put_pieces_together(piece_1, piece_2)
+}
+```
+
+Then fill out the functions `get_piece_1`, `get_piece_2`, `put_pieces_together`.
+
+-----
+
+Advantages:
+
+- Easier to read
+
+- Tends to create small functions
+
+- Functions have a definite goal, so easier to test and debug
+
+- Goes well with test-driven design: you know what the sub-functions should do, and so you can write tests for them before you fill them out.
+
+
+## A very short introduction to the bootstrap
+
+
+. . .
+
+Let $x_1, \dots, x_n$ be a sample of size $n$ from a population, and let $f$ be an estimator of some population parameter $\theta$ of interest, so that $\hat \theta = f(x_1, \ldots, x_n)$ is our point estimate of the population parameter.
+
+- We want to know the sampling distribution of $\hat \theta$.
+
+- If we could draw more samples from the population, we could draw from the sampling distribution of $\hat \theta$:
+
+    - Draw a new sample of size $n$, $x_1^*, \ldots, x_n^*$ from the population.
+
+    - Compute our estimate $\hat \theta^* = f(x_1^*, \ldots, x_n^*)$ on that sample. 
+
+We can't do this because we can't draw new samples from the population, but...
+
+. . .
+
+Idea behind the bootstrap is to pretend that the observed data $x_1, \ldots, x_n$ is the population.
+
+- Draw $x_1^*, \ldots, x_n^*$ by sampling from $x_1, \ldots, x_n$ with replacement.
+
+- Compute $\hat \theta^* = f(x_1^*, \ldots, x_n^*)$.
+
+- Repeat many times.
+
+
+The distribution of the $\hat \theta^*$'s can be used to approximate the sampling distribution of $\hat \theta$.
+
+------
+
+In particular, if we have $\hat \theta^*_1, \ldots, \hat \theta^*_{B}$, where $B$ is the number of "bootstrap replicates", then
+
+- The bootstrap estimate of the standard error of $\hat \theta$ is $\text{sd}(\hat \theta_1^*, \ldots, \hat \theta_B^*)$
+
+- The boostrap confidence interval at level $\alpha$ for $\hat \theta$ is $(q_{\alpha/ 2}(\hat \theta_1^*, \ldots, \theta_B^*), q_{1 - \alpha / 2}(\hat \theta_1^*, \ldots, \theta_B^*))$, where $q$ is the quantile function.
+
+We'll try to compute bootstrap confidence intervals today.
+
+## Example: Bootstrap confidence intervals
+
+First try at a function to compute bootstrap confidence intervals.
+
+```{r}
+bootstrap_mean_ci = function(data, alpha, B) {
+    n = length(data)
+    boot_means = replicate(B, {
+        boot_indices = sample(x = 1:n, size = n, replace = TRUE)
+        boot_data = data[boot_indices]
+        boot_mean = mean(boot_data)
+    })
+    q_lo = alpha / 2
+    q_hi = 1 - (alpha / 2)
+    boot_ci = quantile(boot_means, probs = c(q_lo, q_hi))
+    return(boot_ci)
+}
+```
+
+-----
+
+Top-down design way of building the function:
+
+The confidence interval we want comes from the quantiles of the
+resampled estimates, so we:
+
+1. Get the resampled estimates of the mean.
+
+2. Compute the quantiles of the resampled estimates of the mean.
+
+3. Return the quantiles.
+
+. . .
+
+```{r, eval = FALSE}
+bootstrap_mean_ci = function(data, alpha, B) {
+    boot_means = get_boot_means(data, B)
+    boot_ci = get_ci(boot_means, alpha)
+    return(boot_ci)
+}
+```
+
+-----
+
+Notice that now would be a good time to write tests for the `get_ci` and `get_boot_means` functions.
+
+In the `bootstrap_mean_ci` function, we assume that
+
+- `get_boot_means` returns a vector of length `B`.
+
+- `get_ci` returns a vector of length 2.
+
+We might also want to check that
+
+- `get_ci` works on a simple test case.
+
+- The first element of `get_ci` is smaller than the second.
+
+
+-----
+
+Then we write the two sub-functions:
+
+```{r}
+get_boot_means = function(data, B) {
+    n = length(data)
+    boot_means = replicate(B, {
+        boot_indices = sample(x = 1:n, size = n, replace = TRUE)
+        boot_data = data[boot_indices]
+        boot_mean = mean(boot_data)
+    })
+    return(boot_means)
+}
+```
+
+```{r}
+get_ci = function(x, alpha){
+    q_lo = alpha / 2
+    q_hi = 1 - (alpha / 2)
+    ci = quantile(x, probs = c(q_lo, q_hi))
+    return(ci)
+}
+```
+
+
+------
+
+Go through the informal tests:
+
+```{r}
+## informal tests
+length(get_boot_means(data = rnorm(10), B = 20))
+get_ci(0:100, .05)
+```
+
+
+------
+
+Then check the whole function:
+
+```{r}
+bootstrap_mean_ci(data = rnorm(10), alpha = .05, B = 100)
+```
+
+------
+
+## Example 2
+
+```{r, eval = FALSE}
+bootstrap_mean_ci = function(data, alpha, B) {
+    n = length(data)
+    boot_means = replicate(B, {
+        boot_indices = sample(x = 1:n, size = n, replace = TRUE)
+        boot_data = data[boot_indices]
+        boot_mean = mean(boot_data)
+    })
+    q_lo = alpha / 2
+    q_hi = 1 - (alpha / 2)
+    boot_ci = quantile(boot_means, probs = c(q_lo, q_hi))
+    return(boot_ci)
+}
+```
+
+```{r, eval = FALSE}
+bootstrap_lm_ci = function(data, formula, alpha, B) {
+    n = nrow(data)
+    boot_sampled_coefs = replicate(B, {
+        boot_indices = sample(x = 1:n, size = n, replace = TRUE)
+        boot_data = data[boot_indices,]
+        boot_lm = lm(formula = formula, data = boot_data)
+        boot_coefs = coef(boot_lm)
+    })
+    q_lo = alpha / 2
+    q_hi = 1 - (alpha / 2)
+    boot_ci = plyr::aaply(boot_sampled_coefs, 1, function(x) quantile(x, probs = c(q_lo, q_hi)))
+    return(boot_ci)
+}
+```
+
+------
+
+Notice:
+
+- A lot of the code is very similar between the two functions.
+
+- Later on, we might want to make bootstrap confidence intervals for other estimates.
+
+- This is a good candidate for _refactoring_, pulling out the common tasks into single functions.
+
+. . .
+
+Within each function, we have two steps:
+
+- Compute the set of bootstrap statistics.
+
+- Compute confidence intervals from the bootstrap set.
+
+-----
+
+```{r}
+bootstrap_ci = function(data, estimator, alpha, B) {
+    boot_estimates = get_boot_estimates(data, estimator, B)
+    boot_ci = get_ci(boot_estimates, alpha)
+    return(boot_ci)
+}
+```
+
+We're assuming:
+
+- `data` is either a vector or a data frame.
+
+- `estimator` is a function that takes `data` and returns an estimate of a parameter (so something like `mean`, `sd`, or a function that computes coefficients in a linear model)
+
+- `alpha` is a number in (0, .5)
+
+- `B` is the number of bootstrap samples we want.
+
+------
+
+This would be a good time to write tests for the functions we've defined.
+
+Tests for return types:
+
+- `get_boot_estimates` should have number of rows equal to `B` or else length equal to `B`
+
+- If we're just estimating one parameter, `get_ci` should return
+a vector of length 2.
+
+- If we're estimating more than one parameter, `get_ci`should
+return a matrix with number of columns equal to 2 (upper and
+lower confidence bounds) and number of rows equal to the number of things we're estimating.
+
+Test for actual values:
+
+- Check that the `get_ci` function works on a simple case where you
+know the answer.
+
+------
+
+Next step: fill out the functions
+
+```{r}
+get_ci = function(estimates, alpha) {
+    q_lo = alpha / 2
+    q_hi = 1 - (alpha / 2)
+    if(!is.null(dim(estimates))) {
+        ## if we have multi-dimensional estimates
+        cis = plyr::aaply(estimates, 1, function(x) quantile(x, probs = c(q_lo, q_hi)))
+    } else {
+        ## if we have one-dimensional estimates
+        cis = quantile(estimates, probs = c(q_lo, q_hi))
+    }
+    return(cis)
+}
+```
+
+. . .
+
+```{r}
+get_boot_estimates = function(data, estimator, B) {
+    boot_estimates = replicate(B, expr = {
+        resampled_data = get_bootstrap_sample(data)
+        boot_estimate = estimator(resampled_data)
+        return(boot_estimate)
+    })
+    return(boot_estimates)
+}
+```
+
+
+ . . .
+
+We made another problem for ourselves! Still need `get_bootstrap_sample`.
+
+-----
+
+Fill out `get_bootstrap_sample`
+
+```{r}
+get_bootstrap_sample = function(data) {
+    if(!is.null(dim(data))) {
+        ## in this case, data is rectangular, and we want to sample rows
+        n = nrow(data)
+        boot_idx = sample(1:n, size = n, replace = TRUE)
+        bootstrap_sample = data[boot_idx,]
+    } else {
+        ## in this case, data is a vector and we want to sample elements of the vector
+        n = length(data)
+        boot_idx = sample(1:n, size = n, replace = TRUE)
+        bootstrap_sample = data[boot_idx]
+    }
+    return(bootstrap_sample)
+}
+```
+
+. . .
+
+Could make an argument for breaking into two functions:
+
+```{r, eval = FALSE}
+get_bootstrap_sample = function(data) {
+    if(!is.null(dim(data))) {
+        boot_sample = bootstrap_sample_rows(data)
+    } else {
+        boot_sample =  bootstrap_sample_elements(data)
+    }
+    return(boot_sample)
+}
+
+bootstrap_sample_rows = function(data) {
+    n = nrow(data)
+    boot_idx = sample(1:n, size = n, replace = TRUE)
+    bootstrap_sample = data[boot_idx,]
+    return(bootstrap_sample)
+}
+
+bootstrap_sample_elements = function(data) {
+    n = length(data)
+    boot_idx = sample(1:n, size = n, replace = TRUE)
+    bootstrap_sample = data[boot_idx]
+    return(bootstrap_sample)
+}
+```
+
+
+-----
+
+Does it work?
+
+```{r}
+bootstrap_ci(data = rnorm(10), estimator = mean, alpha = .05, B = 1000)
+bootstrap_ci(data = rnorm(100, sd = 2),
+             estimator = sd,
+             alpha = .05, B = 1000)
+```
+
+-----
+
+The more complicated example: bootstrap confidence intervals for
+coefficients from a linear model:
+
+```{r}
+data(iris)
+iris_coef_estimator = function(d) {
+    iris_lm = lm(Sepal.Length ~ Sepal.Width + Petal.Length, data = d)
+    iris_coef = coef(iris_lm)
+    return(iris_coef)
+}
+```
+
+. . .
+
+
+```{r}
+bootstrap_ci(data = iris,
+             estimator = iris_coef_estimator,
+             alpha = .05,
+             B = 1000)
+## compare with
+iris_lm = lm(Sepal.Length ~ Sepal.Width + Petal.Length, data = iris)
+confint(iris_lm)
+```

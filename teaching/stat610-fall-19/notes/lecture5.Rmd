@@ -1,0 +1,425 @@
+## Writing and calling functions
+
+Reading:
+
+- Matloff Section 1.3, 7.3-7.6 (7.6 is presented rather
+formally), 7.12, 7.13
+
+- If you want more detail on environments: _Advanced R_ by Hadley Wickham has a good [chapter](http://adv-r.had.co.nz/Environments.html) on them.
+
+- More relevant for next time: _Clean Code_ by Robert Martin, [Chapter 3](https://iucat.iu.edu/iub/16580380).
+
+Today: Nuts and bolts, technical aspects of functions in R.
+
+Next time: More practical advice on how to write functions, best practices, etc.
+
+## Why write functions?
+
+- Make your code more readable.
+
+. . .
+
+- Allows you to re-use related lines of code for slightly different tasks.
+
+. . .
+
+- Makes testing your code easier.
+
+## What is a function?
+
+- A way of turning some inputs into some outputs.
+
+. . .
+
+- A way of tying together related pieces of code.
+
+. . .
+
+- An object.
+
+## Function creation
+
+Syntax for function creation:
+
+```
+f = function(arguments) {
+	body
+}
+```
+
+- `arguments` are variables used by the function.
+
+- `body` is the code you want to execute.
+
+## Formal arguments vs. actual arguments
+
+- Formal argument: the variable name used in the function definition.
+
+- Actual argument: the actual value of the variable used when the function is called.
+
+Idea: You want to be able to evaluate the function for any possible _actual argument_ value, and the _formula argument_ is a placeholder.
+
+-----
+
+So for example, if we return to our steak-cooking example from the first week, we might define the following function:
+
+```{r}
+steak_directions = function(temp, steak_type) {
+    if(steak_type == "rare" & temp > 115) {
+        return("take your steak off!")
+    } else if(steak_type == "med_rare" & temp > 125) {
+        return("take your steak off!")        
+    } 
+    "you can keep cooking"
+}
+
+```
+
+-----
+
+We can see the arguments and body of the function using `formals` and `body`, respectively.
+
+```{r}
+formals(steak_directions)
+body(steak_directions)
+```
+
+## Function arguments
+
+Once you have a function, you call it by specifying the values for all of the arguments.
+The values can be specified in two ways:
+
+- By position: first argument is assigned to the first variable in the function definition, second argument to the second variable in the function definition, and so on
+
+- By name: arguments are specified by name instead of being inferred based on position.
+
+The two can be combined.
+
+-----
+
+. . .
+
+So for example, the following are all the same:
+
+```{r}
+steak_directions(temp = 120, steak_type = "rare")
+steak_directions(steak_type = "rare", temp = 120)
+steak_directions(120, "rare")
+```
+
+But this is of course different and will not work correctly:
+```{r}
+steak_directions("rare", 120)
+```
+
+
+## Default arguments
+
+When you define a function, you can set default values for any/all of the arguments.
+
+When you call such a function, if you don't specify a value for that argument, it will automatically go to the default value.
+
+-----
+
+. . .
+
+For example, in the following function the default argument for `steak_type` is `"rare"`.
+
+```{r}
+steak_directions = function(temp, steak_type = "rare") {
+    if(steak_type == "rare" & temp > 115) {
+        return("take your steak off!")
+    } else if(steak_type == "med_rare" & temp > 125) {
+        return("take your steak off!")        
+    } 
+    "you can keep cooking"
+}
+
+```
+
+If we don't specify `steak_type`, we will get results as if we had specified it to be `"rare"`, but we can also over-ride that argument if we set it explicitly:
+
+```{r}
+steak_directions(120, "rare")
+steak_directions(120)
+steak_directions(120, steak_type = "med_rare")
+```
+
+## Return values
+
+When a function is called, the commands in the body of the function are executed, and a value is returned.
+
+The return value is either:
+
+- The value of last command executed, or
+
+- A value set explicitly using the `return` syntax.
+
+The commands in the body of the function are executed until a `return` statement is encountered or the the end of the body is reached, whichever comes first.
+
+-----
+
+. . .
+
+Let's think through what happens when we call the function these two ways:
+
+```{r}
+steak_directions = function(temp, steak_type = "rare") {
+    if(steak_type == "rare" & temp > 115) {
+        return("take your steak off!")
+    } else if(steak_type == "med_rare" & temp > 125) {
+        return("take your steak off!")        
+    } 
+    "you can keep cooking"
+}
+steak_directions(steak_type = "rare", temp = 120)
+steak_directions(steak_type = "med_rare", temp = 120)
+```
+
+-----
+
+## Invisible return
+
+Invisible return is a bit R-specific:
+
+- If you use `invisible` instead of `return` in a function definition, the result will be discarded unless it is assigned.
+
+- This is not usually something that you will use, but some of the built-in functions use invisible returns.
+
+-----
+
+. . .
+
+```{r}
+square_invisible = function(x) invisible(x^2)
+square = function(x) x^2
+```
+
+. . .
+
+If we call `square(4)` we get output: 16
+
+```{r}
+square(4)
+```
+
+. . .
+But if we call `square_invisible(4)`, we don't see any output!
+```{r}
+square_invisible(4)
+```
+
+. . .
+
+The square was computed though, and we can see this if we assign the output:
+
+```{r}
+xsquared = square_invisible(4)
+xsquared
+```
+
+-----
+
+Another example: compare the two versions of oddcount:
+
+```{r}
+oddcount = function(x) {
+    k = 0
+    for(n in x) {
+        if (n %% 2 == 1) k = k + 1
+    }
+    return(k)
+}
+oddcount(c(0, 5))
+```
+
+. . .
+
+
+```{r}
+oddcount = function(x) {
+    k = 0
+    for(n in x) {
+        if (n %% 2 == 1) k = k + 1
+    }
+}
+oddcount(c(0, 5))
+oddcount_output = oddcount(c(0, 5))
+oddcount_output
+```
+
+We get `NULL` for the value of `oddcount_output` because the last function to be evaluated in `oddcount` was technically the `for` function.
+
+`for` returns `NULL` invisibly, so the second version of `oddcount` also returns `NULL` invisibly.
+
+## Return values can be anything
+
+- If you want to return multiple related pieces of information, you can put them in a list or other type of object.
+
+. . .
+
+- Your return value can even be another function!
+
+```{r}
+g = function() {
+    t = function(x) x^2
+    return(t)
+}
+g
+g()
+formals(g)
+formals(g())
+body(g)
+body(g())
+```
+
+## Environments and scope
+
+When you call a function, the commands in the function body are executed, but not in exactly the same way they would be if you simply ran them one at a time in an interactive R session.
+
+The commands are executed in the function's _environment_.
+
+## Environments
+
+Ok, so what is an environment?
+
+- An environment binds names to values.
+
+. . .
+
+- Every environment has a parent (except for the empty environment).
+
+. . .
+
+What are they good for?
+
+- The purpose of environments is to describe where to look for variables.
+
+- When you refer to any object, R first looks in the current environment for an object with that name.
+
+- If it doesn't find an object with that name in the current environment, it looks in the parent environment, and continues until it runs out of parents or finds an object with the right name.
+
+-----
+
+For example, have you ever wondered how R finds functions?
+
+The function `lm` is not in the global environment, as we can see if we just call `ls`:
+
+```{r}
+ls()
+```
+
+-----
+
+But we are able to access it and, for instance, ask what its arguments are:
+
+```{r}
+head(formals(lm))
+```
+
+-----
+
+Functions live in environments corresponding to the package they are defined in. For `lm`, this is `stats`.
+
+```{r}
+environment(lm)
+```
+
+Package environments are all ancestral to the global environment, so when R found that lm wasn't defined in the global environment, it looked through the packages until it found lm defined in stats.
+
+
+
+
+## Function environments
+
+. . .
+
+When a function is called, its body is evaluated in an execution environment whose parent is the function's environment.
+
+```{r}
+w = 12
+f = function(y) {
+    d = 8
+    h = function() {
+        return(d * (w + y))
+    }
+    cat("h's environment: ", "\n")
+    print(environment(h))
+    cat("h's parent environment:", "\n")
+    print(parent.env(environment(h)))
+    output = h()
+    return(output)
+}
+f(1)
+environment(f)
+```
+
+-----
+
+. . .
+
+Compare with:
+
+```{r}
+f = function(y) {
+    d = 8
+    output = h()
+    return(output)
+}
+
+h = function() {
+    cat("h's environment:", "\n")
+    print(environment(h))
+    cat("h's parent environment:", "\n")
+    print(parent.env(environment(h)))
+    return(d * (w + y))
+}
+f(5)
+```
+
+
+-----
+
+This perhaps seems overly baroque, but the take-home points about environments (and the reason why they are set up the way they are) are:
+
+- Commands called in the body of the function usually have access to values of the variables in that function plus variables at higher levels.
+
+- Variables defined in the body of a function go away after the function exits.
+
+----
+
+## Side effects
+
+A function has a _side effect_ if it does anything other than compute a return value, for instance, if it changes the values of other variables in the environment it is defined in, or adds variables to the environment.
+
+We generally don't want functions to have side effects, because they make code more confusing and more difficult to test.
+
+In R, functions _can_ have side effects, but it is discouraged by both the language itself and by programming norms.
+
+
+-----
+
+. . .
+
+Remember that functions can see variables defined in the parent environments.
+
+What they can't do is change the values of those variables (except with a special operator).
+
+For example:
+
+
+```{r}
+w = 12
+f = function(y) {
+   d = 8
+   w = w + 1
+   y = y - 2
+   cat(sprintf("Value of w: %i", w), "\n")
+   return(d * (w + y))
+}
+t = 4
+f(t)
+w
+```
+
+It looks like the value of `w` changed inside the function, but the value in the global environment was not actually changed.
