@@ -1,16 +1,179 @@
-## Flow control and looping
-
 ```{r setup, echo = FALSE, message = FALSE}
 library(knitr)
 opts_chunk$set(fig.cap="", fig.width = 6, fig.height = 4, dpi=175,
                fig.path="lecture-2-fig/", warning = FALSE, cache=FALSE)
 ```
 
+
+## Logistics
+
+- My office hours are usually 2-4pm, but this week will be 4-6pm. I sent you the zoom link in an email.
+
+- No lab this week.
+
+- First homework will go out on Sunday.
+
+
+
+## Today
+
 Reading: Matloff Chapter 7.1, 7.2, 2.9
 
-Last time: Data structures, so that we have something to work on.
+Last time/finish up today: Data structures, so that we have something to work on.
 
 This time: Flow control, so we can actually do things.
+
+
+
+## Lists
+
+- Lists are technically vectors.
+
+- The vectors from before were called _atomic_ vectors, which means
+that their components couldn't be broken down into smaller components.
+
+- In R, the main purpose of lists is to lump together data of
+different types. Atomic vectors require all their elements to be of
+the same type, but lists can have any sort of elements (including lists!).
+
+----
+
+## Creating lists
+
+You can create a list with the `list` function...
+
+```{r}
+j = list(name = "Joe", salary = 55000, union = TRUE)
+j
+```
+
+-----
+
+The component names (_tags_) are not necessary, but it is good
+practice to use them.
+
+```{r}
+list("Joe", 55000, TRUE)
+```
+
+-----
+
+## List access
+
+Suppose we want to get Joe's salary. There are at least three
+different ways to do so:
+
+```{r}
+j$salary
+j[["salary"]]
+j[[2]]
+```
+
+The double brackets `[[]]` allow us access to an element of the list.
+
+Note that if we didn't use the tags, we would only be able to access
+the salary using `j[[2]]`.
+
+----
+
+
+## Sublist vs. Element of list
+
+
+Very important: `[[]]` and `[]` are different operations:
+
+- `[[]]` gives an _element_ of the list
+
+- `[]` gives a sublist
+
+. . .
+
+```{r}
+j[[2]]
+class(j[[2]])
+j[2]
+class(j[2])
+```
+
+-----
+
+## List manipulation
+
+We can add to a list by tag:
+
+```{r}
+j$hobby = "sailing"
+j
+```
+
+-----
+
+We can add to a list by index:
+
+```{r}
+j[[5]] = 1:5
+j
+```
+
+----
+
+We can remove an element from a list by setting it to `NULL`:
+
+```{r}
+j[[5]] = NULL
+j
+j$hobby = NULL
+j
+```
+
+-----
+
+
+## Extracting names and values
+
+Names are easy, just use the `names` function:
+
+```{r}
+names(j)
+```
+
+-----
+
+
+
+To get values, we use `unlist`.
+
+This is another function you have to be careful with, because it
+doesn't necessarily do what you think it will.
+
+- It returns an atomic vector.
+
+- That means all the elements have to be of the same class, and so
+data often gets coerced to a different type.
+
+- If we unlist `j`, we get back a character vector. This is
+essentially because R knows how to convert numbers and booleans to
+characters but doesn't know how to convert characters to numbers or
+booleans.
+
+```{r}
+unlist(j)
+```
+
+You can see the text for the coercion hierarchy.
+
+----
+
+Note that `unlist` gives an atomic vector even for recursive lists
+(lists of lists), for example:
+
+```{r}
+complex_list = list(a = list(1), b = 1:5, c = (list(a = 1, b = 2)))
+unlist(complex_list)
+```
+
+
+## Flow control and looping
 
 - Conditionals
 
@@ -283,8 +446,7 @@ for(i in 1:nrow(Master)) {
 Not a data problem:
 [Eddie Gaedel](https://en.wikipedia.org/wiki/Eddie_Gaedel)
 
-For you to think about on your own: does it matter whether we check
-for NA first? What could potentially happen if we check for height first instead?
+Question: does it matter whether we check for NA first? What could potentially happen if we check for height first instead?
 
 ## While loops
 
@@ -331,37 +493,30 @@ x
 
 -----
 
-Or for a slightly less silly example, we could use it to answer a
-modified birthday problem.
-
-Suppose we want to know how many classes filled with randomly selected
-individuals we would have to attend before we found one where there
-were at least two pairs of people with the same birthday.
-
-We could go through the math, or we could get partway to an answer
-with a while loop.
-
-. . .
-
-Here we draw sets of birthdays for classes of size 20, assuming that
-there are 365 days in a year:
+As a more topical example, we can use this to simulate the number of days until someone infected with the coronavirus shows up in class:
 
 ```{r}
-days_in_year = 365
-class_size = 20
-num_classes = 0
+set.seed(100)
+infection_rate = .01
+false_negative_rate = .3
+infected_and_not_quarantined_rate = infection_rate * false_negative_rate
+class_size = 10
+probability_no_infections = (1 - infected_and_not_quarantined_rate)^class_size
+day = 1
 while(TRUE) {
-    num_classes = num_classes + 1
-    birthdays = sample(1:days_in_year, class_size, replace = TRUE)
-    num_birthdays_per_day = table(birthdays)
-    days_with_match = num_birthdays_per_day >= 2
-    num_days_with_match = sum(days_with_match)
-    if(num_days_with_match >= 2) {
+    someone_infected = rbinom(n = 1, size = 1, prob = 1 - probability_no_infections)
+    if(someone_infected == 1) {
         break
+    } else {
+        day = day + 1
     }
 }
-num_classes
+print(day)
 ```
+
+Note: this isn't actually a very good simulation for getting at how long it will take for someone to be infected, because we're not taking into account the fact that we have the same people in class every day, not new randomly drawn set each day. It is a good example of a while loop though.
+
+----
 
 . . .
 
