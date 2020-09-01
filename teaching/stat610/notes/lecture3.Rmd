@@ -1,9 +1,14 @@
+## Logistics
+
+- Homework 1 was posted, due next Tuesday
+
+- Lab 1 will happen on Friday over Zoom with John (see the canvas announcement for the link), script and data posted at jfukuyama.github.io/teaching/stat610/assignments.
+
 ## Regular expressions
 
 Reading: Matloff Chapter 11.2.
 
-There are also many tutorials about regular expressions online, many
-of them not very good.
+I've linked to a couple of regular expression testers from the page with the course notes.
 
 [Wikipedia](https://en.wikipedia.org/wiki/Regular_expression) actually has a good treatment if you go through it slowly.
 
@@ -19,9 +24,7 @@ A way of specifying a set of strings.
 
 `, *`
 
-is the set of strings that
-start with a comma and are followed by any number (including zero) of
-spaces.
+specifies the set of strings that start with a comma and are followed by any number (including zero) of spaces.
 
 -----
 
@@ -38,43 +41,36 @@ For example: our `, *` expression from before.
 
 ## Regular expressions abstractly
 
-The formal definition of a regular expression is inductive. Suppose
-that we have a finite alphabet $\Sigma$.
+The formal definition of a regular expression is inductive. Suppose that we have a finite alphabet $\Sigma$.
 
 We start with specifying the following as regular expressions:
 
-- $\emptyset$: The empty set
+- $\emptyset$ is a regular expression specifying the empty set
 
-- $\varepsilon$: The set containing the empty string `""`
+- $\varepsilon$ is a regular expression specifying the set containing the empty string `""`
 
-- Literal character $a$: The one-element set $\{a\}$, for $a \in \Sigma$
+- Literal character $a$ is a regular expression specifying the one-element set $\{a\}$, for $a \in \Sigma$
 
 ----
 
 The following operations, performed on regular expressions, yield
 regular expressions:
 
-- Concatenation: If $R$ and $S$ are regular expressions, $RS$ denotes
-the set of strings that can be formed by concatenating a string in $R$
-followed by a string in $S$.
+- Concatenation: If $R$ and $S$ are regular expressions, $RS$ is a regular expression specifying the set of strings that can be formed by concatenating a string in $R$ followed by a string in $S$.
 <br><br>
 If $R = \{good, bad\}$ and $S = \{boy, girl\}$, then $RS =
 \{goodboy, goodgirl, badboy, badgirl\}$.
 
 . . .
 
-- Alternation (boolean or): If $R$ and $S$ are regular expressions,
-$R|S$ denotes the set of strings formed by taking either an element of
-$R$ or an element of $S$. This is the same as the set union.
+- Alternation (boolean or): If $R$ and $S$ are regular expressions, $R|S$ is a regular expression specifying the set of strings strings formed by taking either an element of $R$ or an element of $S$. This is the same as the set union.
 <br><br>
 Same example: If $R = \{good, bad\}$ and $S = \{boy, girl\}$, then $R|S =
 \{good, bad, boy, girl\}$.
 
 . . .
 
-- Kleene star: If $R$ is a regular expression, $R^\star$ denotes the set of
-strings created by concatenating any finite number (including zero) of
-the strings in $R$.
+- Kleene star: If $R$ is a regular expression, $R^\star$ is a regular expression denoting the set of strings created by concatenating any finite number (including zero) of the strings in $R$.
 <br><br>
 If $R = \{good, bad\}$, $R^\star$ contains , good, goodgood,
 goodbad, bad, badgood, badbadgood, and so on
@@ -110,10 +106,7 @@ followed by zero or more `b`'s, optionally ending with a `c`, `{"a", "ac", "ab",
 
 ## How they are actually implemented
 
-Actual implementations of regular expressions have many more symbols
-and operators, but they are mostly just shorthand for some common
-operations that would take longer to express using only the three
-operations in the formal definition.
+Actual implementations of regular expressions have many more symbols and operators, but they are mostly just shorthand for some common operations that would take longer to express using only the three operations in the formal definition.
 
 
 

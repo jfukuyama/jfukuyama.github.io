@@ -88,26 +88,33 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div class="slide titlepage">
   <h1 class="title">Stat 610 Lecture 3: Regular Expressions</h1>
 </div>
+<div id="logistics" class="slide section level2">
+<h1>Logistics</h1>
+<ul class="incremental">
+<li><p>Homework 1 was posted, due next Tuesday</p></li>
+<li><p>Lab 1 will happen on Friday over Zoom with John (see the canvas announcement for the link), script and data posted at jfukuyama.github.io/teaching/stat610/assignments.</p></li>
+</ul>
+</div>
 <div id="regular-expressions" class="slide section level2">
 <h1>Regular expressions</h1>
 <p>Reading: Matloff Chapter 11.2.</p>
-<p>There are also many tutorials about regular expressions online, many of them not very good.</p>
+<p>I’ve linked to a couple of regular expression testers from the page with the course notes.</p>
 <p><a href="https://en.wikipedia.org/wiki/Regular_expression">Wikipedia</a> actually has a good treatment if you go through it slowly.</p>
 <p>You can also find formal treatments of regular expressions in books on the foundations of computing, e.g. Hopcroft, Motwani, and Ullman (2000). <em>Introduction to Automata Theory, Languages, and Computation</em>.</p>
 </div>
 <div id="what-is-a-regular-expression" class="slide section level2">
 <h1>What is a regular expression?</h1>
 <p>A way of specifying a set of strings.</p>
-<ul>
+<ul class="incremental">
 <li>For example, the regular expression</li>
 </ul>
 <p><code>, *</code></p>
-<p>is the set of strings that start with a comma and are followed by any number (including zero) of spaces.</p>
+<p>specifies the set of strings that start with a comma and are followed by any number (including zero) of spaces.</p>
 </div>
 <div class="slide section level2">
 
 <p>Why do we need them?</p>
-<ul>
+<ul class="incremental">
 <li><p>Parsimony: We can express sets of strings more compactly. <br><br> For example: <code>(J.|Julia) Fukuyama</code> represents the set containing <code>J. Fukuyama</code> and <code>Julia Fukuyama</code></p></li>
 <li><p>Allows us to specify infinite-size sets in finite space. <br><br> For example: our <code>, *</code> expression from before.</p></li>
 </ul>
@@ -116,26 +123,26 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <h1>Regular expressions abstractly</h1>
 <p>The formal definition of a regular expression is inductive. Suppose that we have a finite alphabet <span class="math inline">\(\Sigma\)</span>.</p>
 <p>We start with specifying the following as regular expressions:</p>
-<ul>
-<li><p><span class="math inline">\(\emptyset\)</span>: The empty set</p></li>
-<li><p><span class="math inline">\(\varepsilon\)</span>: The set containing the empty string <code>""</code></p></li>
-<li><p>Literal character <span class="math inline">\(a\)</span>: The one-element set <span class="math inline">\(\{a\}\)</span>, for <span class="math inline">\(a \in \Sigma\)</span></p></li>
+<ul class="incremental">
+<li><p><span class="math inline">\(\emptyset\)</span> is a regular expression specifying the empty set</p></li>
+<li><p><span class="math inline">\(\varepsilon\)</span> is a regular expression specifying the set containing the empty string <code>""</code></p></li>
+<li><p>Literal character <span class="math inline">\(a\)</span> is a regular expression specifying the one-element set <span class="math inline">\(\{a\}\)</span>, for <span class="math inline">\(a \in \Sigma\)</span></p></li>
 </ul>
 </div>
 <div class="slide section level2">
 
 <p>The following operations, performed on regular expressions, yield regular expressions:</p>
-<ul>
-<li>Concatenation: If <span class="math inline">\(R\)</span> and <span class="math inline">\(S\)</span> are regular expressions, <span class="math inline">\(RS\)</span> denotes the set of strings that can be formed by concatenating a string in <span class="math inline">\(R\)</span> followed by a string in <span class="math inline">\(S\)</span>. <br><br> If <span class="math inline">\(R = \{good, bad\}\)</span> and <span class="math inline">\(S = \{boy, girl\}\)</span>, then <span class="math inline">\(RS = \{goodboy, goodgirl, badboy, badgirl\}\)</span>.</li>
+<ul class="incremental">
+<li>Concatenation: If <span class="math inline">\(R\)</span> and <span class="math inline">\(S\)</span> are regular expressions, <span class="math inline">\(RS\)</span> is a regular expression specifying the set of strings that can be formed by concatenating a string in <span class="math inline">\(R\)</span> followed by a string in <span class="math inline">\(S\)</span>. <br><br> If <span class="math inline">\(R = \{good, bad\}\)</span> and <span class="math inline">\(S = \{boy, girl\}\)</span>, then <span class="math inline">\(RS = \{goodboy, goodgirl, badboy, badgirl\}\)</span>.</li>
 </ul>
 <div class="incremental">
-<ul>
-<li>Alternation (boolean or): If <span class="math inline">\(R\)</span> and <span class="math inline">\(S\)</span> are regular expressions, <span class="math inline">\(R|S\)</span> denotes the set of strings formed by taking either an element of <span class="math inline">\(R\)</span> or an element of <span class="math inline">\(S\)</span>. This is the same as the set union. <br><br> Same example: If <span class="math inline">\(R = \{good, bad\}\)</span> and <span class="math inline">\(S = \{boy, girl\}\)</span>, then <span class="math inline">\(R|S = \{good, bad, boy, girl\}\)</span>.</li>
+<ul class="incremental">
+<li>Alternation (boolean or): If <span class="math inline">\(R\)</span> and <span class="math inline">\(S\)</span> are regular expressions, <span class="math inline">\(R|S\)</span> is a regular expression specifying the set of strings strings formed by taking either an element of <span class="math inline">\(R\)</span> or an element of <span class="math inline">\(S\)</span>. This is the same as the set union. <br><br> Same example: If <span class="math inline">\(R = \{good, bad\}\)</span> and <span class="math inline">\(S = \{boy, girl\}\)</span>, then <span class="math inline">\(R|S = \{good, bad, boy, girl\}\)</span>.</li>
 </ul>
 </div>
 <div class="incremental">
-<ul>
-<li>Kleene star: If <span class="math inline">\(R\)</span> is a regular expression, <span class="math inline">\(R^\star\)</span> denotes the set of strings created by concatenating any finite number (including zero) of the strings in <span class="math inline">\(R\)</span>. <br><br> If <span class="math inline">\(R = \{good, bad\}\)</span>, <span class="math inline">\(R^\star\)</span> contains , good, goodgood, goodbad, bad, badgood, badbadgood, and so on</li>
+<ul class="incremental">
+<li>Kleene star: If <span class="math inline">\(R\)</span> is a regular expression, <span class="math inline">\(R^\star\)</span> is a regular expression denoting the set of strings created by concatenating any finite number (including zero) of the strings in <span class="math inline">\(R\)</span>. <br><br> If <span class="math inline">\(R = \{good, bad\}\)</span>, <span class="math inline">\(R^\star\)</span> contains , good, goodgood, goodbad, bad, badgood, badbadgood, and so on</li>
 </ul>
 </div>
 <div class="incremental">
@@ -146,17 +153,17 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div class="slide section level2">
 
 <p>Examples:</p>
-<ul>
+<ul class="incremental">
 <li><p><code>a|b</code>: <code>{"a", "b"}</code></p></li>
 <li><p><code>a|b*</code>: <code>{ε, "a", "b", "bb", "bbb", ...}</code></p></li>
 </ul>
 <div class="incremental">
-<ul>
+<ul class="incremental">
 <li><code>(a|b)*</code>: The set of all string containing only <code>a</code> and <code>b</code>, <code>{ε, "a", "b", "aa", "ab", "ba", "bb", "aaa", ...}</code></li>
 </ul>
 </div>
 <div class="incremental">
-<ul>
+<ul class="incremental">
 <li><code>ab*(c|ε)</code>: The set of strings starting with a single <code>a</code>, followed by zero or more <code>b</code>’s, optionally ending with a <code>c</code>, <code>{"a", "ac", "ab", "abc", "abb", "abbc", ...}</code></li>
 </ul>
 </div>
@@ -167,7 +174,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 <div id="quantification-operations" class="slide section level2">
 <h1>Quantification operations</h1>
-<ul>
+<ul class="incremental">
 <li><p><code>*</code>: Same as in the formal definition: zero or more times.</p></li>
 <li><p><code>?</code>: Zero or one occurrence of the preceding element. <code>colou?r</code> matches <code>color</code> and <code>colour</code>.</p></li>
 <li><p><code>+</code>: One or more occurrences of the preceding element.</p></li>
@@ -178,7 +185,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 <div id="alternatives-to" class="slide section level2">
 <h1>Alternatives to |</h1>
-<ul>
+<ul class="incremental">
 <li><p><code>[]</code>: Matches any single character inside the brackets.</p></li>
 <li><p><code>[^ ]</code>: Negation, matches anything <em>except</em> the set of characters inside the brackets.</p></li>
 <li><p><code>.</code>: Wildcard, matches any character.</p></li>
@@ -187,7 +194,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 <div id="what-do-we-do-with-regular-expressions" class="slide section level2">
 <h1>What do we do with regular expressions?</h1>
-<ul>
+<ul class="incremental">
 <li><p>Check whether a string contains a regular expression</p></li>
 <li><p>Extract the portion of the string that matches a regular expression</p></li>
 <li><p>Split a string into pieces delimited by a regular expression</p></li>
@@ -196,7 +203,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="finding-regular-expressions" class="slide section level2">
 <h1>Finding regular expressions</h1>
 <p><code>grep</code></p>
-<ul>
+<ul class="incremental">
 <li><p>syntax: <code>grep(regex, string)</code>.</p></li>
 <li><p><code>regex</code> is a regular expression</p></li>
 <li><p><code>string</code> is a character vector</p></li>
@@ -207,7 +214,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 <div class="incremental">
 <p>Pedantic note:</p>
-<ul>
+<ul class="incremental">
 <li><p>A regular expression describes a set of strings.</p></li>
 <li><p>If I say a string <code>s</code> “contains” or “matches” a regular expression <code>re</code>, I mean that a substring of <code>s</code> is present in the set described by <code>re</code>.</p></li>
 </ul>
@@ -219,11 +226,11 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">grep</span>(<span class="st">&quot;(K|k)ansas&quot;</span>, state.name)</span></code></pre></div>
 <pre><code>## [1]  4 16</code></pre>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">grepl</span>(<span class="st">&quot;(K|k)ansas&quot;</span>, state.name)</span></code></pre></div>
-<pre><code>##  [1] FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
-## [12] FALSE FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE
-## [23] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
-## [34] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
-## [45] FALSE FALSE FALSE FALSE FALSE FALSE</code></pre>
+<pre><code>##  [1] FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [13] FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [25] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [37] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [49] FALSE FALSE</code></pre>
 </div>
 </div>
 <div class="slide section level2">
@@ -231,7 +238,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <p><code>grep</code> and <code>grepl</code> just tell us if the regular expression is present. What if you want to know where it is within the string?</p>
 <div class="incremental">
 <p><code>regexpr</code></p>
-<ul>
+<ul class="incremental">
 <li><p>Syntax: <code>regexpr(regex, string)</code></p></li>
 <li><p><code>regex</code> is a regular expression.</p></li>
 <li><p><code>string</code> is a character vector.</p></li>
@@ -270,7 +277,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 <p>If you want the text that matches the regular expression, you need <code>regmatches</code></p>
 <p>Syntax: <code>regmatches(text, match)</code></p>
-<ul>
+<ul class="incremental">
 <li><p><code>match</code> is the output from <code>regexpr</code> or <code>gregexpr</code>, describing the locations of the regular expressions.</p></li>
 <li><p><code>text</code> is the character vector you passed to <code>regexpr</code> or <code>gregexpr</code>.</p></li>
 </ul>
@@ -302,13 +309,13 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="splitting-on-regular-expressions" class="slide section level2">
 <h1>Splitting on regular expressions</h1>
 <p>Syntax: <code>strsplit(s, split)</code></p>
-<ul>
+<ul class="incremental">
 <li><p><code>s</code> is a character vector (can have length greater than 1), and the function vectorizes.</p></li>
 <li><p><code>split</code> gives the regular expression we want to split on: every element of <code>s</code> will be split into pieces separated by the regex <code>split</code>.</p></li>
 </ul>
 <div class="incremental">
 <p>Two other arguments you should know about, <code>fixed</code> and <code>perl</code>:</p>
-<ul>
+<ul class="incremental">
 <li><p><code>fixed = TRUE</code> means to treat <code>split</code> as the literal string instead of a regular expression, <code>fixed = FALSE</code> is the default and means that we treat the splitting expression as a regular expression.</p></li>
 <li><p><code>perl</code> relates to the flavor of regular expressions used.</p></li>
 </ul>
@@ -331,7 +338,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 <div id="two-more-ideas" class="slide section level2">
 <h1>Two more ideas</h1>
-<ul>
+<ul class="incremental">
 <li><p>Greedy quantification: There can be more than one match of a string to a regular expression that begins at the same place. Which one do you want?</p></li>
 <li><p>Anchoring: Can constrain the expression to match at certain places in words or lines.</p></li>
 </ul>
@@ -346,7 +353,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <pre><code>## [1] &quot;[i]&quot;</code></pre>
 <div class="incremental">
 <p>Note: Escaping</p>
-<ul>
+<ul class="incremental">
 <li><p>The special characters used for regular expressions need to be escaped using <code>\\</code>.</p></li>
 <li><p>One <code>\</code> is the normal escape character, its function is to tell the string processing tools that the next character should be read in a special way.</p></li>
 <li><p>When we create a regular expression, we need a literal <code>\</code>, and so we need to escape the escape character.</p></li>
@@ -355,7 +362,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 <div id="anchoring" class="slide section level2">
 <h1>Anchoring</h1>
-<ul>
+<ul class="incremental">
 <li><p><code>^</code> (not inside square brackets) means that what comes after must be at the start of a line.</p></li>
 <li><p><code>$</code> means that what comes before must be at the end of a line.</p></li>
 <li><p><code>\&lt;</code> anchors to the beginning of a word.</p></li>
