@@ -6,6 +6,8 @@ Reading: Matloff Chapter 11.1 (for strings), 6.1 (for factors), 5.1
 
 ## The character type
 
+. . .
+
 - Strings have type `character` in R.
 
 - No special type for single characters vs. strings:
@@ -32,6 +34,8 @@ nchar("ABC")
 
 ## Creating strings
 
+. . .
+
 You can use either double or single quotes.
 
 ```{r}
@@ -40,6 +44,8 @@ You can use either double or single quotes.
 ```
 
 ## Displaying strings
+
+. . .
 
 - `print` works.
 
@@ -57,25 +63,101 @@ cat("The Leopard")
 
 The `\` is an _escape character_.
 
-It tells R to interpret whatever comes after literally instead of as a
-special character.
+It tells R to interpret whatever comes after in a different way from normal.
 
-For example, if you need quotes inside your string, you need to escape
-the quotation character:
+There are two cases:
+
+1. If the escape character comes before a character that would not usually be part of the string, the escape character indicates that the next character should be used literally, and not for its special meaning.
+
+2. If the escape character comes before some kinds of real characters, the escape character modifies their behavior.
+
+-----
+
+. . .
+
+As an example of case 1, the `"` or `'` in a string definition would usually mean that we come to the end of the string definition.
+
+If you want a literal `"` or `'` in the string in that case, you need to escape it.
 ```{r}
 cat("Giuseppe Tomasi di Lampedusa's \"The Leopard\"")
 cat('Giuseppe Tomasi di Lampedusa\'s "The Leopard"')
 ```
 
+-----
+
 . . .
 
-If you need a `\` in your string, you need to escape it:
+Another example of case 1: normally the `\` means to escape the next character. If you need a `\` in your string, you need to escape it:
 
 ```{r}
 cat("We use the '\\' character to escape")
 ```
 
+-----
+
+Last time, we didn't get to anchoring in regular expressions.
+
+The rules were:
+
+- `^` (not inside square brackets) means that what comes after must be
+at the start of a line.
+
+- `$` means that what comes before must be at the end of a line.
+
+- `\<` anchors to the beginning of a word.
+
+- `\>` anchors to the end of a word.
+
+- `\b` anchors to the boundary of words (beginning or ending)
+
+- `\B` anchors to anywhere aside from the boundary
+
+-----
+
+. . .
+
+How do we represent the anchors in R? 
+
+Look at what happens if we try to create a string with the anchors:
+
+
+```{r}
+cat("\B", fill = TRUE)
+```
+```{r}
+cat("\>", fill = TRUE)
+```
+```{r}
+cat("\b", fill = TRUE)
+```
+
+
+So we need to escape the `\`:
+
+```{r}
+cat("\\B", fill = TRUE)
+cat("\\>", fill = TRUE)
+cat("\\b", fill = TRUE)
+```
+
+-----
+
+. . .
+
+```{r}
+cat("\\<a", fill = TRUE)
+grepl("\\<a", "hat at")
+grepl("\\<a", "hat cat")
+cat("\\bnana", fill = TRUE)
+grepl("\\bnana", "bananas")
+cat("\\Bnana", fill = TRUE)
+grepl("\\Bnana", "bananas")
+```
+
+
 ## String Manipulation
+
+. . .
 
 We can't use `[]` or `[[]]` to get at the internal parts of a string
 because strings are atomic in R.
@@ -105,6 +187,8 @@ substr(rep("Burt Lancaster", 2), 1, c(4, 14))
 
 -----
 
+. . .
+
 We can use `substr` for replacement as well:
 
 ```{r}
@@ -113,10 +197,10 @@ substr(lancaster, 1, 4) = "Bill"
 lancaster
 ```
 
-What happens if the replacement string isn't the same length as the
-piece of the string you want to replace?
 
 ## Combining strings
+
+. . .
 
 `paste` is the workhorse function for string combination.
 
@@ -135,6 +219,8 @@ paste("Chico", "Harpo", "Groucho", sep = ", ")
 
 -----
 
+. . .
+
 The arguments to `paste` can be vectors, and the function is
 vectorized so we get recycling:
 
@@ -144,6 +230,8 @@ paste("Marx", c("Chico", "Harpo", "Groucho"), sep = ", ")
 ```
 
 -----
+
+. . .
 
 Final argument: `collapse`.
 
@@ -159,6 +247,8 @@ paste(c("Chico", "Harpo", "Grouco"), collapse = ", ")
 
 -----
 
+. . .
+
 Finaly, we can specify both `sep` and `collapse` together.
 
 Think of this as first calling `paste` with `collapse = NULL`, then
@@ -173,6 +263,8 @@ paste(marx.brothers, collapse = " and ")
 
 
 ## Splitting strings
+
+. . .
 
 Primariy function is `strsplit`.
 
@@ -201,6 +293,8 @@ split.brothers
 
 -----
 
+. . .
+
 A slightly more realistic example:
 
 I have some fasta files that I'm going to use as input, perform some
@@ -210,7 +304,7 @@ instead of `.fasta`:
 
 ```{r}
 file.names = c("ighv_human.fasta", "ighd_mouse.fasta", "ighj_human.fasta", "ighv_mouse.fasta", "ighd_human.fasta", "ighj_mouse.fasta")
-split.files = strsplit(file.names, ".", fixed = TRUE) ## fixed = TRUE has to do with regular expressions, which we'll talk about on Thursday
+split.files = strsplit(file.names, ".", fixed = TRUE)
 output.names = character(length = length(file.names))
 for(i in 1:length(split.files)) {
     prefix = split.files[[i]][[1]]
@@ -221,10 +315,14 @@ output.names
 
 ## Factors
 
+. . .
+
 - A way of representing qualitative variables.
 
 - Variable that takes string values, but we know in advance which
 strings are valid.
+
+-----
 
 . . .
 
@@ -245,8 +343,7 @@ factor(c("a", "b", "b", "z"))
 
 - Factors represented differently from strings internally.
 
-- Factors are an integer vector plus a set of
-names corresponding to each of the levels.
+- Factors are an integer vector plus a set of names corresponding to each of the levels.
 
 -----
 
@@ -263,6 +360,9 @@ unclass(state.name.fac)
 ```
 
 -----
+
+. . .
+
 
 This representation is a bit more parsimonious in general (but not
 always...):
@@ -351,6 +451,8 @@ variables by mistake.
 
 -----
 
+. . .
+
 How do we actually do this?
 
 ```{r}
@@ -389,6 +491,8 @@ allocate.
 allows for different data types in different columns.
 
 -----
+
+. . .
 
 Data frames in R are lists with some extra rules:
 
@@ -448,5 +552,4 @@ a data frame back, but some give you a vector.
 
 ## That's all, folks
 
-- Please see me if you have any questions about how to submit the
-assignment or R scripts.
+- Please see me in Zoom office hours this afternoon if you have any questions about how to submit the assignment or R scripts.
