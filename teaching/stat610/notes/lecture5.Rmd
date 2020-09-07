@@ -51,13 +51,13 @@ f = function(arguments) {
 
 - `body` is the code you want to execute.
 
-## Formal arguments vs. actual arguments
+## Arguments: formal and actual
 
 - Formal argument: the variable name used in the function definition.
 
 - Actual argument: the actual value of the variable used when the function is called.
 
-Idea: You want to be able to evaluate the function for any possible _actual argument_ value, and the _formula argument_ is a placeholder.
+Idea: You want to be able to evaluate the function for any possible _actual argument_ value, and the _formal argument_ is a placeholder.
 
 -----
 

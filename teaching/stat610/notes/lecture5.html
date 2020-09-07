@@ -90,7 +90,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="writing-and-calling-functions" class="slide section level2">
 <h1>Writing and calling functions</h1>
 <p>Reading:</p>
-<ul>
+<ul class="incremental">
 <li><p>Matloff Section 1.3, 7.3-7.6 (7.6 is presented rather formally), 7.12, 7.13</p></li>
 <li><p>If you want more detail on environments: <em>Advanced R</em> by Hadley Wickham has a good <a href="http://adv-r.had.co.nz/Environments.html">chapter</a> on them.</p></li>
 <li><p>More relevant for next time: <em>Clean Code</em> by Robert Martin, <a href="https://iucat.iu.edu/iub/16580380">Chapter 3</a>.</p></li>
@@ -100,32 +100,32 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 <div id="why-write-functions" class="slide section level2">
 <h1>Why write functions?</h1>
-<ul>
+<ul class="incremental">
 <li>Make your code more readable.</li>
 </ul>
 <div class="incremental">
-<ul>
+<ul class="incremental">
 <li>Allows you to re-use related lines of code for slightly different tasks.</li>
 </ul>
 </div>
 <div class="incremental">
-<ul>
+<ul class="incremental">
 <li>Makes testing your code easier.</li>
 </ul>
 </div>
 </div>
 <div id="what-is-a-function" class="slide section level2">
 <h1>What is a function?</h1>
-<ul>
+<ul class="incremental">
 <li>A way of turning some inputs into some outputs.</li>
 </ul>
 <div class="incremental">
-<ul>
+<ul class="incremental">
 <li>A way of tying together related pieces of code.</li>
 </ul>
 </div>
 <div class="incremental">
-<ul>
+<ul class="incremental">
 <li>An object.</li>
 </ul>
 </div>
@@ -136,18 +136,18 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <pre><code>f = function(arguments) {
     body
 }</code></pre>
-<ul>
+<ul class="incremental">
 <li><p><code>arguments</code> are variables used by the function.</p></li>
 <li><p><code>body</code> is the code you want to execute.</p></li>
 </ul>
 </div>
-<div id="formal-arguments-vs.-actual-arguments" class="slide section level2">
-<h1>Formal arguments vs. actual arguments</h1>
-<ul>
+<div id="arguments-formal-and-actual" class="slide section level2">
+<h1>Arguments: formal and actual</h1>
+<ul class="incremental">
 <li><p>Formal argument: the variable name used in the function definition.</p></li>
 <li><p>Actual argument: the actual value of the variable used when the function is called.</p></li>
 </ul>
-<p>Idea: You want to be able to evaluate the function for any possible <em>actual argument</em> value, and the <em>formula argument</em> is a placeholder.</p>
+<p>Idea: You want to be able to evaluate the function for any possible <em>actual argument</em> value, and the <em>formal argument</em> is a placeholder.</p>
 </div>
 <div class="slide section level2">
 
@@ -183,7 +183,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="function-arguments" class="slide section level2">
 <h1>Function arguments</h1>
 <p>Once you have a function, you call it by specifying the values for all of the arguments. The values can be specified in two ways:</p>
-<ul>
+<ul class="incremental">
 <li><p>By position: first argument is assigned to the first variable in the function definition, second argument to the second variable in the function definition, and so on</p></li>
 <li><p>By name: arguments are specified by name instead of being inferred based on position.</p></li>
 </ul>
@@ -234,7 +234,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <h1>Return values</h1>
 <p>When a function is called, the commands in the body of the function are executed, and a value is returned.</p>
 <p>The return value is either:</p>
-<ul>
+<ul class="incremental">
 <li><p>The value of last command executed, or</p></li>
 <li><p>A value set explicitly using the <code>return</code> syntax.</p></li>
 </ul>
@@ -261,7 +261,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="invisible-return" class="slide section level2">
 <h1>Invisible return</h1>
 <p>Invisible return is a bit R-specific:</p>
-<ul>
+<ul class="incremental">
 <li><p>If you use <code>invisible</code> instead of <code>return</code> in a function definition, the result will be discarded unless it is assigned.</p></li>
 <li><p>This is not usually something that you will use, but some of the built-in functions use invisible returns.</p></li>
 </ul>
@@ -315,11 +315,11 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 <div id="return-values-can-be-anything" class="slide section level2">
 <h1>Return values can be anything</h1>
-<ul>
+<ul class="incremental">
 <li>If you want to return multiple related pieces of information, you can put them in a list or other type of object.</li>
 </ul>
 <div class="incremental">
-<ul>
+<ul class="incremental">
 <li>Your return value can even be another function!</li>
 </ul>
 <div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1"></a>g =<span class="st"> </span><span class="cf">function</span>() {</span>
@@ -333,7 +333,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 ## }</code></pre>
 <div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1"></a><span class="kw">g</span>()</span></code></pre></div>
 <pre><code>## function(x) x^2
-## &lt;environment: 0x7f88cc1a4790&gt;</code></pre>
+## &lt;environment: 0x7fa556ee8f58&gt;</code></pre>
 <div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1"></a><span class="kw">formals</span>(g)</span></code></pre></div>
 <pre><code>## NULL</code></pre>
 <div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1"></a><span class="kw">formals</span>(<span class="kw">g</span>())</span></code></pre></div>
@@ -355,17 +355,17 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="environments" class="slide section level2">
 <h1>Environments</h1>
 <p>Ok, so what is an environment?</p>
-<ul>
+<ul class="incremental">
 <li>An environment binds names to values.</li>
 </ul>
 <div class="incremental">
-<ul>
+<ul class="incremental">
 <li>Every environment has a parent (except for the empty environment).</li>
 </ul>
 </div>
 <div class="incremental">
 <p>What are they good for?</p>
-<ul>
+<ul class="incremental">
 <li><p>The purpose of environments is to describe where to look for variables.</p></li>
 <li><p>When you refer to any object, R first looks in the current environment for an object with that name.</p></li>
 <li><p>If it doesn’t find an object with that name in the current environment, it looks in the parent environment, and continues until it runs out of parents or finds an object with the right name.</p></li>
@@ -377,9 +377,10 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <p>For example, have you ever wondered how R finds functions?</p>
 <p>The function <code>lm</code> is not in the global environment, as we can see if we just call <code>ls</code>:</p>
 <div class="sourceCode" id="cb48"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1"></a><span class="kw">ls</span>()</span></code></pre></div>
-<pre><code>## [1] &quot;corner&quot;           &quot;g&quot;                &quot;multiplot&quot;       
-## [4] &quot;oddcount&quot;         &quot;oddcount_output&quot;  &quot;square&quot;          
-## [7] &quot;square_invisible&quot; &quot;steak_directions&quot; &quot;xsquared&quot;</code></pre>
+<pre><code>##  [1] &quot;corner&quot;           &quot;f&quot;                &quot;g&quot;                &quot;h&quot;               
+##  [5] &quot;multiplot&quot;        &quot;oddcount&quot;         &quot;oddcount_output&quot;  &quot;square&quot;          
+##  [9] &quot;square_invisible&quot; &quot;steak_directions&quot; &quot;t&quot;                &quot;w&quot;               
+## [13] &quot;xsquared&quot;</code></pre>
 </div>
 <div class="slide section level2">
 
@@ -429,7 +430,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb54-13"><a href="#cb54-13"></a>}</span>
 <span id="cb54-14"><a href="#cb54-14"></a><span class="kw">f</span>(<span class="dv">1</span>)</span></code></pre></div>
 <pre><code>## h&#39;s environment:  
-## &lt;environment: 0x7f88c7cb60f0&gt;
+## &lt;environment: 0x7fa554652dd0&gt;
 ## h&#39;s parent environment: 
 ## &lt;environment: R_GlobalEnv&gt;</code></pre>
 <pre><code>## [1] 104</code></pre>
@@ -462,14 +463,14 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 ## attr(,&quot;name&quot;)
 ## [1] &quot;package:knitr&quot;
 ## attr(,&quot;path&quot;)
-## [1] &quot;/Users/jfukuyam/Library/R/3.5/library/knitr&quot;</code></pre>
+## [1] &quot;/Library/Frameworks/R.framework/Versions/3.6/Resources/library/knitr&quot;</code></pre>
 <pre><code>## Error in h(): object &#39;d&#39; not found</code></pre>
 </div>
 </div>
 <div class="slide section level2">
 
 <p>This perhaps seems overly baroque, but the take-home points about environments (and the reason why they are set up the way they are) are:</p>
-<ul>
+<ul class="incremental">
 <li><p>Commands called in the body of the function usually have access to values of the variables in that function plus variables at higher levels.</p></li>
 <li><p>Variables defined in the body of a function go away after the function exits.</p></li>
 </ul>
