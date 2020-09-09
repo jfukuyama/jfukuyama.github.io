@@ -91,7 +91,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="writing-and-calling-functions" class="slide section level2">
 <h1>Writing and calling functions</h1>
 <p>Agenda for today:</p>
-<ul>
+<ul class="incremental">
 <li><p>Finish up from last time</p></li>
 <li><p>We’ll write some functions that let us investigate the birthday problem.</p></li>
 </ul>
@@ -114,7 +114,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb1-13"><a href="#cb1-13"></a>}</span>
 <span id="cb1-14"><a href="#cb1-14"></a><span class="kw">f</span>(<span class="dv">1</span>)</span></code></pre></div>
 <pre><code>## h&#39;s environment:  
-## &lt;environment: 0x7f832e55c190&gt;
+## &lt;environment: 0x7fa13be44d28&gt;
 ## h&#39;s parent environment: 
 ## &lt;environment: R_GlobalEnv&gt;</code></pre>
 <pre><code>## [1] 104</code></pre>
@@ -146,14 +146,14 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 ## attr(,&quot;name&quot;)
 ## [1] &quot;package:knitr&quot;
 ## attr(,&quot;path&quot;)
-## [1] &quot;/Users/jfukuyam/Library/R/3.5/library/knitr&quot;</code></pre>
+## [1] &quot;/Library/Frameworks/R.framework/Versions/3.6/Resources/library/knitr&quot;</code></pre>
 <pre><code>## Error in h(): object &#39;d&#39; not found</code></pre>
 </div>
 </div>
 <div class="slide section level2">
 
 <p>This perhaps seems overly baroque, but the take-home points about environments (and the reason why they are set up the way they are) are:</p>
-<ul>
+<ul class="incremental">
 <li><p>Commands called in the body of the function usually have access to values of the variables in that function plus variables at higher levels.</p></li>
 <li><p>Variables defined in the body of a function go away after the function exits.</p></li>
 </ul>
@@ -193,14 +193,14 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div class="slide section level2">
 
 <p>Primary exceptions to the no side effects rule:</p>
-<ul>
+<ul class="incremental">
 <li><p>Plotting</p></li>
 <li><p>Data export</p></li>
 </ul>
 </div>
 <div id="the-complement-of-the-no-side-effects-rule" class="slide section level2">
 <h1>The complement of the no side effects rule</h1>
-<ul>
+<ul class="incremental">
 <li><p>No side effects says in part that functions shouldn’t change variables in the global environment (or any other environment).</p></li>
 <li><p>Your functions also should not read from environments other than the function’s execution environment.</p></li>
 </ul>
@@ -208,7 +208,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 <div id="some-rules-for-writing-functions" class="slide section level2">
 <h1>Some rules for writing functions</h1>
-<ul>
+<ul class="incremental">
 <li><p>“The first rule of functions is that they should be small. The second rule of functions is that <em>they should be smaller than that</em>.”</p></li>
 <li><p>Functions should <em>do one thing</em>. Multiple tasks = multiple functions.</p></li>
 <li><p>Related functions should have consistent interfaces: if they take the same input, they should have the same arguments in the same order. If they make the same output, they should give output in the same way.</p></li>
@@ -222,7 +222,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="example-the-birthday-problem" class="slide section level2">
 <h1>Example: <a href="https://en.wikipedia.org/wiki/Birthday_problem">The birthday problem</a></h1>
 <p>Suppose:</p>
-<ul>
+<ul class="incremental">
 <li><p>We have a randomly chosen set of <span class="math inline">\(n\)</span> people</p></li>
 <li><p>Each person has a birthday</p></li>
 <li><p>Birthdays are distributed uniformly, so every day of the year is equally likely to be a given person’s birthday</p></li>
@@ -231,9 +231,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div class="incremental">
 <p>Logic says: “At least two people share a birthday” is the same as “It’s not true that all the birthdays are distinct”.</p>
 <p>Probability says:</p>
-<ul>
-<li><p><span class="math inline">\(P(\text{All birthdays are distinct}) = \prod \frac{365}{365} \frac{364}{365} \cdots \frac{365-(n-1)}{365}\)</span></p></li>
-<li><p><span class="math inline">\(P(\text{At least two people share a birthday}) = 1 - P(\text{All birthdays are distinct}) = \prod \frac{365}{365} \frac{364}{365} \cdots \frac{365-(n-1)}{365}\)</span></p></li>
+<ul class="incremental">
+<li><p><span class="math inline">\(P(\text{All birthdays are distinct}) = \frac{365}{365} \frac{364}{365} \cdots \frac{365-(n-1)}{365}\)</span></p></li>
+<li><p><span class="math inline">\(P(\text{At least two people share a birthday}) = 1 - P(\text{All birthdays are distinct}) = \frac{365}{365} \frac{364}{365} \cdots \frac{365-(n-1)}{365}\)</span></p></li>
 </ul>
 </div>
 </div>
@@ -287,7 +287,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb24-12"><a href="#cb24-12"></a>}</span>
 <span id="cb24-13"><a href="#cb24-13"></a>p_match =<span class="st"> </span><span class="kw">sum</span>(match_vector <span class="op">==</span><span class="st"> &quot;birthdays match&quot;</span>) <span class="op">/</span><span class="st"> </span><span class="kw">length</span>(match_vector)</span>
 <span id="cb24-14"><a href="#cb24-14"></a>p_match</span></code></pre></div>
-<pre><code>## [1] 0.504</code></pre>
+<pre><code>## [1] 0.489</code></pre>
 </div>
 <div class="slide section level2">
 
@@ -305,6 +305,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div class="slide section level2">
 
 <p>Once we have this, we can write a more readable function that estimates the probability of a match.</p>
+<div class="incremental">
 <div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1"></a>estimate_birthday_match_probability =<span class="st"> </span><span class="cf">function</span>(n_people, <span class="dt">n_sim =</span> <span class="dv">1000</span>) {</span>
 <span id="cb27-2"><a href="#cb27-2"></a>    match_vector =<span class="st"> </span><span class="kw">character</span>(n_sim)</span>
 <span id="cb27-3"><a href="#cb27-3"></a>    <span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span>n_sim) {</span>
@@ -316,9 +317,10 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb27-9"><a href="#cb27-9"></a><span class="kw">estimate_birthday_match_probability</span>(<span class="dt">n_people =</span> <span class="dv">1</span>)</span></code></pre></div>
 <pre><code>## [1] 0</code></pre>
 <div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1"></a><span class="kw">estimate_birthday_match_probability</span>(<span class="dt">n_people =</span> <span class="dv">23</span>)</span></code></pre></div>
-<pre><code>## [1] 0.499</code></pre>
+<pre><code>## [1] 0.513</code></pre>
 <div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1"></a><span class="kw">estimate_birthday_match_probability</span>(<span class="dt">n_people =</span> <span class="dv">365</span>)</span></code></pre></div>
 <pre><code>## [1] 1</code></pre>
+</div>
 </div>
 <div id="a-more-complicated-problem" class="slide section level2">
 <h1>A more complicated problem</h1>
@@ -376,11 +378,11 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1"></a><span class="kw">estimate_birthday_match_probability</span>(<span class="dt">n_people =</span> <span class="dv">23</span>,</span>
 <span id="cb38-2"><a href="#cb38-2"></a>    <span class="dt">birthday_probabilities =</span> uniform_birthday_probs,</span>
 <span id="cb38-3"><a href="#cb38-3"></a>    <span class="dt">n_sim =</span> <span class="dv">10000</span>)</span></code></pre></div>
-<pre><code>## [1] 0.5103</code></pre>
+<pre><code>## [1] 0.5091</code></pre>
 <div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1"></a><span class="kw">estimate_birthday_match_probability</span>(<span class="dt">n_people =</span> <span class="dv">23</span>,</span>
 <span id="cb40-2"><a href="#cb40-2"></a>    <span class="dt">birthday_probabilities =</span> nonuniform_birthday_probs,</span>
 <span id="cb40-3"><a href="#cb40-3"></a>    <span class="dt">n_sim =</span> <span class="dv">10000</span>)</span></code></pre></div>
-<pre><code>## [1] 0.5378</code></pre>
+<pre><code>## [1] 0.5329</code></pre>
 </div>
 </div>
 <div class="slide section level2">

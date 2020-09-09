@@ -157,9 +157,9 @@ Logic says: "At least two people share a birthday" is the same as "It's not true
 
 Probability says:
 
-- $P(\text{All birthdays are distinct}) = \prod \frac{365}{365} \frac{364}{365} \cdots \frac{365-(n-1)}{365}$
+- $P(\text{All birthdays are distinct}) = \frac{365}{365} \frac{364}{365} \cdots \frac{365-(n-1)}{365}$
 
-- $P(\text{At least two people share a birthday}) = 1 - P(\text{All birthdays are distinct}) = \prod \frac{365}{365} \frac{364}{365} \cdots \frac{365-(n-1)}{365}$
+- $P(\text{At least two people share a birthday}) = 1 - P(\text{All birthdays are distinct}) =  \frac{365}{365} \frac{364}{365} \cdots \frac{365-(n-1)}{365}$
 
 
 -----
@@ -240,6 +240,8 @@ do_birthdays_match = function(n_people) {
 -----
 
 Once we have this, we can write a more readable function that estimates the probability of a match.
+
+. . .
 
 ```{r}
 estimate_birthday_match_probability = function(n_people, n_sim = 1000) {
