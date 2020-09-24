@@ -22,6 +22,8 @@ This is Matloff's principle of confirmation:
 
 Syntax problems:
 
+. . .
+
 - Parentheses mismatches, particularly when nesting functions.
 
 ```{r}
@@ -29,7 +31,7 @@ data(diamonds)
 mean(subset(diamonds$carat), cut == "Ideal")
 ```
 
-- `==` instead of `=`.
+- `=` instead of `==`.
 
 ```{r}
 mean(subset(diamonds$carat, cut = "Ideal"))
@@ -41,11 +43,19 @@ mean(subset(diamonds$carat, cut = "Ideal"))
 
 Inputs to functions are of a type you didn't expect:
 
+. . .
+
 - `[[]]` vs. `[]`: element of a list vs. sublist
+
+. . .
 
 - Vectors vs. single values: You assume a single value but have a vector with more than one element, unexpected recycling.
 
+. . .
+
 - Silent type conversions: when converting from a data frame to an array, or when creating a data frame.
+
+. . .
 
 - NA values in data where they're not allowed.
 
@@ -134,11 +144,11 @@ f = function(y, z) {
     }
     return(u)
 }
-f(0, 1)
-f(1, 0)
+f(y = 0, z = 1)
+f(y = 1, z = 0)
 ## try:
-## debug(f)
-## f(1, 0)
+#debug(f)
+#f(y = 1, z = 0)
 ```
 
 -----
@@ -168,8 +178,8 @@ f = function(y, z) {
     }
     return(u)
 }
-f(0, 1)
-f(1, 0)
+f(y = 0, z = 1)
+f(y = 1, z = 0)
 ```
 
 
@@ -224,9 +234,9 @@ f = function(y, z) {
     }
     return(u)
 }
-f(0,1)
-debug(f)
-f(0, 1)
+f(y = 0, z = 1)
+#debug(f)
+#f(y = 0, z = 1)
 ```
 
 ------
@@ -254,8 +264,8 @@ f = function(y, z) {
     }
     return(u)
 }
-f(1, 0)
-traceback()
+#f(y = 1, z = 0)
+#traceback()
 ```
 
 -----
@@ -279,10 +289,10 @@ f = function(y, z) {
     }
     return(u)
 }
-f(1, 0)
-traceback()
-f(10, 3.1)
-traceback()
+## f(y = 1, z = 0)
+## traceback()
+## f(y = 10, z = 3.1)
+## traceback()
 ```
 
 
@@ -296,17 +306,21 @@ The `debugger` function:
 
 - If your function crashes and you call `debugger()`, you can inspect variables in any of the function environments.
 
+- If you set `options(error=recover)`, you enter the debugger automatically when a function crashes.
+
 -----
 
 ```{r, eval = FALSE}
-options(error = dump.frames)
-f(1,0)
-debugger()
+## options(error = dump.frames)
+## f(y = 1,z = 0)
+## debugger()
 ```
 
 ## Example 1
 
 `findruns` is supposed to find the starting positions of all the runs of 1's of length `k` in `x`:
+
+. . .
 
 ```{r}
 findruns = function(x, k) {
@@ -322,6 +336,7 @@ findruns = function(x, k) {
 }
 findruns(c(1,0,0,1,1,0,1,1,1),2)
 ```
+
 
 ## Example 2
 
