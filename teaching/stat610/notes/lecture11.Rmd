@@ -2,11 +2,13 @@
 
 Logistics
 
-- I'll post a study guide for the midterm on Sunday
+- Lab this week.
+
+- Homework due Friday.
+
+- The next homework (on debugging) is on the website now.
 
 Today:
-
-- Finish debugging
 
 - Testing, test-based design
 
@@ -92,8 +94,8 @@ imin = function(x) {
     n = length(x)
     row = x[n]
     upper_tri_idx = (row + 1):(n - 1)
-    idx_in_upper_tri = which.min(x[upper_tri_idx])
-    idx = upper_tri_idx[idx_in_upper_tri]
+    min_idx_in_upper_tri = which.min(x[upper_tri_idx])
+    idx = upper_tri_idx[min_idx_in_upper_tri]
     value = x[idx]
     return(c(idx, value))
 }

@@ -88,22 +88,23 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="testing-and-debugging" class="slide section level2">
 <h1>Testing and debugging</h1>
 <p>Logistics</p>
-<ul>
-<li>I’ll post a study guide for the midterm on Sunday</li>
+<ul class="incremental">
+<li><p>Lab this week.</p></li>
+<li><p>Homework due Friday.</p></li>
+<li><p>The next homework (on debugging) is on the website now.</p></li>
 </ul>
 <p>Today:</p>
-<ul>
-<li><p>Finish debugging</p></li>
-<li><p>Testing, test-based design</p></li>
+<ul class="incremental">
+<li>Testing, test-based design</li>
 </ul>
 <p>Reading</p>
-<ul>
+<ul class="incremental">
 <li><a href="https://journal.r-project.org/archive/2011/RJ-2011-002/RJ-2011-002.pdf">Wickham, “testthat: Get Started with Testing”</a>. The details are slightly out of date compared with the current version of the package, but the philosophy is the same.</li>
 </ul>
 </div>
 <div id="informal-testing" class="slide section level2">
 <h1>Informal testing</h1>
-<ul>
+<ul class="incremental">
 <li><p>We’ve done informal testing when debugging, and you’ve probably done it on your own.</p></li>
 <li><p>Check whether the output is what we expect, either by inspection or using <code>==</code> or <code>identical</code> or something similar.</p></li>
 </ul>
@@ -165,8 +166,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb6-2"><a href="#cb6-2"></a>    n =<span class="st"> </span><span class="kw">length</span>(x)</span>
 <span id="cb6-3"><a href="#cb6-3"></a>    row =<span class="st"> </span>x[n]</span>
 <span id="cb6-4"><a href="#cb6-4"></a>    upper_tri_idx =<span class="st"> </span>(row <span class="op">+</span><span class="st"> </span><span class="dv">1</span>)<span class="op">:</span>(n <span class="op">-</span><span class="st"> </span><span class="dv">1</span>)</span>
-<span id="cb6-5"><a href="#cb6-5"></a>    idx_in_upper_tri =<span class="st"> </span><span class="kw">which.min</span>(x[upper_tri_idx])</span>
-<span id="cb6-6"><a href="#cb6-6"></a>    idx =<span class="st"> </span>upper_tri_idx[idx_in_upper_tri]</span>
+<span id="cb6-5"><a href="#cb6-5"></a>    min_idx_in_upper_tri =<span class="st"> </span><span class="kw">which.min</span>(x[upper_tri_idx])</span>
+<span id="cb6-6"><a href="#cb6-6"></a>    idx =<span class="st"> </span>upper_tri_idx[min_idx_in_upper_tri]</span>
 <span id="cb6-7"><a href="#cb6-7"></a>    value =<span class="st"> </span>x[idx]</span>
 <span id="cb6-8"><a href="#cb6-8"></a>    <span class="kw">return</span>(<span class="kw">c</span>(idx, value))</span>
 <span id="cb6-9"><a href="#cb6-9"></a>}</span></code></pre></div>
@@ -189,7 +190,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="edge-cases" class="slide section level2">
 <h1>Edge cases</h1>
 <p>Idea: If the input to the function isn’t exactly what you expect, what happens?</p>
-<ul>
+<ul class="incremental">
 <li><p>You’re checking that if something funny happens (bad input from a user or another function), your function will (best case) still work correctly or (at minimum) fail informatively.</p></li>
 <li><p>Very important to make sure that the function doesn’t fail silently: it looks like it’s producing good results, but they’re actually wrong.</p></li>
 <li><p>Most important if you are not directly providing the input to the function.</p></li>
@@ -242,7 +243,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 <div id="test-based-design" class="slide section level2">
 <h1>Test-based design</h1>
-<ul>
+<ul class="incremental">
 <li><p>Decide what you want your function(s) to do</p></li>
 <li><p>Write tests for those behaviors</p></li>
 <li><p>Write the functions, check whether they pass the tests</p></li>
@@ -328,7 +329,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 <div id="more-formal-ways-of-integrating-tests" class="slide section level2">
 <h1>More formal ways of integrating tests</h1>
-<ul>
+<ul class="incremental">
 <li><p>R package called <code>testthat</code></p></li>
 <li><p>Aimed more at package developers</p></li>
 <li><p>Allows for tests to be stored and run automatically.</p></li>
@@ -370,23 +371,25 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb39-2"><a href="#cb39-2"></a><span class="kw">test_dir</span>(<span class="st">&quot;.&quot;</span>)</span></code></pre></div>
 <pre><code>## ✔ |  OK F W S | Context
 ## ⠏ |   0       | Check numerical derivative✖ |   5 1 1   | Check numerical derivative
-## ───────────────────────────────────────────────────────────────────────────
+## ────────────────────────────────────────────────────────────────────────────────
 ## testthat_example.R:13: warning: error thrown when derivative doesn&#39;t exist
 ## NaNs produced
 ## 
 ## testthat_example.R:13: failure: error thrown when derivative doesn&#39;t exist
 ## `deriv(function(x) log(x), 0)` did not throw an error.
-## ───────────────────────────────────────────────────────────────────────────
+## ────────────────────────────────────────────────────────────────────────────────
 ## 
-## ══ Results ════════════════════════════════════════════════════════════════
+## ══ Results ═════════════════════════════════════════════════════════════════════
 ## OK:       5
 ## Failed:   1
 ## Warnings: 1
-## Skipped:  0</code></pre>
+## Skipped:  0
+## 
+## I believe in you!</code></pre>
 </div>
 <div id="idea-behind-testthat" class="slide section level2">
 <h1>Idea behind testthat</h1>
-<ul>
+<ul class="incremental">
 <li><p>Expectations: Finest unit of testing, checks one aspect of a function’s output.</p></li>
 <li><p>Tests: Groups of related expectations.</p></li>
 <li><p>Contexts/files: Each context or file can contain a group of tests. Primarily useful for having the test output formatted nicely. Perhaps also useful if you have some tests that require a lot of setup and you don’t want to run them every time.</p></li>
@@ -395,7 +398,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="expectations" class="slide section level2">
 <h1>Expectations</h1>
 <p>An expectation is the finest unit of testing, tests whether a call to a function does what you expect.</p>
-<ul>
+<ul class="incremental">
 <li><p>All start with <code>expect_</code></p></li>
 <li><p>All have two arguments: the actual result, and what you expect</p></li>
 <li><p><code>testthat</code> will throw an error if the two don’t match</p></li>
@@ -405,7 +408,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 <div class="incremental">
 <p>Some of the most useful expectations</p>
-<ul>
+<ul class="incremental">
 <li><code>expect_equivalent</code>/<code>expect_equal</code>/<code>expect_identical</code>: Check for equality within numerical precision or exact equivalence (<code>expect_identical</code> built on <code>identical</code> function, which also checks for type)</li>
 </ul>
 <div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1"></a>a_int =<span class="st"> </span><span class="dv">1</span><span class="op">:</span><span class="dv">2</span></span>
@@ -431,7 +434,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 <div class="slide section level2">
 
-<ul>
+<ul class="incremental">
 <li><p><code>expect_match</code>: Checks whether a string matches a regular expression</p></li>
 <li><p><code>expect_output</code>: Checks the output of a function the same way <code>expect_match</code> would</p></li>
 </ul>
@@ -442,23 +445,23 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 ##  $ : chr [1:26] &quot;a&quot; &quot;b&quot; &quot;c&quot; &quot;d&quot; ...</code></pre>
 <div class="sourceCode" id="cb55"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1"></a><span class="kw">expect_output</span>(<span class="kw">str</span>(a), <span class="st">&quot;List of 2&quot;</span>)</span>
 <span id="cb55-2"><a href="#cb55-2"></a><span class="kw">expect_output</span>(<span class="kw">str</span>(a), <span class="st">&quot;int [1:10]&quot;</span>, <span class="dt">fixed =</span> <span class="ot">TRUE</span>)</span></code></pre></div>
-<ul>
+<ul class="incremental">
 <li><code>expect_warning</code>/<code>expect_error</code>: Checks whether the function gives an error or a warning.</li>
 </ul>
 <div class="incremental">
-<ul>
+<ul class="incremental">
 <li><code>expect_is</code>: Checks whether the function gives a result of the correct class (we’ll talk more about classes in a couple weeks).</li>
 </ul>
 </div>
 <div class="incremental">
-<ul>
+<ul class="incremental">
 <li><code>expect_true</code>/<code>expect_false</code>: Catch-alls for cases the other expectations don’t cover.</li>
 </ul>
 </div>
 </div>
 <div id="tests" class="slide section level2">
 <h1>Tests</h1>
-<ul>
+<ul class="incremental">
 <li><p>For <code>testthat</code>, a test is just a group of expectations.</p></li>
 <li><p>You can group them however you like, but usually you think of them as covering one unit of functionality. Often this means one test per function.</p></li>
 <li><p>Group expectations into tests so that when a test fails, it’s easy to figure out what part of the code caused the error.</p></li>
@@ -466,7 +469,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 <div id="advice-on-writing-tests" class="slide section level2">
 <h1>Advice on writing tests</h1>
-<ul>
+<ul class="incremental">
 <li><p>When you add a new function/functionality, add a new test.</p></li>
 <li><p>Write a test when you discover a bug.</p></li>
 <li><p>Most important to test code that is delicate: has complicated dependencies on other functions many edge cases, doing something complicated that you’re not sure about. (In that case you might want to re-think your function design though.)</p></li>
