@@ -193,8 +193,27 @@ This is a bad way to write functions to compute the minimum, we should throw it 
 
 I want to make a program that performs gradient descent for functions where I don't have the derivative in closed form.
 
-I'm going to need to write a function that computes the derivative
+I need to:
 
+- Decide on the form the function should take.
+
+- Write tests for the function.
+
+- Write the function.
+
+- Run the tests.
+
+-----
+
+Form the function should take:
+
+- The first argument is the function I want the derivative of
+
+- The second argument is the value at which to compute the derivative.
+
+. . .
+
+Then I write tests:
 
 ```{r, eval = FALSE}
 ## derivative of x^2, evaluated at x = 1
