@@ -91,7 +91,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="what-does-it-mean" class="slide section level2">
 <h1>What does it mean?</h1>
 <p>General approach to problem solving.</p>
-<ul>
+<ul class="incremental">
 <li><p>Identify the problem you want to solve.</p></li>
 <li><p>Break the problem up into a couple of smaller pieces.</p></li>
 <li><p>Put the pieces together so that they solve the problem.</p></li>
@@ -101,7 +101,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div class="slide section level2">
 
 <p>For example, if you’re designing a house, you might think:</p>
-<ul>
+<ul class="incremental">
 <li><p>Problem to solve: Create a layout for the house.</p></li>
 <li><p>Sub-problems: Layouts for each of the rooms.</p></li>
 <li><p>Put the pieces together: Assuming that we have layouts for each of the rooms, decide on how to fit them together.</p></li>
@@ -121,7 +121,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div class="slide section level2">
 
 <p>Advantages:</p>
-<ul>
+<ul class="incremental">
 <li><p>Easier to read</p></li>
 <li><p>Tends to create small functions</p></li>
 <li><p>Functions have a definite goal, so easier to test and debug</p></li>
@@ -132,10 +132,10 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <h1>A very short introduction to the bootstrap</h1>
 <div class="incremental">
 <p>Let <span class="math inline">\(x_1, \dots, x_n\)</span> be a sample of size <span class="math inline">\(n\)</span> from a population, and let <span class="math inline">\(f\)</span> be an estimator of some population parameter <span class="math inline">\(\theta\)</span> of interest, so that <span class="math inline">\(\hat \theta = f(x_1, \ldots, x_n)\)</span> is our point estimate of the population parameter.</p>
-<ul>
+<ul class="incremental">
 <li><p>We want to know the sampling distribution of <span class="math inline">\(\hat \theta\)</span>.</p></li>
 <li><p>If we could draw more samples from the population, we could draw from the sampling distribution of <span class="math inline">\(\hat \theta\)</span>:</p>
-<ul>
+<ul class="incremental">
 <li><p>Draw a new sample of size <span class="math inline">\(n\)</span>, <span class="math inline">\(x_1^*, \ldots, x_n^*\)</span> from the population.</p></li>
 <li><p>Compute our estimate <span class="math inline">\(\hat \theta^* = f(x_1^*, \ldots, x_n^*)\)</span> on that sample.</p></li>
 </ul></li>
@@ -144,7 +144,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 <div class="incremental">
 <p>Idea behind the bootstrap is to pretend that the observed data <span class="math inline">\(x_1, \ldots, x_n\)</span> is the population.</p>
-<ul>
+<ul class="incremental">
 <li><p>Draw <span class="math inline">\(x_1^*, \ldots, x_n^*\)</span> by sampling from <span class="math inline">\(x_1, \ldots, x_n\)</span> with replacement.</p></li>
 <li><p>Compute <span class="math inline">\(\hat \theta^* = f(x_1^*, \ldots, x_n^*)\)</span>.</p></li>
 <li><p>Repeat many times.</p></li>
@@ -155,7 +155,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div class="slide section level2">
 
 <p>In particular, if we have <span class="math inline">\(\hat \theta^*_1, \ldots, \hat \theta^*_{B}\)</span>, where <span class="math inline">\(B\)</span> is the number of “bootstrap replicates”, then</p>
-<ul>
+<ul class="incremental">
 <li><p>The bootstrap estimate of the standard error of <span class="math inline">\(\hat \theta\)</span> is <span class="math inline">\(\text{sd}(\hat \theta_1^*, \ldots, \hat \theta_B^*)\)</span></p></li>
 <li><p>The boostrap confidence interval at level <span class="math inline">\(\alpha\)</span> for <span class="math inline">\(\hat \theta\)</span> is <span class="math inline">\((q_{\alpha/ 2}(\hat \theta_1^*, \ldots, \theta_B^*), q_{1 - \alpha / 2}(\hat \theta_1^*, \ldots, \theta_B^*))\)</span>, where <span class="math inline">\(q\)</span> is the quantile function.</p></li>
 </ul>
@@ -181,7 +181,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 <p>Top-down design way of building the function:</p>
 <p>The confidence interval we want comes from the quantiles of the resampled estimates, so we:</p>
-<ol style="list-style-type: decimal">
+<ol class="incremental" style="list-style-type: decimal">
 <li><p>Get the resampled estimates of the mean.</p></li>
 <li><p>Compute the quantiles of the resampled estimates of the mean.</p></li>
 <li><p>Return the quantiles.</p></li>
@@ -198,12 +198,12 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 <p>Notice that now would be a good time to write tests for the <code>get_ci</code> and <code>get_boot_means</code> functions.</p>
 <p>In the <code>bootstrap_mean_ci</code> function, we assume that</p>
-<ul>
+<ul class="incremental">
 <li><p><code>get_boot_means</code> returns a vector of length <code>B</code>.</p></li>
 <li><p><code>get_ci</code> returns a vector of length 2.</p></li>
 </ul>
 <p>We might also want to check that</p>
-<ul>
+<ul class="incremental">
 <li><p><code>get_ci</code> works on a simple test case.</p></li>
 <li><p>The first element of <code>get_ci</code> is smaller than the second.</p></li>
 </ul>
@@ -242,7 +242,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <p>Then check the whole function:</p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a><span class="kw">bootstrap_mean_ci</span>(<span class="dt">data =</span> <span class="kw">rnorm</span>(<span class="dv">10</span>), <span class="dt">alpha =</span> <span class="fl">.05</span>, <span class="dt">B =</span> <span class="dv">100</span>)</span></code></pre></div>
 <pre><code>##       2.5%      97.5% 
-## -0.6770114  0.6726687</code></pre>
+## -0.1946895  0.8578927</code></pre>
 </div>
 <div id="example-2" class="slide section level2">
 <h1>Example 2</h1>
@@ -275,14 +275,14 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div class="slide section level2">
 
 <p>Notice:</p>
-<ul>
+<ul class="incremental">
 <li><p>A lot of the code is very similar between the two functions.</p></li>
 <li><p>Later on, we might want to make bootstrap confidence intervals for other estimates.</p></li>
 <li><p>This is a good candidate for <em>refactoring</em>, pulling out the common tasks into single functions.</p></li>
 </ul>
 <div class="incremental">
 <p>Within each function, we have two steps:</p>
-<ul>
+<ul class="incremental">
 <li><p>Compute the set of bootstrap statistics.</p></li>
 <li><p>Compute confidence intervals from the bootstrap set.</p></li>
 </ul>
@@ -296,7 +296,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb14-4"><a href="#cb14-4"></a>    <span class="kw">return</span>(boot_ci)</span>
 <span id="cb14-5"><a href="#cb14-5"></a>}</span></code></pre></div>
 <p>We’re assuming:</p>
-<ul>
+<ul class="incremental">
 <li><p><code>data</code> is either a vector or a data frame.</p></li>
 <li><p><code>estimator</code> is a function that takes <code>data</code> and returns an estimate of a parameter (so something like <code>mean</code>, <code>sd</code>, or a function that computes coefficients in a linear model)</p></li>
 <li><p><code>alpha</code> is a number in (0, .5)</p></li>
@@ -307,13 +307,13 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 <p>This would be a good time to write tests for the functions we’ve defined.</p>
 <p>Tests for return types:</p>
-<ul>
+<ul class="incremental">
 <li><p><code>get_boot_estimates</code> should have number of rows equal to <code>B</code> or else length equal to <code>B</code></p></li>
 <li><p>If we’re just estimating one parameter, <code>get_ci</code> should return a vector of length 2.</p></li>
 <li><p>If we’re estimating more than one parameter, <code>get_ci</code>should return a matrix with number of columns equal to 2 (upper and lower confidence bounds) and number of rows equal to the number of things we’re estimating.</p></li>
 </ul>
 <p>Test for actual values:</p>
-<ul>
+<ul class="incremental">
 <li>Check that the <code>get_ci</code> function works on a simple case where you know the answer.</li>
 </ul>
 </div>
@@ -394,12 +394,12 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <p>Does it work?</p>
 <div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1"></a><span class="kw">bootstrap_ci</span>(<span class="dt">data =</span> <span class="kw">rnorm</span>(<span class="dv">10</span>), <span class="dt">estimator =</span> mean, <span class="dt">alpha =</span> <span class="fl">.05</span>, <span class="dt">B =</span> <span class="dv">1000</span>)</span></code></pre></div>
 <pre><code>##       2.5%      97.5% 
-## -0.9940405  0.1403266</code></pre>
+## -0.7540182  0.7286158</code></pre>
 <div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a><span class="kw">bootstrap_ci</span>(<span class="dt">data =</span> <span class="kw">rnorm</span>(<span class="dv">100</span>, <span class="dt">sd =</span> <span class="dv">2</span>),</span>
 <span id="cb21-2"><a href="#cb21-2"></a>             <span class="dt">estimator =</span> sd,</span>
 <span id="cb21-3"><a href="#cb21-3"></a>             <span class="dt">alpha =</span> <span class="fl">.05</span>, <span class="dt">B =</span> <span class="dv">1000</span>)</span></code></pre></div>
 <pre><code>##     2.5%    97.5% 
-## 1.663007 2.178305</code></pre>
+## 1.566593 2.061668</code></pre>
 </div>
 <div class="slide section level2">
 
@@ -417,9 +417,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb24-4"><a href="#cb24-4"></a>             <span class="dt">B =</span> <span class="dv">1000</span>)</span></code></pre></div>
 <pre><code>##               
 ## X1                  2.5%     97.5%
-##   (Intercept)  1.7679421 2.7262926
-##   Sepal.Width  0.4582632 0.7256203
-##   Petal.Length 0.4389810 0.5048571</code></pre>
+##   (Intercept)  1.8335142 2.7256039
+##   Sepal.Width  0.4655216 0.7084440
+##   Petal.Length 0.4392528 0.5001946</code></pre>
 <div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1"></a><span class="co">## compare with</span></span>
 <span id="cb26-2"><a href="#cb26-2"></a>iris_lm =<span class="st"> </span><span class="kw">lm</span>(Sepal.Length <span class="op">~</span><span class="st"> </span>Sepal.Width <span class="op">+</span><span class="st"> </span>Petal.Length, <span class="dt">data =</span> iris)</span>
 <span id="cb26-3"><a href="#cb26-3"></a><span class="kw">confint</span>(iris_lm)</span></code></pre></div>
