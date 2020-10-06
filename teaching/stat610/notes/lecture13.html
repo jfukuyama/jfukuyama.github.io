@@ -13,599 +13,250 @@
       span.underline{text-decoration: underline;}
       div.column{display: inline-block; vertical-align: top; width: 50%;}
   </style>
-  <style type="text/css">
-code.sourceCode > span { display: inline-block; line-height: 1.25; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode { white-space: pre; position: relative; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-code.sourceCode { white-space: pre-wrap; }
-code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-    color: #aaaaaa;
-  }
-pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-code.sourceCode > span > a:first-child::before { text-decoration: underline; }
-}
-code span.al { color: #ff0000; font-weight: bold; } /* Alert */
-code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
-code span.at { color: #7d9029; } /* Attribute */
-code span.bn { color: #40a070; } /* BaseN */
-code span.bu { } /* BuiltIn */
-code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
-code span.ch { color: #4070a0; } /* Char */
-code span.cn { color: #880000; } /* Constant */
-code span.co { color: #60a0b0; font-style: italic; } /* Comment */
-code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
-code span.do { color: #ba2121; font-style: italic; } /* Documentation */
-code span.dt { color: #902000; } /* DataType */
-code span.dv { color: #40a070; } /* DecVal */
-code span.er { color: #ff0000; font-weight: bold; } /* Error */
-code span.ex { } /* Extension */
-code span.fl { color: #40a070; } /* Float */
-code span.fu { color: #06287e; } /* Function */
-code span.im { } /* Import */
-code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
-code span.kw { color: #007020; font-weight: bold; } /* Keyword */
-code span.op { color: #666666; } /* Operator */
-code span.ot { color: #007020; } /* Other */
-code span.pp { color: #bc7a00; } /* Preprocessor */
-code span.sc { color: #4070a0; } /* SpecialChar */
-code span.ss { color: #bb6688; } /* SpecialString */
-code span.st { color: #4070a0; } /* String */
-code span.va { color: #19177c; } /* Variable */
-code span.vs { color: #4070a0; } /* VerbatimString */
-code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
-  </style>
   <link rel="stylesheet" type="text/css" media="screen, projection, print"
     href="https://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
   <script src="https://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
     charset="utf-8" type="text/javascript"></script>
 </head>
 <body>
-<div id="object-oriented-programming" class="slide section level2">
-<h1>Object-oriented programming</h1>
-<p>Reading: Matloff, Chapter 9</p>
-<p>Agenda for today:</p>
-<ul>
-<li><p>Objects and classes in R</p></li>
-<li><p>Continue the bootstrap example</p></li>
+<div id="lecture-13-version-control-and-git" class="slide section level1">
+<h1>Lecture 13: Version control and git</h1>
+<ul class="incremental">
+<li><p>Today: Git for local version control</p></li>
+<li><p>Next time: Distributed version control/GitHub/merging/rebasing</p></li>
+<li><p>Reading (if you want more detail): <a href="https://git-scm.com/book/en/v2">Pro Git</a>, Chapters 1, 2, 3, 10.</p></li>
+<li><p>Lab this Friday</p></li>
+<li><p>Homework 5 posted</p></li>
+<li><p>Final project options posted</p></li>
 </ul>
 </div>
-<div id="what-is-object-oriented-programming" class="slide section level2">
-<h1>What is object-oriented programming?</h1>
-<p>Two main concepts, <em>classes</em> and <em>methods</em>.</p>
-<ul>
-<li><p>A class defines a type of object: what sort of data is associated with it, what are valid values for the data, what methods can be called on it.</p></li>
-<li><p>Every object is an instance of a class.</p></li>
-<li><p>A method is a function associated with a particular type of object.</p></li>
+<div id="version-control" class="slide section level1">
+<h1>Version control</h1>
+<ul class="incremental">
+<li><p>Generally, a system that records changes to a set of files over time.</p></li>
+<li><p>Allows for experimentation: if you have a good version of a project and want to experiment with a change, you can easily go back to the good version if the experiment fails.</p></li>
+<li><p>Most informal type of version control is by making copies of files with different names: <code>final_project.Rmd</code>, <code>final_project_old.Rmd</code>, <code>final_project_nov_29.Rmd</code>, etc.</p></li>
 </ul>
 </div>
-<div id="in-r" class="slide section level2">
-<h1>In R</h1>
-<ul>
-<li><p>S3: Very informal versions of classes, lists with a “class” attribute, allowing for one-argument method dispatch.</p></li>
-<li><p>S4: Formal classes, class definitions, methods, considered safer but with more overhead.</p></li>
-<li><p>Both types support <em>generic functions</em>: functions that have different behavior depending on the class of the arguments passed to them.</p></li>
+<div id="git" class="slide section level1">
+<h1>Git</h1>
+<p>Basic idea:</p>
+<ul class="incremental">
+<li><p>Stores snapshots of the project at different points in time, these are <em>commits</em>.</p></li>
+<li><p>You can easily display differences between commits (= states of the project at different points in time).</p></li>
+<li><p>You can easily move between commits (= states of the project at different points in time).</p></li>
+</ul>
+<p>Some nice features:</p>
+<ul class="incremental">
+<li><p>If you’ve changed some things and don’t like the results, you can go back to an older version and start over</p></li>
+<li><p>Allows multiple people to work on the same project</p></li>
+<li><p>Allows for resolving simultaneous changes as easily as possible</p></li>
+<li><p>We have a complete history of who changed what and why</p></li>
 </ul>
 </div>
-<div id="modestype-vs.-classes" class="slide section level2">
-<h1>Modes/type vs. classes</h1>
-<ul>
-<li><p>Everything in R is an object</p></li>
-<li><p>Every object has one and only one type</p>
-<ul>
-<li><p>Types describe the basic structure of an object</p></li>
-<li><p>Atomic types are logical, numeric (either integer or numeric), complex, character</p></li>
-<li><p>Non-atomic types: lists, functions, other special objects for the language</p></li>
-</ul></li>
-<li><p>Objects can have more than one class</p>
-<ul>
-<li><p>Classes are primarily for function dispatch</p></li>
-<li><p>By convention, if an object doesn’t have a class set explicitly, the type is the class</p></li>
-</ul></li>
+<div id="two-important-concepts" class="slide section level1">
+<h1>Two important concepts</h1>
+<p><em>Commits</em> and <em>branches</em>:</p>
+<ul class="incremental">
+<li><p>A <em>commit</em> is a snapshot of the project at a certain point in time.</p></li>
+<li><p>A <em>branch</em> is a pointer to a commit.</p></li>
 </ul>
 </div>
-<div class="slide section level2">
+<div id="getting-started" class="slide section level1">
+<h1>Getting started</h1>
+<p>Two ways to make a git repository:</p>
+<ul class="incremental">
+<li>Start from scratch. Make a project directory (= folder) where you want to store the files you will track. On the command line, navigate to the project directory and then type</li>
+</ul>
+<pre><code>git init</code></pre>
+<p>There will now be a <code>.git</code> folder in the project directory. This is where the history of the project is stored.</p>
+<ul class="incremental">
+<li>Clone an existing repository.</li>
+</ul>
+<pre><code>git clone https://github.com/tidyverse/ggplot2</code></pre>
+<p>This will make a directory called <code>ggplot2</code> and copy the <code>ggplot2</code> repository into it. This means that you have the current state of the <code>ggplot2</code> project and access to all the previous versions.</p>
+</div>
+<div id="recording-changes-to-the-repository" class="slide section level1">
+<h1>Recording changes to the repository</h1>
+<p>Once you have the repository, you usually want to change things and record those changes.</p>
+<p>When you make changes to files, Git sees that they are different from the last version recorded.</p>
+<p>Files can be in four states:</p>
+<ul class="incremental">
+<li><p>Untracked: The file was not tracked (not part of the most recent commit) an is not in the staging area.</p></li>
+<li><p>Unmodified: The file was part of the most recent commit but hasn’t been modified since.</p></li>
+<li><p>Modified: The file was part of the most recent commit and has been modified.</p></li>
+<li><p>Staged: The file was modified or added since the most recent commit and the new version should be part of the next commit.</p></li>
+</ul>
+<p><img src="lifecycle.png" /></p>
+</div>
+<div id="checking-the-status-of-your-files" class="slide section level1">
+<h1>Checking the status of your files</h1>
+<p>The command <code>git status</code> will describe the state of the files in your repository.</p>
+<p>If nothing has changed since the last commit, the output will look something like this:</p>
+<pre><code>On branch master
+Your branch is up-to-date with &#39;origin/master&#39;.
+nothing to commit, working directory clean</code></pre>
+<p>If there were changes, the files will be shown as untracked, modified but not staged, or staged.</p>
+</div>
+<div id="tracking-new-files" class="slide section level1">
+<h1>Tracking new files</h1>
+<p>To start tracking a file that wasn’t part of the last commit, use <code>git add &lt;filename&gt;</code>.</p>
+<p>For example, if you’ve made a new file called <code>README</code>:</p>
+<pre><code>$ git add README
+$ git status
 
-<div class="incremental">
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>x =<span class="st"> </span><span class="dv">1</span><span class="op">:</span><span class="dv">4</span></span>
-<span id="cb1-2"><a href="#cb1-2"></a><span class="kw">typeof</span>(x)</span></code></pre></div>
-<pre><code>## [1] &quot;integer&quot;</code></pre>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">class</span>(x)</span></code></pre></div>
-<pre><code>## [1] &quot;integer&quot;</code></pre>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>a =<span class="st"> </span>letters[<span class="dv">1</span><span class="op">:</span><span class="dv">4</span>]</span>
-<span id="cb5-2"><a href="#cb5-2"></a><span class="kw">typeof</span>(a)</span></code></pre></div>
-<pre><code>## [1] &quot;character&quot;</code></pre>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="kw">class</span>(a)</span></code></pre></div>
-<pre><code>## [1] &quot;character&quot;</code></pre>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a>l =<span class="st"> </span><span class="kw">list</span>(<span class="dt">x =</span> x, <span class="dt">a =</span> a)</span>
-<span id="cb9-2"><a href="#cb9-2"></a>l</span></code></pre></div>
-<pre><code>## $x
-## [1] 1 2 3 4
-## 
-## $a
-## [1] &quot;a&quot; &quot;b&quot; &quot;c&quot; &quot;d&quot;</code></pre>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a><span class="kw">typeof</span>(l)</span></code></pre></div>
-<pre><code>## [1] &quot;list&quot;</code></pre>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a><span class="kw">class</span>(l)</span></code></pre></div>
-<pre><code>## [1] &quot;list&quot;</code></pre>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1"></a><span class="kw">class</span>(l) =<span class="st"> &quot;data.frame&quot;</span></span>
-<span id="cb15-2"><a href="#cb15-2"></a><span class="kw">row.names</span>(l) =<span class="st"> </span><span class="dv">1</span><span class="op">:</span><span class="dv">4</span></span>
-<span id="cb15-3"><a href="#cb15-3"></a><span class="kw">class</span>(l)</span></code></pre></div>
-<pre><code>## [1] &quot;data.frame&quot;</code></pre>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1"></a><span class="kw">typeof</span>(l)</span></code></pre></div>
-<pre><code>## [1] &quot;list&quot;</code></pre>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1"></a>l</span></code></pre></div>
-<pre><code>##   x a
-## 1 1 a
-## 2 2 b
-## 3 3 c
-## 4 4 d</code></pre>
+On branch master
+Your branch is up-to-date with &#39;origin/master&#39;.
+Changes to be committed:
+  (use &quot;git restore --staged &lt;file&gt;...&quot; to unstage)
+
+    new file:   README</code></pre>
 </div>
+<div id="staging-modified-files" class="slide section level1">
+<h1>Staging modified files</h1>
+<p>If we change a file that was tracked in the most recent commit, it will be marked as modified.</p>
+<p>If we then use <code>git add &lt;filename&gt;</code>, the file status will go from modified to staged.</p>
 </div>
-<div id="s3-classes" class="slide section level2">
-<h1>S3 classes</h1>
-<ul>
-<li><p>An S3 class is a an object (either an atomic type or a list) with an extra class attribute.</p></li>
-<li><p>Class instantiation is by creating an object and setting the class attribute.</p></li>
-<li><p>Object orientation is only through generic functions.</p></li>
+<div id="viewing-your-staged-and-unstaged-changes" class="slide section level1">
+<h1>Viewing your staged and unstaged changes</h1>
+<ul class="incremental">
+<li><p><code>git status</code> tells you about the files that have been changed since the last commit, and which changes are staged for the next commit.</p></li>
+<li><p><code>git diff</code>, with no extra arguments, tells you about the differences between the files that are changes since the last commit but not staged.</p></li>
+<li><p><code>git diff --staged</code> tells you about the differences between the staged changes and the last commit.</p></li>
 </ul>
 </div>
-<div class="slide section level2">
-
-<p>For example:</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a>joe =<span class="st"> </span><span class="kw">list</span>(<span class="dt">name =</span> <span class="st">&quot;Joe&quot;</span>, <span class="dt">salary =</span> <span class="dv">55000</span>, <span class="dt">union =</span> <span class="ot">TRUE</span>)</span>
-<span id="cb21-2"><a href="#cb21-2"></a><span class="kw">class</span>(joe) =<span class="st"> &quot;employee&quot;</span></span>
-<span id="cb21-3"><a href="#cb21-3"></a><span class="kw">attributes</span>(joe)</span></code></pre></div>
-<pre><code>## $names
-## [1] &quot;name&quot;   &quot;salary&quot; &quot;union&quot; 
-## 
-## $class
-## [1] &quot;employee&quot;</code></pre>
-<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1"></a><span class="kw">print</span>(joe)</span></code></pre></div>
-<pre><code>## $name
-## [1] &quot;Joe&quot;
-## 
-## $salary
-## [1] 55000
-## 
-## $union
-## [1] TRUE
-## 
-## attr(,&quot;class&quot;)
-## [1] &quot;employee&quot;</code></pre>
-</div>
-<div id="generic-functionsmethod-dispatch-for-s3-classes" class="slide section level2">
-<h1>Generic functions/method dispatch for S3 classes</h1>
-<ul>
-<li><p>A <em>generic function</em> is a function whose behavior depends on what class its arguments are.</p></li>
-<li><p>We have seen functions like <code>print</code>, <code>plot</code>, <code>summary</code>, all of which are generic.</p></li>
-<li><p>Generic functions are very simple: usually just a call to <code>UseMethod</code></p></li>
-</ul>
-<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1"></a>print</span></code></pre></div>
-<pre><code>## function (x, ...) 
-## UseMethod(&quot;print&quot;)
-## &lt;bytecode: 0x7f9d65a09db0&gt;
-## &lt;environment: namespace:base&gt;</code></pre>
-<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1"></a>plot</span></code></pre></div>
-<pre><code>## function (x, y, ...) 
-## UseMethod(&quot;plot&quot;)
-## &lt;bytecode: 0x7f9d669d4cc8&gt;
-## &lt;environment: namespace:graphics&gt;</code></pre>
-<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1"></a>mean</span></code></pre></div>
-<pre><code>## function (x, ...) 
-## UseMethod(&quot;mean&quot;)
-## &lt;bytecode: 0x7f9d664918d8&gt;
-## &lt;environment: namespace:base&gt;</code></pre>
-</div>
-<div class="slide section level2">
-
-<p>Methods:</p>
-<ul>
-<li><p>A <em>method</em> is the function that is actually called on a specific class.</p></li>
-<li><p>In S3, a method for a given class and generic function is just a function with name <code>generic.class</code>.</p></li>
-<li><p>For example: <code>print.lm</code>, <code>plot.lm</code> are the methods for the <code>lm</code> class associated with the <code>print</code> and <code>plot</code> generic functions.</p></li>
-<li><p>To see that they are really just normal functions, try typing <code>stats:::plot.lm</code> or <code>stats:::print.lm</code> in your R console.</p></li>
-<li><p>To define a method associated with a class you have created, define a function with name <code>generic.class</code></p></li>
-</ul>
-<div class="incremental">
-<p>Method dispatch:</p>
-<ul>
-<li><p>Method dispatch refers to how R decides what method to use when a generic functions is called.</p></li>
-<li><p>The <code>UseMethod</code> function is what does this for S3, and it just works by name matching.</p></li>
+<div id="committing-your-changes" class="slide section level1">
+<h1>Committing your changes</h1>
+<p>The command <code>git commit</code> creates a new commit corresponding to the staged changes (so the unstaged changes are not part of the new commit).</p>
+<ul class="incremental">
+<li><p>If you just write <code>git commit</code> with no extra arguments, a text editor will open, either the default (usually vim) or one you have set. In the text editor, you are supposed to write a commit message describing the changes you have just committed.</p></li>
+<li><p><code>git commit -m "&lt;commit message&gt;"</code> will bypass the text editor opening.</p></li>
 </ul>
 </div>
-</div>
-<div class="slide section level2">
-
-<p>Example:</p>
-<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1"></a>print.employee =<span class="st"> </span><span class="cf">function</span>(x) {</span>
-<span id="cb31-2"><a href="#cb31-2"></a>    <span class="kw">cat</span>(x<span class="op">$</span>name, <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)</span>
-<span id="cb31-3"><a href="#cb31-3"></a>    <span class="kw">cat</span>(<span class="st">&quot;salary&quot;</span>, x<span class="op">$</span>salary, <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)</span>
-<span id="cb31-4"><a href="#cb31-4"></a>    <span class="kw">cat</span>(<span class="st">&quot;union member&quot;</span>, x<span class="op">$</span>union, <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)</span>
-<span id="cb31-5"><a href="#cb31-5"></a>}</span>
-<span id="cb31-6"><a href="#cb31-6"></a><span class="kw">print</span>(joe)</span></code></pre></div>
-<pre><code>## Joe 
-## salary 55000 
-## union member TRUE</code></pre>
-<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1"></a>joe</span></code></pre></div>
-<pre><code>## Joe 
-## salary 55000 
-## union member TRUE</code></pre>
-</div>
-<div class="slide section level2">
-
-<p>Inheritance:</p>
-<ul>
-<li><p>We can make new classes that are specialized versions of the old ones.</p></li>
-<li><p>They inherit all the methods of the old class.</p></li>
-<li><p>S3 inheritance is implemented as the class attribute taking multiple values.</p></li>
-<li><p>Classes earlier in the class vector are interpreted as being sub-classes of clasess later in the class vector.</p></li>
+<div id="viewing-the-commit-history" class="slide section level1">
+<h1>Viewing the commit history</h1>
+<p>The command <code>git log</code> shows the commit history.</p>
+<p>Some useful flags:</p>
+<ul class="incremental">
+<li><p><code>-p</code>: For “patch”, shows the differences between commits</p></li>
+<li><p><code>--stat</code>: Shows statistics for files modified in each commit</p></li>
+<li><p><code>--graph</code>: Shows a graph of the branches and merges next to the commit history</p></li>
+<li><p><code>--relative-date</code>: Shows the date in relative terms instead of absolute</p></li>
 </ul>
 </div>
-<div class="slide section level2">
-
-<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1"></a>k =<span class="st"> </span><span class="kw">list</span>(<span class="dt">name=</span><span class="st">&quot;Kate&quot;</span>, <span class="dt">salary=</span> <span class="dv">68000</span>, <span class="dt">union=</span>F, <span class="dt">hrsthismonth=</span> <span class="dv">2</span>)</span>
-<span id="cb35-2"><a href="#cb35-2"></a><span class="kw">class</span>(k) =<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;hrlyemployee&quot;</span>,<span class="st">&quot;employee&quot;</span>)</span></code></pre></div>
-<div class="incremental">
-<p>Method dispatch:</p>
-<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1"></a><span class="kw">print</span>(k)</span></code></pre></div>
-<pre><code>## Kate 
-## salary 68000 
-## union member FALSE</code></pre>
-</div>
-<div class="incremental">
-<p>What happened?</p>
-<ul>
-<li><p>First look for a <code>print.hrlyemployee</code> function.</p></li>
-<li><p>That doesn’t exist, so look for <code>print.employee</code>.</p></li>
+<div id="branches" class="slide section level1">
+<h1>Branches</h1>
+<p>Problem: We have made a lot of commits. If we want to switch between them, how do we do that?</p>
+<ul class="incremental">
+<li><p>A <em>branch</em> is a pointer to one commit. Can think of it as a name for that commit.</p></li>
+<li><p>By default, you start off with a branch called <code>master</code>, but you can make more, and with any names you want.</p></li>
+<li><p>There is nothing special about the <code>master</code> branch.</p></li>
 </ul>
 </div>
-</div>
-<div id="s4-classes" class="slide section level2">
-<h1>S4 classes</h1>
-<p>S4 classes have three properties:</p>
-<ul>
-<li><p>A class <em>name</em></p></li>
-<li><p>A <em>representation</em>: A list of <em>slots</em> giving names and classes for the objects associated with the class.</p></li>
-<li><p>A vector of classes it inherits from</p></li>
+<div id="head" class="slide section level1">
+<h1>HEAD</h1>
+<p>Problem: if you’re making changes (= adding commits), you probably want a pointer to the most recent commit. We would like branches to move when we make a new commit. HEAD solves the problem of updating branches after commits.</p>
+<ul class="incremental">
+<li><p>HEAD is a pointer to a branch.</p></li>
+<li><p>When you make a new commit, the branch HEAD points to moves to the new commit.</p></li>
+<li><p>The <code>checkout</code> function allows you to change the branch HEAD points to.</p></li>
 </ul>
 </div>
-<div id="s4-class-definition" class="slide section level2">
-<h1>S4 class definition</h1>
-<p>Syntax: <code>setClass(class_name, class_representation, contains)</code></p>
-<ul>
-<li><p><code>class_name</code> is the name of the class.</p></li>
-<li><p><code>class_representation</code> is a list decribing the slots and their types.</p></li>
-<li><p><code>contains</code> describes the inheritance.</p></li>
-</ul>
-<p>For example:</p>
-<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1"></a><span class="kw">setClass</span>(<span class="st">&quot;employee&quot;</span>,</span>
-<span id="cb38-2"><a href="#cb38-2"></a>         <span class="kw">representation</span>(</span>
-<span id="cb38-3"><a href="#cb38-3"></a>             <span class="dt">name =</span> <span class="st">&quot;character&quot;</span>,</span>
-<span id="cb38-4"><a href="#cb38-4"></a>             <span class="dt">salary =</span> <span class="st">&quot;numeric&quot;</span>,</span>
-<span id="cb38-5"><a href="#cb38-5"></a>             <span class="dt">union =</span> <span class="st">&quot;logical&quot;</span>))</span></code></pre></div>
-</div>
-<div class="slide section level2">
+<div class="slide section level1">
 
-<p>Note: This function breaks one of our rules from the beginning: it’s called for its side effect. It assigns an object defining the class, and also returns invisibly a class generation function.</p>
-<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1"></a><span class="kw">rm</span>(<span class="dt">list =</span> <span class="kw">ls</span>(<span class="dt">all.names =</span> <span class="ot">TRUE</span>))</span>
-<span id="cb39-2"><a href="#cb39-2"></a><span class="kw">ls</span>(<span class="dt">all.names =</span> <span class="ot">TRUE</span>)</span></code></pre></div>
-<pre><code>## character(0)</code></pre>
-<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1"></a><span class="kw">setClass</span>(<span class="st">&quot;employee&quot;</span>,</span>
-<span id="cb41-2"><a href="#cb41-2"></a>         <span class="kw">representation</span>(</span>
-<span id="cb41-3"><a href="#cb41-3"></a>             <span class="dt">name =</span> <span class="st">&quot;character&quot;</span>,</span>
-<span id="cb41-4"><a href="#cb41-4"></a>             <span class="dt">salary =</span> <span class="st">&quot;numeric&quot;</span>,</span>
-<span id="cb41-5"><a href="#cb41-5"></a>             <span class="dt">union =</span> <span class="st">&quot;logical&quot;</span>))</span>
-<span id="cb41-6"><a href="#cb41-6"></a><span class="kw">ls</span>(<span class="dt">all.names =</span> <span class="ot">TRUE</span>)</span></code></pre></div>
-<pre><code>## [1] &quot;.__C__employee&quot;</code></pre>
-<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1"></a>.__C__employee</span></code></pre></div>
-<pre><code>## Class &quot;employee&quot; [in &quot;.GlobalEnv&quot;]
-## 
-## Slots:
-##                                     
-## Name:       name    salary     union
-## Class: character   numeric   logical</code></pre>
+<p>Start with three commits, two branches</p>
+<p><img src="head_1.png" /></p>
 </div>
-<div class="slide section level2">
+<div class="slide section level1">
 
-<p>Don’t use <code>setClass</code> this way: it’s just to show you that the method returns a class creation function.</p>
-<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1"></a>class_creation_fn =<span class="st"> </span><span class="kw">setClass</span>(<span class="st">&quot;employee&quot;</span>,</span>
-<span id="cb45-2"><a href="#cb45-2"></a>         <span class="kw">representation</span>(</span>
-<span id="cb45-3"><a href="#cb45-3"></a>             <span class="dt">name =</span> <span class="st">&quot;character&quot;</span>,</span>
-<span id="cb45-4"><a href="#cb45-4"></a>             <span class="dt">salary =</span> <span class="st">&quot;numeric&quot;</span>,</span>
-<span id="cb45-5"><a href="#cb45-5"></a>             <span class="dt">union =</span> <span class="st">&quot;logical&quot;</span>))</span>
-<span id="cb45-6"><a href="#cb45-6"></a>jane =<span class="st"> </span><span class="kw">class_creation_fn</span>(<span class="dt">name =</span> <span class="st">&quot;Jane&quot;</span>, <span class="dt">salary =</span> <span class="dv">55000</span>, <span class="dt">union =</span> <span class="ot">FALSE</span>)</span>
-<span id="cb45-7"><a href="#cb45-7"></a>jane</span></code></pre></div>
-<pre><code>## An object of class &quot;employee&quot;
-## Slot &quot;name&quot;:
-## [1] &quot;Jane&quot;
-## 
-## Slot &quot;salary&quot;:
-## [1] 55000
-## 
-## Slot &quot;union&quot;:
-## [1] FALSE</code></pre>
+<p>Add a commit:</p>
+<p><img src="head_2.png" /></p>
 </div>
-<div id="s4-class-instantiation" class="slide section level2">
-<h1>S4 class instantiation</h1>
-<ul>
-<li><p>To make an object of a given S4 class, use <code>new</code></p></li>
-<li><p>Syntax: <code>new(class, representation)</code></p></li>
+<div class="slide section level1">
+
+<p>Switch branches with checkout:</p>
+<p><img src="head_3.png" /></p>
+</div>
+<div id="the-repository-in-more-detail" class="slide section level1">
+<h1>The repository in more detail</h1>
+</div>
+<div id="how-all-the-data-is-stored" class="slide section level1">
+<h1>How all the data is stored</h1>
+<p>Three basic types of objects:</p>
+<ul class="incremental">
+<li><p>blobs: contents of a file</p></li>
+<li><p>trees: an object describing the contents of a directory</p></li>
+<li><p>commits: an object describing the state of the repository at a particular point in time</p></li>
 </ul>
-<div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1"></a>joe =<span class="st"> </span><span class="kw">new</span>(<span class="st">&quot;employee&quot;</span>, <span class="dt">name =</span> <span class="st">&quot;Joe&quot;</span>, <span class="dt">salary =</span> <span class="dv">55000</span>, <span class="dt">union =</span> <span class="ot">TRUE</span>)</span>
-<span id="cb47-2"><a href="#cb47-2"></a>joe</span></code></pre></div>
-<pre><code>## An object of class &quot;employee&quot;
-## Slot &quot;name&quot;:
-## [1] &quot;Joe&quot;
-## 
-## Slot &quot;salary&quot;:
-## [1] 55000
-## 
-## Slot &quot;union&quot;:
-## [1] TRUE</code></pre>
+<p>All these objects are stored by their <em>hash</em></p>
 </div>
-<div id="data-access-in-s4-classes" class="slide section level2">
-<h1>Data access in S4 classes</h1>
-<p>Slot access is with <code>@</code>, not <code>$</code>: <code>object@slot</code> will give the data associated with <code>slot</code> in <code>object</code>.</p>
-<div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1"></a>joe<span class="op">@</span>salary</span></code></pre></div>
-<pre><code>## [1] 55000</code></pre>
-<div class="sourceCode" id="cb51"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1"></a>joe<span class="op">$</span>salary</span></code></pre></div>
-<pre><code>## Error in joe$salary: $ operator not defined for this S4 class</code></pre>
-</div>
-<div id="generic-functions-and-methods-for-s4-classes" class="slide section level2">
-<h1>Generic functions and methods for S4 classes</h1>
-<p>Remember:</p>
-<ul>
-<li><p>A generic function is a function whose behavior depends on the class of its arguments.</p></li>
-<li><p>A method is the function associated with a specific combination of generic function and argument classes.</p></li>
-</ul>
-<div class="incremental">
-<p>Syntax for setting a method associated with a generic function: <code>setMethod(generic, signature, fn)</code></p>
-<ul>
-<li><p><code>generic</code> is a string specifying the generic function for which we want to specify a class-specific method.</p></li>
-<li><p><code>signature</code> describes the classes of the arguments.</p></li>
-<li><p><code>fn</code> is the function we want to use for that specified combination of generic function and argument classes.</p></li>
+<div id="hashes" class="slide section level1">
+<h1>Hashes</h1>
+<ul class="incremental">
+<li><p>A <em>hash</em> is a tool from computer security for checking whether data has been tampered with</p></li>
+<li><p>Git uses <a href="https://en.wikipedia.org/wiki/SHA-1">SHA1</a></p></li>
+<li><p>This is a function that takes data of any size and produces a 20-byte hash value.</p></li>
+<li><p>This is usually displayed as a 40-digit hexadecimal number.</p></li>
+<li><p>Idea behind a hash function is that small perturbations in the data lead to large changes in the hash value, and the function is designed to be difficult to invert (if you’re given a hash value, it’s hard to create a file that has that value)</p></li>
+<li><p>Every object is referred to by its hash value</p></li>
 </ul>
 </div>
-</div>
-<div class="slide section level2">
-
-<div class="incremental">
-<p>For example: <code>show</code> is a generic function used to print S4 objects.</p>
-<p>We can create a method associated with the <code>show</code> generic function and the <code>employee</code> S4 class as follows:</p>
-<div class="sourceCode" id="cb53"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1"></a><span class="kw">setMethod</span>(<span class="st">&quot;show&quot;</span>, <span class="dt">signature =</span> <span class="kw">signature</span>(<span class="st">&quot;employee&quot;</span>), <span class="dt">definition =</span> <span class="cf">function</span>(object) {</span>
-<span id="cb53-2"><a href="#cb53-2"></a>    inorout =<span class="st"> </span><span class="kw">ifelse</span>(object<span class="op">@</span>union, <span class="st">&quot;is&quot;</span>, <span class="st">&quot;is not&quot;</span>)</span>
-<span id="cb53-3"><a href="#cb53-3"></a>    <span class="kw">cat</span>(object<span class="op">@</span>name, <span class="st">&quot;has a salary of&quot;</span>, object<span class="op">@</span>salary, <span class="st">&quot;and&quot;</span>, inorout, <span class="st">&quot;in the union&quot;</span>, <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)</span>
-<span id="cb53-4"><a href="#cb53-4"></a>})</span>
-<span id="cb53-5"><a href="#cb53-5"></a><span class="kw">show</span>(joe)</span></code></pre></div>
-<pre><code>## Joe has a salary of 55000 and is in the union</code></pre>
-<div class="sourceCode" id="cb55"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1"></a>joe</span></code></pre></div>
-<pre><code>## Joe has a salary of 55000 and is in the union</code></pre>
-</div>
-</div>
-<div id="a-longer-example" class="slide section level2">
-<h1>A longer example</h1>
-<p>Remember our bootstrap example from last time?</p>
-<p>Now, in addition to computing confidence intervals, we want to plot the bootstrap sampling distributions.</p>
-<p>Last time we settled on the following set of functions.</p>
-<div class="sourceCode" id="cb57"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1"></a>bootstrap_ci =<span class="st"> </span><span class="cf">function</span>(data, estimator, alpha, B) {</span>
-<span id="cb57-2"><a href="#cb57-2"></a>    boot_estimates =<span class="st"> </span><span class="kw">get_boot_estimates</span>(data, estimator, B)</span>
-<span id="cb57-3"><a href="#cb57-3"></a>    boot_ci =<span class="st"> </span><span class="kw">get_ci</span>(boot_estimates, alpha)</span>
-<span id="cb57-4"><a href="#cb57-4"></a>    <span class="kw">return</span>(boot_ci)</span>
-<span id="cb57-5"><a href="#cb57-5"></a>}</span>
-<span id="cb57-6"><a href="#cb57-6"></a></span>
-<span id="cb57-7"><a href="#cb57-7"></a>get_boot_estimates =<span class="st"> </span><span class="cf">function</span>(data, estimator, B) {</span>
-<span id="cb57-8"><a href="#cb57-8"></a>    boot_estimates =<span class="st"> </span><span class="kw">replicate</span>(B, <span class="dt">expr =</span> {</span>
-<span id="cb57-9"><a href="#cb57-9"></a>        boot_data =<span class="st"> </span><span class="kw">get_bootstrap_sample</span>(data)</span>
-<span id="cb57-10"><a href="#cb57-10"></a>        boot_estimate =<span class="st"> </span><span class="kw">estimator</span>(boot_data)</span>
-<span id="cb57-11"><a href="#cb57-11"></a>        <span class="kw">return</span>(boot_estimate)</span>
-<span id="cb57-12"><a href="#cb57-12"></a>    })</span>
-<span id="cb57-13"><a href="#cb57-13"></a>    <span class="kw">return</span>(boot_estimates)</span>
-<span id="cb57-14"><a href="#cb57-14"></a>}</span>
-<span id="cb57-15"><a href="#cb57-15"></a></span>
-<span id="cb57-16"><a href="#cb57-16"></a>get_ci =<span class="st"> </span><span class="cf">function</span>(estimates, alpha) {</span>
-<span id="cb57-17"><a href="#cb57-17"></a>    ci_lo =<span class="st"> </span>alpha <span class="op">/</span><span class="st"> </span><span class="dv">2</span></span>
-<span id="cb57-18"><a href="#cb57-18"></a>    ci_hi =<span class="st"> </span><span class="dv">1</span> <span class="op">-</span><span class="st"> </span>(alpha <span class="op">/</span><span class="st"> </span><span class="dv">2</span>)</span>
-<span id="cb57-19"><a href="#cb57-19"></a>    <span class="cf">if</span>(<span class="op">!</span><span class="kw">is.null</span>(<span class="kw">dim</span>(estimates))) {</span>
-<span id="cb57-20"><a href="#cb57-20"></a>        <span class="co">## if we have multi-dimensional estimates</span></span>
-<span id="cb57-21"><a href="#cb57-21"></a>        cis =<span class="st"> </span>plyr<span class="op">::</span><span class="kw">aaply</span>(estimates, <span class="dv">1</span>, <span class="cf">function</span>(x) <span class="kw">quantile</span>(x, <span class="dt">probs =</span> <span class="kw">c</span>(ci_lo, ci_hi)))</span>
-<span id="cb57-22"><a href="#cb57-22"></a>    } <span class="cf">else</span> {</span>
-<span id="cb57-23"><a href="#cb57-23"></a>        <span class="co">## if we have one-dimensional estimates</span></span>
-<span id="cb57-24"><a href="#cb57-24"></a>        cis =<span class="st"> </span><span class="kw">quantile</span>(estimates, <span class="dt">probs =</span> <span class="kw">c</span>(ci_lo, ci_hi))</span>
-<span id="cb57-25"><a href="#cb57-25"></a>    }</span>
-<span id="cb57-26"><a href="#cb57-26"></a>    <span class="kw">return</span>(cis)</span>
-<span id="cb57-27"><a href="#cb57-27"></a>}</span>
-<span id="cb57-28"><a href="#cb57-28"></a></span>
-<span id="cb57-29"><a href="#cb57-29"></a>get_bootstrap_sample =<span class="st"> </span><span class="cf">function</span>(data) {</span>
-<span id="cb57-30"><a href="#cb57-30"></a>    <span class="cf">if</span>(<span class="op">!</span><span class="kw">is.null</span>(<span class="kw">dim</span>(data))) {</span>
-<span id="cb57-31"><a href="#cb57-31"></a>        <span class="co">## in this case, data is rectangular, and we want to sample rows</span></span>
-<span id="cb57-32"><a href="#cb57-32"></a>        n =<span class="st"> </span><span class="kw">dim</span>(data)[<span class="dv">1</span>]</span>
-<span id="cb57-33"><a href="#cb57-33"></a>        boot_idx =<span class="st"> </span><span class="kw">sample</span>(<span class="dv">1</span><span class="op">:</span>n, <span class="dt">size =</span> n, <span class="dt">replace =</span> <span class="ot">TRUE</span>)</span>
-<span id="cb57-34"><a href="#cb57-34"></a>        bootstrap_sample =<span class="st"> </span>data[boot_idx,]</span>
-<span id="cb57-35"><a href="#cb57-35"></a>    } <span class="cf">else</span> {</span>
-<span id="cb57-36"><a href="#cb57-36"></a>        <span class="co">## in this case, data is a vector and we want to sample elements of the vector</span></span>
-<span id="cb57-37"><a href="#cb57-37"></a>        n =<span class="st"> </span><span class="kw">length</span>(data)</span>
-<span id="cb57-38"><a href="#cb57-38"></a>        boot_idx =<span class="st"> </span><span class="kw">sample</span>(<span class="dv">1</span><span class="op">:</span>n, <span class="dt">size =</span> n, <span class="dt">replace =</span> <span class="ot">TRUE</span>)</span>
-<span id="cb57-39"><a href="#cb57-39"></a>        bootstrap_sample =<span class="st"> </span>data[boot_idx]</span>
-<span id="cb57-40"><a href="#cb57-40"></a>    }</span>
-<span id="cb57-41"><a href="#cb57-41"></a>    <span class="kw">return</span>(bootstrap_sample)</span>
-<span id="cb57-42"><a href="#cb57-42"></a>}</span></code></pre></div>
-</div>
-<div class="slide section level2">
-
-<p>Notice that the output from <code>get_boot_estimates</code> could be used for a lot of different tasks</p>
-<ul>
-<li><p>Last time we used it to get bootstrap confidence intervals</p></li>
-<li><p>We could also use it to get bootstrap standard errors, or make plots, or do anything else that depends on the set of bootstrap samples.</p></li>
-<li><p>Let’s try making it into its own class and setting some methods for common operations.</p></li>
+<div id="blobs" class="slide section level1">
+<h1>Blobs</h1>
+<ul class="incremental">
+<li><p>Blobs store the contents of a file</p></li>
+<li><p>Name is the hash value of the contents of the file</p></li>
 </ul>
 </div>
-<div class="slide section level2">
-
-<p>First step: Modify the function so it returns something with a <code>class</code> attribute.</p>
-<div class="sourceCode" id="cb58"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1"></a>get_boot_estimates =<span class="st"> </span><span class="cf">function</span>(data, estimator, B) {</span>
-<span id="cb58-2"><a href="#cb58-2"></a>    boot_estimates =<span class="st"> </span><span class="kw">replicate</span>(B, <span class="dt">expr =</span> {</span>
-<span id="cb58-3"><a href="#cb58-3"></a>        boot_data =<span class="st"> </span><span class="kw">get_bootstrap_sample</span>(data)</span>
-<span id="cb58-4"><a href="#cb58-4"></a>        boot_estimate =<span class="st"> </span><span class="kw">estimator</span>(boot_data)</span>
-<span id="cb58-5"><a href="#cb58-5"></a>        <span class="kw">return</span>(boot_estimate)</span>
-<span id="cb58-6"><a href="#cb58-6"></a>    })</span>
-<span id="cb58-7"><a href="#cb58-7"></a>    <span class="kw">class</span>(boot_estimates) =<span class="st"> &quot;boot_dist&quot;</span></span>
-<span id="cb58-8"><a href="#cb58-8"></a>    <span class="kw">return</span>(boot_estimates)</span>
-<span id="cb58-9"><a href="#cb58-9"></a>}</span></code></pre></div>
+<div id="trees" class="slide section level1">
+<h1>Trees</h1>
+<ul class="incremental">
+<li><p>Blobs just store the contents of the file</p></li>
+<li><p>Trees store the file name and the directory structure</p></li>
+</ul>
+<p>To see the tree, you can use:</p>
+<pre><code>git cat-file -p master^{tree}</code></pre>
+<p>And the output might look like this:</p>
+<pre><code>100644 blob 01b480b010b7fe66e312e1271dd24e128f3a0290    .gitmodules
+100644 blob 1d17afb2a980076fc389f3d2747b0bfefd4df839    Dockerfile
+100644 blob 716007c1456163b933cb086acae151fc6a24ca6d    README.md
+100644 blob 9af5513cf53dfbdedbc69ec43865dec054de0ccd    SConstruct
+040000 tree 100d47915afe22615ff111d390170c7265900b7a    analysis</code></pre>
 </div>
-<div class="slide section level2">
+<div class="slide section level1">
 
-<p>Second step: Create methods for the <code>boot_dist</code> class associated with the <code>plot</code> and <code>print</code> generic functions.</p>
-<div class="sourceCode" id="cb59"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1"></a><span class="kw">library</span>(ggplot2)</span></code></pre></div>
-<pre><code>## Warning: package &#39;ggplot2&#39; was built under R version 3.5.2</code></pre>
-<div class="sourceCode" id="cb61"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1"></a>plot.boot_dist =<span class="st"> </span><span class="cf">function</span>(x) {</span>
-<span id="cb61-2"><a href="#cb61-2"></a>    <span class="kw">ggplot</span>(<span class="kw">data.frame</span>(<span class="dt">boot_samples =</span> <span class="kw">as.vector</span>(x))) <span class="op">+</span></span>
-<span id="cb61-3"><a href="#cb61-3"></a><span class="st">        </span><span class="kw">geom_histogram</span>(<span class="kw">aes</span>(<span class="dt">x =</span> boot_samples)) <span class="op">+</span></span>
-<span id="cb61-4"><a href="#cb61-4"></a><span class="st">        </span><span class="kw">ggtitle</span>(<span class="st">&quot;Bootstrap distribution&quot;</span>)</span>
-<span id="cb61-5"><a href="#cb61-5"></a>}</span>
-<span id="cb61-6"><a href="#cb61-6"></a>print.boot_dist =<span class="st"> </span><span class="cf">function</span>(x) {</span>
-<span id="cb61-7"><a href="#cb61-7"></a>    n =<span class="st"> </span><span class="kw">length</span>(x)</span>
-<span id="cb61-8"><a href="#cb61-8"></a>    <span class="kw">cat</span>(<span class="st">&quot;Bootstrap distribution object,&quot;</span>, n, <span class="st">&quot;bootstrap samples</span><span class="ch">\n</span><span class="st">&quot;</span>)</span>
-<span id="cb61-9"><a href="#cb61-9"></a>    <span class="kw">cat</span>(<span class="st">&quot;Bootstrap standard error:&quot;</span>, <span class="kw">sd</span>(x), <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)</span>
-<span id="cb61-10"><a href="#cb61-10"></a>}</span></code></pre></div>
+<p>Conceptually, if we have a directory containing</p>
+<ul class="incremental">
+<li><p><code>README</code>,</p></li>
+<li><p><code>Rakefile</code>,</p></li>
+<li><p>A subdirectory called <code>lib</code>,</p></li>
+<li><p>A file <code>samplegit.rb</code> in <code>lib</code>,</p></li>
+</ul>
+<p>Git would store a snapshot of the directory as three blobs and two trees:</p>
+<p><img src="tree_1.png" /></p>
 </div>
-<div class="slide section level2">
+<div id="commits" class="slide section level1">
+<h1>Commits</h1>
+<p>Remember that a <em>commit</em> records the state of the repository at a particular point in time. It contains:</p>
+<ul class="incremental">
+<li><p>Hash of the tree object for the top level directory</p></li>
+<li><p>Hash of the parent commit</p></li>
+<li><p>Meta-information about the commit (author, commit message, date, etc.)</p></li>
+</ul>
+<p>Commits are also referred to by their hashes, and you should think of git as storing a set of commits.</p>
+</div>
+<div class="slide section level1">
 
-<p>Check whether it works:</p>
-<div class="sourceCode" id="cb62"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1"></a>boot_dist =<span class="st"> </span><span class="kw">get_boot_estimates</span>(<span class="kw">rnorm</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>), <span class="dt">estimator =</span> mean, <span class="dt">B =</span> <span class="dv">10000</span>)</span>
-<span id="cb62-2"><a href="#cb62-2"></a>boot_dist</span></code></pre></div>
-<pre><code>## Bootstrap distribution object, 10000 bootstrap samples
-## Bootstrap standard error: 0.2727863</code></pre>
-<div class="sourceCode" id="cb64"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1"></a><span class="kw">plot</span>(boot_dist)</span></code></pre></div>
-<pre><code>## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
-<p><img src="lecture-13-fig/unnamed-chunk-16-1.png" /></p>
+<p>Putting everything together, we get a graph that describes the files that were present at different commits:</p>
+<p><img src="commits.png" /></p>
 </div>
-<div id="example-with-s4-classes" class="slide section level2">
-<h1>Example with S4 classes</h1>
-<p>The functions above only work if we’re getting bootstrap distributions for one parameter at a time.</p>
-<div class="sourceCode" id="cb66"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1"></a><span class="kw">data</span>(iris)</span>
-<span id="cb66-2"><a href="#cb66-2"></a>iris_coef_estimator =<span class="st"> </span><span class="cf">function</span>(d) {</span>
-<span id="cb66-3"><a href="#cb66-3"></a>    iris_lm =<span class="st"> </span><span class="kw">lm</span>(Sepal.Length <span class="op">~</span><span class="st"> </span>Sepal.Width <span class="op">+</span><span class="st"> </span>Petal.Length, <span class="dt">data =</span> d)</span>
-<span id="cb66-4"><a href="#cb66-4"></a>    iris_coef =<span class="st"> </span><span class="kw">coef</span>(iris_lm)</span>
-<span id="cb66-5"><a href="#cb66-5"></a>    <span class="kw">return</span>(iris_coef)</span>
-<span id="cb66-6"><a href="#cb66-6"></a>}</span>
-<span id="cb66-7"><a href="#cb66-7"></a>boot_dist =<span class="st"> </span><span class="kw">get_boot_estimates</span>(iris, iris_coef_estimator, <span class="dt">B =</span> <span class="dv">1000</span>)</span></code></pre></div>
-<p>For the next example, we’ll both fix this problem and show how you would use S4 classes instead of S3 classes.</p>
-</div>
-<div class="slide section level2">
-
-<p>First step: set an S4 class for the bootstrap distribution.</p>
-<div class="sourceCode" id="cb67"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb67-1"><a href="#cb67-1"></a><span class="kw">setClass</span>(<span class="st">&quot;boot_dist&quot;</span>,</span>
-<span id="cb67-2"><a href="#cb67-2"></a>         <span class="dt">representation =</span> <span class="kw">list</span>(<span class="dt">boot_samples =</span> <span class="st">&quot;matrix&quot;</span>, <span class="dt">nparams =</span> <span class="st">&quot;numeric&quot;</span>, <span class="dt">nboot =</span> <span class="st">&quot;numeric&quot;</span>))</span>
-<span id="cb67-3"><a href="#cb67-3"></a><span class="kw">ls</span>(<span class="dt">all.names =</span> <span class="ot">TRUE</span>)</span></code></pre></div>
-<pre><code>##  [1] &quot;.__C__boot_dist&quot;      &quot;.__C__employee&quot;       &quot;.__T__show:methods&quot;  
-##  [4] &quot;.Random.seed&quot;         &quot;boot_dist&quot;            &quot;bootstrap_ci&quot;        
-##  [7] &quot;class_creation_fn&quot;    &quot;get_boot_estimates&quot;   &quot;get_bootstrap_sample&quot;
-## [10] &quot;get_ci&quot;               &quot;iris&quot;                 &quot;iris_coef_estimator&quot; 
-## [13] &quot;jane&quot;                 &quot;joe&quot;                  &quot;plot.boot_dist&quot;      
-## [16] &quot;print.boot_dist&quot;</code></pre>
-</div>
-<div class="slide section level2">
-
-<p>Then we modify the <code>get_boot_estimates</code> function to return an object of the <code>boot_dist</code> class.</p>
-<div class="sourceCode" id="cb69"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb69-1"><a href="#cb69-1"></a>get_boot_estimates =<span class="st"> </span><span class="cf">function</span>(data, estimator, B) {</span>
-<span id="cb69-2"><a href="#cb69-2"></a>    boot_estimates =<span class="st"> </span><span class="kw">replicate</span>(B, <span class="dt">expr =</span> {</span>
-<span id="cb69-3"><a href="#cb69-3"></a>        boot_data =<span class="st"> </span><span class="kw">get_bootstrap_sample</span>(data)</span>
-<span id="cb69-4"><a href="#cb69-4"></a>        boot_estimate =<span class="st"> </span><span class="kw">estimator</span>(boot_data)</span>
-<span id="cb69-5"><a href="#cb69-5"></a>        <span class="kw">return</span>(boot_estimate)</span>
-<span id="cb69-6"><a href="#cb69-6"></a>    })</span>
-<span id="cb69-7"><a href="#cb69-7"></a>    boot_dist_object =<span class="st"> </span><span class="kw">make_bd_object</span>(boot_estimates)</span>
-<span id="cb69-8"><a href="#cb69-8"></a>    <span class="kw">return</span>(boot_dist_object)</span>
-<span id="cb69-9"><a href="#cb69-9"></a>}</span></code></pre></div>
-</div>
-<div class="slide section level2">
-
-<div class="sourceCode" id="cb70"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb70-1"><a href="#cb70-1"></a><span class="co">## takes either a vector or a matrix and creates a boot_dist object</span></span>
-<span id="cb70-2"><a href="#cb70-2"></a>make_bd_object &lt;-<span class="st"> </span><span class="cf">function</span>(estimates) {</span>
-<span id="cb70-3"><a href="#cb70-3"></a>    <span class="cf">if</span>(<span class="kw">is.null</span>(<span class="kw">dim</span>(estimates))) { <span class="co">## if estimates is a vector</span></span>
-<span id="cb70-4"><a href="#cb70-4"></a>        nparams =<span class="st"> </span><span class="dv">1</span></span>
-<span id="cb70-5"><a href="#cb70-5"></a>        nboot =<span class="st"> </span><span class="kw">length</span>(estimates)</span>
-<span id="cb70-6"><a href="#cb70-6"></a>        estimates =<span class="st"> </span><span class="kw">matrix</span>(estimates, <span class="dt">nrow =</span> <span class="dv">1</span>)</span>
-<span id="cb70-7"><a href="#cb70-7"></a>    } <span class="cf">else</span> { <span class="co">## if estimates is a matrix</span></span>
-<span id="cb70-8"><a href="#cb70-8"></a>        nparams =<span class="st"> </span><span class="kw">nrow</span>(estimates)</span>
-<span id="cb70-9"><a href="#cb70-9"></a>        nboot =<span class="st"> </span><span class="kw">ncol</span>(estimates)</span>
-<span id="cb70-10"><a href="#cb70-10"></a>    }</span>
-<span id="cb70-11"><a href="#cb70-11"></a>    bd =<span class="st"> </span><span class="kw">new</span>(<span class="st">&quot;boot_dist&quot;</span>, <span class="dt">boot_samples =</span> estimates, <span class="dt">nparams =</span> nparams, <span class="dt">nboot =</span> nboot)</span>
-<span id="cb70-12"><a href="#cb70-12"></a>    <span class="kw">return</span>(bd)</span>
-<span id="cb70-13"><a href="#cb70-13"></a>}</span></code></pre></div>
-</div>
-<div class="slide section level2">
-
-<p>Next step: set method corresponding to the <code>show</code> generic:</p>
-<div class="sourceCode" id="cb71"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb71-1"><a href="#cb71-1"></a><span class="kw">setMethod</span>(<span class="st">&quot;show&quot;</span>, <span class="dt">signature =</span> <span class="st">&quot;boot_dist&quot;</span>, <span class="cf">function</span>(object) {</span>
-<span id="cb71-2"><a href="#cb71-2"></a>    <span class="kw">cat</span>(<span class="st">&quot;Bootstrap distribution object,&quot;</span>, object<span class="op">@</span>nboot, <span class="st">&quot;bootstrap samples</span><span class="ch">\n</span><span class="st">&quot;</span>)</span>
-<span id="cb71-3"><a href="#cb71-3"></a>    <span class="kw">cat</span>(<span class="st">&quot;Number of parameters:&quot;</span>, object<span class="op">@</span>nparams, <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)</span>
-<span id="cb71-4"><a href="#cb71-4"></a>    <span class="kw">cat</span>(<span class="st">&quot;Bootstrap estimate of standard error:&quot;</span>, <span class="kw">apply</span>(object<span class="op">@</span>boot_samples, <span class="dv">1</span>, sd), <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)</span>
-<span id="cb71-5"><a href="#cb71-5"></a>})</span></code></pre></div>
-</div>
-<div class="slide section level2">
-
-<p>Set method corresponding to the <code>plot</code> generic:</p>
-<div class="sourceCode" id="cb72"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb72-1"><a href="#cb72-1"></a><span class="kw">setMethod</span>(<span class="st">&quot;plot&quot;</span>, <span class="dt">signature =</span> <span class="st">&quot;boot_dist&quot;</span>, <span class="cf">function</span>(x) {</span>
-<span id="cb72-2"><a href="#cb72-2"></a>    melted_samples =<span class="st"> </span>reshape2<span class="op">::</span><span class="kw">melt</span>(x<span class="op">@</span>boot_samples)</span>
-<span id="cb72-3"><a href="#cb72-3"></a>    <span class="cf">if</span>(x<span class="op">@</span>nparams <span class="op">==</span><span class="st"> </span><span class="dv">1</span>) {</span>
-<span id="cb72-4"><a href="#cb72-4"></a>        <span class="kw">ggplot</span>(melted_samples) <span class="op">+</span></span>
-<span id="cb72-5"><a href="#cb72-5"></a><span class="st">            </span><span class="kw">geom_histogram</span>(<span class="kw">aes</span>(<span class="dt">x =</span> value)) <span class="op">+</span></span>
-<span id="cb72-6"><a href="#cb72-6"></a><span class="st">            </span><span class="kw">ggtitle</span>(<span class="st">&quot;Bootstrap distribution&quot;</span>)</span>
-<span id="cb72-7"><a href="#cb72-7"></a>    } <span class="cf">else</span> {        </span>
-<span id="cb72-8"><a href="#cb72-8"></a>        <span class="kw">ggplot</span>(melted_samples) <span class="op">+</span></span>
-<span id="cb72-9"><a href="#cb72-9"></a><span class="st">            </span><span class="kw">geom_histogram</span>(<span class="kw">aes</span>(<span class="dt">x =</span> value)) <span class="op">+</span></span>
-<span id="cb72-10"><a href="#cb72-10"></a><span class="st">            </span><span class="kw">facet_wrap</span>(<span class="op">~</span><span class="st"> </span>Var1, <span class="dt">scales =</span> <span class="st">&quot;free&quot;</span>) <span class="op">+</span></span>
-<span id="cb72-11"><a href="#cb72-11"></a><span class="st">            </span><span class="kw">ggtitle</span>(<span class="st">&quot;Bootstrap distributions for each parameter&quot;</span>)</span>
-<span id="cb72-12"><a href="#cb72-12"></a>    }</span>
-<span id="cb72-13"><a href="#cb72-13"></a>})</span></code></pre></div>
-</div>
-<div class="slide section level2">
-
-<p>And finally see whether it works:</p>
-<div class="sourceCode" id="cb73"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb73-1"><a href="#cb73-1"></a>boot_dist =<span class="st"> </span><span class="kw">get_boot_estimates</span>(<span class="kw">rnorm</span>(<span class="dv">10</span>), <span class="dt">estimator =</span> mean, <span class="dt">B =</span> <span class="dv">100</span>)</span>
-<span id="cb73-2"><a href="#cb73-2"></a>boot_dist</span></code></pre></div>
-<pre><code>## Bootstrap distribution object, 100 bootstrap samples
-## Number of parameters: 1 
-## Bootstrap estimate of standard error: 0.2357503</code></pre>
-<div class="sourceCode" id="cb75"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb75-1"><a href="#cb75-1"></a><span class="kw">plot</span>(boot_dist)</span></code></pre></div>
-<pre><code>## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
-<p><img src="lecture-13-fig/unnamed-chunk-23-1.png" /></p>
-</div>
-<div class="slide section level2">
-
-<p>And for multiple parameters:</p>
-<div class="sourceCode" id="cb77"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb77-1"><a href="#cb77-1"></a>boot_dist_iris_coef =<span class="st"> </span><span class="kw">get_boot_estimates</span>(iris, iris_coef_estimator, <span class="dt">B =</span> <span class="dv">1000</span>)</span>
-<span id="cb77-2"><a href="#cb77-2"></a>boot_dist_iris_coef</span></code></pre></div>
-<pre><code>## Bootstrap distribution object, 1000 bootstrap samples
-## Number of parameters: 3 
-## Bootstrap estimate of standard error: 0.2402435 0.06677442 0.01721356</code></pre>
-<div class="sourceCode" id="cb79"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb79-1"><a href="#cb79-1"></a><span class="kw">plot</span>(boot_dist_iris_coef)</span></code></pre></div>
-<pre><code>## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
-<p><img src="lecture-13-fig/unnamed-chunk-24-1.png" /></p>
+<div id="overall" class="slide section level1">
+<h1>Overall</h1>
+<ul class="incremental">
+<li><p>A git repository contains a set of commits, which describe the contents of a directory at a certain point in time</p></li>
+<li><p>The main things we want to be able to do are add new commits and move to different commits</p></li>
+<li><p>A branch is just a name for a specific commit, and it allows us to move between different commits without referring to them by their name/hash</p></li>
+</ul>
 </div>
 </body>
 </html>
