@@ -13,398 +13,403 @@
       span.underline{text-decoration: underline;}
       div.column{display: inline-block; vertical-align: top; width: 50%;}
   </style>
-  <style type="text/css">
-code.sourceCode > span { display: inline-block; line-height: 1.25; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode { white-space: pre; position: relative; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-code.sourceCode { white-space: pre-wrap; }
-code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-    color: #aaaaaa;
-  }
-pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-code.sourceCode > span > a:first-child::before { text-decoration: underline; }
-}
-code span.al { color: #ff0000; font-weight: bold; } /* Alert */
-code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
-code span.at { color: #7d9029; } /* Attribute */
-code span.bn { color: #40a070; } /* BaseN */
-code span.bu { } /* BuiltIn */
-code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
-code span.ch { color: #4070a0; } /* Char */
-code span.cn { color: #880000; } /* Constant */
-code span.co { color: #60a0b0; font-style: italic; } /* Comment */
-code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
-code span.do { color: #ba2121; font-style: italic; } /* Documentation */
-code span.dt { color: #902000; } /* DataType */
-code span.dv { color: #40a070; } /* DecVal */
-code span.er { color: #ff0000; font-weight: bold; } /* Error */
-code span.ex { } /* Extension */
-code span.fl { color: #40a070; } /* Float */
-code span.fu { color: #06287e; } /* Function */
-code span.im { } /* Import */
-code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
-code span.kw { color: #007020; font-weight: bold; } /* Keyword */
-code span.op { color: #666666; } /* Operator */
-code span.ot { color: #007020; } /* Other */
-code span.pp { color: #bc7a00; } /* Preprocessor */
-code span.sc { color: #4070a0; } /* SpecialChar */
-code span.ss { color: #bb6688; } /* SpecialString */
-code span.st { color: #4070a0; } /* String */
-code span.va { color: #19177c; } /* Variable */
-code span.vs { color: #4070a0; } /* VerbatimString */
-code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
-  </style>
   <link rel="stylesheet" type="text/css" media="screen, projection, print"
     href="https://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
   <script src="https://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
     charset="utf-8" type="text/javascript"></script>
 </head>
 <body>
-<div id="lecture-14-code-profiling-and-performance-enhancement" class="slide section level1">
-<h1>Lecture 14: Code profiling and performance enhancement</h1>
-<p>Reading: Matloff, Chapter 14</p>
-<p><a href="http://adv-r.had.co.nz/Profiling.html">Hadley Wickham, Advanced R</a></p>
-<p>Logistics:</p>
-<ul>
-<li><p>Midterm next week,</p></li>
-<li><p>One more lecture on programming,</p></li>
-<li><p>Then on to algorithms</p></li>
+<div id="lecture-14-version-control-and-git-part-2" class="slide section level1">
+<h1>Lecture 14: Version control and git part 2</h1>
+<ul class="incremental">
+<li><p>Reading (if you want more detail): <a href="https://git-scm.com/book/en/v2">Pro Git</a>, Chapters 1, 2, 3, 10.</p></li>
+<li><p>Lab this Friday</p></li>
+<li><p>Homework 5 posted</p></li>
+<li><p>Final project options posted</p></li>
 </ul>
 </div>
-<div class="slide section level1">
-
-<blockquote>
-<p>We should forget about small efficiencies, say about 97% of the time: premature optimization is the root of all evil.</p>
-</blockquote>
-<p><a href="https://en.wikipedia.org/wiki/Tony_Hoare">Sir Tony Hoare</a>, popularized by <a href="https://en.wikipedia.org/wiki/Donald_Knuth">Donald Knuth</a></p>
-<p><a href="https://ubiquity.acm.org/article.cfm?id=1513451">Counterpoint</a></p>
+<div id="remember-commits-and-branches" class="slide section level1">
+<h1>Remember: Commits and Branches</h1>
+<ul class="incremental">
+<li><p>A <em>commit</em> is a snapshot of the project at a certain point in time.</p></li>
+<li><p>A <em>branch</em> is a pointer to a commit.</p></li>
+<li><p>Each commit is stored as a file, containing a hash of the tree for the top-level directory, hash of the parent commit, and meta-information about the commit.</p></li>
+<li><p>By default, a commit has as its parent the commit that HEAD was pointing to when you made the commit.</p></li>
+</ul>
 </div>
-<div id="setup" class="slide section level1">
-<h1>Setup</h1>
-<p>You have:</p>
-<ul>
-<li><p>Code that is correct</p></li>
-<li><p>Code that is slow for the application you want</p></li>
+<div id="merging-and-rebasing" class="slide section level1">
+<h1>Merging and rebasing</h1>
+<p>Setup:</p>
+<ul class="incremental">
+<li><p>You have a branching commit history</p></li>
+<li><p>You want to incorporate changes made in two different branches</p></li>
 </ul>
 <div class="incremental">
-<p>You want:</p>
-<ul>
-<li><p>Code that is correct</p></li>
-<li><p>Code that runs in a reasonable amount of time</p></li>
+<p>Solutions:</p>
+<ul class="incremental">
+<li><p>Merge: Make a new commit with two parents</p></li>
+<li><p>Rebase: Applies changes from one branch onto another</p></li>
 </ul>
 </div>
 </div>
-<div class="slide section level1">
-
-<p>Two steps:</p>
-<ul>
-<li><p>Find what the bottleneck is</p></li>
-<li><p>Rewrite the code for the bottleneck to make it run faster</p></li>
-</ul>
-<p>What to do?</p>
-<ul>
-<li><p>Make a smaller example that runs quickly</p></li>
-<li><p>Write tests (formal or informal) for the output of the function</p></li>
-<li><p>Make a new function to implement the same algorithm, rewritten to be (hopefully) faster</p></li>
-<li><p>Check on the test cases that it gives the same output</p></li>
-<li><p>Check whether the new version is faster</p></li>
-</ul>
-</div>
-<div id="finding-what-the-problem-is" class="slide section level1">
-<h1>Finding what the problem is</h1>
-<p>Base R function for this task is <code>Rprof</code>.</p>
-<p>Many other packages, e.g. <code>profvis</code> (I believe what RStudio uses now) are based on <code>Rprof</code>, usually with more nicely formatted output.</p>
-</div>
-<div class="slide section level1">
-
-<p>How does Rprof work?</p>
-<ul>
-<li><p>Once every set amount of time (default .02 seconds), stops the interpreter and checks what function is being called.</p></li>
-<li><p>Output is a list of function calls.</p></li>
-<li><p>Output is formatted to indicate what takes the most time.</p></li>
-<li><p>It will be non-deterministic, depends a bit on what else your computer is doing.</p></li>
+<div id="fast-forward-merge" class="slide section level1">
+<h1>Fast-forward merge</h1>
+<p>Setup: We have two commits, <code>branch1</code> and <code>branch2</code>, and <code>branch1</code> is an ancestor of <code>branch2</code>.</p>
+<p>We would like to update so that <code>branch1</code> points to the same commit as <code>branch2</code>.</p>
+<p>Solution: fast-forward merge</p>
+<pre><code>git checkout branch1
+git merge branch2</code></pre>
+<p>What happens?</p>
+<ul class="incremental">
+<li><code>branch1</code> moves to point to the same commit as <code>branch2</code></li>
 </ul>
 </div>
 <div id="for-example" class="slide section level1">
 <h1>For example</h1>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">library</span>(profvis)</span>
-<span id="cb1-2"><a href="#cb1-2"></a>f =<span class="st"> </span><span class="cf">function</span>() {</span>
-<span id="cb1-3"><a href="#cb1-3"></a>  <span class="kw">pause</span>(<span class="fl">0.1</span>)</span>
-<span id="cb1-4"><a href="#cb1-4"></a>  <span class="kw">g</span>()</span>
-<span id="cb1-5"><a href="#cb1-5"></a>  <span class="kw">h</span>()</span>
-<span id="cb1-6"><a href="#cb1-6"></a>}</span>
-<span id="cb1-7"><a href="#cb1-7"></a>g =<span class="st"> </span><span class="cf">function</span>() {</span>
-<span id="cb1-8"><a href="#cb1-8"></a>  <span class="kw">pause</span>(<span class="fl">0.1</span>)</span>
-<span id="cb1-9"><a href="#cb1-9"></a>  <span class="kw">h</span>()</span>
-<span id="cb1-10"><a href="#cb1-10"></a>}</span>
-<span id="cb1-11"><a href="#cb1-11"></a>h =<span class="st"> </span><span class="cf">function</span>() {</span>
-<span id="cb1-12"><a href="#cb1-12"></a>  <span class="kw">pause</span>(<span class="fl">0.1</span>)</span>
-<span id="cb1-13"><a href="#cb1-13"></a>}</span></code></pre></div>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">source</span>(<span class="st">&quot;profiling-example.R&quot;</span>)</span></code></pre></div>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>tmp =<span class="st"> </span><span class="kw">tempfile</span>()</span>
-<span id="cb3-2"><a href="#cb3-2"></a><span class="kw">Rprof</span>(tmp, <span class="dt">interval =</span> <span class="fl">0.01</span>)</span>
-<span id="cb3-3"><a href="#cb3-3"></a><span class="kw">f</span>()</span>
-<span id="cb3-4"><a href="#cb3-4"></a><span class="kw">Rprof</span>(<span class="ot">NULL</span>)</span></code></pre></div>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="kw">summaryRprof</span>(tmp)</span></code></pre></div>
+<p><img src="basic-branching-4.png" /></p>
 </div>
 <div class="slide section level1">
 
-<p>If we don’t sample frequently enough, we don’t get very useful output:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>tmp =<span class="st"> </span><span class="kw">tempfile</span>()</span>
-<span id="cb5-2"><a href="#cb5-2"></a><span class="kw">Rprof</span>(tmp, <span class="dt">interval =</span> <span class="fl">0.15</span>)</span>
-<span id="cb5-3"><a href="#cb5-3"></a><span class="kw">f</span>()</span>
-<span id="cb5-4"><a href="#cb5-4"></a><span class="kw">Rprof</span>(<span class="ot">NULL</span>)</span></code></pre></div>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a><span class="kw">summaryRprof</span>(tmp)</span></code></pre></div>
+<p>After running</p>
+<pre><code>$ git checkout master
+$ git merge hotfix
+Updating f42c576..3a0874c
+Fast-forward
+ index.html | 2 ++
+ 1 file changed, 2 insertions(+)</code></pre>
 </div>
 <div class="slide section level1">
 
-<p>Using <code>profvis</code>:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="kw">profvis</span>(<span class="kw">f</span>())</span></code></pre></div>
+<p><img src="basic-branching-5.png" /></p>
 </div>
-<div id="checking-whether-code-is-faster" class="slide section level1">
-<h1>Checking whether code is faster</h1>
-<p>Several packages for testing alternative implementations</p>
-<ul>
-<li><p><code>microbenchmark</code> function in <code>microbenchmark</code> package runs the same code a large number of times</p></li>
-<li><p><code>mark</code> function in the <code>bench</code> package does the same thing but with a little more information and some extra plotting facilities.</p></li>
-</ul>
-</div>
-<div id="strategies-for-writing-faster-code" class="slide section level1">
-<h1>Strategies for writing faster code</h1>
-<ul>
-<li><p>Remove extra work</p></li>
-<li><p>Vectorise</p></li>
-<li><p>Avoid copies</p></li>
-<li><p>Rewrite your R code in C/C++/fortran</p></li>
-</ul>
-</div>
-<div id="remove-extra-work" class="slide section level1">
-<h1>Remove extra work</h1>
-<p>If you know something about the input to a function, you can speed up your code by skipping some of the steps R takes in checking what kind of data is used.</p>
-<p>Here we’re bypassing the method dispatch for <code>mean</code>.</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a><span class="kw">library</span>(microbenchmark)</span>
-<span id="cb8-2"><a href="#cb8-2"></a>x =<span class="st"> </span><span class="kw">runif</span>(<span class="fl">1e2</span>)</span>
-<span id="cb8-3"><a href="#cb8-3"></a></span>
-<span id="cb8-4"><a href="#cb8-4"></a><span class="kw">microbenchmark</span>(</span>
-<span id="cb8-5"><a href="#cb8-5"></a>  <span class="kw">mean</span>(x),</span>
-<span id="cb8-6"><a href="#cb8-6"></a>  <span class="kw">mean.default</span>(x)</span>
-<span id="cb8-7"><a href="#cb8-7"></a>)</span></code></pre></div>
-<pre><code>## Unit: nanoseconds
-##             expr  min   lq    mean median     uq   max neval cld
-##          mean(x) 2123 2222 2719.09 2273.0 2361.0 15633   100   b
-##  mean.default(x)  977 1023 1259.76 1059.5 1101.5 15034   100  a</code></pre>
+<div id="basic-merge" class="slide section level1">
+<h1>Basic merge</h1>
+<p>Setup: We have a diverged work history with <code>branch1</code> and <code>branch2</code>.</p>
+<p>We want to integrate the changes represented by both branches.</p>
+<p>We can <em>merge</em> the two branches:</p>
+<pre><code>git checkout branch1
+git merge branch2</code></pre>
 </div>
 <div class="slide section level1">
 
-<p>The <code>as.data.frame</code> function performs many checks and is not optimized for performance.</p>
-<p>Suppose that we have a list and want to change it to a data frame.</p>
-<p>If we’re sure it’s formatted correctly, we can use the <code>quickdf</code> function.</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a>quickdf =<span class="st"> </span><span class="cf">function</span>(l) {</span>
-<span id="cb10-2"><a href="#cb10-2"></a>  <span class="kw">class</span>(l) =<span class="st"> &quot;data.frame&quot;</span></span>
-<span id="cb10-3"><a href="#cb10-3"></a>  <span class="kw">attr</span>(l, <span class="st">&quot;row.names&quot;</span>) =<span class="st"> </span><span class="dv">1</span><span class="op">:</span><span class="kw">length</span>(l[[<span class="dv">1</span>]])</span>
-<span id="cb10-4"><a href="#cb10-4"></a>  l</span>
-<span id="cb10-5"><a href="#cb10-5"></a>}</span>
-<span id="cb10-6"><a href="#cb10-6"></a></span>
-<span id="cb10-7"><a href="#cb10-7"></a>l =<span class="st"> </span><span class="kw">lapply</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">26</span>, <span class="cf">function</span>(i) <span class="kw">runif</span>(<span class="fl">1e3</span>))</span>
-<span id="cb10-8"><a href="#cb10-8"></a><span class="kw">names</span>(l) =<span class="st"> </span>letters</span></code></pre></div>
-<div class="incremental">
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a><span class="kw">microbenchmark</span>(</span>
-<span id="cb11-2"><a href="#cb11-2"></a>  <span class="dt">quick_df      =</span> <span class="kw">quickdf</span>(l),</span>
-<span id="cb11-3"><a href="#cb11-3"></a>  <span class="dt">as.data.frame =</span> <span class="kw">as.data.frame</span>(l)</span>
-<span id="cb11-4"><a href="#cb11-4"></a>)</span></code></pre></div>
-<pre><code>## Unit: microseconds
-##           expr     min       lq       mean   median        uq      max
-##       quick_df   9.795  11.2755   37.25248  16.4895   19.2925 2100.902
-##  as.data.frame 834.235 898.4920 1026.75537 958.2835 1039.0330 2727.082
-##  neval cld
-##    100  a 
-##    100   b</code></pre>
-<p>But we need to be sure the input is formatted correctly, because it does no checks:</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a><span class="kw">quickdf</span>(<span class="kw">list</span>(<span class="dt">x =</span> <span class="dv">1</span>, <span class="dt">y =</span> <span class="dv">1</span><span class="op">:</span><span class="dv">2</span>))</span></code></pre></div>
-<pre><code>## Warning in format.data.frame(x, digits = digits, na.encode = FALSE):
-## corrupt data frame: columns will be truncated or padded with NAs</code></pre>
-<pre><code>##   x y
-## 1 1 1</code></pre>
-</div>
-</div>
-<div id="avoid-copies" class="slide section level1">
-<h1>Avoid copies</h1>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a>random_string =<span class="st"> </span><span class="cf">function</span>() {</span>
-<span id="cb16-2"><a href="#cb16-2"></a>  <span class="kw">paste</span>(<span class="kw">sample</span>(letters, <span class="dv">50</span>, <span class="dt">replace =</span> <span class="ot">TRUE</span>), <span class="dt">collapse =</span> <span class="st">&quot;&quot;</span>)</span>
-<span id="cb16-3"><a href="#cb16-3"></a>}</span>
-<span id="cb16-4"><a href="#cb16-4"></a>strings10 =<span class="st"> </span><span class="kw">replicate</span>(<span class="dv">10</span>, <span class="kw">random_string</span>())</span>
-<span id="cb16-5"><a href="#cb16-5"></a>strings100 =<span class="st"> </span><span class="kw">replicate</span>(<span class="dv">100</span>, <span class="kw">random_string</span>())</span>
-<span id="cb16-6"><a href="#cb16-6"></a></span>
-<span id="cb16-7"><a href="#cb16-7"></a>collapse =<span class="st"> </span><span class="cf">function</span>(xs) {</span>
-<span id="cb16-8"><a href="#cb16-8"></a>  out =<span class="st"> &quot;&quot;</span></span>
-<span id="cb16-9"><a href="#cb16-9"></a>  <span class="cf">for</span> (x <span class="cf">in</span> xs) {</span>
-<span id="cb16-10"><a href="#cb16-10"></a>    out =<span class="st"> </span><span class="kw">paste0</span>(out, x)</span>
-<span id="cb16-11"><a href="#cb16-11"></a>  }</span>
-<span id="cb16-12"><a href="#cb16-12"></a>  out</span>
-<span id="cb16-13"><a href="#cb16-13"></a>}</span>
-<span id="cb16-14"><a href="#cb16-14"></a></span>
-<span id="cb16-15"><a href="#cb16-15"></a><span class="kw">microbenchmark</span>(</span>
-<span id="cb16-16"><a href="#cb16-16"></a>  <span class="dt">loop10  =</span> <span class="kw">collapse</span>(strings10),</span>
-<span id="cb16-17"><a href="#cb16-17"></a>  <span class="dt">loop100 =</span> <span class="kw">collapse</span>(strings100),</span>
-<span id="cb16-18"><a href="#cb16-18"></a>  <span class="dt">vec10   =</span> <span class="kw">paste</span>(strings10, <span class="dt">collapse =</span> <span class="st">&quot;&quot;</span>),</span>
-<span id="cb16-19"><a href="#cb16-19"></a>  <span class="dt">vec100  =</span> <span class="kw">paste</span>(strings100, <span class="dt">collapse =</span> <span class="st">&quot;&quot;</span>)</span>
-<span id="cb16-20"><a href="#cb16-20"></a>)</span></code></pre></div>
-<pre><code>## Unit: microseconds
-##     expr     min       lq      mean  median       uq      max neval cld
-##   loop10  14.630  15.3790  17.57578  16.324  17.5530   48.325   100  a 
-##  loop100 517.291 523.8855 605.96058 568.129 597.0755 2793.477   100   b
-##    vec10   3.596   3.9195   4.70854   4.357   5.1320   17.976   100  a 
-##   vec100  28.755  30.3115  33.98348  31.691  34.5485  102.933   100  a</code></pre>
-</div>
-<div id="vectorise" class="slide section level1">
-<h1>Vectorise</h1>
-<ul>
-<li><p>This will sometimes give speed improvements and sometimes will not.</p></li>
-<li><p>Speed improvements happen primarily when it leads to calling compiled C code.</p></li>
-</ul>
-<div class="incremental">
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a>x =<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">rnorm</span>(<span class="dv">15</span>), <span class="dt">nrow =</span> <span class="dv">3</span>, <span class="dt">ncol =</span> <span class="dv">5</span>)</span>
-<span id="cb18-2"><a href="#cb18-2"></a>row_means_loop =<span class="st"> </span><span class="cf">function</span>(x) {</span>
-<span id="cb18-3"><a href="#cb18-3"></a>    row_means =<span class="st"> </span><span class="kw">numeric</span>(<span class="kw">nrow</span>(x))</span>
-<span id="cb18-4"><a href="#cb18-4"></a>    <span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="kw">nrow</span>(x)) {</span>
-<span id="cb18-5"><a href="#cb18-5"></a>        row_sum =<span class="st"> </span><span class="dv">0</span></span>
-<span id="cb18-6"><a href="#cb18-6"></a>        <span class="cf">for</span>(j <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="kw">ncol</span>(x)) {</span>
-<span id="cb18-7"><a href="#cb18-7"></a>            row_sum =<span class="st"> </span>row_sum <span class="op">+</span><span class="st"> </span>x[i,j]</span>
-<span id="cb18-8"><a href="#cb18-8"></a>        }</span>
-<span id="cb18-9"><a href="#cb18-9"></a>        row_means[i] =<span class="st"> </span>row_sum <span class="op">/</span><span class="st"> </span><span class="kw">ncol</span>(x)</span>
-<span id="cb18-10"><a href="#cb18-10"></a>    }</span>
-<span id="cb18-11"><a href="#cb18-11"></a>    <span class="kw">return</span>(row_means)</span>
-<span id="cb18-12"><a href="#cb18-12"></a>}</span>
-<span id="cb18-13"><a href="#cb18-13"></a><span class="kw">microbenchmark</span>(</span>
-<span id="cb18-14"><a href="#cb18-14"></a>    <span class="dt">no_vectorization =</span> <span class="kw">row_means_loop</span>(x),</span>
-<span id="cb18-15"><a href="#cb18-15"></a>    <span class="dt">apply =</span> <span class="kw">apply</span>(x, <span class="dv">1</span>, mean),</span>
-<span id="cb18-16"><a href="#cb18-16"></a>    <span class="dt">c_version =</span> <span class="kw">rowMeans</span>(x),</span>
-<span id="cb18-17"><a href="#cb18-17"></a>    <span class="dt">times =</span> <span class="dv">1000</span>)</span></code></pre></div>
-<pre><code>## Unit: microseconds
-##              expr    min      lq      mean median      uq      max neval
-##  no_vectorization  4.524  5.7855 13.008270  6.874  7.5575 6113.275  1000
-##             apply 18.465 21.7525 27.769083 28.535 30.0870   97.173  1000
-##         c_version  2.348  3.2730  3.939602  3.823  4.4555   25.342  1000
-##  cld
-##   a 
-##    b
-##   a</code></pre>
-</div>
-</div>
-<div class="slide section level1">
-
-<p>Another example: a problem in probability.</p>
-<ul>
-<li><p>Urn 1 contains 10 blue marbles and 8 yellow marbles</p></li>
-<li><p>Urn 2 contains 6 blue marbles and 6 yellow marbles</p></li>
-<li><p>We draw one marble uniformly at random from urn 1, place it in urn 2, and then draw a marble uniformly at random from urn 2.</p></li>
-<li><p>What is the probability that the second marble is blue?</p></li>
+<p>What happens?</p>
+<ul class="incremental">
+<li><p>Find the most recent common ancestor of <code>branch1</code> and <code>branch2</code></p></li>
+<li><p>Find all the differences between <code>branch2</code> and the most recent common ancestor</p></li>
+<li><p>Apply those changes to <code>branch1</code> to get a new commit</p></li>
+<li><p>The new commit is special in that it has two parents: the commit that <code>branch1</code> was pointing to <em>and</em> the commit that <code>branch2</code> was pointing to.</p></li>
 </ul>
 </div>
 <div class="slide section level1">
 
-<p>First attempt:</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a><span class="co"># perform nreps repetitions of the marble experiment, to estimate</span></span>
-<span id="cb20-2"><a href="#cb20-2"></a><span class="co"># P(pick blue from Urn 2)</span></span>
-<span id="cb20-3"><a href="#cb20-3"></a>sim1 =<span class="st"> </span><span class="cf">function</span>(nreps)  {</span>
-<span id="cb20-4"><a href="#cb20-4"></a>    nb1 =<span class="st"> </span><span class="dv">10</span> <span class="co">#10 blue marbles in Urn1</span></span>
-<span id="cb20-5"><a href="#cb20-5"></a>    n1 =<span class="st"> </span><span class="dv">18</span> <span class="co"># number of marbles in Urn 1 at 1st pick</span></span>
-<span id="cb20-6"><a href="#cb20-6"></a>    n2 =<span class="st"> </span><span class="dv">13</span> <span class="co"># number of marbles in Urn 2 at 2nd pick</span></span>
-<span id="cb20-7"><a href="#cb20-7"></a>    count =<span class="st"> </span><span class="dv">0</span> <span class="co"># number of repetitions in which get blue from Urn 2</span></span>
-<span id="cb20-8"><a href="#cb20-8"></a>    <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span>nreps) {</span>
-<span id="cb20-9"><a href="#cb20-9"></a>        nb2 =<span class="st"> </span><span class="dv">6</span> <span class="co"># 6 bluemarbles orig. in Urn2</span></span>
-<span id="cb20-10"><a href="#cb20-10"></a>        <span class="co">## pick from Urn 1 and put in Urn 2; is it blue?</span></span>
-<span id="cb20-11"><a href="#cb20-11"></a>        <span class="cf">if</span> (<span class="kw">runif</span>(<span class="dv">1</span>) <span class="op">&lt;</span><span class="st"> </span>nb1<span class="op">/</span>n1) nb2 =<span class="st"> </span>nb2 <span class="op">+</span><span class="st"> </span><span class="dv">1</span></span>
-<span id="cb20-12"><a href="#cb20-12"></a>        <span class="co">## pick from Urn 2; is it blue?</span></span>
-<span id="cb20-13"><a href="#cb20-13"></a>        <span class="cf">if</span> (<span class="kw">runif</span>(<span class="dv">1</span>) <span class="op">&lt;</span><span class="st"> </span>nb2<span class="op">/</span>n2) count =<span class="st"> </span>count <span class="op">+</span><span class="st"> </span><span class="dv">1</span></span>
-<span id="cb20-14"><a href="#cb20-14"></a>    }</span>
-<span id="cb20-15"><a href="#cb20-15"></a>    <span class="kw">return</span>(count<span class="op">/</span>nreps) <span class="co"># est. P(pick blue from Urn 2)</span></span>
-<span id="cb20-16"><a href="#cb20-16"></a>}</span></code></pre></div>
+<p>Starting out:</p>
+<p><img src="merge_1.png" /></p>
 </div>
 <div class="slide section level1">
 
-<p>Let’s try pre-generate all of our random numbers and remove the for loop:</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a>sim2 =<span class="st"> </span><span class="cf">function</span>(nreps) {</span>
-<span id="cb21-2"><a href="#cb21-2"></a>    nb1 =<span class="st"> </span><span class="dv">10</span></span>
-<span id="cb21-3"><a href="#cb21-3"></a>    nb2 =<span class="st"> </span><span class="dv">6</span></span>
-<span id="cb21-4"><a href="#cb21-4"></a>    n1 =<span class="st"> </span><span class="dv">18</span></span>
-<span id="cb21-5"><a href="#cb21-5"></a>    n2 =<span class="st"> </span><span class="dv">13</span></span>
-<span id="cb21-6"><a href="#cb21-6"></a>    <span class="co">## pre-generate all our random numbers, one row per repetition</span></span>
-<span id="cb21-7"><a href="#cb21-7"></a>    u =<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">c</span>(<span class="kw">runif</span>(<span class="dv">2</span> <span class="op">*</span><span class="st"> </span>nreps)), <span class="dt">nrow =</span> nreps, <span class="dt">ncol =</span> <span class="dv">2</span>)</span>
-<span id="cb21-8"><a href="#cb21-8"></a>    <span class="co">## define simfun for use in apply(); simulates one repetition</span></span>
-<span id="cb21-9"><a href="#cb21-9"></a>    simfun =<span class="st"> </span><span class="cf">function</span>(rw) {</span>
-<span id="cb21-10"><a href="#cb21-10"></a>        <span class="co">## rw (&quot;row&quot;) is a pair of random numbers</span></span>
-<span id="cb21-11"><a href="#cb21-11"></a>        <span class="co">## choose from Urn 1</span></span>
-<span id="cb21-12"><a href="#cb21-12"></a>        <span class="cf">if</span> (rw[<span class="dv">1</span>] <span class="op">&lt;</span><span class="st"> </span>nb1 <span class="op">/</span><span class="st"> </span>n1) nb2 =<span class="st"> </span>nb2 <span class="op">+</span><span class="st"> </span><span class="dv">1</span></span>
-<span id="cb21-13"><a href="#cb21-13"></a>        <span class="co">## choose from Urn 2, and return boolean on choosing blue</span></span>
-<span id="cb21-14"><a href="#cb21-14"></a>        <span class="kw">return</span> (rw[<span class="dv">2</span>] <span class="op">&lt;</span><span class="st"> </span>nb2 <span class="op">/</span><span class="st"> </span>n2)</span>
-<span id="cb21-15"><a href="#cb21-15"></a>    }</span>
-<span id="cb21-16"><a href="#cb21-16"></a>    z =<span class="st"> </span><span class="kw">apply</span>(u, <span class="dv">1</span>, simfun)</span>
-<span id="cb21-17"><a href="#cb21-17"></a>    <span class="kw">return</span>(<span class="kw">mean</span>(z))</span>
-<span id="cb21-18"><a href="#cb21-18"></a>}</span></code></pre></div>
+<p>How we want the merge to look:</p>
+<p><img src="merge_2.png" /></p>
 </div>
 <div class="slide section level1">
 
-<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1"></a><span class="kw">microbenchmark</span>(<span class="kw">sim1</span>(<span class="dv">100</span>), <span class="kw">sim2</span>(<span class="dv">100</span>))</span></code></pre></div>
-<pre><code>## Unit: microseconds
-##       expr     min       lq     mean   median       uq       max neval cld
-##  sim1(100) 259.107 271.3620 478.8515 285.0615 341.2680 11297.506   100   a
-##  sim2(100) 128.224 135.2935 235.9363 141.4335 158.3995  8446.768   100   a</code></pre>
-<p>The timings here are different from in Matloff. I believe this is because more recent version of R <a href="https://en.wikipedia.org/wiki/Bytecode">byte compile</a> functions that you write, and this was not true for the version of R used in the book.</p>
+<p>After running</p>
+<pre><code>git checkout master
+git merge iss53</code></pre>
+<p><img src="merge_3.png" /></p>
+</div>
+<div id="merge-conflicts" class="slide section level1">
+<h1>Merge conflicts</h1>
+<p>Sometimes merging doesn’t work automatically, usually because you made different changes to the same file on different branches.</p>
+<p>If this happens, you’ll get a message telling you that the merge can’t be performed automatically:</p>
+<pre><code>$ git merge iss53
+Auto-merging index.html
+CONFLICT (content): Merge conflict in index.html
+Automatic merge failed; fix conflicts and then commit the result.</code></pre>
+<p>If you run <code>git status</code>, you get instructions about what to do:</p>
+<pre><code>$ git status
+On branch master
+You have unmerged paths.
+  (fix conflicts and run &quot;git commit&quot;)
+
+Unmerged paths:
+  (use &quot;git add &lt;file&gt;...&quot; to mark resolution)
+
+    both modified:      index.html
+
+no changes added to commit (use &quot;git add&quot; and/or &quot;git commit -a&quot;)</code></pre>
 </div>
 <div class="slide section level1">
 
-<p>Take 3:</p>
-<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1"></a>sim3 =<span class="st"> </span><span class="cf">function</span>(nreps) {</span>
-<span id="cb24-2"><a href="#cb24-2"></a>    nb1 =<span class="st"> </span><span class="dv">10</span></span>
-<span id="cb24-3"><a href="#cb24-3"></a>    nb2 =<span class="st"> </span><span class="dv">6</span></span>
-<span id="cb24-4"><a href="#cb24-4"></a>    n1 =<span class="st"> </span><span class="dv">18</span></span>
-<span id="cb24-5"><a href="#cb24-5"></a>    n2 =<span class="st"> </span><span class="dv">13</span></span>
-<span id="cb24-6"><a href="#cb24-6"></a>    u =<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">c</span>(<span class="kw">runif</span>(<span class="dv">2</span> <span class="op">*</span><span class="st"> </span>nreps)), <span class="dt">nrow =</span> nreps, <span class="dt">ncol =</span> <span class="dv">2</span>)</span>
-<span id="cb24-7"><a href="#cb24-7"></a>    <span class="co">## set up the condition vector</span></span>
-<span id="cb24-8"><a href="#cb24-8"></a>    cndtn =</span>
-<span id="cb24-9"><a href="#cb24-9"></a><span class="st">        </span>u[,<span class="dv">1</span>] <span class="op">&lt;=</span><span class="st"> </span>nb1 <span class="op">/</span><span class="st"> </span>n1 <span class="op">&amp;</span><span class="st"> </span>u[,<span class="dv">2</span>] <span class="op">&lt;=</span><span class="st"> </span>(nb2<span class="op">+</span><span class="dv">1</span>) <span class="op">/</span><span class="st"> </span>n2 <span class="op">|</span></span>
-<span id="cb24-10"><a href="#cb24-10"></a><span class="st">        </span>u[,<span class="dv">1</span>] <span class="op">&gt;</span><span class="st"> </span>nb1 <span class="op">/</span><span class="st"> </span>n1 <span class="op">&amp;</span><span class="st"> </span>u[,<span class="dv">2</span>] <span class="op">&lt;=</span><span class="st"> </span>nb2 <span class="op">/</span><span class="st"> </span>n2</span>
-<span id="cb24-11"><a href="#cb24-11"></a>    <span class="kw">return</span>(<span class="kw">mean</span>(cndtn))</span>
-<span id="cb24-12"><a href="#cb24-12"></a>}</span></code></pre></div>
-<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1"></a><span class="kw">microbenchmark</span>(<span class="kw">sim1</span>(<span class="dv">100</span>), <span class="kw">sim2</span>(<span class="dv">100</span>), <span class="kw">sim3</span>(<span class="dv">100</span>))</span></code></pre></div>
-<pre><code>## Unit: microseconds
-##       expr     min       lq     mean   median       uq       max neval cld
-##  sim1(100) 261.157 279.9745 484.1770 411.6000 459.8785 10179.709   100   b
-##  sim2(100) 127.339 137.5345 212.5064 185.0070 249.0700  1054.157   100  a 
-##  sim3(100)  19.062  23.3220 122.1441  28.4635  36.6295  8939.858   100  a</code></pre>
+<p>In this case, the file <code>index.html</code> will contain a section that looks like this:</p>
+<pre><code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD:index.html
+&lt;div id=&quot;footer&quot;&gt;contact : email.support@github.com&lt;/div&gt;
+=======
+&lt;div id=&quot;footer&quot;&gt;
+ please contact us at support@github.com
+&lt;/div&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; iss53:index.html</code></pre>
+<ul class="incremental">
+<li><p>The version in HEAD is in the first section (between <code>&lt;&lt;&lt;</code> and <code>===</code>), and the version in <code>iss53</code> is in the second section (between <code>===</code> and <code>&gt;&gt;&gt;</code>).</p></li>
+<li><p>Git doesn’t know which changes you want in the final merge, so you have to choose which one to keep (or do something else entirely).</p></li>
+</ul>
 </div>
-<div id="overall-strategies" class="slide section level1">
-<h1>Overall strategies</h1>
-<ul>
-<li><p>If you know something about your input that R has to check for, you can save time by bypassing the checks</p></li>
-<li><p>Vectorised functions are sometimes faster, sometimes not</p></li>
-<li><p>Matrix operations generally call C and are therefore fast</p></li>
-<li><p>Compiled C code is faster than R code</p></li>
+<div class="slide section level1">
+
+<p>Resolving the conflict:</p>
+<ul class="incremental">
+<li><p>Edit the file(s) with the merge conflicts.</p></li>
+<li><p>Run <code>git add</code> on those files.</p></li>
+<li><p>Run <code>git commit</code> to make the merge commit.</p></li>
+</ul>
+</div>
+<div class="slide section level1">
+
+<p>After fixing merge conflicts and running <code>git add index.html</code>:</p>
+<pre><code>$ git status
+On branch master
+All conflicts fixed but you are still merging.
+  (use &quot;git commit&quot; to conclude merge)
+
+Changes to be committed:
+
+    modified:   index.html</code></pre>
+</div>
+<div id="rebase" class="slide section level1">
+<h1>Rebase</h1>
+<p>Setup: We have a diverged work history with <code>branch1</code> and <code>branch2</code>.</p>
+<p>We want to integrate the changes represented by both branches.</p>
+<p>One solution is rebasing <code>branch2</code> onto <code>branch1</code>:</p>
+<pre><code>git checkout branch2
+git rebase branch1</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>What happens?</p>
+<ul class="incremental">
+<li><p>Find the most recent common ancestor of <code>branch1</code> and <code>branch2</code></p></li>
+<li><p>Find all the differences between <code>branch2</code> and the most recent common ancestor</p></li>
+<li><p>Apply those changes to <code>branch1</code> to get the new commit</p></li>
+</ul>
+<p>Same result as what we would get from a merge commit, but the history is different.</p>
+</div>
+<div class="slide section level1">
+
+<p>Starting out:</p>
+<p><img src="rebase_1.png" /></p>
+</div>
+<div class="slide section level1">
+
+<p>After running:</p>
+<pre><code>git checkout experiment
+git rebase master</code></pre>
+<p><img src="rebase_2.png" /></p>
+</div>
+<div class="slide section level1">
+
+<p>After running:</p>
+<pre><code>git checkout master
+git merge experiment</code></pre>
+<p><img src="rebase_3.png" /></p>
+</div>
+<div id="remotes" class="slide section level1">
+<h1>Remotes</h1>
+<ul class="incremental">
+<li><p>A <em>remote repository</em> is a version of the project that is hosted somewhere else (e.g. GitHub).</p></li>
+<li><p>Just like your local repository, the remote repository is a collection of commits and branches.</p></li>
+<li><p>Reading from and writing to remote repositories is how people collaborate on projects with git.</p></li>
+<li><p>You can have more than one remote repository for a project.</p></li>
+<li><p>Main issues in working with remotes are reading and writing commits and branches, and having a consistent naming scheme for branches.</p></li>
+</ul>
+</div>
+<div id="showing-the-remotes" class="slide section level1">
+<h1>Showing the remotes</h1>
+<p>To see the remote servers corresponding to your project that you have set up, use <code>git remote</code>, or <code>git remote -v</code>.</p>
+<p>For example:</p>
+<pre><code>$ git clone https://github.com/schacon/ticgit
+Cloning into &#39;ticgit&#39;...
+remote: Reusing existing pack: 1857, done.
+remote: Total 1857 (delta 0), reused 0 (delta 0)
+Receiving objects: 100% (1857/1857), 374.35 KiB | 268.00 KiB/s, done.
+Resolving deltas: 100% (772/772), done.
+Checking connectivity... done.
+$ cd ticgit
+$ git remote
+origin</code></pre>
+<pre><code>$ git remote -v
+origin  https://github.com/schacon/ticgit (fetch)
+origin  https://github.com/schacon/ticgit (push)</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>If you had multiple remotes, you might get something like this:</p>
+<pre><code>$ cd grit
+$ git remote -v
+bakkdoor  https://github.com/bakkdoor/grit (fetch)
+bakkdoor  https://github.com/bakkdoor/grit (push)
+cho45     https://github.com/cho45/grit (fetch)
+cho45     https://github.com/cho45/grit (push)
+defunkt   https://github.com/defunkt/grit (fetch)
+defunkt   https://github.com/defunkt/grit (push)
+koke      git://github.com/koke/grit.git (fetch)
+koke      git://github.com/koke/grit.git (push)
+origin    git@github.com:mojombo/grit.git (fetch)
+origin    git@github.com:mojombo/grit.git (push)</code></pre>
+</div>
+<div id="adding-remote-repositories" class="slide section level1">
+<h1>Adding remote repositories</h1>
+<p>With <code>git clone</code>:</p>
+<ul class="incremental">
+<li><p>By default, if you run <code>git clone &lt;url&gt;</code>, git will add <code>&lt;url&gt;</code> as a remote repository with the name <code>origin</code>.</p></li>
+<li><p>Nothing special about the name <code>origin</code></p></li>
+</ul>
+<p>With <code>git remote add</code>:</p>
+<ul class="incremental">
+<li><code>git remote add &lt;shortname&gt; &lt;url&gt;</code> will add <code>&lt;url&gt;</code> as a remote repository with the name <code>&lt;shortname&gt;</code></li>
+</ul>
+</div>
+<div id="fetching-from-remote-repositories" class="slide section level1">
+<h1>Fetching from remote repositories</h1>
+<p>To get new commits that have been added to a remote repository, run <code>git fetch &lt;remote&gt;</code></p>
+<p>What happens?</p>
+<ul class="incremental">
+<li><p>Any commits that are on <code>&lt;remote&gt;</code> that you don’t have are downloaded and added to your repository.</p></li>
+<li><p>Remote-tracking branches are updated</p></li>
+</ul>
+</div>
+<div class="slide section level1">
+
+<p><img src="remote-branches-1.png" /></p>
+</div>
+<div class="slide section level1">
+
+<p><img src="remote-branches-2.png" /></p>
+</div>
+<div class="slide section level1">
+
+<p><img src="remote-branches-3.png" /></p>
+</div>
+<div id="remote-tracking-branches" class="slide section level1">
+<h1>Remote-tracking branches</h1>
+<p>Problem: how do we refer to branches in the remote? There’s nothing preventing the remote from having branches with the same name as our local branches but that point to different commits.</p>
+<p>Solution: remote-tracking branches:</p>
+<ul class="incremental">
+<li><p>Have names of the form <code>&lt;remote&gt;/&lt;branch-name&gt;</code>.</p></li>
+<li><p>You can’t modify these, they refer to a branch in the remote repository.</p></li>
+</ul>
+</div>
+<div id="inspecting-remotes" class="slide section level1">
+<h1>Inspecting remotes</h1>
+<p>If you want more information about a remote, you can use <code>git remote show &lt;remote-name&gt;</code>.</p>
+<p>For example:</p>
+<pre><code>$ git remote show origin
+* remote origin
+  Fetch URL: https://github.com/schacon/ticgit
+  Push  URL: https://github.com/schacon/ticgit
+  HEAD branch: master
+  Remote branches:
+    master                               tracked
+    dev-branch                           tracked
+  Local branch configured for &#39;git pull&#39;:
+    master merges with remote master
+  Local ref configured for &#39;git push&#39;:
+    master pushes to master (up to date)</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>A more complicated example:</p>
+<pre><code>$ git remote show origin
+* remote origin
+  URL: https://github.com/my-org/complex-project
+  Fetch URL: https://github.com/my-org/complex-project
+  Push  URL: https://github.com/my-org/complex-project
+  HEAD branch: master
+  Remote branches:
+    master                           tracked
+    dev-branch                       tracked
+    markdown-strip                   tracked
+    issue-43                         new (next fetch will store in remotes/origin)
+    issue-45                         new (next fetch will store in remotes/origin)
+    refs/remotes/origin/issue-11     stale (use &#39;git remote prune&#39; to remove)
+  Local branches configured for &#39;git pull&#39;:
+    dev-branch merges with remote dev-branch
+    master     merges with remote master
+  Local refs configured for &#39;git push&#39;:
+    dev-branch                     pushes to dev-branch                     (up to date)
+    markdown-strip                 pushes to markdown-strip                 (up to date)
+    master                         pushes to master                         (up to date)</code></pre>
+</div>
+<div id="tracking-branches" class="slide section level1">
+<h1>Tracking branches</h1>
+<p>Tracking branches: not the same as remote-tracking branches</p>
+<ul class="incremental">
+<li><p>A local branch that has a relationship with a remote-tracking branch.</p></li>
+<li><p>The branch it tracks is called the ‘upstream’.</p></li>
+</ul>
+<p>When/how are they created?</p>
+<ul class="incremental">
+<li><p>By default, all of the branches in the remote repository will be available to you with names <code>&lt;remote&gt;/&lt;branch-name&gt;</code>.</p></li>
+<li><p>Also by default, when you clone a repository, git will automatically create a branch <code>master</code> that tracks <code>origin/master</code>.</p></li>
+<li><p>If you want to track other remote branches, you can use <code>git checkout -b &lt;branch&gt; &lt;remote&gt;/&lt;branch&gt;</code> or <code>git checkout --track &lt;remote&gt;/&lt;branch-name&gt;</code>, which will create a local branch called <code>&lt;branch-name&gt;</code> that tracks <code>&lt;remote&gt;/&lt;branch-name&gt;</code>.</p></li>
+</ul>
+<p>What are they for?</p>
+<ul class="incremental">
+<li><p>Setting defaults for pushing</p></li>
+<li><p>Setting defaults for pulling</p></li>
+</ul>
+</div>
+<div id="pushing-to-remote-repositories" class="slide section level1">
+<h1>Pushing to remote repositories</h1>
+<p>Method 1: Explicitly naming the local and remote branches</p>
+<ul class="incremental">
+<li><p><code>git push &lt;local-branch-name&gt;:&lt;remote-branch-name&gt;</code> will push the commits in <code>&lt;local-branch-name&gt;</code>to <code>&lt;remote&gt;/&lt;remote-branch-name&gt;</code></p></li>
+<li><p>Take my local branch <code>&lt;local-branch-name&gt;</code> and make it the remote’s branch <code>&lt;remote-branch-name&gt;</code></p></li>
+<li><p>You can use shorthands: if the two branches have the same name, can just use <code>git push &lt;branch-name&gt;</code>.</p></li>
+</ul>
+<p>Method 2: If you are on a tracking branch</p>
+<ul class="incremental">
+<li><p>Can use <code>git push</code> with no extra arguments</p></li>
+<li><p>This is equivalent to pushing the tracking branch you are currently on to the tracking branch’s upstream branch in the remote</p></li>
+</ul>
+<p>Note:</p>
+<ul class="incremental">
+<li><p>This only works if nobody has pushed to the branch you’re pushing to since you last fetched from the remote.</p></li>
+<li><p>If someone else has pushed in the meantime, you need to fetch their commits and integrate their work with yours (by e.g. merging or rebasing your commits).</p></li>
+</ul>
+</div>
+<div id="pulling" class="slide section level1">
+<h1>Pulling</h1>
+<p>Setup: You are on a tracking branch, and you want to get any new commits from the upstream branch on the remote.</p>
+<p>You can use <code>git pull</code>, which is usually equivalent to <code>git fetch</code> plus <code>git merge &lt;tracking-branch&gt; &lt;remote&gt;/&lt;upstream&gt;</code>, where <code>&lt;tracking-branch&gt;</code> is the branch that you are currently on, and <code>&lt;remote&gt;/&lt;upstream&gt;</code> is the upstream branch that your <code>&lt;tracking-branch&gt;</code> tracks.</p>
+</div>
+<div id="back-to-the-example" class="slide section level1">
+<h1>Back to the example</h1>
+<pre><code>$ git remote show origin
+* remote origin
+  URL: https://github.com/my-org/complex-project
+  Fetch URL: https://github.com/my-org/complex-project
+  Push  URL: https://github.com/my-org/complex-project
+  HEAD branch: master
+  Remote branches:
+    master                           tracked
+    dev-branch                       tracked
+    markdown-strip                   tracked
+    issue-43                         new (next fetch will store in remotes/origin)
+    issue-45                         new (next fetch will store in remotes/origin)
+    refs/remotes/origin/issue-11     stale (use &#39;git remote prune&#39; to remove)
+  Local branches configured for &#39;git pull&#39;:
+    dev-branch merges with remote dev-branch
+    master     merges with remote master
+  Local refs configured for &#39;git push&#39;:
+    dev-branch                     pushes to dev-branch                     (up to date)
+    markdown-strip                 pushes to markdown-strip                 (up to date)
+    master                         pushes to master                         (up to date)</code></pre>
+</div>
+<div id="summing-up" class="slide section level1">
+<h1>Summing up</h1>
+<ul class="incremental">
+<li><p>Both local and remote repositories are just sets of commits and branches.</p></li>
+<li><p>Primary problem is how to refer to branches in the remote.</p></li>
+<li><p>Defaults for pushing and pulling sometimes make things confusing.</p></li>
 </ul>
 </div>
 </body>
