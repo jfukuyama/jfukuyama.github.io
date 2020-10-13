@@ -1,0 +1,364 @@
+# Lecture 14: Code profiling and performance enhancement
+
+Reading: Matloff, Chapter 14
+
+[Hadley Wickham, Advanced R](http://adv-r.had.co.nz/Profiling.html)
+
+Logistics:
+
+- One more lecture on programming, 
+
+- Then on to algorithms
+
+-----
+
+> We should forget about small efficiencies, say about 97% of the time: premature optimization is the root of all evil.
+
+[Sir Tony Hoare](https://en.wikipedia.org/wiki/Tony_Hoare), popularized by [Donald Knuth](https://en.wikipedia.org/wiki/Donald_Knuth)
+
+[Counterpoint](https://ubiquity.acm.org/article.cfm?id=1513451)
+
+
+# Setup
+
+You have:
+
+- Code that is correct
+
+- Code that is slow for the application you want
+
+. . .
+
+You want:
+
+- Code that is correct
+
+- Code that runs in a reasonable amount of time
+
+-----
+
+Two steps:
+
+- Find what the bottleneck is
+
+- Rewrite the code for the bottleneck to make it run faster
+
+What to do?
+
+- Make a smaller example that runs quickly
+
+- Write tests (formal or informal) for the output of the function
+
+- Make a new function to implement the same algorithm, rewritten to be (hopefully) faster
+
+- Check on the test cases that it gives the same output
+
+- Check whether the new version is faster
+
+
+# Finding what the problem is
+
+Base R function for this task is `Rprof`.
+
+Many other packages, e.g. `profvis` (I believe what RStudio uses now) are based on `Rprof`, usually with more nicely formatted output.
+
+-----
+
+How does Rprof work?
+
+- Once every set amount of time (default .02 seconds), stops the interpreter and checks what function is being called.
+
+- Output is a list of function calls.
+
+- Output is formatted to indicate what takes the most time.
+
+- It will be non-deterministic, depends a bit on what else your computer is doing.
+
+# For example
+
+```{r}
+library(profvis)
+f = function() {
+  pause(0.1)
+  g()
+  h()
+}
+g = function() {
+  pause(0.1)
+  h()
+}
+h = function() {
+  pause(0.1)
+}
+```
+
+```{r}
+source("profiling-example.R")
+```
+
+```{r, eval = FALSE}
+tmp = tempfile()
+Rprof(tmp, interval = 0.02)
+f()
+Rprof(NULL)
+```
+
+```{r, eval = FALSE}
+summaryRprof(tmp)
+```
+
+-----
+
+If we don't sample frequently enough, we don't get very useful output:
+
+```{r, eval = FALSE}
+tmp = tempfile()
+Rprof(tmp, interval = 0.2)
+f()
+Rprof(NULL)
+```
+
+
+```{r, eval = FALSE}
+summaryRprof(tmp)
+```
+
+
+-----
+
+Using `profvis`:
+
+```{r, eval=FALSE}
+profvis(f())
+```
+
+
+
+# Checking whether code is faster
+
+Several packages for testing alternative implementations
+
+- `microbenchmark` function in `microbenchmark` package runs the same code a large number of times
+
+- `mark` function in the `bench` package does the same thing but with a little more information and some extra plotting facilities.
+
+# Strategies for writing faster code
+
+- Remove extra work
+
+- Vectorise
+
+- Avoid copies
+
+- Rewrite your R code in C/C++/fortran
+
+# Remove extra work
+
+If you know something about the input to a function, you can speed up your code by skipping some of the steps R takes in checking what kind of data is used.
+
+Here we're bypassing the method dispatch for `mean`.
+
+```{r}
+library(microbenchmark)
+x = runif(1e2)
+
+microbenchmark(
+  mean(x),
+  mean.default(x), times = 1000
+)
+```
+
+------
+
+The `as.data.frame` function performs many checks and is not optimized for performance.
+
+Suppose that we have a list and want to change it to a data frame.
+
+If we're sure it's formatted correctly, we can use the `quickdf` function.
+
+```{r}
+quickdf = function(l) {
+  class(l) = "data.frame"
+  attr(l, "row.names") = 1:length(l[[1]])
+  l
+}
+
+l = lapply(1:26, function(i) runif(1e3))
+names(l) = letters
+```
+
+. . .
+
+```{r}
+microbenchmark(
+  quick_df      = quickdf(l),
+  as.data.frame = as.data.frame(l)
+)
+
+```
+
+But we need to be sure the input is formatted correctly, because it does no checks:
+
+```{r}
+quickdf(list(x = 1, y = 1:2))
+```
+
+# Avoid copies
+
+```{r}
+random_string = function() {
+  paste(sample(letters, 50, replace = TRUE), collapse = "")
+}
+strings10 = replicate(10, random_string())
+strings100 = replicate(100, random_string())
+
+collapse = function(xs) {
+  out = ""
+  for (x in xs) {
+    out = paste0(out, x)
+  }
+  out
+}
+
+microbenchmark(
+  loop10  = collapse(strings10),
+  loop100 = collapse(strings100),
+  vec10   = paste(strings10, collapse = ""),
+  vec100  = paste(strings100, collapse = "")
+)
+```
+
+
+# Vectorise
+
+- This will sometimes give speed improvements and sometimes will not.
+
+- Speed improvements happen primarily when it leads to calling compiled C code.
+
+. . .
+
+```{r}
+x = matrix(rnorm(15), nrow = 3, ncol = 5)
+row_means_loop = function(x) {
+    row_means = numeric(nrow(x))
+    for(i in 1:nrow(x)) {
+        row_sum = 0
+        for(j in 1:ncol(x)) {
+            row_sum = row_sum + x[i,j]
+        }
+        row_means[i] = row_sum / ncol(x)
+    }
+    return(row_means)
+}
+microbenchmark(
+    no_vectorization = row_means_loop(x),
+    apply = apply(x, 1, mean),
+    c_version = rowMeans(x),
+    times = 1000)
+```
+
+
+-----
+
+Another example: a problem in probability.
+
+- Urn 1 contains 10 blue marbles and 8 yellow marbles
+
+- Urn 2 contains 6 blue marbles and 6 yellow marbles
+
+- We draw one marble uniformly at random from urn 1, place it in urn 2, and then draw a marble uniformly at random from urn 2.
+
+- What is the probability that the second marble is blue?
+
+-----
+
+First attempt:
+
+```{r}
+# perform nreps repetitions of the marble experiment, to estimate
+# P(pick blue from Urn 2)
+sim1 = function(nreps)  {
+    nb1 = 10 #10 blue marbles in Urn1
+    n1 = 18 # number of marbles in Urn 1 at 1st pick
+    n2 = 13 # number of marbles in Urn 2 at 2nd pick
+    count = 0 # number of repetitions in which get blue from Urn 2
+    for (i in 1:nreps) {
+        nb2 = 6 # 6 blue marbles orig. in Urn2
+        ## pick from Urn 1 and put in Urn 2; is it blue?
+        if (runif(1) < nb1/n1) nb2 = nb2 + 1
+        ## pick from Urn 2; is it blue?
+        if (runif(1) < nb2/n2) count = count + 1
+    }
+    return(count/nreps) # est. P(pick blue from Urn 2)
+}
+```
+
+------
+
+Let's try pre-generate all of our random numbers and remove the for loop:
+
+```{r}
+sim2 = function(nreps) {
+    nb1 = 10
+    nb2 = 6
+    n1 = 18
+    n2 = 13
+    ## pre-generate all our random numbers, one row per repetition
+    u = matrix(c(runif(2 * nreps)), nrow = nreps, ncol = 2)
+    ## define simfun for use in apply(); simulates one repetition
+    simfun = function(rw) {
+        ## rw ("row") is a pair of random numbers
+        ## choose from Urn 1
+        if (rw[1] < nb1 / n1) nb2 = nb2 + 1
+        ## choose from Urn 2, and return boolean on choosing blue
+        return (rw[2] < nb2 / n2)
+    }
+    z = apply(u, 1, simfun)
+    return(mean(z))
+}
+```
+
+-----
+
+```{r}
+microbenchmark(sim1(100), sim2(100))
+```
+
+The timings here are different from in Matloff. I believe this is because more recent version of R [byte compile](https://en.wikipedia.org/wiki/Bytecode) functions that you write, and this was not true for the version of R used in the book.
+
+-----
+
+Take 3:
+
+```{r}
+sim3 = function(nreps) {
+    nb1 = 10
+    nb2 = 6
+    n1 = 18
+    n2 = 13
+    u = matrix(c(runif(2 * nreps)), nrow = nreps, ncol = 2)
+    ## set up the condition vector
+    cndtn =
+        u[,1] <= nb1 / n1 & u[,2] <= (nb2+1) / n2 |
+        u[,1] > nb1 / n1 & u[,2] <= nb2 / n2
+    return(mean(cndtn))
+}
+
+```
+
+
+```{r}
+microbenchmark(sim1(100), sim2(100), sim3(100))
+```
+
+# Overall strategies
+
+- If you know something about your input that R has to check for, you can save time by bypassing the checks
+
+- Vectorised functions are sometimes faster, sometimes not
+
+- Matrix operations generally call C and are therefore fast
+
+- Compiled C code is faster than R code
+
+
