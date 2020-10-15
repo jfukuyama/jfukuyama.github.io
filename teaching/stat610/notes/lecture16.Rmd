@@ -22,9 +22,11 @@ Logistics:
 
 - Final project: can be done individually or in teams of up to 3
 
-- Due the last day of classes
+- Final project presentations in the last week of class
 
-- Email me with your group and desired topic by November 5.
+- Email me with your group and desired topic by October 30.
+
+- Discussion thread on the course website for finding teammates.
 
 ## Very short review of probability
 
@@ -40,6 +42,8 @@ What is a random variable?
 
 -------
 
+. . .
+
 In R, you can draw a random variable from a distribution with functions of the form `rdist`.
 
 - `rnorm` draws a random variable from a normal distribution.
@@ -49,8 +53,6 @@ In R, you can draw a random variable from a distribution with functions of the f
 - `rpois` draws a random variable from a Poisson distribution
 
 ... and so on
-
-. . .
 
 Syntax is `rdist(n, param1, param2,..., paramn)`
 

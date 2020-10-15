@@ -89,16 +89,17 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <h1>Lecture 16: Fitting probability models</h1>
 <p>Today: Transitioning away from R/software engineering, towards algorithms for statistics</p>
 <p>Agenda</p>
-<ul>
+<ul class="incremental">
 <li><p>Probability/maximum likelihood review</p></li>
 <li><p>Distributions in R</p></li>
 <li><p>Fitting distributions</p></li>
 </ul>
 <p>Logistics:</p>
-<ul>
+<ul class="incremental">
 <li><p>Final project: can be done individually or in teams of up to 3</p></li>
-<li><p>Due the last day of classes</p></li>
-<li><p>Email me with your group and desired topic by November 5.</p></li>
+<li><p>Final project presentations in the last week of class</p></li>
+<li><p>Email me with your group and desired topic by October 30.</p></li>
+<li><p>Discussion thread on the course website for finding teammates.</p></li>
 </ul>
 </div>
 <div id="very-short-review-of-probability" class="slide section level2">
@@ -108,23 +109,23 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div class="slide section level2">
 
 <p>What is a random variable?</p>
-<ul>
+<ul class="incremental">
 <li><p>Very formally: a function from a state space to the real numbers</p></li>
 <li><p>Less formally: Think about random variables as describing the outcome of an experiment</p></li>
 </ul>
 </div>
 <div class="slide section level2">
 
+<div class="incremental">
 <p>In R, you can draw a random variable from a distribution with functions of the form <code>rdist</code>.</p>
-<ul>
+<ul class="incremental">
 <li><p><code>rnorm</code> draws a random variable from a normal distribution.</p></li>
 <li><p><code>rbinom</code> draws a random variable from a binomial distribution</p></li>
 <li><p><code>rpois</code> draws a random variable from a Poisson distribution</p></li>
 </ul>
 <p>… and so on</p>
-<div class="incremental">
 <p>Syntax is <code>rdist(n, param1, param2,..., paramn)</code></p>
-<ul>
+<ul class="incremental">
 <li><p><code>n</code> is the number of random variables to draw from the distribution.</p></li>
 <li><p><code>param1</code>, …, <code>paramn</code> are the parameters of the distribution (e.g. mean and standard deviation for the normal, mean for the Poisson, probability of success for the binomial)</p></li>
 </ul>
@@ -135,18 +136,18 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div class="incremental">
 <p>Examples</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">rnorm</span>(<span class="dt">n =</span> <span class="dv">10</span>, <span class="dt">mean =</span> <span class="dv">5</span>, <span class="dt">sd =</span> <span class="fl">.1</span>)</span></code></pre></div>
-<pre><code>##  [1] 4.953589 5.000259 5.064410 5.055762 5.008841 5.027430 4.932380
-##  [8] 5.021548 5.045238 5.038596</code></pre>
+<pre><code>##  [1] 5.020624 5.074722 5.015357 5.018419 5.078533 4.991682 4.909602 4.935849
+##  [9] 4.835816 5.021875</code></pre>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">rbinom</span>(<span class="dt">n =</span> <span class="dv">5</span>, <span class="dt">size =</span> <span class="dv">5</span>, <span class="dt">prob =</span> <span class="fl">.8</span>)</span></code></pre></div>
-<pre><code>## [1] 4 5 5 4 2</code></pre>
+<pre><code>## [1] 3 5 5 3 4</code></pre>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="kw">rpois</span>(<span class="dt">n =</span> <span class="dv">20</span>, <span class="dt">lambda =</span> <span class="dv">10</span>)</span></code></pre></div>
-<pre><code>##  [1] 18 11 14  8  6  9 12  4  8 12 11 14  8  4  7 16  7 11 12 10</code></pre>
+<pre><code>##  [1] 14  9  9  9 12 10 17 13 13  7  9 10  9 12 11  8 18 16 12 12</code></pre>
 </div>
 </div>
 <div class="slide section level2">
 
 <p>A random variable is characterized by its <em>cumulative distribution function</em> (CDF).</p>
-<ul>
+<ul class="incremental">
 <li><p>Measures the probability that the random variable takes a value at most <span class="math inline">\(x\)</span>.</p></li>
 <li><p>If <span class="math inline">\(F_X\)</span> is the cumulative distribution function for a random variable <span class="math inline">\(X\)</span>, <span class="math inline">\(F_X(x) = P(X \le x)\)</span>.</p></li>
 <li><p>Can get all the other information you need about the random variable from this function (e.g. probability it lies above a certain value, probability it lies in an interval, probability it lies in other sets)</p></li>
@@ -155,14 +156,14 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div class="slide section level2">
 
 <p>In R, the cumulative distribution functions for common distributions are available as <code>pdist</code>, so</p>
-<ul>
+<ul class="incremental">
 <li><p><code>pnorm</code> gives the cumulative distribution function for a normal distribution.</p></li>
 <li><p><code>pbinom</code> gives the cumulative distribution function for a binomial distribution.</p></li>
 <li><p><code>ppois</code> gives the cumulative distribution function for a Poisson distribution.</p></li>
 </ul>
 <div class="incremental">
 <p>Syntax is <code>pdist(q, param1, ..., paramn)</code></p>
-<ul>
+<ul class="incremental">
 <li><p>Returns <span class="math inline">\(F_X(q)\)</span>, if <span class="math inline">\(F_X\)</span> is the cumulative distribution function for a random variable <span class="math inline">\(X\)</span> following distribution <code>dist</code></p></li>
 <li><p><code>param1</code>, …, <code>paramn</code> are the parameters of the distribution</p></li>
 </ul>
@@ -208,7 +209,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb15-3"><a href="#cb15-3"></a><span class="co">## compute what fraction of the random variables are at most -.5</span></span>
 <span id="cb15-4"><a href="#cb15-4"></a>q =<span class="st"> </span><span class="fl">-.5</span></span>
 <span id="cb15-5"><a href="#cb15-5"></a><span class="kw">mean</span>(x <span class="op">&lt;=</span><span class="st"> </span>q)</span></code></pre></div>
-<pre><code>## [1] 0.3</code></pre>
+<pre><code>## [1] 0.309</code></pre>
 <div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1"></a><span class="co">## compute what fraction of the time the random variables should be less than or equal to -.5</span></span>
 <span id="cb17-2"><a href="#cb17-2"></a><span class="kw">pnorm</span>(<span class="dt">q =</span> q, <span class="dt">mean =</span> <span class="dv">0</span>, <span class="dt">sd =</span> <span class="dv">1</span>)</span></code></pre></div>
 <pre><code>## [1] 0.3085375</code></pre>
@@ -223,7 +224,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb19-3"><a href="#cb19-3"></a><span class="co">## compute what fraction of the random variables are 1 or less</span></span>
 <span id="cb19-4"><a href="#cb19-4"></a>q =<span class="st"> </span><span class="dv">1</span></span>
 <span id="cb19-5"><a href="#cb19-5"></a><span class="kw">mean</span>(x <span class="op">&lt;=</span><span class="st"> </span>q)</span></code></pre></div>
-<pre><code>## [1] 0.748</code></pre>
+<pre><code>## [1] 0.72</code></pre>
 <div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a><span class="co">## compute what fraction of the time the random variables should be 1 or less</span></span>
 <span id="cb21-2"><a href="#cb21-2"></a><span class="kw">pbinom</span>(<span class="dt">q =</span> q, <span class="dt">size =</span> <span class="dv">5</span>, <span class="dt">prob =</span> <span class="fl">.2</span>)</span></code></pre></div>
 <pre><code>## [1] 0.73728</code></pre>
@@ -233,7 +234,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div class="slide section level2">
 
 <p>Final concept: probability mass functions and probability density functions</p>
-<ul>
+<ul class="incremental">
 <li><p>Probability mass functions describe <em>discrete</em> radom variables</p></li>
 <li><p>Probability density functions describe <em>continuous</em> random variables</p></li>
 </ul>
@@ -241,7 +242,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div class="slide section level2">
 
 <p>Discrete random variables:</p>
-<ul>
+<ul class="incremental">
 <li><p>The random variable can take on either a finite number of values or a countable number of values</p></li>
 <li><p>For example: binomial random variable with size <span class="math inline">\(n\)</span> and probability <span class="math inline">\(p\)</span> can take values <span class="math inline">\(0, 1, 2, \ldots, n\)</span></p></li>
 <li><p>For example: A Poisson random variable can take values <span class="math inline">\(0, 1, 2,\ldots\)</span></p></li>
@@ -290,11 +291,11 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1"></a><span class="co">## generate random variables from a binomial distribution with size = 2 and prob = .5</span></span>
 <span id="cb32-2"><a href="#cb32-2"></a>X =<span class="st"> </span><span class="kw">rbinom</span>(<span class="dt">n =</span> <span class="dv">1000</span>, <span class="dt">size =</span> <span class="dv">2</span>, <span class="dt">prob =</span> <span class="fl">.5</span>)</span>
 <span id="cb32-3"><a href="#cb32-3"></a><span class="kw">head</span>(X)</span></code></pre></div>
-<pre><code>## [1] 0 1 2 0 1 0</code></pre>
+<pre><code>## [1] 1 2 1 1 2 2</code></pre>
 <div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1"></a><span class="co">## compute the fraction of the random variables that took value exactly equal to 1</span></span>
 <span id="cb34-2"><a href="#cb34-2"></a>x =<span class="st"> </span><span class="dv">2</span></span>
 <span id="cb34-3"><a href="#cb34-3"></a><span class="kw">mean</span>(X <span class="op">==</span><span class="st"> </span>x)</span></code></pre></div>
-<pre><code>## [1] 0.239</code></pre>
+<pre><code>## [1] 0.242</code></pre>
 <div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1"></a><span class="co">## compute the pmf for the distribution at x = 1</span></span>
 <span id="cb36-2"><a href="#cb36-2"></a><span class="kw">dbinom</span>(<span class="dt">x =</span> x, <span class="dt">size =</span> <span class="dv">2</span>, <span class="dt">prob =</span> <span class="fl">.5</span>)</span></code></pre></div>
 <pre><code>## [1] 0.25</code></pre>
@@ -305,7 +306,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div class="slide section level2">
 
 <p>Continuous random variables:</p>
-<ul>
+<ul class="incremental">
 <li><p>Formally: A random variable whose cumulative distribution function is continuous.</p></li>
 <li><p>You can think of this as random variables that can take values either on the entire real line, or on subsets of the real line.</p></li>
 <li><p>For example: normal distribution, gamma distribution</p></li>
@@ -318,7 +319,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <p>Probability density function formally: If <span class="math inline">\(X\)</span> is a continuous random variable with cumulative distribution function <span class="math inline">\(F_X\)</span>, the probability density function of <span class="math inline">\(X\)</span>, <span class="math inline">\(f_X(x)\)</span>, is defined as <span class="math inline">\(f_X(x) = F_X&#39;(x)\)</span>.</p>
 <div class="incremental">
 <p>Think of as analogous to probability mass functions</p>
-<ul>
+<ul class="incremental">
 <li><p><span class="math inline">\(P(X = x) = 0\)</span> for continuous random variables, but…</p></li>
 <li><p>The random variable <span class="math inline">\(X\)</span> is more likely to take on values close to <span class="math inline">\(x\)</span> if <span class="math inline">\(f_X(x)\)</span> is large than if <span class="math inline">\(f_X(x)\)</span> is small.</p></li>
 </ul>
@@ -350,7 +351,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 <div id="summing-up-probability" class="slide section level2">
 <h1>Summing up: probability</h1>
-<ul>
+<ul class="incremental">
 <li><p>Random variables are like any other variables, but the values they take are random</p></li>
 <li><p>If <span class="math inline">\(F_X\)</span> is the cumulative distribution function for a random variable <span class="math inline">\(X\)</span>, <span class="math inline">\(F_X(x)\)</span> gives <span class="math inline">\(P(X \le x)\)</span>, and characterizes the distribution.</p></li>
 <li><p>If <span class="math inline">\(f_X\)</span> is the probability density or probability mass function for a random variable <span class="math inline">\(X\)</span>, <span class="math inline">\(f_X(x)\)</span> large means that <span class="math inline">\(X\)</span> is more likely to take values exactly equal to <span class="math inline">\(x\)</span> (for discrete random variables) or close to <span class="math inline">\(x\)</span> (for continuous random variables).</p></li>
@@ -361,7 +362,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <p>Setup: We have a set of data points <span class="math inline">\(x_1, \ldots, x_n\)</span>, and we want to find a probability distribution that describes the data well.</p>
 <div class="incremental">
 <p>Why do we want to do this?</p>
-<ul>
+<ul class="incremental">
 <li><p>We are interested in the parameters</p></li>
 <li><p>Data compression</p></li>
 <li><p>Uncertainty quantification</p></li>
@@ -371,7 +372,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="how-do-we-fit-probability-models" class="slide section level2">
 <h1>How do we fit probability models?</h1>
 <p>Two main strategies:</p>
-<ul>
+<ul class="incremental">
 <li><p>Maximum likelihood</p></li>
 <li><p>Method of moments</p></li>
 </ul>
@@ -381,7 +382,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <h1>Maximum likelihood</h1>
 <p>Problem: We have a family of probability distributions, indexed by a parameter <span class="math inline">\(\theta\)</span>, and we need to choose one to describe the data.</p>
 <p>Solution, heuristically:</p>
-<ul>
+<ul class="incremental">
 <li><p>Assume that our data <span class="math inline">\(x_1, \ldots, x_n\)</span> are realizations of independent random variables <span class="math inline">\(X_1, \ldots, X_n\)</span>, each coming from some distribution, with a parameter (vector) <span class="math inline">\(\theta\)</span> controlling the distributions.</p></li>
 <li><p>Find the value of <span class="math inline">\(\theta\)</span> that makes the data most likely.</p></li>
 <li><p>Use either the probability density (continuous random variables) or probability mass (discrete random variables) to describe how likely the data is for a given value of the parameter <span class="math inline">\(\theta\)</span>.</p></li>
@@ -390,7 +391,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div class="slide section level2">
 
 <p>Formally:</p>
-<ul>
+<ul class="incremental">
 <li><p>Let <span class="math inline">\(f(x; \theta)\)</span> be the probability density function or probability mass function of a random variable with drawn from a distribution with parameter <span class="math inline">\(\theta\)</span>.</p></li>
 <li><p>With independent data points <span class="math inline">\(x_1\)</span>, <span class="math inline">\(x_2\)</span>, <span class="math inline">\(x_n\)</span>, the likelihood is</p></li>
 </ul>
@@ -399,7 +400,7 @@ L(\theta)=\prod_{i=1}^n f(x_i;\theta)
 \]</span></p>
 <div class="incremental">
 <p>Recall that the probability density/mass function describes how likely a random variable is to take a given value.</p>
-<ul>
+<ul class="incremental">
 <li><p>If <span class="math inline">\(f(x_i; \theta)\)</span> is high, it is very likely that we would see the value <span class="math inline">\(x_i\)</span> if <span class="math inline">\(x_i\)</span> really came from a distribution with parameter <span class="math inline">\(\theta\)</span></p></li>
 <li><p>If <span class="math inline">\(f(x_i; \theta)\)</span> is low, it is unlikely that we would see the value <span class="math inline">\(x_i\)</span> if <span class="math inline">\(x_i\)</span> really came from a distribution with parameter <span class="math inline">\(\theta\)</span></p></li>
 </ul>
@@ -412,7 +413,7 @@ L(\theta)=\prod_{i=1}^n f(x_i;\theta)
 <p><span class="math display">\[
 \ell(\theta) = \sum_{i=1}^n \log f(x_i; \theta)
 \]</span></p>
-<ul>
+<ul class="incremental">
 <li><p>Easier to work with analytically</p></li>
 <li><p>Better computationally because multiplying lots of small numbers together is bad (if you have a lot of data points you can get within machine tolerance of 0).</p></li>
 </ul>
@@ -481,19 +482,19 @@ L(x;  \theta) = \prod_{i=1}^n \frac{1}{\sqrt{2\pi}}\exp((x_i - \theta)^2)
 <p>We see that the maximum is pretty close to the true value, <span class="math inline">\(.2\)</span></p>
 <div class="sourceCode" id="cb53"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1"></a>max_idx =<span class="st"> </span><span class="kw">which.max</span>(log_likelihoods)</span>
 <span id="cb53-2"><a href="#cb53-2"></a>theta_vec[max_idx]</span></code></pre></div>
-<pre><code>## [1] 0.2222222</code></pre>
+<pre><code>## [1] 0.1919192</code></pre>
 </div>
 <div class="slide section level2">
 
 <p>In the binomial and normal examples, we used <em>grid search</em>.</p>
 <p>Two reasons why those examples are silly:</p>
-<ul>
+<ul class="incremental">
 <li><p>We have closed-form solutions to the problems, so we don’t need to search.</p></li>
 <li><p>Even if we didn’t have closed-form solutions, there are more efficient ways of finding the maximum than grid search.</p></li>
 </ul>
 <div class="incremental">
 <p>One reason why getting the numbers is non-trivial:</p>
-<ul>
+<ul class="incremental">
 <li><p>Maximum likelihood in each case is <span class="math inline">\(\sum_{i=1}^n x_i / n\)</span>.</p></li>
 <li><p>How does the computer get the actual numbers out? Division is easy to write down but actually <a href="https://web.stanford.edu/class/ee486/doc/chap5.pdf">non-trivial</a>.</p></li>
 </ul>
@@ -503,7 +504,7 @@ L(x;  \theta) = \prod_{i=1}^n \frac{1}{\sqrt{2\pi}}\exp((x_i - \theta)^2)
 <h1>Distribution fitting in R</h1>
 <p>For the simple case where all the data come from the same distribution, can use <code>fitdistr</code></p>
 <p>Syntax: <code>fitdistr(x, densfun, start)</code> with</p>
-<ul>
+<ul class="incremental">
 <li><p><code>x</code>: A vector of length at least 1 containing the data</p></li>
 <li><p><code>densfun</code>: A function whose first argument is the value at which we want the density evaluated and whose subsequent arguments are the parameters of the distribution.</p></li>
 <li><p><code>start</code>: Starting values to use when searching for parameters.</p></li>
@@ -512,7 +513,7 @@ L(x;  \theta) = \prod_{i=1}^n \frac{1}{\sqrt{2\pi}}\exp((x_i - \theta)^2)
 <div id="example-negative-binomial" class="slide section level2">
 <h1>Example: negative binomial</h1>
 <p>Negative binomial distribution:</p>
-<ul>
+<ul class="incremental">
 <li><p>Suppose we have a coin that we flip repeatedly, with <span class="math inline">\(P(heads) = p\)</span>.</p></li>
 <li><p>We flip the coin until we have seen <span class="math inline">\(r\)</span> tails.</p></li>
 <li><p>If we let <span class="math inline">\(X\)</span> be a random variable describing the number of heads we saw, <span class="math inline">\(X \sim NB(r, p)\)</span>.</p></li>
@@ -543,26 +544,26 @@ P(X = x) &amp;= \begin{pmatrix}x+r-1 \\x  \end{pmatrix}(1-p)^r p^x \\
 <span id="cb55-3"><a href="#cb55-3"></a>nb_fit =<span class="st"> </span><span class="kw">fitdistr</span>(x, <span class="dt">densfun =</span> dnbinom, <span class="dt">start =</span> <span class="kw">list</span>(<span class="dt">size =</span> <span class="dv">1</span>, <span class="dt">mu =</span> <span class="dv">1</span>))</span>
 <span id="cb55-4"><a href="#cb55-4"></a>nb_fit</span></code></pre></div>
 <pre><code>##      size         mu    
-##   4.0002773   4.9868542 
-##  (0.3367479) (0.1058447)</code></pre>
+##   4.3749081   5.0555159 
+##  (0.3802223) (0.1043835)</code></pre>
 </div>
 <div class="slide section level2">
 
 <p>We can check informally that these values of <code>mu</code> and <code>size</code> are maximizers:</p>
 <div class="sourceCode" id="cb57"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1"></a>fitted_log_lik =<span class="st"> </span><span class="kw">dnbinom</span>(x, <span class="dt">size =</span> nb_fit<span class="op">$</span>estimate[<span class="st">&quot;size&quot;</span>], <span class="dt">mu =</span> nb_fit<span class="op">$</span>estimate[<span class="st">&quot;mu&quot;</span>], <span class="dt">log =</span> <span class="ot">TRUE</span>)</span>
 <span id="cb57-2"><a href="#cb57-2"></a><span class="kw">sum</span>(fitted_log_lik)</span></code></pre></div>
-<pre><code>## [1] -2522.539</code></pre>
+<pre><code>## [1] -2517.382</code></pre>
 <div class="sourceCode" id="cb59"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1"></a><span class="co">## the log likelihood at a couple other values of mu and size</span></span>
 <span id="cb59-2"><a href="#cb59-2"></a><span class="kw">sum</span>(<span class="kw">dnbinom</span>(x, <span class="dt">size =</span> <span class="dv">2</span>, <span class="dt">mu =</span> <span class="dv">3</span>, <span class="dt">log =</span> <span class="ot">TRUE</span>))</span></code></pre></div>
-<pre><code>## [1] -2759.271</code></pre>
+<pre><code>## [1] -2775.592</code></pre>
 <div class="sourceCode" id="cb61"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1"></a><span class="kw">sum</span>(<span class="kw">dnbinom</span>(x, <span class="dt">size =</span> <span class="dv">10</span>, <span class="dt">mu =</span> <span class="dv">4</span>, <span class="dt">log =</span> <span class="ot">TRUE</span>))</span></code></pre></div>
-<pre><code>## [1] -2643.876</code></pre>
+<pre><code>## [1] -2640.225</code></pre>
 </div>
 <div id="more-generally" class="slide section level2">
 <h1>More generally</h1>
 <p>The examples so far have all been for the simple case where we assume that all the data come from the same distribution, but:</p>
 <p>In general, we can let different data points come from different distributions, but the setup is the same:</p>
-<ul>
+<ul class="incremental">
 <li><p>We have a parameter vector <span class="math inline">\(\theta\)</span>.</p></li>
 <li><p>Different values of <span class="math inline">\(\theta\)</span> correspond to different distributions for the data.</p></li>
 <li><p>We want to find <span class="math inline">\(\theta\)</span> that maximizes the likelihood of the data.</p></li>
@@ -578,7 +579,7 @@ y_i \sim N(\beta_0 + \beta_1 x_i, \sigma^2)
 \]</span></p>
 <div class="incremental">
 <p>In this case:</p>
-<ul>
+<ul class="incremental">
 <li><p>The <span class="math inline">\(y_i\)</span>’s don’t come from the same distribution (they are assumed to have different means).</p></li>
 <li><p><span class="math inline">\(\theta = (\beta_0, \beta_1, \sigma)\)</span> is our parameter vector, and we want to find the value of <span class="math inline">\(\theta\)</span> that makes the data the most likely.</p></li>
 </ul>
@@ -586,7 +587,7 @@ y_i \sim N(\beta_0 + \beta_1 x_i, \sigma^2)
 </div>
 <div id="summing-up" class="slide section level2">
 <h1>Summing up</h1>
-<ul>
+<ul class="incremental">
 <li><p>Fitting probability distributions just means finding the one that “looks” the most like your data, according to some measure.</p></li>
 <li><p>For all but very simple cases where we can get closed-form solutions with pen and paper, we need more computational tools to fit these distributions.</p></li>
 <li><p>Over the next couple of weeks we will be looking at algorithms for this problem in more detail.</p></li>
