@@ -17,6 +17,12 @@ Reading:
 
 - Kenneth Lange, Numerical Analysis for Statisticians, Section 11.2, 13.3
 
+Logistics:
+
+- Homework due today
+
+- Next homework posted, due in two weeks (Tuesday November 3)
+
 ## Newton's method
 
 - Iterative method for finding local minimum/maximum of a function.
@@ -92,6 +98,8 @@ If we want $b + 2c \theta^\star = 0$, we take $\theta^\star = -\frac{b }{2c}$
 
 -----
 
+. . .
+
 Recast this result as a "step" from $\theta_0$ instead of a single optimization:
 
 - We start at $\theta_0$
@@ -141,7 +149,7 @@ $$
 
 Log likelihood:
 $$
-\ell(\theta) = \sum_{i=1}^n -\frac{1}{2} \log(2\pi)- \frac{1}{2} (x_i - \theta)^2
+\ell(\theta) = \sum_{i=1}^n \left[ -\frac{1}{2} \log(2\pi)- \frac{1}{2} (x_i - \theta)^2\right]
 $$
 
 . . .

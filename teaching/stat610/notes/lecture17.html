@@ -88,18 +88,23 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="newtons-method" class="slide section level2">
 <h1>Newton’s method</h1>
 <p>Agenda today</p>
-<ul>
+<ul class="incremental">
 <li><p>Newton’s method</p></li>
 <li><p>Review method of moments</p></li>
 </ul>
 <p>Reading:</p>
-<ul>
+<ul class="incremental">
 <li>Kenneth Lange, Numerical Analysis for Statisticians, Section 11.2, 13.3</li>
+</ul>
+<p>Logistics:</p>
+<ul class="incremental">
+<li><p>Homework due today</p></li>
+<li><p>Next homework posted, due in two weeks (Tuesday November 3)</p></li>
 </ul>
 </div>
 <div id="newtons-method-1" class="slide section level2">
 <h1>Newton’s method</h1>
-<ul>
+<ul class="incremental">
 <li><p>Iterative method for finding local minimum/maximum of a function.</p></li>
 <li><p>Also known as Newton-Raphson, after Isaac Newton and Joseph Raphson (Raphson published in 1690, Newton wrote a similar method in 1671 but didn’t publish until 1736)</p></li>
 <li><p>Initial description is for finding zeros of a function</p></li>
@@ -109,7 +114,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="notation" class="slide section level2">
 <h1>Notation</h1>
 <p>Start off with a one-dimenisonal parameter:</p>
-<ul>
+<ul class="incremental">
 <li><p><span class="math inline">\(\theta\)</span>: The parameter, a scalar</p></li>
 <li><p><span class="math inline">\(\ell (\theta)\)</span>: The log likelihood at <span class="math inline">\(\theta\)</span>.</p></li>
 <li><p><span class="math inline">\(\ell&#39;(\theta)\)</span>: The first derivative of the log likelihood at <span class="math inline">\(\theta\)</span>.</p></li>
@@ -127,7 +132,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 <div class="incremental">
 <p>Newton’s method algorithm:</p>
-<ul>
+<ul class="incremental">
 <li><p>Start at a point <span class="math inline">\(\theta_0\)</span></p></li>
 <li><p>Iterate <span class="math inline">\(\theta_{n+1} = \theta_n - \ell&#39;&#39;(\theta_n)^{-1} \ell&#39;(\theta_n)\)</span> until some stopping criterion is reached.</p></li>
 <li><p>Usually stop when the derivative, <span class="math inline">\(\ell&#39;(\theta_n)\)</span> is sufficiently close to zero.</p></li>
@@ -135,7 +140,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 <div class="incremental">
 <p>Notice:</p>
-<ul>
+<ul class="incremental">
 <li><p>Any stationary point of <span class="math inline">\(\ell(\theta)\)</span> is a fixed point of Newton’s method.</p></li>
 <li><p>Not necessarily an ascent algorithm</p></li>
 </ul>
@@ -159,8 +164,9 @@ f&#39;(\theta) = b + 2 c \theta
 </div>
 <div class="slide section level2">
 
+<div class="incremental">
 <p>Recast this result as a “step” from <span class="math inline">\(\theta_0\)</span> instead of a single optimization:</p>
-<ul>
+<ul class="incremental">
 <li><p>We start at <span class="math inline">\(\theta_0\)</span></p></li>
 <li><p><span class="math inline">\(\theta_1\)</span> should be <span class="math inline">\(-\frac{b}{2c}\)</span></p></li>
 <li><p>We want to write <span class="math inline">\(\theta_1 = \theta_0 + ???\)</span> <br><br> <span class="math display">\[
@@ -173,10 +179,11 @@ f&#39;(\theta) = b + 2 c \theta
 \]</span> <br><br> since <span class="math inline">\(f&#39;(\theta_0) = b + 2c\theta_0\)</span> and <span class="math inline">\(f&#39;&#39;(\theta_0) = 2c\)</span></p></li>
 </ul>
 </div>
+</div>
 <div class="slide section level2">
 
 <p>Intuition for general, not-necessarily-quadratic functions:</p>
-<ul>
+<ul class="incremental">
 <li><p>We are not only dealing with quadratic functions, but we can approximate smooth, differentiable functions by quadratic functions.</p></li>
 <li><p>Taylor approximation of <span class="math inline">\(\ell(\theta)\)</span> around <span class="math inline">\(\theta_0\)</span>: <span class="math display">\[
 \ell(\theta) \approx \ell(\theta_0) + \ell&#39;(\theta_0)(\theta - \theta_0) + \frac{1}{2} \ell&#39;&#39;(\theta_0) (\theta - \theta_0)^2
@@ -196,7 +203,7 @@ L(\theta) = \prod_{i=1}^n \frac{1}{\sqrt{2\pi}} \exp \left(-\frac{1}{2} (x_i - \
 </div>
 <div class="incremental">
 <p>Log likelihood: <span class="math display">\[
-\ell(\theta) = \sum_{i=1}^n -\frac{1}{2} \log(2\pi)- \frac{1}{2} (x_i - \theta)^2
+\ell(\theta) = \sum_{i=1}^n \left[ -\frac{1}{2} \log(2\pi)- \frac{1}{2} (x_i - \theta)^2\right]
 \]</span></p>
 </div>
 <div class="incremental">
@@ -340,7 +347,7 @@ L(\theta) &amp;= \prod_{i=1}^n \frac{(x_i + \theta - 1)!}{(\theta-1)! x_i!} \lef
 <div id="example-3-mixture-model" class="slide section level2">
 <h1>Example 3: Mixture model</h1>
 <p>Mixture model</p>
-<ul>
+<ul class="incremental">
 <li><p><span class="math inline">\(x_1, \ldots, x_n\)</span> come from a distribution with cumulative distribution function <span class="math inline">\(\theta G + (1 - \theta)H\)</span>, where <span class="math inline">\(G\)</span> and <span class="math inline">\(H\)</span> are two fixed, distributions (for example, two normal distributions with known means and variances, or two Poisson distributions with different means).</p></li>
 <li><p>Let <span class="math inline">\(\xi\)</span> denote the mean of <span class="math inline">\(G\)</span> and <span class="math inline">\(\eta\)</span> denote the mean of <span class="math inline">\(H\)</span>.</p></li>
 <li><p>We want to estimate the mixing parameter <span class="math inline">\(\theta\)</span>.</p></li>
@@ -465,7 +472,7 @@ L(\theta) = \prod_{i=1}^n (\theta \phi_1(x_i) + (1 - \theta)\phi_2(x_i))
 </div>
 <div id="potential-issues" class="slide section level2">
 <h1>Potential issues</h1>
-<ul>
+<ul class="incremental">
 <li><p>How do you choose starting values?</p></li>
 <li><p>What if the function has no derivative/second derivative?</p></li>
 <li><p>What if the function has no curvature in some regions?</p></li>
@@ -475,7 +482,7 @@ L(\theta) = \prod_{i=1}^n (\theta \phi_1(x_i) + (1 - \theta)\phi_2(x_i))
 <div id="multiple-parameters-notation" class="slide section level2">
 <h1>Multiple parameters: notation</h1>
 <p>Suppose we have <span class="math inline">\(p\)</span> paramaters.</p>
-<ul>
+<ul class="incremental">
 <li><p><span class="math inline">\(\theta\)</span>: The parameters, a vector in <span class="math inline">\(\mathbb R^p\)</span>.</p></li>
 <li><p><span class="math inline">\(\ell (\theta)\)</span>: The log likelihood at <span class="math inline">\(\theta\)</span>, an element of <span class="math inline">\(\mathbb R\)</span>.</p></li>
 <li><p><span class="math inline">\(d \ell(\theta)\)</span>: A vector in <span class="math inline">\(\mathbb R^p\)</span> of first derivatives of the log likelihood at <span class="math inline">\(\theta\)</span>.</p></li>
@@ -491,7 +498,7 @@ L(\theta) = \prod_{i=1}^n (\theta \phi_1(x_i) + (1 - \theta)\phi_2(x_i))
 \]</span></p>
 <div class="incremental">
 <p>Newton’s method algorithm:</p>
-<ul>
+<ul class="incremental">
 <li><p>Start at a point <span class="math inline">\(\theta_0\)</span></p></li>
 <li><p>Iterate <span class="math inline">\(\theta_{n+1} = \theta_n - d^2 \ell(\theta_n)^{-1} d \ell(\theta_n)\)</span> until some stopping criterion is reached.</p></li>
 <li><p>Usually stop when the derivative is sufficiently close to zero.</p></li>
@@ -504,7 +511,7 @@ L(\theta) = \prod_{i=1}^n (\theta \phi_1(x_i) + (1 - \theta)\phi_2(x_i))
 <div class="slide section level2">
 
 <p>Newton’s method for multiple parameters has the same issues as with one parameter:</p>
-<ul>
+<ul class="incremental">
 <li><p>How do you choose a starting point?</p></li>
 <li><p>What if the second derivative matrix doesn’t exist?</p></li>
 <li><p>What if the second derivative matrix isn’t invertible?</p></li>
@@ -517,7 +524,7 @@ L(\theta) = \prod_{i=1}^n (\theta \phi_1(x_i) + (1 - \theta)\phi_2(x_i))
 <h1>Method of moments</h1>
 <p>Same problem as maximum likelihood: we have a family of probability models, indexed by a scalar or vector <span class="math inline">\(\theta\)</span>, and we need to choose one to describe the data.</p>
 <p>Idea:</p>
-<ul>
+<ul class="incremental">
 <li><p>If <span class="math inline">\(\theta\)</span> is a <span class="math inline">\(k\)</span>-dimensional vector (we have <span class="math inline">\(k\)</span> parameters to estimate), derive expressions for the first <span class="math inline">\(k\)</span> moments of the data, <span class="math inline">\(E_\theta(X^r)\)</span>, <span class="math inline">\(r = 1,\ldots, k\)</span></p></li>
 <li><p>Compute the first <span class="math inline">\(k\)</span> empirical moments of the data: <br><br> <span class="math display">\[
 \frac{1}{n} \sum_{i=1}^n x_i^r, \quad r = 1,\ldots, k
@@ -532,7 +539,7 @@ E_{\hat \theta}(X^r) = \sum_{i=1}^n x_i^r, \quad r = 1,\ldots, k
 <p>Our family of distributions is <span class="math inline">\(N(\mu, \sigma^2)\)</span>, so that <span class="math inline">\(\theta = (\mu, \sigma)\)</span>.</p>
 <div class="incremental">
 <p>The first two moments are:</p>
-<ul>
+<ul class="incremental">
 <li><p><span class="math inline">\(E_{\mu, \sigma}(X) = \mu\)</span></p></li>
 <li><p><span class="math inline">\(E_{\mu, \sigma}(X^2) = \mu^2 + \sigma^2\)</span></p></li>
 </ul>
@@ -558,7 +565,7 @@ E_{\hat \mu, \hat \sigma}(X^2) = \hat \mu^2 + \hat \sigma^2 \\
 <div id="example-moment-estimator-for-mixture-models" class="slide section level2">
 <h1>Example: moment estimator for mixture models</h1>
 <p>Mixture model</p>
-<ul>
+<ul class="incremental">
 <li><p><span class="math inline">\(x_1, \ldots, x_n\)</span> come from a distribution with cumulative distribution function <span class="math inline">\(\theta G + (1 - \theta)H\)</span>, where <span class="math inline">\(G\)</span> and <span class="math inline">\(H\)</span> are two fixed, distributions (for example, two normal distributions with known means and variances, or two Poisson distributions with different means).</p></li>
 <li><p>Let <span class="math inline">\(\xi\)</span> denote the mean of <span class="math inline">\(G\)</span> and <span class="math inline">\(\eta\)</span> denote the mean of <span class="math inline">\(H\)</span>.</p></li>
 <li><p>We want to estimate the mixing parameter <span class="math inline">\(\theta\)</span>.</p></li>
@@ -593,7 +600,7 @@ E_\theta(X) = \theta \xi + (1 - \theta) \eta
 <div class="slide section level2">
 
 <p>There isn’t anything particularly important about the first <span class="math inline">\(k\)</span> moments, can match other aspects of the data</p>
-<ul>
+<ul class="incremental">
 <li><p>Median</p></li>
 <li><p>Other quantiles</p></li>
 <li><p>Centered moments instead of raw moments</p></li>
