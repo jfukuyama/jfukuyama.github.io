@@ -136,12 +136,12 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div class="incremental">
 <p>Examples</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">rnorm</span>(<span class="dt">n =</span> <span class="dv">10</span>, <span class="dt">mean =</span> <span class="dv">5</span>, <span class="dt">sd =</span> <span class="fl">.1</span>)</span></code></pre></div>
-<pre><code>##  [1] 4.962330 5.093034 4.868427 4.942544 4.885911 4.963779 5.017766 5.122843
-##  [9] 4.966496 5.084261</code></pre>
+<pre><code>##  [1] 4.875419 5.185001 4.951156 4.994237 5.181018 4.866922 4.968627 4.824307
+##  [9] 5.021794 5.052633</code></pre>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">rbinom</span>(<span class="dt">n =</span> <span class="dv">5</span>, <span class="dt">size =</span> <span class="dv">5</span>, <span class="dt">prob =</span> <span class="fl">.8</span>)</span></code></pre></div>
-<pre><code>## [1] 2 5 4 2 5</code></pre>
+<pre><code>## [1] 3 3 4 5 4</code></pre>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="kw">rpois</span>(<span class="dt">n =</span> <span class="dv">20</span>, <span class="dt">lambda =</span> <span class="dv">10</span>)</span></code></pre></div>
-<pre><code>##  [1]  9 17 10  8 11 10 10 13 12 17  8  9 11  9 10 14  9  5 12  7</code></pre>
+<pre><code>##  [1]  8 13  9 12 10 10  9 11 12 10  8 13  6 20  8  5  7  7 10  5</code></pre>
 </div>
 </div>
 <div class="slide section level2">
@@ -209,7 +209,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb15-3"><a href="#cb15-3"></a><span class="co">## compute what fraction of the random variables are at most -.5</span></span>
 <span id="cb15-4"><a href="#cb15-4"></a>q =<span class="st"> </span><span class="fl">-.5</span></span>
 <span id="cb15-5"><a href="#cb15-5"></a><span class="kw">mean</span>(x <span class="op">&lt;=</span><span class="st"> </span>q)</span></code></pre></div>
-<pre><code>## [1] 0.3</code></pre>
+<pre><code>## [1] 0.312</code></pre>
 <div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1"></a><span class="co">## compute what fraction of the time the random variables should be less than or equal to -.5</span></span>
 <span id="cb17-2"><a href="#cb17-2"></a><span class="kw">pnorm</span>(<span class="dt">q =</span> q, <span class="dt">mean =</span> <span class="dv">0</span>, <span class="dt">sd =</span> <span class="dv">1</span>)</span></code></pre></div>
 <pre><code>## [1] 0.3085375</code></pre>
@@ -224,7 +224,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb19-3"><a href="#cb19-3"></a><span class="co">## compute what fraction of the random variables are 1 or less</span></span>
 <span id="cb19-4"><a href="#cb19-4"></a>q =<span class="st"> </span><span class="dv">1</span></span>
 <span id="cb19-5"><a href="#cb19-5"></a><span class="kw">mean</span>(x <span class="op">&lt;=</span><span class="st"> </span>q)</span></code></pre></div>
-<pre><code>## [1] 0.755</code></pre>
+<pre><code>## [1] 0.74</code></pre>
 <div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a><span class="co">## compute what fraction of the time the random variables should be 1 or less</span></span>
 <span id="cb21-2"><a href="#cb21-2"></a><span class="kw">pbinom</span>(<span class="dt">q =</span> q, <span class="dt">size =</span> <span class="dv">5</span>, <span class="dt">prob =</span> <span class="fl">.2</span>)</span></code></pre></div>
 <pre><code>## [1] 0.73728</code></pre>
@@ -291,11 +291,11 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1"></a><span class="co">## generate random variables from a binomial distribution with size = 2 and prob = .5</span></span>
 <span id="cb32-2"><a href="#cb32-2"></a>X =<span class="st"> </span><span class="kw">rbinom</span>(<span class="dt">n =</span> <span class="dv">1000</span>, <span class="dt">size =</span> <span class="dv">2</span>, <span class="dt">prob =</span> <span class="fl">.5</span>)</span>
 <span id="cb32-3"><a href="#cb32-3"></a><span class="kw">head</span>(X)</span></code></pre></div>
-<pre><code>## [1] 0 0 0 1 1 2</code></pre>
+<pre><code>## [1] 0 1 1 1 1 1</code></pre>
 <div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1"></a><span class="co">## compute the fraction of the random variables that took value exactly equal to 1</span></span>
 <span id="cb34-2"><a href="#cb34-2"></a>x =<span class="st"> </span><span class="dv">2</span></span>
 <span id="cb34-3"><a href="#cb34-3"></a><span class="kw">mean</span>(X <span class="op">==</span><span class="st"> </span>x)</span></code></pre></div>
-<pre><code>## [1] 0.244</code></pre>
+<pre><code>## [1] 0.262</code></pre>
 <div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1"></a><span class="co">## compute the pmf for the distribution at x = 1</span></span>
 <span id="cb36-2"><a href="#cb36-2"></a><span class="kw">dbinom</span>(<span class="dt">x =</span> x, <span class="dt">size =</span> <span class="dv">2</span>, <span class="dt">prob =</span> <span class="fl">.5</span>)</span></code></pre></div>
 <pre><code>## [1] 0.25</code></pre>
@@ -423,10 +423,10 @@ L(\theta)=\prod_{i=1}^n f(x_i;\theta)
 <p>For example: we have data points <span class="math inline">\(x_1, \ldots, x_n\)</span>, and we want to find the <span class="math inline">\(N(\theta, 1)\)</span> distribution that fits the data the best.</p>
 <div class="incremental">
 <p>The likelihood is <span class="math display">\[
-L(x;  \theta) = \prod_{i=1}^n \frac{1}{\sqrt{2\pi}}\exp(\frac{1}{2}(x_i - \theta)^2)
+L(x;  \theta) = \prod_{i=1}^n \frac{1}{\sqrt{2\pi}}\exp(-\frac{1}{2}(x_i - \theta)^2)
 \]</span></p>
 <p>and the log likelihood is <span class="math display">\[
-\ell(x;  \theta) = \sum_{i=1}^n\log \left( \frac{1}{\sqrt{2\pi}}\exp(\frac{1}{2}(x_i - \theta)^2) \right) 
+\ell(x;  \theta) = \sum_{i=1}^n\log \left( \frac{1}{\sqrt{2\pi}}\exp(-\frac{1}{2}(x_i - \theta)^2) \right) 
 \]</span></p>
 </div>
 </div>
@@ -482,7 +482,7 @@ L(x;  \theta) = \prod_{i=1}^n \frac{1}{\sqrt{2\pi}}\exp(\frac{1}{2}(x_i - \theta
 <p>We see that the maximum is pretty close to the true value, <span class="math inline">\(.2\)</span></p>
 <div class="sourceCode" id="cb53"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1"></a>max_idx =<span class="st"> </span><span class="kw">which.max</span>(log_likelihoods)</span>
 <span id="cb53-2"><a href="#cb53-2"></a>theta_vec[max_idx]</span></code></pre></div>
-<pre><code>## [1] 0.1717172</code></pre>
+<pre><code>## [1] 0.1818182</code></pre>
 </div>
 <div class="slide section level2">
 
@@ -544,20 +544,20 @@ P(X = x) &amp;= \begin{pmatrix}x+r-1 \\x  \end{pmatrix}(1-p)^r p^x \\
 <span id="cb55-3"><a href="#cb55-3"></a>nb_fit =<span class="st"> </span><span class="kw">fitdistr</span>(x, <span class="dt">densfun =</span> dnbinom, <span class="dt">start =</span> <span class="kw">list</span>(<span class="dt">size =</span> <span class="dv">1</span>, <span class="dt">mu =</span> <span class="dv">1</span>))</span>
 <span id="cb55-4"><a href="#cb55-4"></a>nb_fit</span></code></pre></div>
 <pre><code>##      size         mu    
-##   3.9538467   4.9610840 
-##  (0.3305988) (0.1057653)</code></pre>
+##   4.2689891   5.0179006 
+##  (0.3694261) (0.1044785)</code></pre>
 </div>
 <div class="slide section level2">
 
 <p>We can check informally that these values of <code>mu</code> and <code>size</code> are maximizers:</p>
 <div class="sourceCode" id="cb57"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1"></a>fitted_log_lik =<span class="st"> </span><span class="kw">dnbinom</span>(x, <span class="dt">size =</span> nb_fit<span class="op">$</span>estimate[<span class="st">&quot;size&quot;</span>], <span class="dt">mu =</span> nb_fit<span class="op">$</span>estimate[<span class="st">&quot;mu&quot;</span>], <span class="dt">log =</span> <span class="ot">TRUE</span>)</span>
 <span id="cb57-2"><a href="#cb57-2"></a><span class="kw">sum</span>(fitted_log_lik)</span></code></pre></div>
-<pre><code>## [1] -2518.904</code></pre>
+<pre><code>## [1] -2516.024</code></pre>
 <div class="sourceCode" id="cb59"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1"></a><span class="co">## the log likelihood at a couple other values of mu and size</span></span>
 <span id="cb59-2"><a href="#cb59-2"></a><span class="kw">sum</span>(<span class="kw">dnbinom</span>(x, <span class="dt">size =</span> <span class="dv">2</span>, <span class="dt">mu =</span> <span class="dv">3</span>, <span class="dt">log =</span> <span class="ot">TRUE</span>))</span></code></pre></div>
-<pre><code>## [1] -2750.185</code></pre>
+<pre><code>## [1] -2764.598</code></pre>
 <div class="sourceCode" id="cb61"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1"></a><span class="kw">sum</span>(<span class="kw">dnbinom</span>(x, <span class="dt">size =</span> <span class="dv">10</span>, <span class="dt">mu =</span> <span class="dv">4</span>, <span class="dt">log =</span> <span class="ot">TRUE</span>))</span></code></pre></div>
-<pre><code>## [1] -2637.918</code></pre>
+<pre><code>## [1] -2634.859</code></pre>
 </div>
 <div id="more-generally" class="slide section level2">
 <h1>More generally</h1>
