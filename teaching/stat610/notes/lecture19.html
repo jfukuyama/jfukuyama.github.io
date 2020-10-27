@@ -88,27 +88,26 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="more-optimization" class="slide section level2">
 <h1>More optimization…</h1>
 <p>So far</p>
-<ul>
+<ul class="incremental">
 <li><p>Newton’s method</p></li>
 <li><p>Things that reduce to Newton’s method</p></li>
 </ul>
 <p>Today: modifications of Newton’s method</p>
-<ul>
+<ul class="incremental">
 <li><p>Fisher scoring (if you want to make sure the Hessian term is negative definite)</p></li>
 <li><p>Hessian approximations (if it takes too long to re-compute/re-invert the Hessian)</p></li>
 <li><p>Gradient descent (if you don’t want to ever compute or invert the Hessian)</p></li>
 </ul>
 <p>Reading:</p>
-<ul>
-<li><p>Boyd and Vandenberghe, Chapter 9.1-9.4</p></li>
-<li><p>Kenneth Lange, Numerical Analysis for Statisticians, Sections 13.3-13.6</p></li>
+<ul class="incremental">
+<li>Boyd and Vandenberghe, Chapter 9.1-9.4</li>
 </ul>
 </div>
 <div id="fisher-scoring" class="slide section level2">
 <h1>Fisher Scoring</h1>
 <p>Idea: Use the expected information, <span class="math inline">\(I(\theta)= E[-d^2 \ell(\theta)]\)</span> instead of the observed information, <span class="math inline">\(d^2 \ell(\theta)\)</span>.</p>
 <p>Algorithm:</p>
-<ul>
+<ul class="incremental">
 <li><p>Pick a starting parameter estimate <span class="math inline">\(\theta_0\)</span></p></li>
 <li><p>Set <span class="math inline">\(\theta_{n+1} = \theta_n + I(\theta)^{-1} d\ell(\theta_n)\)</span></p></li>
 </ul>
@@ -120,7 +119,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="example-non-linear-least-squares" class="slide section level2">
 <h1>Example: Non-linear least squares</h1>
 <p>Inputs:</p>
-<ul>
+<ul class="incremental">
 <li><p>Data <span class="math inline">\(y_1,\ldots, y_n\)</span>.</p></li>
 <li><p>Covariates <span class="math inline">\(x_1,\ldots, x_n\)</span>.</p></li>
 <li><p>Parameter vector <span class="math inline">\(\theta\)</span></p></li>
@@ -283,7 +282,7 @@ I(\theta) = E[-d^2 \ell(\theta)] = \sum_{i=1}^n d\mu_i(\theta) d\mu_i(\theta)^T
 <h1>Quasi-Newton Methods</h1>
 <p>Idea: If you don’t move very far in one step, the Hessian shouldn’t change that much either.</p>
 <p>Instead of recomputing the Hessian at each step, compute an approximate update.</p>
-<ul>
+<ul class="incremental">
 <li><p>Start with an initial guess at a parameter <span class="math inline">\(\theta^{(0)}\)</span>.</p></li>
 <li><p>Let <span class="math inline">\(A^{(0)} = d^2 \ell(\theta)\)</span>.</p></li>
 <li><p>Set <span class="math inline">\(\theta^{(n+1)} = \theta^{(n)} - (A^{(n)})^{-1} d \ell(\theta^{(n)})\)</span></p></li>
@@ -305,7 +304,7 @@ d\ell(\theta^{(n)}) - d\ell(\theta^{(n+1)})\approx d^2 \ell(\theta^{(n+1)})(\the
 <div class="incremental">
 <p>Finding an approximation <span class="math inline">\(A^{(n+1)}\)</span> of <span class="math inline">\(-d^2\ell(\theta^{(n+1)})\)</span> that satisfies the equation above is called the <em>secant condition</em>.</p>
 <p>Several different ways to make the approximation:</p>
-<ul>
+<ul class="incremental">
 <li><p>Symmetric rank-1 update is Davidson’s method, described in Lange.</p></li>
 <li><p>Symmetric rank-2 update is BFGS (Broyden–Fletcher–Goldfarb–Shanno).</p></li>
 </ul>
@@ -342,7 +341,7 @@ A^{(n+1)} = A^{(n)} + \alpha u u^T + \beta v v^T
 \]</span></p>
 <p><span class="math inline">\(u = y^{(k)}\)</span>, <span class="math inline">\(v = A^{(n)} s^{(n)}\)</span>, <span class="math inline">\(\alpha = -1 / (g^{(k)})^T s^{(k)}\)</span>, <span class="math inline">\(\beta = - 1 / (s^{(k)})^T B^{(k)} s^{(k)}\)</span></p>
 <div class="incremental">
-<ul>
+<ul class="incremental">
 <li><p>BFGS is in R’s <code>optim</code>.</p></li>
 <li><p>The rank-1 updating method doesn’t ensure that the approximate Hessian remains positive definite, while the rank-2 updating method (BFGS) does.</p></li>
 </ul>
@@ -351,7 +350,7 @@ A^{(n+1)} = A^{(n)} + \alpha u u^T + \beta v v^T
 <div class="slide section level2">
 
 <p>Why are these useful?</p>
-<ul>
+<ul class="incremental">
 <li><p>This makes it easy to compute an approximation of <span class="math inline">\(-d^2 \ell(\theta)\)</span>, but we still need to invert it to take an approximate Newton step</p></li>
 <li><p><a href="https://en.wikipedia.org/wiki/Woodbury_matrix_identity">Woodbury matrix identity</a> allows us to compute the inverse of a low-rank update quickly</p></li>
 </ul>
@@ -372,7 +371,7 @@ A^{(n+1)} = A^{(n)} + \alpha u u^T + \beta v v^T
 <p>General algorithm:</p>
 <p>Start with a point <span class="math inline">\(x\)</span></p>
 <p>Repeat</p>
-<ul>
+<ul class="incremental">
 <li><p>Choose a descent direction <span class="math inline">\(\Delta x\)</span></p></li>
 <li><p>Choose step size <span class="math inline">\(t\)</span>.</p></li>
 <li><p>Update: <span class="math inline">\(x \leftarrow x + t \Delta x\)</span></p></li>
@@ -388,11 +387,11 @@ t = \text{argmin}_{t &gt; 0}f(x + t \Delta x)
 </div>
 <div id="line-search-types-backtracking-line-search" class="slide section level2">
 <h1>Line search types: Backtracking line search</h1>
-<ul>
+<ul class="incremental">
 <li><p>Step size <span class="math inline">\(t\)</span> found with an iterative method.</p></li>
 <li><p>Parameters <span class="math inline">\(\alpha \in (0, 1/2)\)</span>, <span class="math inline">\(\beta \in (0,1)\)</span> that you specify.</p></li>
 <li><p>Algorithm: Start at <span class="math inline">\(t = 1\)</span>, repeat <span class="math inline">\(t \leftarrow \beta t\)</span> until <span class="math display">\[
-f(x + t \Delta x) &lt; f(x) + \alpha t \nabla f(x)^T \Delta x
+f(x + t \Delta x) &gt; f(x) + \alpha t \nabla f(x)^T \Delta x
 \]</span></p></li>
 </ul>
 <p><img src="backtracking-image.png" /></p>
@@ -403,112 +402,82 @@ f(x + t \Delta x) &lt; f(x) + \alpha t \nabla f(x)^T \Delta x
 <p>Overall algorithm:</p>
 <p>Start with a point <span class="math inline">\(x\)</span></p>
 <p>Repeat</p>
-<ul>
+<ul class="incremental">
 <li><p><span class="math inline">\(\Delta x \leftarrow - \nabla f(x)\)</span>.</p></li>
 <li><p>Line search: Choose step size <span class="math inline">\(t\)</span> by either backtracking line search or exact line search.</p></li>
 <li><p>Update: <span class="math inline">\(x \leftarrow x + t \Delta x\)</span></p></li>
 </ul>
 <p>Until the stopping criterion is satisfied, usually <span class="math inline">\(\|\nabla f(x)\|_2 \le \epsilon\)</span>.</p>
 </div>
-<div id="gradient-descent-example" class="slide section level2">
-<h1>Gradient descent example</h1>
+<div id="gradient-descent-example-in-pictures" class="slide section level2">
+<h1>Gradient descent example in pictures</h1>
 <p><img src="gradient-descent-backtracking.png" /></p>
 <p>Iterates of gradient descent with backtracking line search, for minimizing <span class="math inline">\(f(x_1, x_2) = \exp(x_1 + 3 x_2 - .1) + \exp(x_1 - 3 x_2 - .1) + \exp(-x_1 - .1)\)</span></p>
 <p>Contours represent the boundaries of the <em>sublevel sets</em> of the function: <span class="math inline">\(\{x : f(x) \le a\}\)</span>.</p>
 </div>
-<div id="steepest-descent" class="slide section level2">
-<h1>Steepest descent</h1>
-<p>Steepest descent: modification of the descent direction.</p>
-<p>The normalized steepest descent direction is defined as <span class="math display">\[
-\Delta x_{nsd} = \text{argmin}_x \{\nabla f(x)^T v : \|v\| = 1\}
-\]</span> for some norm <span class="math inline">\(\|\cdot \|\)</span>.</p>
-<p>Note: Steepest descent with the standard norm (<span class="math inline">\(\|\cdot\|_2\)</span>) is the same as gradient descent.</p>
-</div>
-<div id="steepest-descent-algorithm" class="slide section level2">
-<h1>Steepest descent algorithm</h1>
-<p>The same as gradient descent, but with a different descent direction:</p>
-<p>Start with a point <span class="math inline">\(x\)</span></p>
-<p>Repeat</p>
-<ul>
-<li><p><span class="math inline">\(\Delta x \leftarrow \Delta x_{sd}\)</span>.</p></li>
-<li><p>Line search: Choose step size <span class="math inline">\(t\)</span> by either backtracking line search or exact line search.</p></li>
-<li><p>Update: <span class="math inline">\(x \leftarrow x + t \Delta x_{sd}\)</span></p></li>
-</ul>
-<p>Until the stopping criterion is satisfied, usually <span class="math inline">\(\|\nabla f(x)\|_2 \le \epsilon\)</span>.</p>
-</div>
-<div id="normalized-steepest-descent-direction-for-a-quadratic-norm" class="slide section level2">
-<h1>Normalized steepest descent direction for a quadratic norm</h1>
-<p><img src="steepest-descent-quadratic.png" /></p>
-<ul>
-<li><p>Ellipse is the set <span class="math inline">\(\{v: \|v\|_P \le 1\}\)</span></p></li>
-<li><p><span class="math inline">\(\Delta x_{nsd}\)</span> is the point in the ellipse that extends farthest in the direction of <span class="math inline">\(-\nabla f(x)\)</span>.</p></li>
-<li><p>Analytic solution for the steepest descent direction: <span class="math display">\[
-\Delta x_{nsd} = -(\nabla f(x)^T P^{-1} \nabla f(x))^{-1/2} P^{-1}
-\nabla f(x)
-\]</span></p></li>
-<li><p>There is a standard way of normalizing, involving a dual norm (see the text if you’re interested), the unnormalized steepest descent search direction is <span class="math display">\[
-\Delta x_{sd}=  -P^{-1} \nabla f(x)
-\]</span></p></li>
-</ul>
-</div>
-<div id="examples-of-the-effect-of-the-norm" class="slide section level2">
-<h1>Examples of the effect of the norm</h1>
-<p><img src="norm-choice-1.png" /> <img src="norm-choice-2.png" /></p>
-<ul>
-<li><p>The choice of norm changes dramatically the number of steps needed to reach the optimum</p></li>
-<li><p>Steps show steepest descent/backtracking line search for quadratic norms</p></li>
-<li><p>Ellipses are the norm balls around each of the iterates</p></li>
-</ul>
-</div>
-<div id="when-can-we-expect-these-methods-to-do-well" class="slide section level2">
-<h1>When can we expect these methods to do well?</h1>
-<p>From the pictures, we saw that</p>
-<ul>
-<li><p>Gradient descent doesn’t do well when the sublevel sets are far from spherical</p></li>
-<li><p>Steepest descent does well when the norm balls approximate the sub-level sets.</p></li>
-</ul>
-</div>
-<div id="quadratic-norms-as-a-gradient-descent-in-a-transformed-coordinate-system" class="slide section level2">
-<h1>Quadratic norms as a gradient descent in a transformed coordinate system</h1>
-<p>The quadratic norm <span class="math inline">\(\|\cdot\|_P\)</span> is defined as <span class="math inline">\(\|x\|_P = x^T P x\)</span>, where <span class="math inline">\(P\)</span> is a positive definite matrix.</p>
-<p>Steepest descent with the <span class="math inline">\(\|\cdot\|_P\)</span> norm is the same as gradient descent after a change of coordinates:</p>
-<ul>
-<li><p>Let <span class="math inline">\(\bar u = P^{1/2} u\)</span></p></li>
-<li><p><span class="math inline">\(\|u\|_P = \|\bar u\|_2\)</span></p></li>
-<li><p><span class="math inline">\(\bar f(\bar u) = f(P^{-1/2} \bar u) = f(u)\)</span></p></li>
-<li><p>Applying gradient descent to <span class="math inline">\(\bar f\)</span> is equivalent to applying steepest descent with the <span class="math inline">\(\|\cdot\|_P\)</span> norm to <span class="math inline">\(f\)</span>.</p></li>
-</ul>
-</div>
-<div id="for-example" class="slide section level2">
-<h1>For example</h1>
-<p><img src="gradient-descent-coordinate-change.png" /></p>
-<ul>
-<li><p>Gradient descent on a transformed version of the problem before.</p></li>
-<li><p>Sublevel sets now much closer to spherical, and the algorithm converges quickly.</p></li>
-</ul>
-</div>
-<div id="convergence-theorem" class="slide section level2">
-<h1>Convergence theorem</h1>
-<p>Suppose <span class="math inline">\(f\)</span> is strongly convex, so that there are constants <span class="math inline">\(m\)</span> and <span class="math inline">\(M\)</span> such that <span class="math inline">\(mI \preceq d^2 f \preceq MI\)</span>.</p>
-<p>Let <span class="math inline">\(x^{(k)}\)</span> be the solution after <span class="math inline">\(k\)</span> steps of gradient descent with exact line search, and let <span class="math inline">\(p^\star\)</span> be the minimizing value of <span class="math inline">\(f\)</span>.</p>
-<p>Then <span class="math display">\[
-f(x^{(k)}) - p^\star \le (1 - m/M)^k (f(x^{(0)}) - p^\star)
+<div id="gradient-descent-example-for-normal-mean" class="slide section level2">
+<h1>Gradient descent example for normal mean</h1>
+<p>Suppose <span class="math inline">\(x_1, \ldots, x_n \sim N(\theta, 1)\)</span>.</p>
+<p>We want to know <span class="math inline">\(\theta\)</span>, and we will get <span class="math inline">\(\hat \theta\)</span> by minimizing the negative log likelihood: <span class="math display">\[
+-\ell(\theta) = C + \frac{1}{2} \sum_{i=1}^n (x_i - \theta)^2
 \]</span></p>
-<p>(Equation 9.18 in Boyd and Vandenberghe)</p>
+<p>A descent direction for the negative log likelihood is the negative derivative of the negative log likelihood: <span class="math display">\[
+-d(-\ell(\theta)) = \sum_{i=1}^n (x_i - \theta)
+\]</span></p>
 </div>
-<div id="re-interpretation-of-newtons-method" class="slide section level2">
-<h1>Re-interpretation of Newton’s method</h1>
-<ul>
-<li><p>Recall the Newton step: <span class="math inline">\(-\nabla^2 f(x)^{-1} \nabla f(x)\)</span></p></li>
-<li><p>This search direction is the same as the steepest descent direction in the Hessian norm: <span class="math inline">\(\|\cdot\|_{\nabla^2 f(x)}\)</span></p></li>
-<li><p>Turns out the Hessian norm gives a good approximation of the contours of the sublevel sets around the optimal point: this is why it has such fast convergence.</p></li>
-</ul>
+<div class="slide section level2">
+
+<p>Functions for backtrakcing gradient descent:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1"></a>backtrack_desc =<span class="st"> </span><span class="cf">function</span>(our_fn, our_grad, start, alpha, beta, data) {</span>
+<span id="cb15-2"><a href="#cb15-2"></a>  theta =<span class="st"> </span>start</span>
+<span id="cb15-3"><a href="#cb15-3"></a>  step_size =<span class="st"> </span><span class="kw">backtracking</span>(our_fn, our_grad, theta, alpha, beta, data)</span>
+<span id="cb15-4"><a href="#cb15-4"></a>  new_theta =<span class="st"> </span>theta <span class="op">+</span><span class="st"> </span>step_size <span class="op">*</span><span class="st"> </span><span class="kw">our_grad</span>(theta, data)</span>
+<span id="cb15-5"><a href="#cb15-5"></a>  <span class="kw">return</span>(new_theta)</span>
+<span id="cb15-6"><a href="#cb15-6"></a>}</span>
+<span id="cb15-7"><a href="#cb15-7"></a></span>
+<span id="cb15-8"><a href="#cb15-8"></a>backtracking =<span class="st"> </span><span class="cf">function</span>(our_fn, our_grad, theta, alpha, beta, data) {</span>
+<span id="cb15-9"><a href="#cb15-9"></a>    t =<span class="st"> </span><span class="dv">1</span></span>
+<span id="cb15-10"><a href="#cb15-10"></a>    fn_current =<span class="st"> </span><span class="kw">our_fn</span>(theta, data)</span>
+<span id="cb15-11"><a href="#cb15-11"></a>    grad_current =<span class="st"> </span><span class="kw">our_grad</span>(theta, data)</span>
+<span id="cb15-12"><a href="#cb15-12"></a>  <span class="cf">while</span>(<span class="kw">our_fn</span>(theta <span class="op">+</span><span class="st"> </span>t <span class="op">*</span><span class="st"> </span>grad_current, data) <span class="op">&gt;</span><span class="st"> </span>(fn_current <span class="op">+</span><span class="st"> </span>alpha <span class="op">*</span><span class="st"> </span>t <span class="op">*</span><span class="st"> </span><span class="kw">t</span>(grad_current) <span class="op">%*%</span><span class="st"> </span>grad_current)) {</span>
+<span id="cb15-13"><a href="#cb15-13"></a>    t =<span class="st"> </span>beta <span class="op">*</span><span class="st"> </span>t</span>
+<span id="cb15-14"><a href="#cb15-14"></a>  }</span>
+<span id="cb15-15"><a href="#cb15-15"></a>  <span class="kw">return</span>(t)</span>
+<span id="cb15-16"><a href="#cb15-16"></a>}</span></code></pre></div>
+</div>
+<div class="slide section level2">
+
+<p>Functions for the log likelihood:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a>neg_log_lik =<span class="st"> </span><span class="cf">function</span>(theta, x) {</span>
+<span id="cb16-2"><a href="#cb16-2"></a>    <span class="kw">return</span>(.<span class="dv">5</span> <span class="op">*</span><span class="st"> </span><span class="kw">sum</span>((x <span class="op">-</span><span class="st"> </span>theta)<span class="op">^</span><span class="dv">2</span>))</span>
+<span id="cb16-3"><a href="#cb16-3"></a>}</span>
+<span id="cb16-4"><a href="#cb16-4"></a>neg_deriv =<span class="st"> </span><span class="cf">function</span>(theta, x) {</span>
+<span id="cb16-5"><a href="#cb16-5"></a>    <span class="kw">return</span>(<span class="kw">sum</span>(x <span class="op">-</span><span class="st"> </span>theta))</span>
+<span id="cb16-6"><a href="#cb16-6"></a>}</span>
+<span id="cb16-7"><a href="#cb16-7"></a><span class="kw">set.seed</span>(<span class="dv">0</span>)</span>
+<span id="cb16-8"><a href="#cb16-8"></a>x =<span class="st"> </span><span class="kw">rnorm</span>(<span class="dt">n =</span> <span class="dv">20</span>, <span class="dt">mean =</span> <span class="dv">5</span>, <span class="dt">sd =</span> <span class="dv">1</span>)</span>
+<span id="cb16-9"><a href="#cb16-9"></a><span class="kw">mean</span>(x)</span></code></pre></div>
+<pre><code>## [1] 4.998221</code></pre>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a>theta =<span class="st"> </span><span class="dv">0</span></span>
+<span id="cb18-2"><a href="#cb18-2"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="dv">10</span>) {</span>
+<span id="cb18-3"><a href="#cb18-3"></a>    theta =<span class="st"> </span><span class="kw">backtrack_desc</span>(neg_log_lik, neg_deriv, <span class="dt">start =</span> theta, <span class="dt">alpha =</span> <span class="fl">.1</span>, <span class="dt">beta =</span> <span class="fl">.2</span>, <span class="dt">data =</span> x)</span>
+<span id="cb18-4"><a href="#cb18-4"></a>    <span class="kw">cat</span>(<span class="kw">sprintf</span>(<span class="st">&quot;Value of theta at iteration %i: %.2f</span><span class="ch">\n</span><span class="st">&quot;</span>, i, theta))</span>
+<span id="cb18-5"><a href="#cb18-5"></a>}</span></code></pre></div>
+<pre><code>## Value of theta at iteration 1: 4.00
+## Value of theta at iteration 2: 4.80
+## Value of theta at iteration 3: 4.96
+## Value of theta at iteration 4: 4.99
+## Value of theta at iteration 5: 5.00
+## Value of theta at iteration 6: 5.00
+## Value of theta at iteration 7: 5.00
+## Value of theta at iteration 8: 5.00
+## Value of theta at iteration 9: 5.00
+## Value of theta at iteration 10: 5.00</code></pre>
 </div>
 <div id="summing-up" class="slide section level2">
 <h1>Summing up</h1>
-<ul>
+<ul class="incremental">
 <li><p>Everything we’ve seen has an interpretation as Newton’s method with some approximation of the Hessian standing in for the real thing</p></li>
-<li><p>Everything we’ve seen has an interpretation as gradient descent in a transformed coordinate system</p></li>
 <li><p>You need to trade off between using the analytic information you have about the problem and computational complexity.</p></li>
 </ul>
 </div>

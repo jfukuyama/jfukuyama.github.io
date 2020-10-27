@@ -25,8 +25,6 @@ Reading:
 
 - Boyd and Vandenberghe, Chapter 9.1-9.4
 
-- Kenneth Lange, Numerical Analysis for Statisticians, Sections 13.3-13.6
-
 ## Fisher Scoring
 
 Idea: Use the expected information, $I(\theta)= E[-d^2 \ell(\theta)]$ instead of the observed information, $d^2 \ell(\theta)$.
@@ -342,7 +340,7 @@ specify.
 
 - Algorithm: Start at $t = 1$, repeat $t \leftarrow \beta t$ until
 $$
-f(x + t \Delta x) < f(x) + \alpha t \nabla f(x)^T \Delta x
+f(x + t \Delta x) > f(x) + \alpha t \nabla f(x)^T \Delta x
 $$
 
 ![](backtracking-image.png)
@@ -368,7 +366,7 @@ Until the stopping criterion is satisfied, usually $\|\nabla f(x)\|_2
 \le \epsilon$.
 
 
-## Gradient descent example
+## Gradient descent example in pictures
 
 ![](gradient-descent-backtracking.png)
 
@@ -379,123 +377,67 @@ minimizing $f(x_1, x_2) = \exp(x_1 + 3 x_2 - .1) + \exp(x_1 - 3 x_2 -
 Contours represent the boundaries of the  _sublevel sets_ of the
 function: $\{x : f(x) \le a\}$.
 
-## Steepest descent
+## Gradient descent example for normal mean
 
-Steepest descent: modification of the descent direction.
+Suppose $x_1, \ldots, x_n \sim N(\theta, 1)$.
 
-The normalized steepest descent direction is defined as
+We want to know $\theta$, and we will get $\hat \theta$ by minimizing the negative log likelihood:
 $$
-\Delta x_{nsd} = \text{argmin}_x \{\nabla f(x)^T v : \|v\| = 1\}
-$$
-for some norm $\|\cdot \|$.
-
-Note: Steepest descent with the standard norm ($\|\cdot\|_2$) is the same as gradient descent.
-
-## Steepest descent algorithm
-
-The same as gradient descent, but with a different descent direction:
-
-Start with a point $x$
-
-Repeat
-
-- $\Delta x \leftarrow \Delta x_{sd}$.
-
-- Line search: Choose step size $t$ by either backtracking line search
-or exact line search.
-
-- Update: $x \leftarrow x + t \Delta x_{sd}$
-
-Until the stopping criterion is satisfied, usually $\|\nabla f(x)\|_2
-\le \epsilon$.
-
-
-## Normalized steepest descent direction for a quadratic norm
-
-![](steepest-descent-quadratic.png)
-
-- Ellipse is the set $\{v: \|v\|_P \le 1\}$
-
-- $\Delta x_{nsd}$ is the point in the ellipse that extends farthest
-in the direction of $-\nabla f(x)$.
-
-- Analytic solution for the steepest descent direction:
-$$
-\Delta x_{nsd} = -(\nabla f(x)^T P^{-1} \nabla f(x))^{-1/2} P^{-1}
-\nabla f(x)
+-\ell(\theta) = C + \frac{1}{2} \sum_{i=1}^n (x_i - \theta)^2
 $$
 
-- There is a standard way of normalizing, involving a dual norm (see
-the text if you're interested), the unnormalized steepest descent
-search direction is
+A descent direction for the negative log likelihood is the negative derivative of the negative log likelihood:
 $$
-\Delta x_{sd}=  -P^{-1} \nabla f(x)
+-d(-\ell(\theta)) = \sum_{i=1}^n (x_i - \theta)
 $$
 
+----
 
-## Examples of the effect of the norm
+Functions for backtrakcing gradient descent:
 
-![](norm-choice-1.png) ![](norm-choice-2.png)
+```{r}
+backtrack_desc = function(our_fn, our_grad, start, alpha, beta, data) {
+  theta = start
+  step_size = backtracking(our_fn, our_grad, theta, alpha, beta, data)
+  new_theta = theta + step_size * our_grad(theta, data)
+  return(new_theta)
+}
 
-- The choice of norm changes dramatically the number of steps needed
-to reach the optimum
+backtracking = function(our_fn, our_grad, theta, alpha, beta, data) {
+    t = 1
+    fn_current = our_fn(theta, data)
+    grad_current = our_grad(theta, data)
+  while(our_fn(theta + t * grad_current, data) > (fn_current + alpha * t * t(grad_current) %*% grad_current)) {
+    t = beta * t
+  }
+  return(t)
+}
+```
 
-- Steps show steepest descent/backtracking line search for quadratic
-norms
+-----
 
-- Ellipses are the norm balls around each of the iterates
+Functions for the log likelihood:
 
-## When can we expect these methods to do well?
-
-From the pictures, we saw that
-
-- Gradient descent doesn't do well when the sublevel sets are far from spherical
-
-- Steepest descent does well when the norm balls approximate the
-sub-level sets.
-
-## Quadratic norms as a gradient descent in a transformed coordinate system
-
-The quadratic norm $\|\cdot\|_P$ is defined as $\|x\|_P = x^T P x$,
-where $P$ is a positive definite matrix.
-
-Steepest descent with the $\|\cdot\|_P$ norm is the same as gradient
-descent after a change of coordinates:
-
-- Let $\bar u = P^{1/2} u$
-
-- $\|u\|_P = \|\bar u\|_2$
-
-- $\bar f(\bar u) = f(P^{-1/2} \bar u) = f(u)$
-
-- Applying gradient descent to $\bar f$ is equivalent to applying
-steepest descent with the $\|\cdot\|_P$ norm to $f$.
-
-## For example
-
-![](gradient-descent-coordinate-change.png)
-
-- Gradient descent on a transformed version of the problem before.
-
-- Sublevel sets now much closer to spherical, and the algorithm
-converges quickly.
-
-## Re-interpretation of Newton's method
-
-- Recall the Newton step: $-\nabla^2 f(x)^{-1} \nabla f(x)$
-
-- This search direction is the same as the steepest descent direction
-in the Hessian norm: $\|\cdot\|_{\nabla^2 f(x)}$
-
-- Turns out the Hessian norm gives a good approximation of the contours
-of the sublevel sets around the optimal point: this is why it has such
-fast convergence.
+```{r}
+neg_log_lik = function(theta, x) {
+    return(.5 * sum((x - theta)^2))
+}
+neg_deriv = function(theta, x) {
+    return(sum(x - theta))
+}
+set.seed(0)
+x = rnorm(n = 20, mean = 5, sd = 1)
+mean(x)
+theta = 0
+for(i in 1:10) {
+    theta = backtrack_desc(neg_log_lik, neg_deriv, start = theta, alpha = .1, beta = .2, data = x)
+    cat(sprintf("Value of theta at iteration %i: %.2f\n", i, theta))
+}
+```
 
 ## Summing up
 
 - Everything we've seen has an interpretation as Newton's method with some approximation of the Hessian standing in for the real thing
-
-- Everything we've seen has an interpretation as gradient descent in a transformed coordinate system
 
 - You need to trade off between using the analytic information you have about the problem and computational complexity.
 
