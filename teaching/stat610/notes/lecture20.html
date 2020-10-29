@@ -13,6 +13,71 @@
       span.underline{text-decoration: underline;}
       div.column{display: inline-block; vertical-align: top; width: 50%;}
   </style>
+  <style type="text/css">
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
   <link rel="stylesheet" type="text/css" media="screen, projection, print"
     href="https://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-AMS_CHTML-full" type="text/javascript"></script>
@@ -20,245 +85,168 @@
     charset="utf-8" type="text/javascript"></script>
 </head>
 <body>
-<div id="convex-sets-functions-and-optimization" class="slide section level2">
-<h1>Convex sets, functions, and optimization</h1>
+<div id="expectation-maximization" class="slide section level2">
+<h1>Expectation Maximization</h1>
 <p>Agenda today</p>
-<ul>
-<li><p>Finish up gradient descent material from last time</p></li>
-<li><p>Definition of convex sets/functions</p></li>
-<li><p>Definition of a convex optimization problem</p></li>
+<ul class="incremental">
+<li><p>Last day of optimization section</p></li>
+<li><p>The EM algorithm</p></li>
 </ul>
-<p>Reading:</p>
-<ul>
-<li>Boyd and Vandenberghe Chapter 2.1-2.3, 3.1-3.2</li>
+<p>Reading</p>
+<ul class="incremental">
+<li>Lang Chapter 10</li>
 </ul>
-</div>
-<div id="why-do-we-care-about-convex-problems" class="slide section level2">
-<h1>Why do we care about convex problems?</h1>
-<ul>
-<li><p>Guarantees about existence and findability of global minima (for convex problems, any local minimum is a global minimum)</p></li>
-<li><p>Solving convex problems is almost a technology</p></li>
-<li><p>Local solutions to non-convex problems often obtained by methods that give global solutions to convex problems</p></li>
-<li><p>Many of the statistical problems we care about are convex</p></li>
+<p>Logistics</p>
+<ul class="incremental">
+<li><p>Send me mail with your group/which project you want to do</p></li>
+<li><p>Can look on canvas for groups</p></li>
+<li><p>There will be two more homeworks</p></li>
+<li><p>There will be two more lab sessions, on 11/6 and 11/20</p></li>
 </ul>
 </div>
-<div id="convex-sets" class="slide section level2">
-<h1>Convex sets</h1>
-<p>Definion: <span class="math inline">\(C\)</span> is a convex set if for any <span class="math inline">\(x_1, x_2 \in C\)</span> and any <span class="math inline">\(\theta \in [0,1]\)</span>, <span class="math inline">\(\theta x_1 + (1 - \theta)x_2 \in C\)</span>.</p>
-</div>
-<div id="example-affine-sets" class="slide section level2">
-<h1>Example: Affine sets</h1>
-<p>An affine set/solution set of linear equations: <span class="math inline">\(\{x : Ax = b\}\)</span> are convex sets</p>
-<p>Proof: check the definition: if <span class="math inline">\(x_1\)</span> and <span class="math inline">\(x_2\)</span> are both solutions to <span class="math inline">\(Ax = b\)</span>, <span class="math inline">\(\theta x_1 + (1 - \theta)x_2\)</span> is as well.</p>
-</div>
-<div id="example-hyperplanes-and-half-spaces" class="slide section level2">
-<h1>Example: Hyperplanes and half spaces</h1>
-<ul>
-<li><p>A <em>hyperplane</em> is a set of the form <span class="math inline">\(\{x : a^T x = b\}\)</span>, <span class="math inline">\(a \ne 0\)</span></p></li>
-<li><p>A <em>halfspace</em> is a set of the form <span class="math inline">\(\{x : a^T x \le b\}\)</span></p></li>
-<li><p><span class="math inline">\(a\)</span> is the normal vector</p></li>
-<li><p>Hyperplanes and half spaces are both convex</p></li>
-<li><p>Interpretation as sets of linear equalities or inequalities</p></li>
-</ul>
-</div>
-<div id="example-norm-balls" class="slide section level2">
-<h1>Example: Norm balls</h1>
-<p>A <em>norm</em> is a function <span class="math inline">\(\| \cdot \|\)</span> that satisfies</p>
-<ul>
-<li><p><span class="math inline">\(\|x\|\ge 0\)</span> and <span class="math inline">\(\|x\| = 0\)</span> iff <span class="math inline">\(x = 0\)</span></p></li>
-<li><p><span class="math inline">\(\|t x\| = |t| \|x\|\)</span> for <span class="math inline">\(t \in \mathbb R\)</span></p></li>
-<li><p><span class="math inline">\(\|x + y\|\le \|x \| + \|y\|\)</span></p></li>
+<div id="problem-for-today" class="slide section level2">
+<h1>Problem for today</h1>
+<p>Goal, as usual: Maximize a likelihood</p>
+<ul class="incremental">
+<li>Particularly useful problems with “hidden data” or “missing data”</li>
 </ul>
 <div class="incremental">
-<ul>
-<li><p>A <em>norm ball</em> with center <span class="math inline">\(x_c\)</span> and radius <span class="math inline">\(r\)</span> is the set <span class="math inline">\(\{x : \|x - x_c\| \le r\}\)</span>.</p></li>
-<li><p>Norm balls are convex.</p></li>
-<li><p>We will see them more with regularized regression</p></li>
+<p>The idea behind EM:</p>
+<ul class="incremental">
+<li><p>There are some likelihoods that would be easy to maximize if we just had a little bit of extra data</p></li>
+<li><p>We can guess at what the missing data should be and find the parameters that maximize the likelihood based on our guess.</p></li>
+<li><p>We then alternate between guessing at the missing data based on the current parameter estimates and estimating the parameters based on the guesses at the missing data.</p></li>
 </ul>
 </div>
 </div>
-<div id="example-positive-semidefinite-cone" class="slide section level2">
-<h1>Example: Positive semidefinite cone</h1>
-<ul>
-<li><p><span class="math inline">\(\mathbb S^p\)</span> is the set of symmetric <span class="math inline">\(p \times p\)</span> matrices</p></li>
-<li><p>Positive semidefinite cone: <span class="math inline">\(\mathbb S^p_+ = \{ X \in \mathbb S^p : X \succeq 0\}\)</span>.</p></li>
-<li><p><span class="math inline">\(X \in \mathbb S^p_+\)</span> iff <span class="math inline">\(z^T X z \ge 0\)</span> for all <span class="math inline">\(z\)</span>.</p></li>
-<li><p>The set of covariance matrices!</p></li>
-</ul>
+<div id="for-example-clustering-with-normal-mixtures" class="slide section level2">
+<h1>For example: Clustering with normal mixtures</h1>
+<p>Suppose we have a set of points measured on one variable.</p>
+<p>We think that they come from two clusters, and we want to find the centers of those clusters.</p>
+<p><img src="lecture-20-fig/unnamed-chunk-1-1.png" /></p>
 </div>
-<div id="example-polyhedra" class="slide section level2">
-<h1>Example: Polyhedra</h1>
-<p>A polyhedron is the solution set to a finite number of linear inequalities and equalities: <span class="math display">\[
-\{x : Ax \preceq b, Cx = d\}
-\]</span> where <span class="math inline">\(\preceq\)</span> means component-wise inequality, <span class="math inline">\(A\)</span> and <span class="math inline">\(C\)</span> are matrices.</p>
-<p>Can also think of as the intersection of a finite number of halfspaces and hyperplanes</p>
-</div>
-<div id="operations-that-preserve-convexity-of-sets" class="slide section level2">
-<h1>Operations that preserve convexity of sets</h1>
-<ul>
-<li><p>Intersection (easy way to prove a polyhedron is convex)</p></li>
-<li><p>Image/inverse image of set under affine functions (projection, scaling, translation)</p></li>
-<li><p>Several others if you’re interested; see the reading</p></li>
-</ul>
-</div>
-<div id="convex-functions" class="slide section level2">
-<h1>Convex functions</h1>
-<p>Definition: <span class="math inline">\(f: \mathbb R^n \to \mathbb R\)</span> is <em>convex</em> if its domain is a convex set and <span class="math display">\[
-f(\theta x + (1-\theta) y) \le \theta f(x) + (1 - \theta) f(y)
-\]</span> for all <span class="math inline">\(x, y \in \text{dom}(f)\)</span> and <span class="math inline">\(\theta \in [0,1]\)</span></p>
-<div class="incremental">
-<ul>
-<li><p><span class="math inline">\(f\)</span> is <em>concave</em> if <span class="math inline">\(-f\)</span> is convex</p></li>
-<li><p><span class="math inline">\(f\)</span> is strictly convex if its domain is a convex set and <span class="math display">\[
-f(\theta x + (1-\theta) y) &lt; \theta f(x) + (1 - \theta) f(y)
-\]</span> for all <span class="math inline">\(x, y \in \text{dom}(f)\)</span> and <span class="math inline">\(\theta \in [0,1]\)</span></p></li>
-</ul>
-</div>
-</div>
-<div id="first-order-condition" class="slide section level2">
-<h1>First-order condition</h1>
-<p>Suppose <span class="math inline">\(f\)</span> is differentiable, and let <span class="math inline">\(d f(x) = (\frac{\partial f(x)}{\partial x_1}, \frac{\partial f(x)}{\partial x_1}, \cdots, \frac{\partial f(x)}{\partial x_n})\)</span>.</p>
-<p>The <em>1st-order condition</em> states that <span class="math inline">\(f\)</span> is convex iff <span class="math inline">\(f\)</span> has a convex domain and <span class="math display">\[
-f(y) \ge f(x) + d f(x)^T (y - x) \quad \forall x, y \in \text{dom}(f)
-\]</span></p>
-<div class="incremental">
-<p>Interpretation: the first-order Taylor approximation of <span class="math inline">\(f\)</span> is a global underestimator.</p>
-</div>
-</div>
-<div id="second-order-condition" class="slide section level2">
-<h1>Second-order condition</h1>
-<p>Suppose <span class="math inline">\(f\)</span> is twice differentiable: the Hessian <span class="math inline">\(d^2 f(x)\)</span>, <span class="math inline">\(d^2 f(x)_{ij} = \frac{\partial^2 f(x)}{\partial x_i \partial x_j}\)</span> exists for any <span class="math inline">\(x \in \text{dom}(f)\)</span>.</p>
-<p>The <em>2nd-order condition</em> states that if <span class="math inline">\(f\)</span> is twice differentiable and has a convex domain</p>
-<ul>
-<li><span class="math inline">\(f\)</span> is convex if and only if <span class="math display">\[
-d^2 f(x) \succeq 0 \quad \forall x \in \text{dom}(f)
-\]</span></li>
-</ul>
-</div>
-<div id="restriction-of-convex-function-to-a-line" class="slide section level2">
-<h1>Restriction of convex function to a line</h1>
-<p><span class="math inline">\(f : \mathbb R^n \to \mathbb R\)</span> is convex iff the function <span class="math inline">\(g : \mathbb R \to \mathbb R\)</span>, <span class="math display">\[
-g(t) = f(x + tv), \quad \text{dom}(g) = \{t : x + tv \in \text{dom}(f)\}
-\]</span> is a convex function of <span class="math inline">\(t\)</span> for any <span class="math inline">\(x \in \text{dom}(f)\)</span> and any <span class="math inline">\(v \in \mathbb R^n\)</span></p>
-<div class="incremental">
-<p>This equivalence lets you check the convexity of <span class="math inline">\(f\)</span> by checking convexity of a function of one variable.</p>
-</div>
-</div>
-<div id="operations-that-preserve-convexity" class="slide section level2">
-<h1>Operations that preserve convexity</h1>
-<ul>
-<li><p>Positive weighted sum</p></li>
-<li><p>Composition with an affine function</p></li>
-<li><p>Pointwise maximum and supremum</p></li>
-<li><p>Composition (under some extra conditions)</p></li>
-</ul>
-</div>
-<div id="positive-weighted-sumcomposition-with-affine-function" class="slide section level2">
-<h1>Positive weighted sum/composition with affine function</h1>
-<ul>
-<li><p>Non-negative: <span class="math inline">\(\alpha f\)</span> is convex if <span class="math inline">\(f\)</span> is convex, <span class="math inline">\(\alpha \ge 0\)</span></p></li>
-<li><p>Sum: <span class="math inline">\(f_1 + f_2\)</span> is convex if <span class="math inline">\(f_1, f_2\)</span> are convex</p></li>
-<li><p>Composition with affine function: <span class="math inline">\(f(Ax + b)\)</span> is convex if <span class="math inline">\(f\)</span> is convex</p></li>
-</ul>
-<div class="incremental">
-<p>Examples:</p>
-<ul>
-<li><p>Log barrier function for linear inequalities: <span class="math display">\[
-f(x) = - \sum_{i=1}^m \text{log}(b_i - a_i^T x), \quad \text{dom}(f) = \{x : a_i^T x \le b_i, i = 1,\ldots, m\}
-\]</span></p></li>
-<li><p>Norm of an affine function: <span class="math inline">\(f(x) = \|A x + b \|\)</span></p></li>
-</ul>
-</div>
-</div>
-<div id="pointwise-maximum" class="slide section level2">
-<h1>Pointwise maximum</h1>
-<p>If <span class="math inline">\(f_1, \ldots, f_m\)</span> are convex, then <span class="math inline">\(f(x) = \text{max}\{f_1(x), \ldots, f_n(x)\}\)</span> is convex</p>
-<div class="incremental">
-<p>Example:</p>
-<ul>
-<li>Piecewise-linear function: <span class="math inline">\(f(x) = \text{max}_{i = 1,\ldots, m}(a_i^T x + b_i)\)</span></li>
-</ul>
-</div>
-</div>
-<div id="composition" class="slide section level2">
-<h1>Composition</h1>
-<p>Suppose <span class="math inline">\(g : \mathbb R^n \to \mathbb R\)</span> and <span class="math inline">\(h : \mathbb R \to \mathbb R\)</span>, and define <span class="math inline">\(f\)</span> as <span class="math display">\[
-f(x) = h(g(x))
-\]</span></p>
-<p><span class="math inline">\(f\)</span> is convex if either:</p>
-<ul>
-<li><p><span class="math inline">\(g\)</span> is convex, <span class="math inline">\(h\)</span> is convex, <span class="math inline">\(h\)</span> non-decreasing</p></li>
-<li><p><span class="math inline">\(g\)</span> concave, <span class="math inline">\(h\)</span> convex, <span class="math inline">\(h\)</span> non-increasing</p></li>
-</ul>
-<p>Proof for differentiable <span class="math inline">\(g\)</span>, <span class="math inline">\(h\)</span> by checking the second-order conditions</p>
-<div class="incremental">
-<p>Examples</p>
-<ul>
-<li><p><span class="math inline">\(\text{exp}(g(x))\)</span> is convex if <span class="math inline">\(g\)</span> is convex.</p></li>
-<li><p><span class="math inline">\(1 / g(x)\)</span> is convex if <span class="math inline">\(g\)</span> is concave and positive.</p></li>
-</ul>
-</div>
-</div>
-<div id="convex-optimization-problem" class="slide section level2">
-<h1>Convex optimization problem</h1>
-<p>In a convex optimization problem, we minimize a convex function over a convex set.</p>
-<div class="incremental">
-<p>Standard form for an optimization problem is:</p>
+<div class="slide section level2">
+
+<p>We can set up the following model for the data:</p>
 <p><span class="math display">\[
 \begin{align*}
-\text{minimize} \quad &amp;f_0(x) \\
-\text{subject to}\quad  &amp;f_i(x) \le 0, \quad i = 1,\ldots, m\\
-&amp;a_j^T x = b_j, \quad j = 1,\ldots, n
+Z_i &amp;=\begin{cases}
+1 &amp; \text{w.p. } p\\
+0 &amp; \text{w.p. } 1 - p
+\end{cases}\\
+Y_i \mid Z_i &amp;\sim N(\theta_{Z_i}, 1)
 \end{align*}
 \]</span></p>
-<ul>
-<li><p><span class="math inline">\(x \in \mathbb R^n\)</span> is the optimization variable</p></li>
-<li><p><span class="math inline">\(f_0: \mathbb R^n \to \mathbb R\)</span> is the objective function</p></li>
-<li><p><span class="math inline">\(f_i : \mathbb R^n \to \mathbb R\)</span> are the inequality constraint functions</p></li>
-<li><p><span class="math inline">\(a_j^T x = b_j\)</span> are the equality constraints</p></li>
+<ul class="incremental">
+<li><p><span class="math inline">\(Y_i\)</span>, <span class="math inline">\(i = 1,\ldots, n\)</span> are the observed data</p></li>
+<li><p><span class="math inline">\(Z_i\)</span>, <span class="math inline">\(i = 1,\ldots, n\)</span> are the cluster assignments, or the “missing” or “unobserved” data.</p></li>
+<li><p>The goal is to get maximum likelihood estimates of <span class="math inline">\(\theta_0\)</span> and <span class="math inline">\(\theta_1\)</span>, the means of the two clusters, and <span class="math inline">\(p\)</span>, the probability of each cluster.</p></li>
+<li><p>If we observed the <span class="math inline">\(Z_i\)</span>’s, this problem would be simple: <span class="math inline">\(\hat \theta_0\)</span> would be the mean of the <span class="math inline">\(Y_i\)</span>’s for which <span class="math inline">\(Z_i = 0\)</span>, and <span class="math inline">\(\hat \theta_1\)</span> would be the mean of the <span class="math inline">\(Y_i\)</span>’s for which <span class="math inline">\(Z_i = 1\)</span>.</p></li>
 </ul>
 </div>
-</div>
-<div id="regression" class="slide section level2">
-<h1>Regression</h1>
-<p>Standard least squares problem is convex: <span class="math display">\[
-\text{minimize} \|y - X \beta\|_2^2
+<div id="likelihood-for-the-normal-mixture-example" class="slide section level2">
+<h1>Likelihood for the normal mixture example</h1>
+<p>We will let <span class="math inline">\(\phi_\theta\)</span> be the normal pdf function, <span class="math display">\[
+\phi_\theta(y) = \frac{1}{2\pi} \exp \left(-\frac{(y - \theta)^2}{ 2} \right) 
+\]</span> so that we don’t have to rewrite it every time.</p>
+<p>Let <span class="math inline">\(y_i\)</span>, <span class="math inline">\(i = 1,\ldots, n\)</span> be the observed data. In this model, the observed-data likelihood for one point is: <span class="math display">\[
+p \phi_{\theta_1}(y_i) + (1 -p)\phi_{\theta_0}(y_i)
 \]</span></p>
+<p>And the overall observed-data log likelihood is <span class="math display">\[
+\log g(y \mid \theta) = \sum_{i=1}^n \log \left( p \phi_{\theta_1}(y_i) + (1 -p)\phi_{\theta_0}(y_i) \right)
+\]</span></p>
+<p>Note: this problem is not as well-behaved as the ones we have seen before, the log likelihood in general has multiple local maxima.</p>
 </div>
-<div id="regularized-regression" class="slide section level2">
-<h1>Regularized regression</h1>
-<p>Any “regularization” with a convex function <span class="math inline">\(P\)</span> will still be convex:</p>
+<div id="em-the-algorithm" class="slide section level2">
+<h1>EM: The algorithm</h1>
+<p>Suppose we have observed data <span class="math inline">\(Y\)</span>, missing data <span class="math inline">\(Z\)</span>, complete data <span class="math inline">\(X = (Y, Z)\)</span>, and parameters <span class="math inline">\(\theta\)</span>.</p>
+<p><span class="math inline">\(f(X\mid \theta)\)</span> is the complete-data likelihood, <span class="math inline">\(g(Y \mid \theta)\)</span> is the observed-data likelihood.</p>
+<p>We would like to maximize <span class="math inline">\(g(Y \mid \theta)\)</span> (or <span class="math inline">\(\log g(Y \mid \theta)\)</span>)</p>
+<ul class="incremental">
+<li><p>Start with an initial estimate of the parameters <span class="math inline">\(\theta^{(0)}\)</span></p></li>
+<li><p>While you haven’t converged yet, repeat the following two steps:</p></li>
+<li><p>E step: compute <span class="math display">\[
+Q(\theta \mid \theta^{(n)}) = E[\log f(X \mid \theta) \mid Y, \theta^{(n)}]
+\]</span></p></li>
+<li><p>M step: Let <span class="math inline">\(\theta^{(n+1)}\)</span> be the solution to <span class="math display">\[
+\text{maximize}_\theta Q(\theta \mid \theta^{(n)})
+\]</span></p></li>
+</ul>
+</div>
+<div id="example-e-step-in-normal-mixtures" class="slide section level2">
+<h1>Example: E step in normal mixtures</h1>
+<p>Our parameters are <span class="math inline">\(\theta\)</span> and <span class="math inline">\(p\)</span>, with current estimates <span class="math inline">\(\theta^{(n)}\)</span> and <span class="math inline">\(p^{(n)}\)</span>. The complete-data log likelihood is</p>
 <p><span class="math display">\[
-\text{minimize} \|y - X \beta\|_2^2 + P(\beta)
+\log f(Y, Z \mid \theta, p) = \sum_{i=1}^n (1 - z_i) \log(\phi_{\theta_0}(y_i)) + z_i \log(\phi_{\theta_1}(y_i)) + \sum_{i=1}^n [(1 - z_i) \log(1 - p) + z_i \log p]
 \]</span></p>
-</div>
-<div id="covariance-estimation" class="slide section level2">
-<h1>Covariance estimation</h1>
-<p>Let <span class="math inline">\(S\)</span> denote the sample covariance and <span class="math inline">\(\Theta\)</span> be the inverse covariance matrix.</p>
-<p>Up to constant factors, the log-likelihood of the data given a Gaussian distribution is</p>
-<p><span class="math display">\[
-\log \det \Theta - \text{tr}(S \Theta)
-\]</span></p>
-<p>Covariance estimation would be by maximizing the log likelihood or minimizing the negative log likelihood.</p>
 <div class="incremental">
-<ul>
-<li><p><span class="math inline">\(\log \det\)</span> is concave, <span class="math inline">\(\text{tr}(S \Theta)\)</span> is linear</p></li>
-<li><p>Restriction of <span class="math inline">\(\Theta\)</span> to be positive definite is a restriction to a convex set</p></li>
-<li><p>Convex problem; remains convex if we add convex penalties to <span class="math inline">\(\Theta\)</span></p></li>
+<p>In the E step, we compute the expectation of <span class="math inline">\(\log f(y, z, \mid \theta)\)</span>, conditional on the observed values of <span class="math inline">\(y\)</span> and the current estimate of <span class="math inline">\(\theta\)</span>, <span class="math inline">\(\theta^{(n)}\)</span>.</p>
+<p><span class="math display">\[
+\begin{align*}
+E[\log \;&amp;f(Y, Z \mid \theta, p)  \mid Y = y, \theta= \theta^{(n)}, p = p^{(n)}] \\
+&amp;= \sum_{i=1}^n \left[(1 - E[z_i \mid Y = y, \theta= \theta^{(n)}])\log(\phi_{\theta^{(n)}_0}(y_i)) + E[z_i \mid  Y = y, \theta= \theta^{(n)}] \log(\phi_{\theta^{(n)}_1}(y_i))\right] +\\
+&amp;\quad  \sum_{i=1}^n\left [(1 - E[z_i \mid Y = y, \theta= \theta^{(n)}]) \log(1 - p^{(n)}) + E[z_i \mid Y = y, \theta= \theta^{(n)}]\log p^{(n)}\right]
+\end{align*}
+\]</span></p>
+</div>
+<div class="incremental">
+<p>Finally: <span class="math display">\[
+E[z_i \mid Y = y, \theta= \theta^{(n)}]  = \frac{p^{(n)}\phi_{\theta^{(n)}_1}(y_i)}{p^{(n)}\phi_{\theta^{(n)}_1}(y_i) + (1 - p^{(n)})\phi_{\theta^{(n)}_0}(y_i)}
+\]</span></p>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Suppose our current estimates are <span class="math inline">\(\theta_0^{(n)} = -1\)</span>, <span class="math inline">\(\theta_2^{(n)} = 2\)</span>, and <span class="math inline">\(p^{(n)} = .5\)</span></p>
+<p>We can compute the quantities from the previous slide for the data we generated:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>theta0 =<span class="st"> </span><span class="dv">-1</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a>theta1 =<span class="st"> </span><span class="dv">2</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a>p =<span class="st"> </span><span class="fl">.5</span></span>
+<span id="cb1-4"><a href="#cb1-4"></a>expected_z =<span class="st"> </span>p <span class="op">*</span><span class="st"> </span>(<span class="kw">dnorm</span>(y, <span class="dt">mean =</span> theta1)) <span class="op">/</span></span>
+<span id="cb1-5"><a href="#cb1-5"></a><span class="st">    </span>(p <span class="op">*</span><span class="st"> </span>(<span class="kw">dnorm</span>(y, <span class="dt">mean =</span> theta1)) <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">-</span><span class="st"> </span>p) <span class="op">*</span><span class="st"> </span><span class="kw">dnorm</span>(y, <span class="dt">mean =</span> theta0))</span>
+<span id="cb1-6"><a href="#cb1-6"></a><span class="kw">round</span>(<span class="kw">head</span>(<span class="kw">cbind</span>(y, expected_z)), <span class="dt">digits =</span> <span class="dv">3</span>)</span></code></pre></div>
+<pre><code>##           y expected_z
+## [1,] -0.488      0.049
+## [2,] -1.610      0.002
+## [3,]  2.379      0.996
+## [4,]  0.785      0.702
+## [5,] -0.875      0.016
+## [6,]  2.955      0.999</code></pre>
+</div>
+<div id="example-m-step-in-normal-mixtures" class="slide section level2">
+<h1>Example: M step in normal mixtures</h1>
+<p>You can either go through the analysis, or you can notice that maximizing <span class="math inline">\(E[\log f(Y, Z \mid \theta, p) \mid Y = y, \theta = \theta^{(n)}, p = p^{(n)}]\)</span> is simply a problem of estimating the mean of a normal distribution with weights on the samples.</p>
+<p>If we let <span class="math inline">\(\gamma_i = E[z_i \mid Y = y, \theta= \theta^{(n)}]\)</span>, then our new parameters are <span class="math display">\[
+\begin{align*}
+\theta^{(n+1)}_0 &amp;= \frac{\sum_{i=1}^n (1 - \gamma_i) y_i}{\sum_{i=1}^n (1 - \gamma_i)}\\
+\theta^{(n+1)}_1 &amp;= \frac{\sum_{i=1}^n \gamma_i y_i}{\sum_{i=1}^n \gamma_i}\\
+p^{(n+1)} &amp;= \sum_{i=1}^n \gamma_i / n
+\end{align*}
+\]</span></p>
+</div>
+<div class="slide section level2">
+
+<p>Let’s look at what the M step looks like on our data.</p>
+<p>Remember our previous parameter estimates were <span class="math inline">\(\theta_0^{(n)} = -1\)</span>, <span class="math inline">\(\theta_2^{(n)} = 2\)</span>, and <span class="math inline">\(p^{(n)} = .5\)</span>. The true centers are at <span class="math inline">\(-2\)</span> and <span class="math inline">\(3\)</span>.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>(<span class="dt">theta1_updated =</span> <span class="kw">sum</span>(y <span class="op">*</span><span class="st"> </span>expected_z) <span class="op">/</span><span class="st"> </span><span class="kw">sum</span>(expected_z))</span></code></pre></div>
+<pre><code>## [1] 2.88475</code></pre>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>(<span class="dt">theta0_updated =</span> <span class="kw">sum</span>(y <span class="op">*</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">-</span><span class="st"> </span>expected_z)) <span class="op">/</span><span class="st"> </span><span class="kw">sum</span>(<span class="dv">1</span> <span class="op">-</span><span class="st"> </span>expected_z))</span></code></pre></div>
+<pre><code>## [1] -1.599996</code></pre>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a>(<span class="dt">p_updated =</span> <span class="kw">sum</span>(expected_z) <span class="op">/</span><span class="st"> </span>n_samples)</span></code></pre></div>
+<pre><code>## [1] 0.536838</code></pre>
+</div>
+<div id="some-notes" class="slide section level2">
+<h1>Some notes</h1>
+<ul class="incremental">
+<li><p>We can prove that EM is an ascent algorithm</p></li>
+<li><p>Tends to converge rather slowly</p></li>
+<li><p>No guarantee of getting a global maximum of the likelihood (but sometimes this is a good thing…)</p></li>
 </ul>
-</div>
-</div>
-<div id="summing-up" class="slide section level2">
-<h1>Summing up</h1>
-<p>If you can show an optimization problem is convex, you’re very likely able to solve it efficiently</p>
-<p>Many statistical estimation problems are naturally convex</p>
-<p>You have a couple of options for checking convexity:</p>
-<ul>
-<li><p>Check the definition</p></li>
-<li><p>Check first-order conditions (not usually as useful)</p></li>
-<li><p>Check second-order conditions (good option if the function is differentiable)</p></li>
-<li><p>Check restriction to a line</p></li>
-<li><p>Check whether the function can be re-expressed as a combination of convex functions and convexity-preserving operations</p></li>
+<p>When is this useful?</p>
+<ul class="incremental">
+<li><p>When it is easy to get distributions over the missing variables given the current parameter estimates.</p></li>
+<li><p>When the problem simplifies after introduction of the missing variables.</p></li>
+<li><p>These two conditions often hold in latent variable models, which also tend not to be convex.</p></li>
 </ul>
 </div>
 </body>
