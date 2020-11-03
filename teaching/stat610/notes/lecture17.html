@@ -391,7 +391,7 @@ L(\theta) = \prod_{i=1}^n (\theta \phi_1(x_i) + (1 - \theta)\phi_2(x_i))
 </div>
 <div class="incremental">
 <p>Second derivative <span class="math display">\[
-\ell&#39;&#39;(\theta) = \sum_{i=1}^n\frac{ (\phi_1(x_i) - \phi_2(x_i))^2}{(\theta \phi_1(x_i) + (1 - \theta) \phi_2(x_i))^2}
+\ell&#39;&#39;(\theta) = -\sum_{i=1}^n\frac{ (\phi_1(x_i) - \phi_2(x_i))^2}{(\theta \phi_1(x_i) + (1 - \theta) \phi_2(x_i))^2}
 \]</span></p>
 </div>
 </div>
@@ -401,7 +401,7 @@ L(\theta) = \prod_{i=1}^n (\theta \phi_1(x_i) + (1 - \theta)\phi_2(x_i))
 <p><span class="math display">\[
 \begin{align*}
 \theta_{m+1} &amp;= \theta_m -\ell&#39;(\theta_m) / \ell&#39;&#39;(\theta_m)\\
-&amp;= \theta_m - \frac{\sum_{i=1}^n \frac{\phi_1(x_i) - \phi_2(x_i)}{\theta_m \phi_1(x_i) + (1 - \theta_m) \phi_2(x_i)}}{\sum_{i=1}^n\frac{ (\phi_1(x_i) - \phi_2(x_i))^2}{(\theta_m \phi_1(x_i) + (1 - \theta_m) \phi_2(x_i))^2}}
+&amp;= \theta_m + \frac{\sum_{i=1}^n \frac{\phi_1(x_i) - \phi_2(x_i)}{\theta_m \phi_1(x_i) + (1 - \theta_m) \phi_2(x_i)}}{\sum_{i=1}^n\frac{ (\phi_1(x_i) - \phi_2(x_i))^2}{(\theta_m \phi_1(x_i) + (1 - \theta_m) \phi_2(x_i))^2}}
 \end{align*}
 \]</span></p>
 </div>

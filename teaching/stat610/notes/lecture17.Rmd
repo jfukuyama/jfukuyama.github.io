@@ -384,7 +384,7 @@ $$
 
 Second derivative
 $$
-\ell''(\theta) = \sum_{i=1}^n\frac{ (\phi_1(x_i) - \phi_2(x_i))^2}{(\theta \phi_1(x_i) + (1 - \theta) \phi_2(x_i))^2}
+\ell''(\theta) = -\sum_{i=1}^n\frac{ (\phi_1(x_i) - \phi_2(x_i))^2}{(\theta \phi_1(x_i) + (1 - \theta) \phi_2(x_i))^2}
 $$
 
 -----
@@ -394,7 +394,7 @@ Newton step:
 $$
 \begin{align*}
 \theta_{m+1} &= \theta_m -\ell'(\theta_m) / \ell''(\theta_m)\\
-&= \theta_m - \frac{\sum_{i=1}^n \frac{\phi_1(x_i) - \phi_2(x_i)}{\theta_m \phi_1(x_i) + (1 - \theta_m) \phi_2(x_i)}}{\sum_{i=1}^n\frac{ (\phi_1(x_i) - \phi_2(x_i))^2}{(\theta_m \phi_1(x_i) + (1 - \theta_m) \phi_2(x_i))^2}}
+&= \theta_m + \frac{\sum_{i=1}^n \frac{\phi_1(x_i) - \phi_2(x_i)}{\theta_m \phi_1(x_i) + (1 - \theta_m) \phi_2(x_i)}}{\sum_{i=1}^n\frac{ (\phi_1(x_i) - \phi_2(x_i))^2}{(\theta_m \phi_1(x_i) + (1 - \theta_m) \phi_2(x_i))^2}}
 \end{align*}
 $$
 

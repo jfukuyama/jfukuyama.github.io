@@ -1,4 +1,4 @@
-## Applications and cvx
+## Generating random deviates
 
 ```{r setup, echo = FALSE, message = FALSE}
 library(knitr)
@@ -6,475 +6,356 @@ opts_chunk$set(fig.cap="",
                fig.path="lecture-21-fig/",
                fig.width=6, fig.height=4, dpi=150,
                warning = FALSE)
+set.seed(1)
 ```
 
 
-Agenda today
+Logistics
 
-- cvx, package for fitting convex problems in general
+- Homework posted last Friday
 
-- Optimization applications in statistics
+- Lab this Friday on code review
 
-## Convex optimization problem
+Agenda for today
 
-In a convex optimization problem, we minimize a convex function over a convex set.
+- True randomness vs. pseudo-randomness
 
-. . .
+- Turning uniformly distributed random numbers into other distributions
 
-Standard form for an optimization problem is:
+    - Inverse method
 
-$$
-\begin{align*}
-\text{minimize} \quad &f_0(x) \\
-\text{subject to}\quad  &f_i(x) \le 0, \quad i = 1,\ldots, m\\
-&a_j^T x = b_j, \quad j = 1,\ldots, n
-\end{align*}
-$$
+    - Acceptance/rejection method
 
-- $x \in \mathbb R^n$ is the optimization variable
+Reading:
 
-- $f_0: \mathbb R^n \to \mathbb R$ is the objective function
+- Lange Chapter 20
 
-- $f_i : \mathbb R^n \to \mathbb R$ are the inequality constraint functions
 
-- $a_j^T x = b_j$ are the equality constraints
+## Random numbers vs pseudo-random numbers
 
+[True randomness](https://www.random.org/randomness/): From nature
 
-## Regression
+On computers: Everything deterministic, so we only have pseudo-random number generators
 
-Standard least squares problem is convex:
-$$
-\text{minimize} \|y - X \beta\|_2^2
-$$
+- Functions that produce a sequence of numbers that have some of the same properties of a sequence of independent uniform random variables
 
-## Regularized regression
+- They cannot have _all_ of the properties of a sequence of independent uniform random variables
 
-Any "regularization" with a convex function $P$ will still be convex:
+- Issue tends to be independence rather than uniformity
 
-$$
-\text{minimize} \|y - X \beta\|_2^2 + P(\beta)
-$$
+- e.g. the [linear congruential generator](https://en.wikipedia.org/wiki/Linear_congruential_generator)
 
+## Linear congruential generator
 
-## Covariance estimation
+A _generator_, so it makes a sequence of numbers.
 
-Let $S$ denote the sample covariance and $\Theta$ be the inverse covariance matrix.
+Start off with $X_0$.
 
-Up to constant factors, the log-likelihood of the data given a Gaussian distribution is 
+Define $X_{n+1} = (aX_n + c) \text{ mod } m$
 
-$$
-\log \det \Theta - \text{tr}(S \Theta)
-$$
-
-Covariance estimation would be by maximizing the log likelihood or minimizing the negative log likelihood.
-
-. . .
-
-- $\log \det$ is concave, $\text{tr}(S \Theta)$ is linear
-
-- Restriction of $\Theta$ to be positive definite is a restriction to a convex set
-
-- Convex problem; remains convex if we add convex penalties to $\Theta$
-
-
-## Summing up
-
-If you can show an optimization problem is convex, you're very likely able to solve it efficiently
-
-Many statistical estimation problems are naturally convex
-
-You have a couple of options for checking convexity:
-
-- Check the definition
-
-- Check first-order conditions (not usually as useful)
-
-- Check second-order conditions (good option if the function is differentiable)
-
-- Check restriction to a line
-
-- Check whether the function can be re-expressed as a combination of convex functions and convexity-preserving operations
-
-
-
-## Defining an optimization problem in cvx
-
-Remember how we defined a convex optimization problem:
-
-$$
-\begin{align*}
-\text{minimize} \quad &f_0(x) \\
-\text{subject to}\quad &f_i(x) \le 0, \quad i = 1,\ldots, m\\
-&a_j^T x = b_j, \quad j = 1,\ldots, n
-\end{align*}
-$$
-
-Components:
-
-- Variables to minimize over ($x$ in the formulation above, can be multi-dimensional)
-
-- Objective function ($f_0$ above, what we want to minimize)
-
-- Constraints on the variables
-
-In the cvx package, we define these three components, create a problem out of them, and the solver will do the rest.
-
-
-## Example
-
-For example, suppose our problem is:
-$$
-\begin{align*}
-\text{minimize}_{x, y} \quad &x^2 + y^2 \\
-\text{subject to} \quad &x \ge 0\\
-& 2x + y = 1
-\end{align*}
-$$
-
-How do we set this up in cvx/R?
-
------
-
-Define the variables to be minimized over:
-
-```{r}
-library(CVXR)
-# Variables minimized over
-x = Variable(1)
-y = Variable(1)
-x
-class(x)
-```
-
------
-
-Define the objective function:
-
-```{r}
-# The function we want to minimize
-objective = Minimize(x^2 + y^2)
-objective
-class(objective)
-```
-
------
-
-Define the constraints:
-
-```{r}
-## The constraints
-constraints = list(x >= 0, 2*x + y == 1)
-constraints
-```
-
------
-
-The optimization problem is then composed of the objective and the constraints:
-
-```{r}
-## Problem definition
-prob <- Problem(objective, constraints)
-```
-
------
-
-To perform the optimization we use `solve(problem)`
-
-```{r}
-# Problem solution
-solution = solve(prob)
-solution$status
-solution$getValue(x)
-solution$getValue(y)
-## check that the solution satisfies the constraints
-solution$getValue(x) >= 0
-2 * solution$getValue(x) + solution$getValue(y)
-```
-
-
-## Least squares
-
-We'll start off with the least squares problem and work up to more elaborate problems.
-
-We are doing regression, so we have a response variable $y \in \mathbb R^n$ and predictor variables stored as the rows of a matrix $X \in \mathbb R^{n \times p}$.
-
-The least squares problem is
-$$
-\text{minimize}_{\beta} \|y - X \beta\|_2^2
-$$
-or, written without matrix notation:
-$$
-\text{minimize}_{\beta} \sum_{i=1}^n (y_i - \sum_{j=1}^pX_{ij} \beta_j)^2
-$$
-
-This is a very simple convex optimization problem, just an objective function to be minimized, no constraints on the parameters.
-
-## Example dataset
-
-The data set dating (in `lattice.RData`) contains paired observations giving the estimated ages of 19 coral samples in thousands of years using both carbon dating (the traditional method) and thorium dating (a modern and purportedly more accurate method.)
-
-We want to know about the difference between these two methods.
-
-We can set this up as a linear model:
-```{r}
-load("lattice.RData")
-dating_lm = lm(thorium - carbon ~ carbon, data = dating)
-round(coef(dating_lm), digits = 2)
-```
+- $m$, $0<m$ is the "modulus"
+- $a$, $0 < a < m$ — the "multiplier"
+- $c$, $0 \le c < m$ — the "increment"
+- $X_0$, $0 \le X_0 < m$ — the "seed" or "start value"
 
 -----
 
 . . .
 
-Let's try to solve the same problem with cvx.
-
-First set up the data:
 ```{r}
-y = dating$thorium - dating$carbon
-X = cbind(1, dating$carbon)
+lcg_sequence = function(a=5, c=12, m=16, seed = 10, n_deviates = 20) {
+    sequence = numeric(n_deviates)
+    sequence[1] = seed
+    for(i in 2:n_deviates) {
+        sequence[i] = (a * sequence[i-1] + c) %% m
+    }
+  return(sequence)
+}
+lcg_sequence()
+lcg_sequence(seed = 4)
 ```
 
-Define the optimization variables:
-```{r}
-betahat = Variable(2)
-```
-
-Define the objective function:
-```{r}
-objective = Minimize(sum((y - X %*% betahat)^2))
-```
-
-Solve the problem and get the fitted values:
-```{r}
-problem = Problem(objective)
-result = solve(problem)
-round(result$getValue(betahat), digits = 2)
-round(coef(dating_lm), digits = 2)
-```
-
-## Robust Regression 
-
-If we look more carefully at our data, we see that there appear to be some outliers: most of the points follow one trend line, and the other two are far off.
-
-This means that the least squares line doesn't do a good job of capturing either the bulk of the data or the outliers.
-
-To deal with this situation, we sometimes use robust regression.
-
-```{r}
-ggplot(dating) + geom_point(aes(x = carbon, y = thorium - carbon)) +
-    geom_abline(aes(intercept = result$getValue(betahat)[1], slope = result$getValue(betahat)[2]))
-```
-
+Small values of $m$, $a$, $c$ give sequences with relatively small period (time before the sequence repeats).
 
 -----
 
-Robust regression is a modification of least squares that is meant to deal with outliers.
+One recommendation:
 
-The coefficients in the Huber version of robust regression are the solutions to the problem
+. . .
+
+```{r}
+random_unifs = (lcg_sequence(a = 25214903917, c = 11, m = 2^48, seed = 2^47 - 17, n_deviates = 1000)) /
+    2^48
+head(round(random_unifs, digits = 3))
+mean(random_unifs <= .5)
+mean(random_unifs <= .8)
+mean(random_unifs <= .2)
+```
+
+-----
+
+
+
+## Problem setup
+
+We have
+
+- A (pseudo) random number generator that provides us with independent, uniformly distributed random numbers
+
+- A probability distribution with CDF $F$
+
+We want
+
+- A sequence of independent $F$-distributed random numbers
+
+## Inverse method
+
+Let
+
 $$
-\text{minimize}_\beta \quad \sum_{i=1}^n H(y_i - \sum_{j=1}^p X_{ij} \beta_j, M)
+F^{[-1]}(y) = \text{inf}\{x : F(x) \ge y\}, \quad y \in [0,1]
 $$
-where $H$ is the Huber loss function:
+
+If $F$ is strictly increasing, we have $F^{[-1]} = F^{-1}$.
+
+. . .
+
+Intuition: 
+
+Suppose $F$ strictly increasing, $F^{-1}$ exists, $U \sim \text{Unif}(0,1)$.
+
+Then $F^{-1}(U) \sim F$.
+
+. . .
+
+Why?
+
 $$
-H(z, M) = \begin{cases}
-z^2 & z\le M \\
-2M|z| - M^2 & z > M
+\begin{align*}
+P(F^{-1}(U) \le x) &= P(F(F^{-1}(U)) \le F(x)) \\
+&= P(U \le F(x)) \\
+&= F(x)
+\end{align*}
+$$
+
+And so the CDF of $F^{-1}(U)$ is $F(x)$
+
+## Inverse method: Procedure
+
+Let $F$ be the CDF of the target distribution, and let 
+$$
+F^{[-1]}(y) = \text{inf}\{x : F(x) \ge y\}, \quad y \in [0,1]
+$$
+
+- Draw $U$ from$\text{Unif}[0,1]$
+
+- Take $X = F^{[-1]}(U)$
+
+
+## Inverse method: Exponential distribution
+
+CDF for a random variable distributed exponential with rate 1:
+
+$$
+F(x) = 1 - e^{-x}
+$$
+
+$$
+F^{[-1]}(u) = -\log(1 - u)
+$$
+
+$F$ is strictly increasing and continuous, so just check that $F(F^{-1}(u)) = u$.
+
+Algorithm:
+
+- Generate $U \sim \text{Unif}[0,1]$
+
+- Take $X = - \log(1 - U)$
+
+Note: We can also take $X = -\log(U)$. Why?
+
+-----
+
+
+Let's check:
+
+. . .
+
+```{r}
+generate_exponential = function() {
+    U = runif(1)
+    X = -log(1 - U)
+    return(X)
+}
+random_exponentials = replicate(n = 10000, generate_exponential())
+grid = seq(0,4, length.out = 200)
+plot(sapply(grid, function(g) mean(random_exponentials <= g)) ~ grid, type = 'l',
+     ylab = "Theoretical and Empirical CDF", xlab = "x")
+points(pexp(grid) ~ grid, type = 'l', col = "red")
+```
+
+
+## Inverse method: Discrete uniform distribution
+
+We would like to sample uniformly from the set $\{1,2,\ldots, n\}$
+
+CDF:
+$$
+F(x) = \begin{cases}
+0 & x < 0\\
+\frac{\lfloor x \rfloor}{n} & x \in [0,n]\\
+1 & x > n
 \end{cases}
 $$
 
+Inverse:
+$$
+\begin{align*}
+F^{[-1]}(u) &= \text{inf} \{ x : F(x) \ge u\} \\
+&= \begin{cases}
+-\infty & u = 0 \\
+\lfloor nu \rfloor + 1 & u \in (0,1) \\
+n & u = 1
+\end{cases}
+\end{align*}
+$$
+
 -----
+
+Let's check:
 
 . . .
 
-Let's set up the problem in cvx.
-
-Define the variables to optimize over:
 ```{r}
-betahat = Variable(2)
-```
-
-Define the objective function
-```{r}
-objective = Minimize(sum(huber(y - X %*% betahat, M = .46)))
-```
-
-Solve the problem and get the fitted values for the regression coefficients:
-```{r}
-problem = Problem(objective)
-result = solve(problem)
-result$getValue(betahat)
-fitted_betahat = result$getValue(betahat)
-```
-
------
-
-Compare the regression line from robust regression to the standard regression line:
-```{r}
-ggplot(dating) + geom_point(aes(x = carbon, y = thorium - carbon)) +
-    geom_abline(aes(slope = fitted_betahat[2], intercept = fitted_betahat[1]), color = 'red') +
-    geom_abline(aes(slope = coef(dating_lm)[2], intercept = coef(dating_lm)[1]))
-```
-
-
-## Variable selection
-
-A popular way of doing variable selection in high-dimensional regression problems is with the lasso.
-
-The Lasso is a simple modification of the least squares problem:
-$$
-\text{minimize}_{\beta} \sum_{i=1}^n (y_i - \sum_{j=1}^p X_{ij} \beta_j) + \sum_{j=1}^p |\beta_j|
-$$
-
-The resulting coefficient vector tends to be "sparse", with many of the coefficients being estimated as exactly 0.
-
-This is helpful when you want a model for your response that only incorporates a subset of the predictors.
-
-## Diabetes example
-
-Ten baseline variables: age, sex, bmi, average blood pressure, plus six blood serum measurements.
-
-Want to use this to predict "a quantitative measure of disease progression" in 442 patients.
-
-We don't necessarily think that all of the measured variables are important, and we want to get a model that uses only a subset of the variables but still gives us good predictive accuracy.
-
-This is exactly what the lasso is for!
-
------
-
-First set up the data:
-```{r}
-library(lars)
-data(diabetes)
-head(diabetes$x)
-## re-doing this because diabetes has a funny class
-X = matrix(diabetes$x, nrow = nrow(diabetes$x), ncol = ncol(diabetes$x))
-## changing X so each column has mean 0 and standard deviation 1
-X = scale(X)
-Y = diabetes$y
-n = nrow(X)
-p = ncol(X)
-```
-
------
-
-. . .
-
-Let's set up the problem in cvx. Define the variables:
-
-```{r}
-beta_lasso = Variable(p)
-```
-
-Define the objective function:
-```{r}
-lambda = 1
-objective = Minimize(sum(n^(-1) * (Y - X %*% beta_lasso)^2) + lambda * sum(abs(beta_lasso)))
-```
-
-Define the problem and solve:
-```{r}
-problem = Problem(objective)
-result = solve(problem)
-round(result$getValue(beta_lasso), digits = 2)
-```
-
------
-
-Let's look at what happens to the coefficients with different values of $\lambda$:
-
-```{r}
-lambda_search = 10^(seq(-2, 2, length.out = 40))
-get_beta_hat_lasso = function(lambda) {
-    objective = Minimize(sum(n^(-1) * (Y - X %*% beta_lasso)^2) + lambda * sum(abs(beta_lasso)))
-    problem = Problem(objective)
-    result = solve(problem)
-    result$getValue(beta_lasso)
+generate_discrete_uniform = function(n) {
+    U = runif(1)
+    return(floor(n * U) + 1)
 }
-beta_hats = plyr::aaply(lambda_search, 1, get_beta_hat_lasso)
-colnames(beta_hats) = colnames(diabetes$x)
-beta_hats = cbind(lambda = lambda_search, beta_hats)
-round(beta_hats, digits = 2)
+discrete_uniforms = replicate(n = 10000, generate_discrete_uniform(3))
+head(discrete_uniforms)
+table(discrete_uniforms) / length(discrete_uniforms)
 ```
 
------
+## Acceptance-Rejection Method
 
-Plot of the coefficients for different values of $\lambda$:
+Problem setup:
 
-```{r}
-beta_melted = reshape2::melt(data.frame(beta_hats), id.vars = "lambda", value.name = "coefficient")
-ggplot(beta_melted) +
-    geom_line(aes(x = lambda, y = coefficient, color = variable, lty = variable)) +
-    scale_x_log10()
-```
+- We want to sample a random variable with pdf $f$.
 
-## Both together now!
+- We have a probability density $g$ and a constant $c$ such that $f(x) \le c g(x) = h(x)$ for all $x$.
 
-What if we want to do both robust regression (we're worried about outliers or corrupted data) and variable selection?
+## Acceptance-Rejection Procedure
 
-We can use the Huber loss on the residuals and the lasso penalty on the coefficients:
+1. Sample $U \sim \text{Uniform}[0,1]$ and $Z \sim g$
+
+2. If $U \le \frac{f(Z)}{ c g(Z)}$, return $Z$
+
+3. Otherwise, return to 1
+
+
+## Acceptance-Rejection Method: Why does it work?
+
+Probability of generating an accepted value in $(x, x + dx)$ is proportional to
 $$
-\text{minimize}_{\beta} \sum_{i=1}^n H(y_i - \sum_{j=1}^pX_{ij}\beta_j, M)+ \sum_{j=1}^p |\beta_j|
+g(x) dx \frac{f(x)}{h(x)} = \frac{1}{c} f(x) dx
 $$
 
-I don't know if there's an actual implementation of this in an R package, but it's easy to do with cvx.
+- $g(x)$ gives the probability of proposing something in $(x, x + dx)$
 
+- $f(x) / h(x)$ is the probability of accepting the proposal
 
------
+- Overall idea: Think of $g$ as approximating $f$, and $f(x) / h(x)$ as describing how well $g$ approximates $f$ at $x$. We accept more of the time when $f(x) / h(x)$ is large.
+
 
 . . .
 
-Define the variable to be optimized over:
-```{r}
-betahat = Variable(p)
-```
+Notes
 
-Define the objective:
-```{r}
-lambda = 10^(-4)
-objective = Minimize(sum(huber(Y - X %*% betahat)) + lambda * sum(abs(betahat)))
-```
+- The expected number of iterations required to accept a draw is $1/c$
 
-Define the problem and solve it:
+- Therefore, should make $c$ as small as possible
+
+- $f$ doesn't have to be a normalized density
+
+## Acceptance-Rejection Method: Example
+
+We want $X$ with density
+$$
+f_X(x) = \frac{2}{\sqrt{2\pi}} e^{-x^2 / 2}, \quad x \ge 0
+$$
+
+Let $g(x) = e^{-x}$, $x \ge 0$ (exponential with rate 1)
+
+Let $c = \sqrt {2e / \pi} \approx 1.32$ (obtained by finding the maximum of $f_X(x) / g(x)$)
+
+. . .
+
+Check: $f_X(x) \le cg(x)$ for all $x \ge 0$
+
 ```{r}
-problem = Problem(objective)
-result = solve(problem)
-round(result$getValue(betahat), digits = 2)
+fX = function(x) 2 / sqrt(2 * pi) * exp(-x^2 / 2)
+g = function(x) exp(-x)
+c = sqrt(2 * exp(1) / pi)
+grid = seq(0, 4, length.out = 200)
+plot(fX(grid) ~ grid, type = 'l', ylim = c(0, 1.5))
+points(c * g(grid) ~ grid, type = 'l', col = 'red')
 ```
 
 -----
 
-Searching over a grid of $\lambda$:
+Overall algorithm:
+
+1. Generate $Z \sim \text{Exp}(1)$
+
+2. Generate $U \sim \text{Unif}(0,1)$
+
+3. If $U \le \frac{f_X(Z)}{ c g(Z)} = \frac{2}{\sqrt{e}}\exp(-Z^2 / 2 + Z)$, return $Z$
+
+-----
+
+Let's check:
 
 ```{r}
-lambda_search = 10^(seq(-6, -3, length.out = 40))
-get_beta_hat_lasso = function(lambda) {
-    objective = Minimize(sum(huber(Y - X %*% beta_lasso)) + lambda * sum(abs(beta_lasso)))
-    problem = Problem(objective)
-    result = solve(problem)
-    result$getValue(beta_lasso)
+gen_half_normal = function() {
+    fX = function(x) 2 / sqrt(2 * pi) * exp(-x^2 / 2)
+    g = function(x) exp(-x)
+    c = sqrt(2 * exp(1) / pi)
+    while(TRUE) {
+        U = runif(1)
+        Z = rexp(1, rate = 1)
+        if(U <= fX(Z) / (c * g(Z))) {
+            return(Z)
+        }
+    }
 }
-beta_hats = plyr::aaply(lambda_search, 1, get_beta_hat_lasso)
-colnames(beta_hats) = colnames(diabetes$x)
-beta_hats = cbind(lambda = lambda_search, beta_hats)
-round(beta_hats, digits = 2)
+```
+
+. . .
+
+```{r}
+half_normals = replicate(n = 10000, gen_half_normal())
+signs = ifelse(runif(10000) >= .5, -1, 1)
+normals = half_normals * signs
+qqnorm(normals)
 ```
 
 -----
 
-Plot of the coefficients for different values of $\lambda$:
+Why might we want to do this?
 
-```{r}
-beta_melted = reshape2::melt(data.frame(beta_hats), id.vars = "lambda", value.name = "coefficient")
-ggplot(beta_melted) +
-    geom_line(aes(x = lambda, y = coefficient, color = variable, lty = variable)) +
-    scale_x_log10()
-```
+- Maybe we actually want half normals.
+
+- Can use half normals to make standard normals, standard normals to make arbitrary normals.
 
 
 ## Summing up
 
-- Many statistical problems and variations can be expressed as convex optimization problems.
+- For simulation, we tend to use pseudo-random number generators
 
-- These are cheap and easy to fit, and you don't need to rely on your exact problem being implemented by someone else.
+- Pseudo-random number generators target a uniform distribution
 
-- Cvx behind the scenes is using some of the methods that we've been discussing the past couple of weeks.
+- Many methods for generating random numbers from other distributions
+
+- Inverse method for when you have the CDF and it is easy to invert
+
+- Accept/Reject for more complicated distributions, and for which you don't know or want to compute the normalizing constant.

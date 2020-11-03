@@ -391,7 +391,7 @@ t = \text{argmin}_{t &gt; 0}f(x + t \Delta x)
 <li><p>Step size <span class="math inline">\(t\)</span> found with an iterative method.</p></li>
 <li><p>Parameters <span class="math inline">\(\alpha \in (0, 1/2)\)</span>, <span class="math inline">\(\beta \in (0,1)\)</span> that you specify.</p></li>
 <li><p>Algorithm: Start at <span class="math inline">\(t = 1\)</span>, repeat <span class="math inline">\(t \leftarrow \beta t\)</span> until <span class="math display">\[
-f(x + t \Delta x) &gt; f(x) + \alpha t \nabla f(x)^T \Delta x
+f(x + t \Delta x) &lt; f(x) + \alpha t \nabla f(x)^T \Delta x
 \]</span></p></li>
 </ul>
 <p><img src="backtracking-image.png" /></p>

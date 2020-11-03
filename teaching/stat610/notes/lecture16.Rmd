@@ -361,7 +361,7 @@ Formally:
 
 - Let $f(x; \theta)$ be the probability density function or probability mass function of a random variable with drawn from a distribution with parameter $\theta$.
 
-- With independent data points $x_1$, $x_2$, $x_n$, the likelihood is
+- With independent data points $x_1, x_2,\ldots , x_n$, the likelihood is
 
 $$
 L(\theta)=\prod_{i=1}^n f(x_i;\theta)
@@ -397,12 +397,12 @@ For example: we have data points $x_1, \ldots, x_n$, and we want to find the $N(
 
 The likelihood is
 $$
-L(x;  \theta) = \prod_{i=1}^n \frac{1}{\sqrt{2\pi}}\exp((x_i - \theta)^2)
+L(x;  \theta) = \prod_{i=1}^n \frac{1}{\sqrt{2\pi}}\exp(-\frac{1}{2}(x_i - \theta)^2)
 $$
 
 and the log likelihood is
 $$
-\ell(x;  \theta) = \sum_{i=1}^n\log \left( \frac{1}{\sqrt{2\pi}}\exp((x_i - \theta)^2) \right) 
+\ell(x;  \theta) = \sum_{i=1}^n\log \left( \frac{1}{\sqrt{2\pi}}\exp(-\frac{1}{2}(x_i - \theta)^2) \right) 
 $$
 
 ------

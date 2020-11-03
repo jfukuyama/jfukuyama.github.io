@@ -340,7 +340,7 @@ specify.
 
 - Algorithm: Start at $t = 1$, repeat $t \leftarrow \beta t$ until
 $$
-f(x + t \Delta x) > f(x) + \alpha t \nabla f(x)^T \Delta x
+f(x + t \Delta x) < f(x) + \alpha t \nabla f(x)^T \Delta x
 $$
 
 ![](backtracking-image.png)
