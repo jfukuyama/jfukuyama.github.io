@@ -1,205 +1,513 @@
-## Expectation Maximization
+## Monte Carlo methods: integration and cross validation
 
-```{r setup, echo = FALSE, message = FALSE}
-library(knitr)
-opts_chunk$set(fig.cap="",
-               fig.path="lecture-22-fig/",
-               fig.width=6, fig.height=4, dpi=150,
-               warning = FALSE)
+Agenda today: Simulation-based methods of computing expectations
+
+- Monte Carlo integration
+
+- Maybe cross validation
+
+Reading: Lange 21.1, 21.2, 21.6
+
+## Monte Carlo Integration
+
+We have:
+
+- A function $f$
+
+- A random variable with pdf $g$.
+
+We would like to approximate
+$$
+E[f(X)] = \int f(x) g(x) \, dx
+$$
+
+. . .
+
+Why not numerical integration?
+
+- Works well for low-dimensional problems.
+
+- Fails in high dimensions, the "curse of dimensionality"
+
+## Monte Carlo Integration
+
+To estimate/approximate
+$$
+E[f(X)] = \int f(x) g(x) \, dx
+$$
+
+- Draw $X_1, \ldots, X_n$ iid from $g$
+
+- Use $\hat \mu = \frac{1}{n} \sum_{i=1}^n f(X_i)$ as the estimator of $E[f(X)]$.
+
+. . .
+
+Why is this reasonable?
+
+- By the law of large numbers, the estimates converge to $E[f(X)]$ as $n \to \infty$
+
+## Monte Carlo Integration: Accuracy
+
+If $f$ is square integrable, we can apply the central limit theorem, which tells us that the estimator is approximately distributed
+$$
+\mathcal N \left( E[f(X)], \sqrt{\frac{\text{Var}[f(X)]}{n}} \right)
+$$
+
+. . .
+
+We don't know $\text{Var}[f(X)]$, but we can estimate it the usual way:
+
+$$
+\hat v = \frac{1}{n-1} \sum_{i=1}^n [f(X_i) - \hat \mu)^2]
+$$
+
+. . .
+
+- Good thing: accuracy doesn't depend on the dimensionality of the problem
+
+- Bad thing: Error declines at the $n^{-1/2}$ rate vs. $n^{-k}$, $k \ge 2$ for the numerical integration methods.
+
+- What to do? Try to decrease $\text{Var}[f(X)]$.
+
+## Example: Estimating a probability
+
+Suppose we have a random variable $X$, and we want $P(X \le x)$.
+
+If we take
+$$
+f(X) = \begin{cases} 1 & X \le x \\
+0 & X > x
+\end{cases},
+$$
+then we have $E[f(X)] = P(X \le x)$.
+
+----
+
+Last time, we looked at how to generate exponentially distributed random variables:
+
+```{r}
+set.seed(0)
+generate_exponential = function() {
+    U = runif(1)
+    X = -log(1 - U)
+    return(X)
+}
+n_reps = 10000
+random_exponentials = replicate(n = n_reps, generate_exponential())
+```
+
+. . .
+
+We compared an estimate of the probability that our randomly generated exponentials were less than a value $x$ to the theoretical probability:
+
+```{r}
+x = 1
+mean(random_exponentials <= x)
+pexp(x)
+```
+
+The line `mean(random_exponentials <= x)` is exactly the same as the procedure we described above.
+```{r}
+f = function(X, x) {
+    ifelse(X <= x, 1, 0)
+}
+head(f(random_exponentials, x))
+head(random_exponentials <= x)
+mean(f(random_exponentials, x))
+mean(random_exponentials <= x)
+```
+
+-----
+
+We can check that the accuracy of this estimate:
+
+```{r}
+vhat = var(random_exponentials) / n_reps
+sqrt(vhat)
+mean(f(random_exponentials, x)) - pexp(x)
+```
+
+
+## Rao-Blackwellization
+
+Let $\tau(U, X)$ be an estimator of some function, and consider a modified estimator $\tau'(U, X) = E[\tau(U, X) \mid X]$.
+
+- If $\tau$ is unbiased, so is $\tau'$ because
+$$
+E[\tau'(U, X)] = E[E[\tau(U, X) \mid X]] = E[\tau(U, X)]
+$$
+
+- Let $\mu = E[\tau(U,X)] = E[\tau'(U,X)]$. $\tau'$ has a smaller variance than $\tau$ because
+$$
+\begin{align*}
+\text{var}(\tau'(U, X)) &= E[(E(\tau(U, X) \mid X) - \mu)^2] \\
+&= E[E(\tau(U, X) - \mu \mid X)^2] \\
+&\le E[E[(\tau(U, X) - \theta)^2 \mid X]] \\
+&= \text{var}(\tau(U, X))
+\end{align*}
+$$
+
+
+
+## "Rao-Blackwellization" for Monte Carlo Integration using the Accept/Reject algorithm
+
+Setup:
+
+- $X$ is a random variable with pdf $g$.
+
+- We want to estimate $E[f(X)] = \int f(x) g(x) \, dx$
+
+- We have some $h$, $c$ such that $g(x) \le ch(x)$
+
+-----
+
+We estimate using the accept/reject algorithm:
+
+- We generate $N$ points $X_1,\ldots, X_N$ from $h(x)$.
+
+- We generate $N$ points $U_1,\ldots, U_N$ from a standard uniform.
+
+- We accept $X_i$ if $U_i \le W_i = g(X_i) / [ch(X_i)]$.
+
+- $N$ is a random number so that we have $m$ acceptances.
+
+We can rewrite this estimator as
+$$
+\hat{E[f(X)]} =  \frac{1}{m} \sum_{i=1}^N \mathbf 1_{\{U_i \le W_i\}} f(X_i)
+$$
+
+-----
+
+Can we condition?
+
+$$
+\begin{align*}
+\frac{1}{m} E&\left[ \sum_{i=1}^N \mathbf 1_{\{U_i \le W_i\}} f(X_i) | N, X_1,\ldots, X_N \right] \\
+&= \frac{1}{m}\sum_{i=1}^N E\left[ \mathbf 1_{\{U_i \le W_i\}}  | N, W_1,\ldots, W_N\right] f(X_i)
+\end{align*}
+$$
+
+$E \left[ \mathbf 1_{\{U_i \le W_i\}} | N, W_1,\ldots, W_N \right]$ is the probability that we accept $X_i$ given that we sample $N$ deviates and accept $m$ of them
+
+If $m$, $N$ are large, we will have
+
+$$
+E \left[ \mathbf 1_{\{U_i \le W_i\}} | N, W_1,\ldots, W_N \right] \approx W_i
+$$
+
+
+
+## Example: Mean of folded normal
+
+We would like to estimate $E[X]$, where $X$ has density
+$$
+g_X(x) = \frac{2}{\sqrt{2\pi}} e^{-x^2 / 2}, \quad x \ge 0
+$$
+
+We can use accept/reject and Monte Carlo integration to approximate this quantity.
+
+In the notation from the previous slide, we have
+
+- $g = g_X$
+
+- $f(x) = x$
+
+- $h(x) = e^{-x}$, $x \ge 0$ (exponential with rate 1)
+
+- $c = \sqrt {2e / \pi} \approx 1.32$ (obtained by finding the maximum of $g_X(x) / h(x)$)
+
+-----
+
+. . .
+
+```{r}
+half_normal_rb_sample = function() {
+    f = function(x) x
+    g = function(x) 2 / sqrt(2 * pi) * exp(-x^2 / 2)
+    h = function(x) exp(-x)
+    c = sqrt(2 * exp(1) / pi)
+    U = runif(1)
+    X = rexp(1, rate = 1)
+    W =  g(X) / (c * h(X))
+    return(c(accepted = (U <= W), fX = f(X), weight = W))
+}
+samples = replicate(n = 200, half_normal_rb_sample())
+accepted = which(samples["accepted",] == 1)
+m = length(accepted)
+fX = samples["fX",]
+weights = samples["weight",]
+## theoretical mean of folded normal
+sqrt(2) / sqrt(pi)
+## Rao-Blackwellized version of accept/reject
+sum(fX * weights) / m
+## Non-Rao-Blackwellized version of accept/reject
+mean(fX[accepted])
+```
+
+
+----
+
+## Overall Idea
+
+- Conditioning is keeping more of the information.
+
+- Using that information appropriately decreases the variance of the estimator.
+
+## Importance Sampling
+
+Importance sampling is based on the following equality:
+$$
+\int f(x) g(x)\, dx = \int \frac{f(x) g(x)}{h(x)} h(x) \,dx
+$$
+where
+
+- $f$ is the function for which we would like to compute the expectation
+
+
+- $g$ is the density of our target probability distribution
+
+- $h$ is the density of some other probability distribution
+
+## Importance sampling: Procedure
+
+
+Draw $Y_1, \ldots, Y_n$ iid from a distribution $h$. Then
+$$
+\frac{1}{n}\sum_{i=1}^n \frac{f(Y_i) g(Y_i)}{h(Y_i)}
+$$
+is an estimate of $\int f(x) g(x) \, dx$.
+
+## When is this useful?
+
+The importance sampling estimator has a smaller variance than the naive estimator iff:
+$$
+\int \left[ \frac{f(x) g(x)}{h(x)} \right]^2 h(x) dx \le \int f(x)^2 g(x) dx
+$$
+
+. . .
+
+- If we choose $h(x) = |f(x)| g(x) / \int |f(z)| g(z) dz$, then an application of Cauchy Schwarz tells us that the condition above is satisfied and the importance sampling estimator will have smaller variance.
+
+. . .
+
+- If $f$ is nonnegative and $h$ is chosen as above, the variance of the importance sampling estimator is 0.
+
+. . .
+
+- We aren't able to choose $h$ according to the recipe above, but it implies that the variance will be reduced if $h(x)$ looks like $|f(x)| g(x)$.
+
+## A contrived example
+
+We are playing a terrible game:
+
+- I draw from a uniform distribution on $[0,1]$.
+
+- If the draw comes up less than $.01$, you have to pay me \$100.
+
+- Otherwise nothing happens.
+
+What is your expected return to playing this game?
+
+-----
+
+Naive Monte Carlo estimate:
+```{r}
 set.seed(1)
+f = function(x) {
+    if(x < .01)
+        return(-100)
+    return(0)
+}
+mc_samples = runif(1000)
+mean(sapply(mc_samples, f))
 ```
 
+- Not very good!
 
-Agenda today
+- Problem is that we don't have very many samples where $x < .01$
 
-- Last day of optimization section
+- Try importance sampling from a distribution that is more likely to give $x < .01$
 
-- The EM algorithm
+------
 
-Reading: Lang Chapter 10
+Recall Beta distributions: Supported on the interval $[0,1]$, can tune so that they put more weight in the middle or at the edges.
 
-## Problem for today
-
-Goal, as usual: Maximize a likelihood
-
-- We've seen how we can do this in convex problems
-
-- EM is for the non-convex case
-
-- Particularly useful problems with "hidden data" or "missing data"
-
-. . .
-
-The idea behind EM:
-
-- There are some likelihoods that would be easy to maximize if we just had a little bit of extra data
-
-- We can guess at what the missing data should be and find the parameters that maximize the likelihood based on our guess.
-
-- We then alternate between guessing at the missing data based on the current parameter estimates and estimating the parameters based on the guesses at the missing data.
-
-
-## For example: Clustering with normal mixtures
-
-Suppose we have a set of points measured on one variable.
-
-We think that they come from two clusters, and we want to find the centers of those clusters.
-
-```{r, echo=FALSE}
-n_samples = 20
-c = rbinom(n = n_samples, size = 1, p = .5)
-centers = c(-2, 3)
-y = rnorm(n_samples) + ifelse(c == 0, centers[1], centers[2])
-ggplot(data.frame(y = y), aes(x = y)) + geom_histogram(binwidth=.3) + geom_rug()
-```
-
------
-
-We can set up the following model for the data:
-
-$$
-\begin{align*}
-Z_i &=\begin{cases}
-1 & \text{w.p. } p\\
-0 & \text{w.p. } 1 - p
-\end{cases}\\
-Y_i \mid Z_i &\sim N(\theta_{Z_i}, 1)
-\end{align*}
-$$
-
-- $Y_i$, $i = 1,\ldots, n$ are the observed data
-
-- $Z_i$, $i = 1,\ldots, n$ are the cluster assignments, or the "missing" or "unobserved" data.
-
-- The goal is to get maximum likelihood estimates of $\theta_0$ and $\theta_1$, the means of the two clusters, and $p$, the probability of each cluster.
-
-- If we observed the $Z_i$'s, this problem would be simple: $\hat \theta_0$ would be the mean of the $Y_i$'s for which $Z_i = 0$, and $\hat \theta_1$ would be the mean of the $Y_i$'s for which $Z_i = 1$.
-
-## Likelihood for the normal mixture example
-
-We will let $\phi_\theta$ be the normal pdf function, 
-$$
-\phi_\theta(y) = \frac{1}{2\pi} \exp \left(\frac{(y - \theta)^2}{ 2} \right) 
-$$
-so that we don't have to rewrite it every time.
-
-
-Let $y_i$, $i = 1,\ldots, n$ be the observed data. In this model, the observed-data likelihood for one point is:
-$$
-p \phi_{\theta_1}(y_i) + (1 -p)\phi_{\theta_0}(y_i)
-$$
-
-And the overall observed-data log likelihood is
-$$
-\log g(y \mid \theta) = \sum_{i=1}^n \log \left( p \phi_{\theta_1}(y_i) + (1 -p)\phi_{\theta_0}(y_i) \right)
-$$
-
-Note: that this is not convex, so we can't apply the tools we used before and be guaranteed a maximum
-
-
-
-## EM: The algorithm
-
-Suppose we have observed data $Y$, missing data $Z$, complete data $X = (Y, Z)$, and parameters $\theta$.
-
-$f(X\mid \theta)$ is the complete-data likelihood, $g(Y \mid \theta)$ is the observed-data likelihood.
-
-We would like to maximize $g(Y \mid \theta)$ (or $\log g(Y \mid \theta)$)
-
-- Start with an initial estimate of the parameters $\theta^{(0)}$
-
-- While you haven't converged yet, repeat the following two steps:
-
-- E step: compute
-$$
-Q(\theta \mid \theta^{(n)}) = E[\log f(X \mid \theta) \mid Y, \theta^{(n)}]
-$$
-
-- M step: Let $\theta^{(n+1)}$ be the solution to
-$$
-\text{maximize}_\theta Q(\theta \mid \theta^{(n)})
-$$
-
-## Example: E step in normal mixtures
-
-Our parameters are $\theta$ and $p$, with current estimates $\theta^{(n)}$ and $p^{(n)}$. The complete-data log likelihood is
-
-$$
-\log f(Y, Z \mid \theta, p) = \sum_{i=1}^n (1 - z_i) \log(\phi_{\theta_0}(y_i)) + z_i \log(\phi_{\theta_1}(y_i)) + \sum_{i=1}^n [(1 - z_i) \log(1 - p) + z_i \log p]
-$$
-
-. . .
-
-In the E step, we compute the expectation of $\log f(y, z, \mid \theta)$, conditional on the observed values of $y$ and the current estimate of $\theta$, $\theta^{(n)}$.
-
-$$
-\begin{align*}
-E[\log \;&f(Y, Z \mid \theta, p)  \mid Y = y, \theta= \theta^{(n)}, p = p^{(n)}] \\
-&= \sum_{i=1}^n \left[(1 - E[z_i \mid Y = y, \theta= \theta^{(n)}])\log(\phi_{\theta^{(n)}_0}(y_i)) + E[z_i \mid  Y = y, \theta= \theta^{(n)}] \log(\phi_{\theta^{(n)}_1}(y_i))\right] +\\
-&\quad  \sum_{i=1}^n\left [(1 - E[z_i \mid Y = y, \theta= \theta^{(n)}]) \log(1 - p^{(n)}) + E[z_i \mid Y = y, \theta= \theta^{(n)}]\log p^{(n)}\right]
-\end{align*}
-$$
-
-. . .
-
-Finally:
-$$
-E[z_i \mid Y = y, \theta= \theta^{(n)}]  = \frac{p^{(n)}\phi_{\theta^{(n)}_1}(y_i)}{p^{(n)}\phi_{\theta^{(n)}_1}(y_i) + (1 - p^{(n)})\phi_{\theta^{(n)}_0}(y_i)}
-$$
-
------
-
-Suppose our current estimates are $\theta_0^{(n)} = -1$, $\theta_2^{(n)} = 2$, and $p^{(n)} = .5$
-
-We can compute the quantities from the previous slide for the data we generated:
+Beta(1,10) has density:
 ```{r}
-theta0 = -1
-theta1 = 2
-p = .5
-expected_z = p * (dnorm(y, mean = theta1)) /
-    (p * (dnorm(y, mean = theta1)) + (1 - p) * dnorm(y, mean = theta0))
-round(head(cbind(y, expected_z)), digits = 3)
+x = seq(0, 1, length.out = 200)
+beta_density = dbeta(x, shape1 = 1, shape2 = 10)
+plot(beta_density ~ x, type = 'l')
 ```
 
+------
 
-## Example: M step in normal mixtures
+Importance sampling from Beta(1,10):
+```{r}
+mc_importance_samples = rbeta(1000, shape1 = 1, shape2 = 10)
+importance_function = function(x) {
+    return(f(x) / dbeta(x, shape1 = 1, shape2 = 10))
+}
+mean(sapply(mc_importance_samples, importance_function))
+```
 
-You can either go through the analysis, or you can notice that maximizing $E[\log f(Y, Z \mid \theta, p)  \mid Y = y, \theta = \theta^{(n)}, p = p^{(n)}]$ is simply a problem of estimating the mean of a normal distribution with weights on the samples.
+## More realistic examples
 
-If we let $\gamma_i = E[z_i \mid Y = y, \theta= \theta^{(n)}]$, then our new parameters are
+- Intuition from the game holds: if you have extreme returns from rare events, importance sampling by sampling more from regions with extreme returns helps
+
+- Insurance
+
+- Quantitative finance
+
+
+
+## Part 2: Cross validation
+
+. . .
+
+We have:
+
+- Data $X_1, \ldots, X_n$.
+
+- A tuning parameter $\theta$. Each value of $\theta$ corresponds to a different set of models.
+
+- A function $L$ that takes a fitted model and a data point and returns a measure of model quality.
+
+We would like to choose one model from the set of candidate models indexed by $\theta$.
+
+## Example: Regression
+
+- Data: Pairs of predictors and response variables, $(y_i, X_i)$, $i = 1,\ldots, n$, $y_i \in \mathbb R$, $X_i \in \mathbb R^p$
+
+- Models: $y_i = X \beta + \epsilon$, $\beta_j = 0, j \in S_\theta$, where $S_\theta \subseteq \{1,\ldots, p\}$.
+
+- Model quality: Squared-error loss. If $\hat \beta_\theta$ are our estimates of the regression coefficients in model $\theta$, model quality is measured by
 $$
-\begin{align*}
-\theta^{(n+1)}_0 &= \frac{\sum_{i=1}^n (1 - \gamma_i) y_i}{\sum_{i=1}^n (1 - \gamma_i)}\\
-\theta^{(n+1)}_1 &= \frac{\sum_{i=1}^n \gamma_i y_i}{\sum_{i=1}^n \gamma_i}\\
-p^{(n+1)} &= \sum_{i=1}^n \gamma_i / n
-\end{align*}
+L(\hat \beta_\theta, (y_i, X_i)) = (y_i - X_i^T \hat \beta_\theta)^2
 $$
+
+We want to choose a subset of the predictors that do the best job of explaining the response.
+
+. . .
+
+Naive solution: Find the model that has the lowest value for the squared-error loss.
+
+Why doesn't this work?
+
+## Example: Mixture models
+
+- Data: $x_1,\ldots, x_n$, $x_i \in \mathbb R$
+
+- Models: Gaussian mixture models with $\theta$ mixture components.
+
+- Model quality: Negative log likelihood of the data. If $\hat p_\theta$ is the density of the fitted model with $\theta$ components, model quality is measured by $L(\hat p_\theta, x_i) = -\log \hat p_\theta(x_i)$.
+
+We want to choose the number of mixture components that best explains the data.
+
+. . .
+
+Naive solution: Choose the number of mixture components that minimizes the negative log likelihood of the data.
+
+
+## Better Solution: Cross validation
+
+Idea: Instead of measuring model quality on the same data we used to fit the model, we estimate model quality on new data.
+
+If we knew the true distribution of the data, we could simulate new data and use a Monte Carlo estimate based on the simulations.
+
+We can't actually get new data, and so we hold some back when we fit the model and then pretend that the held back data is new data.
 
 -----
 
-Let's look at what the M step looks like on our data.
+Procedure:
 
-Remember our previous parameter estimates were $\theta_0^{(n)} = -1$, $\theta_2^{(n)} = 2$, and $p^{(n)} = .5$. The true centers are at $-2$ and $3$.
+- Divide the data into $K$ folds
+
+- Let $X^{(k)}$ denote the data in fold $k$, and let $X^{(-k)}$ denote the data in all the folds except for $k$.
+
+- For each fold and each value of the tuning parameter $\theta$, fit the model on $X^{(-k)}$ to get $\hat f_\theta^{(k)}$
+
+- Compute
+$$
+\text{CV}(\theta) = \frac{1}{n} \sum_{k=1}^K \sum_{x \in X^{(k)}} L(\hat f_\theta^{(k)}, x)
+$$
+
+- Choose $\hat \theta = \text{argmin}_{\theta} \text{CV}(\theta)$
+
+## Example
 
 ```{r}
-(theta1_updated = sum(y * expected_z) / sum(expected_z))
-(theta0_updated = sum(y * (1 - expected_z)) / sum(1 - expected_z))
-(p_updated = sum(expected_z) / n_samples)
+n = 100
+p = 20
+X = matrix(rnorm(n * p), nrow = n)
+y = rnorm(n)
+get_rss_submodels = function(n_predictors, y, X) {
+    if(n_predictors == 0) {
+        lm_submodel = lm(y ~ 0)
+    } else {
+        lm_submodel = lm(y ~ 0 + X[,1:n_predictors, drop = FALSE])
+    }
+    return(sum(residuals(lm_submodel)^2))
+}
+p_vec = 0:p
+rss = sapply(p_vec, get_rss_submodels, y, X)
+plot(rss ~ p_vec)
+
 ```
 
-## Some notes
+-----
 
-- We can prove that EM is an ascent algorithm
+```{r}
+get_cv_error = function(n_predictors, y, X, folds) {
+    cv_vec = numeric(length(unique(folds)))
+    for(f in unique(folds)) {
+        cv_vec[f] = rss_on_held_out(
+                  n_predictors,
+                  y_train = y[folds != f],
+                  X_train = X[folds != f,],
+                  y_test = y[folds == f],
+                  X_test = X[folds == f,])
+    }
+    return(mean(cv_vec))
+}
 
-- Tends to converge rather slowly
+rss_on_held_out = function(n_predictors, y_train, X_train, y_test, X_test) {
+    if(n_predictors == 0) {
+        lm_submodel = lm(y_train ~ 0)
+        preds_on_test = rep(0, length(y_test))
+    } else {
+        lm_submodel = lm(y_train ~ 0 + X_train[,1:n_predictors, drop = FALSE])
+        preds_on_test = X_test[,1:n_predictors, drop= FALSE] %*% coef(lm_submodel)
+    }
 
-- No guarantee of getting a global maximum of the likelihood (but sometimes this is a good thing...)
+    return(sum((y_test - preds_on_test)^2))
+}
+K = 5
+## normally you would do this at random
+folds = rep(1:K, each = n / K)
+p_vec = 0:p
+cv_errors = sapply(p_vec, get_cv_error, y, X, folds)
+plot(cv_errors ~ p_vec)
+```
+
+## Choice of $K$
+
+Considerations:
+
+- Larger $K$ means more computation (although sometimes there is a shortcut for leave-one-out cross validation)
+
+- Larger $K$ means less bias in the estimate of model accuracy
+
+- Larger $K$ also means more variance in the estimate, so we don't necessarily want $K = n$
+
+- Usually choose $K = 5$ or $K = 10$
+
+- If your problem is structured (e.g. time series, spatial), you should choose the folds to respect the structure.
 
 
-When is this useful?
+## Summing up
 
-- When it is easy to get distributions over the missing variables given the current parameter estimates.
+- We can use simulations to estimate arbitrary functions of our random variables.
 
-- When the problem simplifies after introduction of the missing variables.
+- If we know the underlying distribution, we can simply simulate from it (Monte Carlo integration).
 
-- These two conditions often hold in latent variable models, which also tend not to be convex.
+- If we don't know the underlying distribution, we can "simulate" from the data by resampling from the data (cross validation). Resampling methods will do well to the extent that the observed data reflect the true data-generating distribution.
