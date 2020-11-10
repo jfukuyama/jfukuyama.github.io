@@ -1,4 +1,4 @@
-## Generating random deviates
+## Monte Carlo methods: Approximate Bayesian Computation
 
 ```{r setup, echo = FALSE, message = FALSE}
 library(knitr)
@@ -10,335 +10,349 @@ set.seed(1)
 ```
 
 
-Logistics
+Today: Approximate Bayesian Computation
 
-- Makeup office hours tomorrow 10am-12pm
+Reading: 
 
-- I'll set up a discussion board on canvas where you can ask questions of me, John, and your classmates
+- [Bayesian Basics](https://m-clark.github.io/bayesian-basics/intro.html), the introductory chapter
 
-Agenda for today
+- [Sisson, Fan, Beaumont](https://arxiv.org/pdf/1802.09720.pdf), "Overview of Approximate Bayesian Computation"
 
-- True randomness vs. pseudo-randomness
+Homework:
 
-- Turning uniformly distributed random numbers into other distributions
+- Due Tuesday December 1
 
-    - Inverse method
+## Our goals
 
-    - Acceptance/rejection method
+Next two weeks:
 
-Reading:
+- Methods for sampling from arbitrary probability distributions.
 
-- Lang Chapter 20
-
-
-## Random numbers vs pseudo-random numbers
-
-[True randomness](https://www.random.org/randomness/): From nature
-
-On computers: Everything deterministic, so we only have pseudo-random number generators
-
-- Functions that produce a sequence of numbers that have some of the same properties of a sequence of independent uniform random variables
-
-- They cannot have _all_ of the properties of a sequence of independent uniform random variables
-
-- Issue tends to be independence rather than uniformity
-
-- e.g. the [linear congruential generator](https://en.wikipedia.org/wiki/Linear_congruential_generator)
-
-## Linear congruential generator
-
-A _generator_, so it makes a sequence of numbers.
-
-Start off with $X_0$.
-
-Define $X_{n+1} = (aX_n + c) \text{ mod } m$
-
-- $m$, $0<m$ is the "modulus"
-- $a$, $0 < a < m$ — the "multiplier"
-- $c$, $0 \le c < m$ — the "increment"
-- $X_0$, $0 \le X_0 < m$ — the "seed" or "start value"
-
------
-
-```{r}
-lcg_sequence = function(a=5, c=12, m=16, seed = 10, n_deviates = 20) {
-    sequence = numeric(n_deviates)
-    sequence[1] = seed
-    for(i in 2:n_deviates) {
-        sequence[i] = (a * sequence[i-1] + c) %% m
-    }
-  return(sequence)
-}
-lcg_sequence()
-lcg_sequence(seed = 4)
-```
-
-Small values of $m$, $a$, $c$ give sequences with relatively small period (time before the sequence repeats).
-
------
-
-One recommendation:
-
-. . .
-
-```{r}
-random_unifs = (lcg_sequence(a = 25214903917, c = 11, m = 2^48, seed = 2^47 - 17, n_deviates = 1000)) /
-    2^48
-head(round(random_unifs, digits = 3))
-mean(random_unifs <= .5)
-mean(random_unifs <= .8)
-mean(random_unifs <= .2)
-```
-
------
+- Main application: sampling from posterior distributions
 
 
+## Bayesian Statistics
 
-## Problem setup
+Suppose we have data $y_1,\ldots, y_n$ that we believe can be described by a probability model with parameters $\theta$.
 
-We have
-
-- A (pseudo) random number generator that provides us with independent, uniformly distributed random numbers
-
-- A probability distribution with CDF $F$
-
-We want
-
-- A sequence of independent $F$-distributed random numbers
-
-## Inverse method
-
-Let
-
-$$
-F^{[-1]}(y) = \text{inf}\{x : F(x) \ge y\}, \quad y \in [0,1]
-$$
-
-If $F$ is strictly increasing, we have $F^{[-1]} = F^{-1}$.
-
-. . .
-
-Intuition: 
-
-Suppose $F$ strictly increasing, $F^{-1}$ exists, $U \sim \text{Unif}(0,1)$.
-
-Then $F^{-1}(U) \sim F$.
-
-. . .
-
-Why?
+We also have a prior distribution on the parameters $\theta$, describing our belief about the values of those parameters before seeing any of the data.
 
 $$
 \begin{align*}
-P(F^{-1}(U) \le x) &= P(F(F^{-1}(U)) \le F(x)) \\
-&= P(U \le F(x)) \\
-&= F(x)
-\end{align*}
-$$
-
-And so the CDF of $F^{-1}(U)$ is $F(x)$
-
-## Inverse method: Procedure
-
-Let $F$ be the CDF of the target distribution, and let 
-$$
-F^{[-1]}(y) = \text{inf}\{x : F(x) \ge y\}, \quad y \in [0,1]
-$$
-
-- Draw $U$ from$\text{Unif}[0,1]$
-
-- Take $X = F^{[-1]}(U)$
-
-
-## Inverse method: Exponential distribution
-
-CDF for a random variable distributed exponential with rate 1:
-
-$$
-F(x) = 1 - e^{-x}
-$$
-
-$$
-F^{[-1]}(u) = -\log(1 - u)
-$$
-
-$F$ is strictly increasing and continuous, so just check that $F(F^{-1}(u)) = u$.
-
-Algorithm:
-
-- Generate $U \sim \text{Unif}[0,1]$
-
-- Take $X = - \log(1 - U)$
-
-Note: We can also take $X = -\log(U)$. Why?
-
------
-
-Let's check:
-
-```{r}
-generate_exponential = function() {
-    U = runif(1)
-    X = -log(1 - U)
-    return(X)
-}
-random_exponentials = replicate(n = 10000, generate_exponential())
-grid = seq(0,4, length.out = 200)
-plot(sapply(grid, function(g) mean(random_exponentials <= g)) ~ grid, type = 'l',
-     ylab = "Theoretical and Empirical CDF", xlab = "x")
-points(pexp(grid) ~ grid, type = 'l', col = "red")
-```
-
-
-## Inverse method: Discrete uniform distribution
-
-We would like to sample uniformly from the set $\{1,2,\ldots, n\}$
-
-CDF:
-$$
-F(x) = \frac{\lfloor x \rfloor}{n}
-$$
-
-Inverse:
-$$
-\begin{align*}
-F^{[-1]}(u) &= \text{inf} \{ x : F(x) \ge u\} \\
-&= \text{inf} \{ x : \frac{\lfloor x \rfloor}{n} \ge u\}\\
-&= \lfloor nu \rfloor + 1
+y_i \mid \theta &\sim P(y_i \mid \theta), \quad i = 1,\ldots, n\\
+\theta & \sim \pi
 \end{align*}
 $$
 
 -----
 
-Let's check:
+For example:
 
-```{r}
-generate_discrete_uniform = function(n) {
-    U = runif(1)
-    return(floor(n * U) + 1)
-}
-discrete_uniforms = replicate(n = 10000, generate_discrete_uniform(3))
-head(discrete_uniforms)
-table(discrete_uniforms) / length(discrete_uniforms)
-```
+- Data $y_i$ are heights of men entering the military
 
-## Acceptance-Rejection Method
+- We think that the $y_i$ are distributed $\mathcal N(\theta, \sigma^2)$
 
-Problem setup:
+- We have some prior belief about $\theta$, maybe that it is around 70".
 
-- We want to sample a random variable with pdf $f$.
+- We quantify our prior belief about $\theta$ as $\theta \sim \mathcal N(70, 5)$
 
-- We have a probability density $g$ and a constant $c$ such that $f(x) \le c g(x) = h(x)$ for all $x$.
+- Once we have seen the actual heights, we can "update" our belief about $\theta$ by computing the posterior distribution $P(\theta \mid y_1,\ldots, y_n)$
 
-## Acceptance-Rejection Procedure
+. . .
 
-1. Sample $U \sim \text{Uniform}[0,1]$ and $Z \sim g$
+This posterior distribution is the Bayesian analog of a confidence interval for a normal mean.
 
-2. If $U \le \frac{f(Z)}{ c g(Z)}$, return $Z$
+## Some more complicated examples
 
-3. Otherwise, return to 1
+Finance:
+
+- Data are historical stock prices.
+
+- Stock prices assumed to come from a probabilistic model with parameters having to do with the expected return of each stock and the correlations between them.
+
+- Given some prior on the expected returns and correlations, we can compute posterior distributions of the expected returns and correlations.
+
+. . .
+
+Epidemiology
+
+- Data are dates at which people are infected with a virus
+
+- Infection dates come from a probabilistic model of disease spread. Parameters in the model are transmission probabilities due to contact between individuals.
+
+- If we specify prior beliefs about the transmission probabilities, we can compute a posterior distribution on transmission probabilities.
 
 
-## Acceptance-Rejection Method: Why does it work?
 
-Probability of generating an accepted value in $(x, x + dx)$ is proportional to
+## Posterior distribution
+
+By applying Bayes' rule, we can compute the _posterior distribution_ of the parameters given the data:
 $$
-g(x) dx \frac{f(x)}{h(x)} = \frac{1}{c} f(x) dx
+\begin{align*}
+P(\theta \mid y_1,\ldots, y_n) &= \frac{P(y_1,\ldots, y_n \mid \theta)P(\theta)}{P(y_1,\ldots, y_n)}
+\end{align*}
 $$
 
-- $g(x)$ gives the probability of proposing something in $(x, x + dx)$
+- We want to know as much about this distribution as possible.
 
-- $f(x) / h(x)$ is the probability of accepting the proposal
+- For simple cases it is available in closed form
 
-- Overall idea: Think of $g$ as approximating $f$, and $f(x) / h(x)$ as describing how well $h$ approximates $f$ at $x$. We accept more of the time when $f(x) / h(x)$ is large.
+- For more complicated cases our best hope is to draw samples of it
+
+- From those samples we can compute posterior means, variances, etc. using the Monte Carlo methods from last two classes.
+
+## One way of drawing samples from the posterior
+
+Inputs:
+
+- A target posterior: $P(\theta \mid y_{\text{obs}}) \propto P(y_{\text{obs}} \mid \theta) P(\theta)$
+
+- A way of simulating from $P(y_{\text{obs}} \mid \theta)$
+
+- A prior on the parameters  $P(\theta)$
 
 
 . . .
 
-Notes
+Sampling: for $i = 1,\ldots, N$:
 
-- The expected number of iterations required to accept a draw is $1/c$
+- Generate $\theta^{(i)} \sim P(\theta)$
 
-- Therefore, should make $c$ as small as possible
+- Generate $y^{(i)} \sim P(y \mid \theta^{(i)})$
 
-- $f$ doesn't have to be a normalized density
-
-## Acceptance-Rejection Method: Example
-
-We want $X$ with density
-$$
-f_X(x) = \frac{2}{\sqrt{2\pi}} e^{-x^2 / 2}, \quad x \ge 0
-$$
-
-Let $g(x) = e^{-x}$, $x \ge 0$ (exponential with rate 1)
-
-Let $c = \sqrt {2e / \pi} \approx 1.32$ (obtained by finding the maximum of $f_X(x) / g(x)$)
+- If $y^{(i)} = y_{\text{obs}}$, accept $\theta^{(i)}$
 
 . . .
 
-Check: $f_X(x) \le cg(x)$ for all $x \ge 0$
+Why does this work?
+
+- Our draws $(\theta^{(i)}, y^{(i)})$ are samples from the joint distribution $P(\theta, y)$
+
+- Keeping only the values for which $y^{(i)} = y_{\text{obs}}$ is the definition of conditioning on $y_{\text{obs}}$.
+
+## ABC: Simple Example
+
+Bayesian analysis for a Poisson random variable.
+
+Model is:
+$$
+\begin{align*}
+Y_i &\sim \text{Poisson}(\theta), \quad i = 1,\ldots, n \\
+\theta &\sim \text{Gamma}(\alpha, \beta)
+\end{align*}
+$$
+
+By Bayes rule, we can find in closed form that the posterior, $P(\theta \mid Y_1, \ldots, Y_n)$ has a $\text{Gamma}(\sum_{i=1}^n Y_i + \alpha, n + \beta)$ distribution.
+
+Let's pretend we can't do that though, and try using ABC.
+
+------
+
+Set up the function:
 
 ```{r}
-fX = function(x) 2 / sqrt(2 * pi) * exp(-x^2 / 2)
-g = function(x) exp(-x)
-c = sqrt(2 * exp(1) / pi)
-grid = seq(0, 4, length.out = 200)
-plot(fX(grid) ~ grid, type = 'l', ylim = c(0, 1.5))
-points(c * g(grid) ~ grid, type = 'l', col = 'red')
-```
-
------
-
-Overall algorithm:
-
-1. Generate $Z \sim \text{Exp}(1)$
-
-2. Generate $U \sim \text{Unif}(0,1)$
-
-3. If $U \le \frac{f_X(Z)}{ c g(Z)} = \frac{2}{\sqrt{e}}\exp(-Z^2 / 2 + Z)$, return $Z$
-
------
-
-Let's check:
-
-```{r}
-gen_half_normal = function() {
+generate_abc_sample = function(observed_data,
+    prior_distribution,
+    data_generating_function) {
     while(TRUE) {
-        U = runif(1)
-        Z = rexp(1, rate = 1)
-        if(U <= fX(Z) / (c * g(Z))) {
-            return(Z)
+        theta = prior_distribution()
+        y = data_generating_function(theta)
+        if(all(y == observed_data)) {
+            return(theta)
         }
     }
 }
 ```
 
+-----
+
+Analysis for:
+
+- Prior distribution: $\theta \sim \text{Gamma}(1, 1)$
+
+- Likelihood: $y \mid \theta \sim \text{Poisson}(\theta)$
+
+- Observed data: $y = 3$
+
 . . .
 
 ```{r}
-half_normals = replicate(n = 10000, gen_half_normal())
-signs = ifelse(runif(10000) >= .5, -1, 1)
-normals = half_normals * signs
-qqnorm(normals)
+prior_distribution = function() rgamma(n = 1, shape = 1, rate = 1)
+data_generating_function = function(theta) rpois(n = 1, lambda = theta)
+observed_data = 3
+generate_abc_sample(observed_data, prior_distribution, data_generating_function)
+posterior_samples = replicate(n = 1000, generate_abc_sample(observed_data, prior_distribution, data_generating_function))
 ```
 
 -----
 
-Why might we want to do this?
+. . .
 
-- Maybe we actually want half normals.
+```{r}
+## our posterior should be gamma(y + alpha, 1 + beta) or gamma(4, 2)
+## The mean of a gamma distribution is alpha / beta, so should be 2
+mean(posterior_samples)
+## The variance of a gamma distribution is alpha / beta^2, so should be 1
+var(posterior_samples)
+qplot(posterior_samples)
+theta_vec = seq(0, 6, length.out = 1000)
+plot(dgamma(theta_vec, shape = 4, rate = 2) ~ theta_vec, type = 'l', ylab="true posterior density", xlab = "theta")
+```
 
-- Can use half normals to make standard normals, standard normals to make arbitrary normals.
+
+-----
+
+What if you have more than one sample?
+
+. . .
+
+We still have
+
+- Prior distribution: $\theta \sim \text{Gamma}(1, 1)$
+
+- Likelihood: $y_i \mid \theta \sim \text{Poisson}(\theta)$
+
+- Observed data: $y_1 = 3, y_2 = 3$
+
+```{r}
+n_samples = 2
+data_generating_function = function(theta) rpois(n = n_samples, lambda = theta)
+observed_data = rep(3, n_samples)
+generate_abc_sample(observed_data, prior_distribution, data_generating_function)
+system.time(replicate(n = 1000, generate_abc_sample(observed_data, prior_distribution, data_generating_function)))
+```
+
+(Try changing `n_samples` to something bigger on your own computer...)
+
+## Problems
+
+- Only works for discrete data.
+
+- Very low acceptance probabilities, so it can take a very long time.
+
+Therefore:
+
+- Modify the acceptance parameters.
+
+- This makes the method give approximate samples from the posterior instead of exact samples.
 
 
-## Summing up
+## ABC: The algorithm
 
-- For simulation, we tend to use pseudo-random number generators
+Inputs:
 
-- Pseudo-random number generators target a uniform distribution
+- A target posterior: $P(\theta \mid y_{\text{obs}}) \propto P(y_{\text{obs}} \mid \theta) P(\theta)$
 
-- Many methods for generating random numbers from other distributions
+- A way of simulating from $p(y_{\text{obs}} \mid \theta)$
 
-- Inverse method for when you have the CDF and it is easy to invert
+- A prior on the parameters  $P(\theta)$
 
-- Accept/Reject for more complicated distributions, and for which you don't know or want to compute the normalizing constant.
+- A summary statistic function $s$
+
+- A tolerance $\epsilon$
+
+. . .
+
+Sampling: for $i = 1,\ldots, N$:
+
+- Generate $\theta^{(i)} \sim g(\theta)$
+
+- Generate $y^{(i)} \sim p(y \mid \theta^{(i)})$
+
+- If $\|s(y^{(i)}) - s(y_{\text{obs}})\| < \epsilon$, accept $\theta^{(i)}$
+
+. . .
+
+This method generates approximate samples from the posterior distribution
+
+
+-----
+
+Set up a function for the approximate version of ABC:
+
+```{r}
+generate_abc_sample_2 = function(observed_data,
+    summary_statistic,
+    prior_distribution,
+    data_generating_function,
+    epsilon) {
+    while(TRUE) {
+        theta = prior_distribution()
+        y = data_generating_function(theta)
+        if(abs(summary_statistic(y) -  summary_statistic(observed_data)) < epsilon) {
+            return(theta)
+        }
+    }
+}
+```
+
+-----
+
+. . .
+
+Let's see what happens with the approximate version:
+
+We still have
+
+- Prior distribution: $\theta \sim \text{Gamma}(1, 1)$
+
+- Likelihood: $y_i \mid \theta \sim \text{Poisson}(\theta)$
+
+- Observed data: $y_i = 3$, $i = 1,\ldots, 10$
+
+- Summary statistic $s$ is the mean function, so $s(y_1,\ldots, y_n) = \frac{1}{n} \sum_{i=1}^n y_i$
+
+- Our tolerance is $\epsilon = .1$
+
+```{r}
+n_samples = 10
+prior_distribution = function() rgamma(n = 1, shape = 1, rate = 1)
+data_generating_function = function(theta) rpois(n = n_samples, lambda = theta)
+observed_data = rep(3, n_samples)
+summary_statistic = mean
+epsilon = .1
+generate_abc_sample_2(observed_data, summary_statistic, prior_distribution, data_generating_function, epsilon)
+posterior_samples = replicate(n = 1000,
+    generate_abc_sample_2(observed_data,
+                          summary_statistic,
+                          prior_distribution,
+                          data_generating_function,
+                          epsilon))
+```
+
+-----
+
+
+Checking on the posterior means and variances:
+
+. . .
+
+```{r}
+(true_posterior_mean = (1 + sum(observed_data)) / (n_samples + 1))
+mean(posterior_samples)
+(true_posterior_variance = (1 + sum(observed_data)) / (n_samples + 1)^2)
+var(posterior_samples)
+```
+
+-----
+
+Checking on the posterior distributions:
+
+```{r}
+qplot(posterior_samples) + xlim(c(0, max(theta_vec)))
+plot(dgamma(theta_vec, shape = 1 + sum(observed_data), rate = n_samples + 1) ~ x_vec, type = 'l', ylab = "True posterior density", xlab = "theta")
+```
+
+## ABC: Some notes
+
+- Difficulties: choice of summary statistics:
+
+    - Theory says they should be sufficient statistics for the model.
+
+    - In practice, they are chosen by expert opinion to be features of the data that are thought to be informative about the underlying parameters.
+
+- Advantage: you need to know hardly anything about the likelihood, you just need to be able to simulate data from it.
+
+- Interpretation of Bayesian inference: parameters with higher posterior probability are simply those that make the observed data match data that we simulate under those parameters.
+
+- Next week we'll talk about more exact methods for sampling from posteriors, but they will require us to know more about the functions
