@@ -51,7 +51,7 @@ Inputs:
 
 - Parameter vector $\theta$
 
-- Non-linear function $\mu$, with $\mu(x, \theta_1, \theta_2, \theta_3) = \frac{\theta_3}{1 + e^{-\theta_1 + \theta_2 x}}$
+- Non-linear function $\mu$, with $\mu(x, \theta_1, \theta_2, \theta_3) = \frac{\theta_3}{1 + e^{-\theta_1 - \theta_2 x}}$
 
 - For notational purposes, let $\mu_i (\theta) = \mu(x_i, \theta_1,\theta_2,\theta_3)$.
 
