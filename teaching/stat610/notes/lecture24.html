@@ -85,340 +85,312 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
     charset="utf-8" type="text/javascript"></script>
 </head>
 <body>
-<div id="monte-carlo-methods-integration-and-cross-validation" class="slide section level2">
-<h1>Monte Carlo methods: integration and cross validation</h1>
-<p>Agenda today: Simulation-based methods of computing expectations</p>
-<ul>
-<li><p>Monte Carlo integration</p></li>
-<li><p>Cross validation</p></li>
+<div id="monte-carlo-methods-markov-chains" class="slide section level2">
+<h1>Monte Carlo methods: Markov Chains</h1>
+<p>Today: Markov Chains</p>
+<p>Our goals:</p>
+<ul class="incremental">
+<li><p>Building towards Markov chain monte carlo</p></li>
+<li><p>We will eventually use Markov chains to get samples from arbitrary probability distributions</p></li>
+<li><p>Today we will just look at Markov chains, define them, establish some of their properties</p></li>
 </ul>
-<p>Reading: Lange 21.1, 21.2, 21.6</p>
+<p>Reading: <a href="http://www.statslab.cam.ac.uk/~rrw1/markov/M.pdf">Notes from Richard Weber’s course on Markov chains</a>, or Lange, Chapter 23.</p>
+<ul class="incremental">
+<li><p>Weber’s notes have proofs and examples, and much more detail than we’ll use here. I’m following his notation.</p></li>
+<li><p>Lange Chapter 23 is quite succinct.</p></li>
+</ul>
 </div>
-<div id="monte-carlo-integration" class="slide section level2">
-<h1>Monte Carlo Integration</h1>
-<p>We have:</p>
-<ul>
-<li><p>A function <span class="math inline">\(f\)</span></p></li>
-<li><p>A distribution <span class="math inline">\(\mu\)</span></p></li>
+<div id="a-silly-example" class="slide section level2">
+<h1>A silly example</h1>
+<p><img src="Frog.png" /></p>
+<p>A frog hops around on some lily pads, choosing where to hop somewhat randomly.</p>
+<p>We would like to be able to make probability statements about where the frog is.</p>
+<ul class="incremental">
+<li><p>After <span class="math inline">\(n\)</span> hops, what is the probability that the frog is on the 3rd lily pad?</p></li>
+<li><p>As <span class="math inline">\(n \to \infty\)</span>, what is the probability that the frog is on the 3rd lily pad? Does the starting location of the frog matter?</p></li>
 </ul>
-<p>We would like to approximate <span class="math display">\[
-E[f(X)] = \int f(x) \, d\mu(x)
-\]</span></p>
+</div>
+<div id="definitions" class="slide section level2">
+<h1>Definitions</h1>
 <div class="incremental">
-<p>Why not numerical integration?</p>
-<ul>
-<li><p>Works well for low-dimensional problems.</p></li>
-<li><p>Fails in high dimensions, the “curse of dimensionality”</p></li>
+<ul class="incremental">
+<li><p>Let <span class="math inline">\(I\)</span> be a countable set, <span class="math inline">\(\{ i, j, k, \ldots \}\)</span>.</p></li>
+<li><p>Each <span class="math inline">\(i \in I\)</span> is called a <em>state</em> and <span class="math inline">\(I\)</span> is the <em>state space</em>.</p></li>
+<li><p>Let <span class="math inline">\(\lambda = (\lambda_i, i \in I)\)</span> be a row vector with <span class="math inline">\(i\)</span>th element <span class="math inline">\(\lambda_i\)</span> such that <span class="math inline">\(\sum_{i} \lambda_i = 1\)</span>. <span class="math inline">\(\lambda\)</span> defines the <em>initial distribution</em> over <span class="math inline">\(I\)</span>.</p></li>
+<li><p>Let <span class="math inline">\(P = (p_{ij}: i,j \in I)\)</span> with <span class="math inline">\(p_{ij} \ge 0\)</span> for all <span class="math inline">\(i,j\)</span> and such that <span class="math inline">\(\sum_{j \in I} p_{ij} = 1\)</span>. <span class="math inline">\(P\)</span> is a transition probability matrix.</p></li>
+<li><p>A sequence of random variables, <span class="math inline">\((X_n)_{n \ge 0}\)</span> is a <em>Markov chain</em> with initial distribution <span class="math inline">\(\lambda\)</span> and transition matrix <span class="math inline">\(P\)</span> if for all <span class="math inline">\(n \ge 0\)</span>, and all <span class="math inline">\(i \in I\)</span>:</p></li>
+<li><p><span class="math inline">\(P(X_0 = i) = \lambda_i\)</span></p></li>
+<li><p><span class="math inline">\(P(X_{n+1}= i_{n+1}\mid X_0 = i_0, \ldots, X_n = i_n) = P(X_{n+1} = i_{n+1} \mid X_{n} = i_n) = p_{i_n, i_{n+1}}\)</span></p></li>
 </ul>
 </div>
 </div>
-<div id="monte-carlo-integration-1" class="slide section level2">
-<h1>Monte Carlo Integration</h1>
-<p>To estimate/approximate <span class="math display">\[
-E[f(X)] = \int f(x) \, d\mu(x)
-\]</span></p>
-<ul>
-<li><p>Draw <span class="math inline">\(X_1, \ldots, X_n\)</span> iid from <span class="math inline">\(\mu\)</span></p></li>
-<li><p>Use <span class="math inline">\(\frac{1}{n} \sum_{i=1}^n f(X_i)\)</span> as the estimator</p></li>
+<div id="a-silly-example-1" class="slide section level2">
+<h1>A silly example</h1>
+<p><img src="Frog.png" /></p>
+<p>A frog hops around on some lily pads, choosing where to hop somewhat randomly.</p>
+<ul class="incremental">
+<li><p>State space: <span class="math inline">\(I = \{1,2,3\}\)</span> (the three lily pads)</p></li>
+<li><p>Starting distribution <span class="math inline">\(\lambda = (1, 0,0)\)</span> (starts on lily pad 1)</p></li>
+<li><p>Transition matrix: <span class="math inline">\(P = \begin{pmatrix} 0 &amp; 1 &amp; 0 \\ 0 &amp; .5 &amp; .5 \\ .5 &amp; 0 &amp; .5 \end{pmatrix}\)</span></p></li>
 </ul>
+</div>
+<div id="n-step-transition-matrix" class="slide section level2">
+<h1>n-step transition matrix</h1>
+<p>Given a starting distribution <span class="math inline">\(\lambda\)</span>, we would like to know <span class="math inline">\(P(X_n = j)\)</span>.</p>
+<p>We will use the notation <span class="math inline">\(P_i(A) = P(A \mid X_0 = i)\)</span> for <span class="math inline">\(A\)</span> any event.</p>
 <div class="incremental">
-<p>Why is this reasonable?</p>
-<ul>
-<li>By the law of large numbers, the estimates converge to <span class="math inline">\(E[f(X)]\)</span> as <span class="math inline">\(n \to \infty\)</span></li>
-</ul>
-</div>
-</div>
-<div id="monte-carlo-integration-accuracy" class="slide section level2">
-<h1>Monte Carlo Integration: Accuracy</h1>
-<p>If <span class="math inline">\(f\)</span> is square integrable, we can apply the central limit theorem, which tells us that the estimator is approximately distributed <span class="math display">\[
-\mathcal N \left( E[f(X)], \sqrt{\frac{\text{Var}[f(X)]}{n}} \right)
-\]</span></p>
-<div class="incremental">
-<ul>
-<li><p>Good thing: accuracy doesn’t depend on the dimensionality of the problem</p></li>
-<li><p>Bad thing: Error declines at the <span class="math inline">\(n^{-1/2}\)</span> rate vs. <span class="math inline">\(n^{-k}\)</span>, <span class="math inline">\(k \ge 2\)</span> for the numerical integration methods.</p></li>
-<li><p>What to do? Try to decrease <span class="math inline">\(\text{Var}[f(X)]\)</span>.</p></li>
-</ul>
-</div>
-</div>
-<div id="importance-sampling" class="slide section level2">
-<h1>Importance Sampling</h1>
-<p>Importance sampling is based on the following equality: <span class="math display">\[
-\int f(x) g(x)\, d \nu (x) = \int \frac{f(x) g(x)}{h(x)} h(x) \,d \nu(x)
-\]</span> where</p>
-<ul>
-<li><p><span class="math inline">\(f\)</span> is the function for which we would like to compute the expectation</p></li>
-<li><p><span class="math inline">\(\nu\)</span> is some base measure (Lebesgue or counting)</p></li>
-<li><p><span class="math inline">\(g\)</span> is the density of our target probability distribution relative to <span class="math inline">\(\nu\)</span> (so the measure <span class="math inline">\(\mu\)</span> from before is <span class="math inline">\(g d \nu\)</span>).</p></li>
-<li><p><span class="math inline">\(h\)</span> is the density of some other probability distribution relative to <span class="math inline">\(\nu\)</span></p></li>
-</ul>
-</div>
-<div id="importance-sampling-procedure" class="slide section level2">
-<h1>Importance sampling: Procedure</h1>
-<p>Draw <span class="math inline">\(Y_1, \ldots, Y_n\)</span> iid from a distribution <span class="math inline">\(h\)</span>. Then <span class="math display">\[
-\frac{1}{n}\sum_{i=1}^n \frac{f(Y_i) g(Y_i)}{h(Y_i)}
-\]</span> is an estimate of <span class="math inline">\(\int f(x) g(x) \, d \nu(x)\)</span>.</p>
-</div>
-<div id="when-is-this-useful" class="slide section level2">
-<h1>When is this useful?</h1>
-<p>The importance sampling estimator has a smaller variance than the naive estimator iff: <span class="math display">\[
-\int \left[ \frac{f(x) g(x)}{h(x)} \right]^2 h(x) d\nu(x) \le \int f(x)^2 g(x) d\nu(x)
-\]</span></p>
-<div class="incremental">
-<ul>
-<li>If we choose <span class="math inline">\(h(x) = |f(x)| g(x) / \int |f(z)| g(z) d\nu(z)\)</span>, then an application of Cauchy Schwarz tells us that the condition above is satisfied and the importance sampling estimator will have smaller variance.</li>
-</ul>
-</div>
-<div class="incremental">
-<ul>
-<li>If <span class="math inline">\(f\)</span> is nonnegative and <span class="math inline">\(h\)</span> is chosen as above, the variance of the importance sampling estimator is 0.</li>
-</ul>
-</div>
-<div class="incremental">
-<ul>
-<li>We aren’t able to choose <span class="math inline">\(h\)</span> according to the recipe above, but it implies that the variance will be reduced if <span class="math inline">\(h(x)\)</span> looks like <span class="math inline">\(|f(x)| g(x)\)</span>.</li>
-</ul>
-</div>
-</div>
-<div id="a-contrived-example" class="slide section level2">
-<h1>A contrived example</h1>
-<p>We are playing a terrible game:</p>
-<ul>
-<li><p>I draw from a uniform distribution on <span class="math inline">\([0,1]\)</span>.</p></li>
-<li><p>If the draw comes up less than <span class="math inline">\(.01\)</span>, you have to pay me $100.</p></li>
-<li><p>Otherwise nothing happens.</p></li>
-</ul>
-<p>What is your expected return to playing this game?</p>
-</div>
-<div class="slide section level2">
-
-<p>Naive Monte Carlo estimate:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">set.seed</span>(<span class="dv">1</span>)</span>
-<span id="cb1-2"><a href="#cb1-2"></a>f =<span class="st"> </span><span class="cf">function</span>(x) {</span>
-<span id="cb1-3"><a href="#cb1-3"></a>    <span class="cf">if</span>(x <span class="op">&lt;</span><span class="st"> </span><span class="fl">.01</span>)</span>
-<span id="cb1-4"><a href="#cb1-4"></a>        <span class="kw">return</span>(<span class="op">-</span><span class="dv">100</span>)</span>
-<span id="cb1-5"><a href="#cb1-5"></a>    <span class="kw">return</span>(<span class="dv">0</span>)</span>
-<span id="cb1-6"><a href="#cb1-6"></a>}</span>
-<span id="cb1-7"><a href="#cb1-7"></a>mc_samples =<span class="st"> </span><span class="kw">runif</span>(<span class="dv">1000</span>)</span>
-<span id="cb1-8"><a href="#cb1-8"></a><span class="kw">mean</span>(<span class="kw">sapply</span>(mc_samples, f))</span></code></pre></div>
-<pre><code>## [1] -0.7</code></pre>
-<ul>
-<li><p>Not very good!</p></li>
-<li><p>Problem is that we don’t have very many samples where <span class="math inline">\(x &lt; .01\)</span></p></li>
-<li><p>Try importance sampling from a distribution that is more likely to give <span class="math inline">\(x &lt; .01\)</span></p></li>
-</ul>
-</div>
-<div class="slide section level2">
-
-<p>Recall Beta distributions: Supported on the interval <span class="math inline">\([0,1]\)</span>, can tune so that they put more weight in the middle or at the edges.</p>
-<p>Beta(1,10) has density:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>x =<span class="st"> </span><span class="kw">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dt">length.out =</span> <span class="dv">200</span>)</span>
-<span id="cb3-2"><a href="#cb3-2"></a>beta_density =<span class="st"> </span><span class="kw">dbeta</span>(x, <span class="dt">shape1 =</span> <span class="dv">1</span>, <span class="dt">shape2 =</span> <span class="dv">10</span>)</span>
-<span id="cb3-3"><a href="#cb3-3"></a><span class="kw">plot</span>(beta_density <span class="op">~</span><span class="st"> </span>x, <span class="dt">type =</span> <span class="st">&#39;l&#39;</span>)</span></code></pre></div>
-<p><img src="lecture-24-fig/unnamed-chunk-2-1.png" /></p>
-</div>
-<div class="slide section level2">
-
-<p>Importance sampling from Beta(1,10):</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a>mc_importance_samples =<span class="st"> </span><span class="kw">rbeta</span>(<span class="dv">1000</span>, <span class="dt">shape1 =</span> <span class="dv">1</span>, <span class="dt">shape2 =</span> <span class="dv">10</span>)</span>
-<span id="cb4-2"><a href="#cb4-2"></a>importance_function =<span class="st"> </span><span class="cf">function</span>(x) {</span>
-<span id="cb4-3"><a href="#cb4-3"></a>    <span class="kw">return</span>(<span class="kw">f</span>(x) <span class="op">/</span><span class="st"> </span><span class="kw">dbeta</span>(x, <span class="dt">shape1 =</span> <span class="dv">1</span>, <span class="dt">shape2 =</span> <span class="dv">10</span>))</span>
-<span id="cb4-4"><a href="#cb4-4"></a>}</span>
-<span id="cb4-5"><a href="#cb4-5"></a><span class="kw">mean</span>(<span class="kw">sapply</span>(mc_importance_samples, importance_function))</span></code></pre></div>
-<pre><code>## [1] -1.044691</code></pre>
-</div>
-<div id="more-realistic-examples" class="slide section level2">
-<h1>More realistic examples</h1>
-<ul>
-<li><p>Intuition from the game holds: if you have extreme returns from rare events, importance sampling by sampling more from regions with extreme returns helps</p></li>
-<li><p>Insurance</p></li>
-<li><p>Quantitative finance</p></li>
-</ul>
-</div>
-<div id="rao-blackwellization" class="slide section level2">
-<h1>Rao-Blackwellization</h1>
-<p>Let <span class="math inline">\(\tau(U, X)\)</span> be an estimator of some function</p>
-<p>Then <span class="math display">\[
-\text{var}(\tau(U, X)) = \text{var}[E[\tau(U, X) | X]] + E[\text{var}(\tau(U, X) | X)]
-\]</span> which means that <span class="math inline">\(\tau&#39; = E[\tau(U, X) \mid X]\)</span> has a smaller variance than <span class="math inline">\(\tau\)</span></p>
-</div>
-<div id="rao-blackwellization-for-monte-carlo-integration-using-the-acceptreject-algorithm" class="slide section level2">
-<h1>“Rao-Blackwellization” for Monte Carlo Integration using the Accept/Reject algorithm</h1>
-<p>Setup:</p>
-<ul>
-<li><p>We want to estimate <span class="math inline">\(E[f(X)] = \int f(x) g(x) \, dx\)</span></p></li>
-<li><p>We have some <span class="math inline">\(h\)</span>, <span class="math inline">\(c\)</span> such that <span class="math inline">\(g(x) \le ch(x)\)</span></p></li>
-<li><p>We generate <span class="math inline">\(N\)</span> points <span class="math inline">\(X_1,\ldots, X_N\)</span> from <span class="math inline">\(h(x)\)</span></p></li>
-<li><p>We generate <span class="math inline">\(N\)</span> points <span class="math inline">\(U_1,\ldots, U_N\)</span> from a standard uniform.</p></li>
-<li><p>We accept <span class="math inline">\(X_i\)</span> if <span class="math inline">\(U_i \le W_i = g(X_i) / [ch(X_i)]\)</span>.</p></li>
-<li><p><span class="math inline">\(N\)</span> is a random number so that we have <span class="math inline">\(m\)</span> acceptances.</p></li>
-</ul>
-<p>The Monte Carlo estimator of <span class="math inline">\(E[f(X)]\)</span> is <span class="math display">\[
-\frac{1}{m} \sum_{i=1}^N \mathbf 1_{\{U_i \le W_i\}} f(X_i)
+<p>For <span class="math inline">\(n = 1\)</span>, we know that <span class="math display">\[
+P(X_1 = j) = \sum_{i \in I} \lambda_i P_i(X_1 = j) = \sum_{i \in I} \lambda_i p_{ij} = (\lambda P)_j
 \]</span></p>
 </div>
-<div class="slide section level2">
-
-<p>Can we condition?</p>
+<div class="incremental">
+<p>For <span class="math inline">\(n = 2\)</span>, we can write <span class="math display">\[
+P_i(X_2 = j) = \sum_k P_i(X_1 = k, X_2 = j) = \sum_k p_{ik} p_{kj} = (P^2)_{ij}
+\]</span></p>
+</div>
+<div class="incremental">
 <p><span class="math display">\[
-\begin{align*}
-\frac{1}{m} E&amp;\left[ \sum_{i=1}^N \mathbf 1_{\{U_i \le W_i\}} f(X_i) | N, X_1,\ldots, X_N \right] \\
-&amp;= \frac{1}{m}\sum_{i=1}^N E\left[ \mathbf 1_{\{U_i \le W_i\}}  | N, W_1,\ldots, W_N\right] f(X_i)
-\end{align*}
-\]</span></p>
-<p><span class="math inline">\(E \left[ \mathbf 1_{\{U_i \le W_i\}} | N, W_1,\ldots, W_N \right]\)</span> is the probability that we accept <span class="math inline">\(X_i\)</span> given that we sample <span class="math inline">\(N\)</span> deviates and accept <span class="math inline">\(m\)</span> of them</p>
-<p>If <span class="math inline">\(m\)</span>, <span class="math inline">\(N\)</span> are large, we will have</p>
-<p><span class="math display">\[
-E \left[ \mathbf 1_{\{U_i \le W_i\}} | N, W_1,\ldots, W_N \right] \approx W_i m / N \approx W_i / c
+P(X_2 = j) = \sum_{i,k} \lambda_i P_i(X_1 = k, X_2 = j) = \sum_{i,k} \lambda_i p_{ik} p_{kj} = (\lambda P^2)_j
 \]</span></p>
 </div>
-<div class="slide section level2">
-
-<p>Example:</p>
-<p><span class="math inline">\(h\)</span> the standard uniform distribution, <span class="math inline">\(c = 10\)</span></p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a>one_rb_sample =<span class="st"> </span><span class="cf">function</span>() {</span>
-<span id="cb6-2"><a href="#cb6-2"></a>    c =<span class="st"> </span><span class="dv">10</span></span>
-<span id="cb6-3"><a href="#cb6-3"></a>    X =<span class="st"> </span><span class="kw">runif</span>(<span class="dv">1</span>)</span>
-<span id="cb6-4"><a href="#cb6-4"></a>    U =<span class="st"> </span><span class="kw">runif</span>(<span class="dv">1</span>)</span>
-<span id="cb6-5"><a href="#cb6-5"></a>    W =<span class="st"> </span><span class="kw">dbeta</span>(X, <span class="dt">shape1 =</span> <span class="dv">1</span>, <span class="dt">shape2 =</span> <span class="dv">10</span>) <span class="op">/</span><span class="st"> </span>(c <span class="op">*</span><span class="st"> </span><span class="kw">dunif</span>(X))</span>
-<span id="cb6-6"><a href="#cb6-6"></a>    <span class="kw">return</span>(<span class="kw">c</span>(<span class="dt">accepted =</span> (U <span class="op">&lt;=</span><span class="st"> </span>W), <span class="dt">fX =</span> <span class="kw">f</span>(X), <span class="dt">weight =</span> W <span class="op">/</span><span class="st"> </span>c))</span>
-<span id="cb6-7"><a href="#cb6-7"></a>}</span>
-<span id="cb6-8"><a href="#cb6-8"></a>samples =<span class="st"> </span><span class="kw">replicate</span>(<span class="dt">n =</span> <span class="dv">10000</span>, <span class="kw">one_rb_sample</span>())</span>
-<span id="cb6-9"><a href="#cb6-9"></a>m =<span class="st"> </span><span class="kw">sum</span>(samples[<span class="st">&quot;accepted&quot;</span>,])</span>
-<span id="cb6-10"><a href="#cb6-10"></a>fX =<span class="st"> </span>samples[<span class="st">&quot;fX&quot;</span>,]</span>
-<span id="cb6-11"><a href="#cb6-11"></a>weights =<span class="st"> </span>samples[<span class="st">&quot;weight&quot;</span>,]</span>
-<span id="cb6-12"><a href="#cb6-12"></a><span class="kw">sum</span>(fX <span class="op">*</span><span class="st"> </span>weights) <span class="op">/</span><span class="st"> </span>m</span></code></pre></div>
-<pre><code>## [1] -0.9477492</code></pre>
-</div>
-<div id="part-2-cross-validation" class="slide section level2">
-<h1>Part 2: Cross validation</h1>
 <div class="incremental">
-<p>We have:</p>
-<ul>
-<li><p>Data <span class="math inline">\(X_1, \ldots, X_n\)</span>.</p></li>
-<li><p>A tuning parameter <span class="math inline">\(\theta\)</span>. Each value of <span class="math inline">\(\theta\)</span> corresponds to a different set of models.</p></li>
-<li><p>A function <span class="math inline">\(L\)</span> that takes a fitted model and a data point and returns a measure of model quality.</p></li>
-</ul>
-<p>We would like to choose one model from the set of candidate models indexed by <span class="math inline">\(\theta\)</span>.</p>
+<p>So in general, if <span class="math inline">\(\delta_i\)</span> is the vector with a 1 at index <span class="math inline">\(i\)</span> and 0’s everywhere else, <span class="math display">\[
+P_i(X_n = j) = (\delta_i P^n)_j = (P^n)_{ij}
+\]</span> and <span class="math display">\[
+P(X_n = j) = \sum_i \lambda_i P_i(X_n = j) = (\lambda P^n)_j
+\]</span></p>
 </div>
-</div>
-<div id="example-regression" class="slide section level2">
-<h1>Example: Regression</h1>
-<ul>
-<li><p>Data: Pairs of predictors and response variables, <span class="math inline">\((y_i, X_i)\)</span>, <span class="math inline">\(i = 1,\ldots, n\)</span>, <span class="math inline">\(y_i \in \mathbb R\)</span>, <span class="math inline">\(X_i \in \mathbb R^p\)</span></p></li>
-<li><p>Models: <span class="math inline">\(y_i = X \beta + \epsilon\)</span>, <span class="math inline">\(\beta_j = 0, j \in S_\theta\)</span>, where <span class="math inline">\(S_\theta \subseteq \{1,\ldots, p\}\)</span>.</p></li>
-<li><p>Model quality: Squared-error loss. If <span class="math inline">\(\hat \beta_\theta\)</span> are our estimates of the regression coefficients in model <span class="math inline">\(\theta\)</span>, model quality is measured by <span class="math display">\[
-L(\hat \beta_\theta, (y_i, X_i)) = (y_i - X_i^T \hat \beta_\theta)^2
-\]</span></p></li>
-</ul>
-<p>We want to choose a subset of the predictors that do the best job of explaining the response.</p>
 <div class="incremental">
-<p>Naive solution: Find the model that has the lowest value for the squared-error loss.</p>
-<p>Why doesn’t this work?</p>
+<p>So the <span class="math inline">\(n\)</span>-step transition matrix is simply <span class="math inline">\(P^n\)</span>.</p>
 </div>
 </div>
-<div id="example-mixture-models" class="slide section level2">
-<h1>Example: Mixture models</h1>
-<ul>
-<li><p>Data: <span class="math inline">\(x_1,\ldots, x_n\)</span>, <span class="math inline">\(x_i \in \mathbb R\)</span></p></li>
-<li><p>Models: Gaussian mixture models with <span class="math inline">\(\theta\)</span> mixture components.</p></li>
-<li><p>Model quality: Negative log likelihood of the data. If <span class="math inline">\(\hat p_\theta\)</span> is the density of the fitted model with <span class="math inline">\(\theta\)</span> components, model quality is measured by <span class="math inline">\(L(\hat p_\theta, x_i) = -\log \hat p_\theta(x_i)\)</span>.</p></li>
-</ul>
-<p>We want to choose the number of mixture components that best explains the data.</p>
+<div id="example-of-n-step-transition-matrix-computations" class="slide section level2">
+<h1>Example of n-step transition matrix computations</h1>
+<p><img src="Frog.png" /></p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>P =<span class="st"> </span><span class="kw">matrix</span>(<span class="dv">0</span>, <span class="dt">nrow =</span> <span class="dv">3</span>, <span class="dt">ncol =</span> <span class="dv">3</span>)</span>
+<span id="cb1-2"><a href="#cb1-2"></a>P[<span class="dv">1</span>,<span class="dv">2</span>] =<span class="st"> </span><span class="dv">1</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a>P[<span class="dv">2</span>,<span class="dv">2</span>] =<span class="st"> </span>P[<span class="dv">2</span>,<span class="dv">3</span>] =<span class="st"> </span>P[<span class="dv">3</span>,<span class="dv">1</span>] =<span class="st"> </span>P[<span class="dv">3</span>,<span class="dv">3</span>] =<span class="st"> </span><span class="dv">1</span><span class="op">/</span><span class="dv">2</span></span>
+<span id="cb1-4"><a href="#cb1-4"></a>P</span></code></pre></div>
+<pre><code>##      [,1] [,2] [,3]
+## [1,]  0.0  1.0  0.0
+## [2,]  0.0  0.5  0.5
+## [3,]  0.5  0.0  0.5</code></pre>
 <div class="incremental">
-<p>Naive solution: Choose the number of mixture components that minimizes the negative log likelihood of the data.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>lambda =<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">0</span>)</span>
+<span id="cb3-2"><a href="#cb3-2"></a>lambda <span class="op">%*%</span><span class="st"> </span>P</span></code></pre></div>
+<pre><code>##      [,1] [,2] [,3]
+## [1,]    0    1    0</code></pre>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>lambda <span class="op">%*%</span><span class="st"> </span>P <span class="op">%*%</span><span class="st"> </span>P</span></code></pre></div>
+<pre><code>##      [,1] [,2] [,3]
+## [1,]    0  0.5  0.5</code></pre>
 </div>
-</div>
-<div id="better-solution-cross-validation" class="slide section level2">
-<h1>Better Solution: Cross validation</h1>
-<p>Idea: Instead of measuring model quality on the same data we used to fit the model, we estimate model quality on new data.</p>
-<p>If we knew the true distribution of the data, we could simulate new data and use a Monte Carlo estimate based on the simulations.</p>
-<p>We can’t actually get new data, and so we hold some back when we fit the model and then pretend that the held back data is new data.</p>
 </div>
 <div class="slide section level2">
 
-<p>Procedure:</p>
-<ul>
-<li><p>Divide the data into <span class="math inline">\(K\)</span> folds</p></li>
-<li><p>Let <span class="math inline">\(X^{(k)}\)</span> denote the data in fold <span class="math inline">\(k\)</span>, and let <span class="math inline">\(X^{(-k)}\)</span> denote the data in all the folds except for <span class="math inline">\(k\)</span>.</p></li>
-<li><p>For each fold and each value of the tuning parameter <span class="math inline">\(\theta\)</span>, fit the model on <span class="math inline">\(X^{(-k)}\)</span> to get <span class="math inline">\(\hat f_\theta^{(k)}\)</span></p></li>
-<li><p>Compute <span class="math display">\[
-\text{CV}(\theta) = \frac{1}{n} \sum_{k=1}^K \sum_{x \in X^{(k)}} L(\hat f_\theta^{(k)}, x)
-\]</span></p></li>
-<li><p>Choose <span class="math inline">\(\hat \theta = \text{argmin}_{\theta} \text{CV}(\theta)\)</span></p></li>
-</ul>
+<p>What happens after a long time?</p>
+<div class="incremental">
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="co">## computes P^(2^k)</span></span>
+<span id="cb7-2"><a href="#cb7-2"></a>pow_P =<span class="st"> </span><span class="cf">function</span>(P, k) {</span>
+<span id="cb7-3"><a href="#cb7-3"></a>    <span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span>k) {</span>
+<span id="cb7-4"><a href="#cb7-4"></a>        P =<span class="st"> </span>P <span class="op">%*%</span><span class="st"> </span>P</span>
+<span id="cb7-5"><a href="#cb7-5"></a>    }</span>
+<span id="cb7-6"><a href="#cb7-6"></a>    <span class="kw">return</span>(P)</span>
+<span id="cb7-7"><a href="#cb7-7"></a>}</span>
+<span id="cb7-8"><a href="#cb7-8"></a><span class="co">## 8-step probabilities </span></span>
+<span id="cb7-9"><a href="#cb7-9"></a>lambda <span class="op">%*%</span><span class="st"> </span><span class="kw">pow_P</span>(P, <span class="dv">3</span>)</span></code></pre></div>
+<pre><code>##          [,1]      [,2]      [,3]
+## [1,] 0.203125 0.3984375 0.3984375</code></pre>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a><span class="co">## 16-step probabilities </span></span>
+<span id="cb9-2"><a href="#cb9-2"></a>lambda <span class="op">%*%</span><span class="st"> </span><span class="kw">pow_P</span>(P, <span class="dv">4</span>)</span></code></pre></div>
+<pre><code>##           [,1]      [,2]      [,3]
+## [1,] 0.2000122 0.3999939 0.3999939</code></pre>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a><span class="co">## 32-step probabilities </span></span>
+<span id="cb11-2"><a href="#cb11-2"></a>lambda <span class="op">%*%</span><span class="st"> </span><span class="kw">pow_P</span>(P, <span class="dv">5</span>)</span></code></pre></div>
+<pre><code>##      [,1] [,2] [,3]
+## [1,]  0.2  0.4  0.4</code></pre>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a><span class="co">## 64-step probabilities </span></span>
+<span id="cb13-2"><a href="#cb13-2"></a>lambda <span class="op">%*%</span><span class="st"> </span><span class="kw">pow_P</span>(P, <span class="dv">6</span>)</span></code></pre></div>
+<pre><code>##      [,1] [,2] [,3]
+## [1,]  0.2  0.4  0.4</code></pre>
 </div>
-<div id="example" class="slide section level2">
-<h1>Example</h1>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a>n =<span class="st"> </span><span class="dv">100</span></span>
-<span id="cb8-2"><a href="#cb8-2"></a>p =<span class="st"> </span><span class="dv">20</span></span>
-<span id="cb8-3"><a href="#cb8-3"></a>X =<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">rnorm</span>(n <span class="op">*</span><span class="st"> </span>p), <span class="dt">nrow =</span> n)</span>
-<span id="cb8-4"><a href="#cb8-4"></a>y =<span class="st"> </span><span class="kw">rnorm</span>(n)</span>
-<span id="cb8-5"><a href="#cb8-5"></a>get_rss_submodels =<span class="st"> </span><span class="cf">function</span>(n_predictors, y, X) {</span>
-<span id="cb8-6"><a href="#cb8-6"></a>    <span class="cf">if</span>(n_predictors <span class="op">==</span><span class="st"> </span><span class="dv">0</span>) {</span>
-<span id="cb8-7"><a href="#cb8-7"></a>        lm_submodel =<span class="st"> </span><span class="kw">lm</span>(y <span class="op">~</span><span class="st"> </span><span class="dv">0</span>)</span>
-<span id="cb8-8"><a href="#cb8-8"></a>    } <span class="cf">else</span> {</span>
-<span id="cb8-9"><a href="#cb8-9"></a>        lm_submodel =<span class="st"> </span><span class="kw">lm</span>(y <span class="op">~</span><span class="st"> </span><span class="dv">0</span> <span class="op">+</span><span class="st"> </span>X[,<span class="dv">1</span><span class="op">:</span>n_predictors, <span class="dt">drop =</span> <span class="ot">FALSE</span>])</span>
-<span id="cb8-10"><a href="#cb8-10"></a>    }</span>
-<span id="cb8-11"><a href="#cb8-11"></a>    <span class="kw">return</span>(<span class="kw">sum</span>(<span class="kw">residuals</span>(lm_submodel)<span class="op">^</span><span class="dv">2</span>))</span>
-<span id="cb8-12"><a href="#cb8-12"></a>}</span>
-<span id="cb8-13"><a href="#cb8-13"></a>p_vec =<span class="st"> </span><span class="dv">0</span><span class="op">:</span>p</span>
-<span id="cb8-14"><a href="#cb8-14"></a>rss =<span class="st"> </span><span class="kw">sapply</span>(p_vec, get_rss_submodels, y, X)</span>
-<span id="cb8-15"><a href="#cb8-15"></a><span class="kw">plot</span>(rss <span class="op">~</span><span class="st"> </span>p_vec)</span></code></pre></div>
-<p><img src="lecture-24-fig/unnamed-chunk-5-1.png" /></p>
 </div>
 <div class="slide section level2">
 
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a>get_cv_error =<span class="st"> </span><span class="cf">function</span>(n_predictors, y, X, folds) {</span>
-<span id="cb9-2"><a href="#cb9-2"></a>    cv_vec =<span class="st"> </span><span class="kw">numeric</span>(<span class="kw">length</span>(<span class="kw">unique</span>(folds)))</span>
-<span id="cb9-3"><a href="#cb9-3"></a>    <span class="cf">for</span>(f <span class="cf">in</span> <span class="kw">unique</span>(folds)) {</span>
-<span id="cb9-4"><a href="#cb9-4"></a>        cv_vec[f] =<span class="st"> </span><span class="kw">rss_on_held_out</span>(</span>
-<span id="cb9-5"><a href="#cb9-5"></a>                  n_predictors,</span>
-<span id="cb9-6"><a href="#cb9-6"></a>                  <span class="dt">y_train =</span> y[folds <span class="op">!=</span><span class="st"> </span>f],</span>
-<span id="cb9-7"><a href="#cb9-7"></a>                  <span class="dt">X_train =</span> X[folds <span class="op">!=</span><span class="st"> </span>f,],</span>
-<span id="cb9-8"><a href="#cb9-8"></a>                  <span class="dt">y_test =</span> y[folds <span class="op">==</span><span class="st"> </span>f],</span>
-<span id="cb9-9"><a href="#cb9-9"></a>                  <span class="dt">X_test =</span> X[folds <span class="op">==</span><span class="st"> </span>f,])</span>
-<span id="cb9-10"><a href="#cb9-10"></a>    }</span>
-<span id="cb9-11"><a href="#cb9-11"></a>    <span class="kw">return</span>(<span class="kw">mean</span>(cv_vec))</span>
-<span id="cb9-12"><a href="#cb9-12"></a>}</span>
-<span id="cb9-13"><a href="#cb9-13"></a></span>
-<span id="cb9-14"><a href="#cb9-14"></a>rss_on_held_out =<span class="st"> </span><span class="cf">function</span>(n_predictors, y_train, X_train, y_test, X_test) {</span>
-<span id="cb9-15"><a href="#cb9-15"></a>    <span class="cf">if</span>(n_predictors <span class="op">==</span><span class="st"> </span><span class="dv">0</span>) {</span>
-<span id="cb9-16"><a href="#cb9-16"></a>        lm_submodel =<span class="st"> </span><span class="kw">lm</span>(y_train <span class="op">~</span><span class="st"> </span><span class="dv">0</span>)</span>
-<span id="cb9-17"><a href="#cb9-17"></a>        preds_on_test =<span class="st"> </span><span class="kw">rep</span>(<span class="dv">0</span>, <span class="kw">length</span>(y_test))</span>
-<span id="cb9-18"><a href="#cb9-18"></a>    } <span class="cf">else</span> {</span>
-<span id="cb9-19"><a href="#cb9-19"></a>        lm_submodel =<span class="st"> </span><span class="kw">lm</span>(y_train <span class="op">~</span><span class="st"> </span><span class="dv">0</span> <span class="op">+</span><span class="st"> </span>X_train[,<span class="dv">1</span><span class="op">:</span>n_predictors, <span class="dt">drop =</span> <span class="ot">FALSE</span>])</span>
-<span id="cb9-20"><a href="#cb9-20"></a>        preds_on_test =<span class="st"> </span>X_test[,<span class="dv">1</span><span class="op">:</span>n_predictors, drop=<span class="st"> </span><span class="ot">FALSE</span>] <span class="op">%*%</span><span class="st"> </span><span class="kw">coef</span>(lm_submodel)</span>
-<span id="cb9-21"><a href="#cb9-21"></a>    }</span>
-<span id="cb9-22"><a href="#cb9-22"></a></span>
-<span id="cb9-23"><a href="#cb9-23"></a>    <span class="kw">return</span>(<span class="kw">sum</span>((y_test <span class="op">-</span><span class="st"> </span>preds_on_test)<span class="op">^</span><span class="dv">2</span>))</span>
-<span id="cb9-24"><a href="#cb9-24"></a>}</span>
-<span id="cb9-25"><a href="#cb9-25"></a>K =<span class="st"> </span><span class="dv">5</span></span>
-<span id="cb9-26"><a href="#cb9-26"></a><span class="co">## normally you would do this at random</span></span>
-<span id="cb9-27"><a href="#cb9-27"></a>folds =<span class="st"> </span><span class="kw">rep</span>(<span class="dv">1</span><span class="op">:</span>K, <span class="dt">each =</span> n <span class="op">/</span><span class="st"> </span>K)</span>
-<span id="cb9-28"><a href="#cb9-28"></a>p_vec =<span class="st"> </span><span class="dv">0</span><span class="op">:</span>p</span>
-<span id="cb9-29"><a href="#cb9-29"></a>cv_errors =<span class="st"> </span><span class="kw">sapply</span>(p_vec, get_cv_error, y, X, folds)</span>
-<span id="cb9-30"><a href="#cb9-30"></a><span class="kw">plot</span>(cv_errors <span class="op">~</span><span class="st"> </span>p_vec)</span></code></pre></div>
-<p><img src="lecture-24-fig/unnamed-chunk-6-1.png" /></p>
+<p>What if the frog starts at a different location?</p>
+<div class="incremental">
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1"></a><span class="co">## 2^6-step probabilities, starting at 2</span></span>
+<span id="cb15-2"><a href="#cb15-2"></a>lambda =<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">1</span>,<span class="dv">0</span>)</span>
+<span id="cb15-3"><a href="#cb15-3"></a>lambda <span class="op">%*%</span><span class="st"> </span><span class="kw">pow_P</span>(P, <span class="dv">6</span>)</span></code></pre></div>
+<pre><code>##      [,1] [,2] [,3]
+## [1,]  0.2  0.4  0.4</code></pre>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1"></a><span class="co">## 2^6-step probabilities, starting at 3</span></span>
+<span id="cb17-2"><a href="#cb17-2"></a>lambda =<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">1</span>)</span>
+<span id="cb17-3"><a href="#cb17-3"></a>lambda <span class="op">%*%</span><span class="st"> </span><span class="kw">pow_P</span>(P, <span class="dv">6</span>)</span></code></pre></div>
+<pre><code>##      [,1] [,2] [,3]
+## [1,]  0.2  0.4  0.4</code></pre>
 </div>
-<div id="choice-of-k" class="slide section level2">
-<h1>Choice of <span class="math inline">\(K\)</span></h1>
-<p>Considerations:</p>
-<ul>
-<li><p>Larger <span class="math inline">\(K\)</span> means more computation (although sometimes there is a shortcut for leave-one-out cross validation)</p></li>
-<li><p>Larger <span class="math inline">\(K\)</span> means less bias in the estimate of model accuracy</p></li>
-<li><p>Larger <span class="math inline">\(K\)</span> also means more variance in the estimate, so we don’t necessarily want <span class="math inline">\(K = n\)</span></p></li>
-<li><p>Usually choose <span class="math inline">\(K = 5\)</span> or <span class="math inline">\(K = 10\)</span></p></li>
-<li><p>If your problem is structured (e.g. time series, spatial), you should choose the folds to respect the structure.</p></li>
+</div>
+<div class="slide section level2">
+
+<p>In this case, no matter where the frog starts, we get the same probabilities:</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1"></a><span class="kw">pow_P</span>(P, <span class="dv">6</span>)</span></code></pre></div>
+<pre><code>##      [,1] [,2] [,3]
+## [1,]  0.2  0.4  0.4
+## [2,]  0.2  0.4  0.4
+## [3,]  0.2  0.4  0.4</code></pre>
+</div>
+<div id="another-example" class="slide section level2">
+<h1>Another example</h1>
+<p><img src="Frog-big.png" /></p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a>P_big =<span class="st"> </span><span class="kw">matrix</span>(<span class="dv">0</span>, <span class="dt">nrow =</span> <span class="dv">7</span>, <span class="dt">ncol =</span> <span class="dv">7</span>)</span>
+<span id="cb21-2"><a href="#cb21-2"></a>P_big[<span class="dv">1</span><span class="op">:</span><span class="dv">3</span>,<span class="dv">1</span><span class="op">:</span><span class="dv">3</span>] =<span class="st"> </span>P</span>
+<span id="cb21-3"><a href="#cb21-3"></a>P_big[<span class="dv">4</span>,<span class="dv">3</span><span class="op">:</span><span class="dv">5</span>] =<span class="st"> </span><span class="kw">c</span>(.<span class="dv">25</span>, <span class="fl">.5</span>, <span class="fl">.25</span>)</span>
+<span id="cb21-4"><a href="#cb21-4"></a>P_big[<span class="dv">5</span>, <span class="dv">6</span><span class="op">:</span><span class="dv">7</span>] =<span class="st"> </span><span class="kw">c</span>(.<span class="dv">5</span>, <span class="fl">.5</span>)</span>
+<span id="cb21-5"><a href="#cb21-5"></a>P_big[<span class="dv">6</span>,<span class="dv">4</span>] =<span class="st"> </span><span class="dv">1</span></span>
+<span id="cb21-6"><a href="#cb21-6"></a>P_big[<span class="dv">7</span>,<span class="dv">7</span>] =<span class="st"> </span><span class="dv">1</span></span>
+<span id="cb21-7"><a href="#cb21-7"></a>P_big</span></code></pre></div>
+<pre><code>##      [,1] [,2] [,3] [,4] [,5] [,6] [,7]
+## [1,]  0.0  1.0 0.00  0.0 0.00  0.0  0.0
+## [2,]  0.0  0.5 0.50  0.0 0.00  0.0  0.0
+## [3,]  0.5  0.0 0.50  0.0 0.00  0.0  0.0
+## [4,]  0.0  0.0 0.25  0.5 0.25  0.0  0.0
+## [5,]  0.0  0.0 0.00  0.0 0.00  0.5  0.5
+## [6,]  0.0  0.0 0.00  1.0 0.00  0.0  0.0
+## [7,]  0.0  0.0 0.00  0.0 0.00  0.0  1.0</code></pre>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<p>Let’s do the same thing: if we start the frog at different locations, compute the probability of being at any of the lily pads after 64 steps.</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1"></a><span class="co">## 2^6-step probabilities, starting at 1</span></span>
+<span id="cb23-2"><a href="#cb23-2"></a>lambda =<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>, <span class="kw">rep</span>(<span class="dv">0</span>, <span class="dv">6</span>))</span>
+<span id="cb23-3"><a href="#cb23-3"></a>lambda <span class="op">%*%</span><span class="st"> </span><span class="kw">pow_P</span>(P_big, <span class="dv">6</span>)</span></code></pre></div>
+<pre><code>##      [,1] [,2] [,3] [,4] [,5] [,6] [,7]
+## [1,]  0.2  0.4  0.4    0    0    0    0</code></pre>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1"></a><span class="co">## 2^6-step probabilities, starting at 7</span></span>
+<span id="cb25-2"><a href="#cb25-2"></a>lambda =<span class="st"> </span><span class="kw">c</span>(<span class="kw">rep</span>(<span class="dv">0</span>, <span class="dv">6</span>), <span class="dv">1</span>)</span>
+<span id="cb25-3"><a href="#cb25-3"></a>lambda <span class="op">%*%</span><span class="st"> </span><span class="kw">pow_P</span>(P_big, <span class="dv">6</span>)</span></code></pre></div>
+<pre><code>##      [,1] [,2] [,3] [,4] [,5] [,6] [,7]
+## [1,]    0    0    0    0    0    0    1</code></pre>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1"></a><span class="co">## 2^6-step probabilities, starting at 6</span></span>
+<span id="cb27-2"><a href="#cb27-2"></a>lambda =<span class="st"> </span><span class="kw">c</span>(<span class="kw">rep</span>(<span class="dv">0</span>, <span class="dv">5</span>), <span class="dv">1</span>, <span class="dv">0</span>)</span>
+<span id="cb27-3"><a href="#cb27-3"></a>lambda <span class="op">%*%</span><span class="st"> </span><span class="kw">pow_P</span>(P_big, <span class="dv">6</span>)</span></code></pre></div>
+<pre><code>##           [,1]      [,2]      [,3]         [,4]         [,5]         [,6]
+## [1,] 0.1333333 0.2666667 0.2666667 1.905188e-09 6.499812e-10 4.435003e-10
+##           [,7]
+## [1,] 0.3333333</code></pre>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1"></a><span class="kw">round</span>(<span class="kw">pow_P</span>(P_big, <span class="dv">6</span>), <span class="dt">digits =</span> <span class="dv">2</span>)</span></code></pre></div>
+<pre><code>##      [,1] [,2] [,3] [,4] [,5] [,6] [,7]
+## [1,] 0.20 0.40 0.40    0    0    0 0.00
+## [2,] 0.20 0.40 0.40    0    0    0 0.00
+## [3,] 0.20 0.40 0.40    0    0    0 0.00
+## [4,] 0.13 0.27 0.27    0    0    0 0.33
+## [5,] 0.07 0.13 0.13    0    0    0 0.67
+## [6,] 0.13 0.27 0.27    0    0    0 0.33
+## [7,] 0.00 0.00 0.00    0    0    0 1.00</code></pre>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Our next goal is to find the conditions under which this convergence occurs.</p>
+<p>We’ll need two concepts:</p>
+<ul class="incremental">
+<li><p>Communicating classes/irreducibility</p></li>
+<li><p>Invariant distributions</p></li>
 </ul>
 </div>
-<div id="summing-up" class="slide section level2">
-<h1>Summing up</h1>
-<ul>
-<li><p>We can use simulations to estimate arbitrary functions of our random variables.</p></li>
-<li><p>If we know the underlying distribution, we can simply simulate from it (Monte Carlo integration).</p></li>
-<li><p>If we don’t know the underlying distribution, we can “simulate” from the data by resampling from the data (cross validation). Resampling methods will do well to the extent that the observed data reflect the true data-generating distribution.</p></li>
+<div id="class-structure" class="slide section level2">
+<h1>Class structure</h1>
+<p>We say state <span class="math inline">\(i\)</span> leads to <span class="math inline">\(j\)</span>, <span class="math inline">\(i \to j\)</span> if <span class="math display">\[
+P_i(X_n = j \text{ for some } n \ge 0) &gt; 0
+\]</span></p>
+<div class="incremental">
+<p>We say that <span class="math inline">\(i\)</span> communicates with <span class="math inline">\(j\)</span> and write <span class="math inline">\(i \leftrightarrow j\)</span> if <span class="math inline">\(i \to j\)</span> and <span class="math inline">\(j \to i\)</span>.</p>
+</div>
+</div>
+<div id="communicating-classes" class="slide section level2">
+<h1>Communicating classes</h1>
+<p>From what we saw before, we can see that</p>
+<ul class="incremental">
+<li><span class="math inline">\(i \leftrightarrow j\)</span> and <span class="math inline">\(j \leftrightarrow k\)</span> implies <span class="math inline">\(i \leftrightarrow k\)</span></li>
 </ul>
+<p>If we add that <span class="math inline">\(i \leftrightarrow i\)</span>, <span class="math inline">\(\leftrightarrow\)</span> satisfies the conditions for an <a href="https://en.wikipedia.org/wiki/Equivalence_relation">equivalence relation</a>.</p>
+<p>We use <span class="math inline">\(\leftrightarrow\)</span> to partition the state space <span class="math inline">\(I\)</span> into communicating clases.</p>
+<div class="incremental">
+<p><img src="Frog-big.png" /></p>
+</div>
+</div>
+<div id="irreducibility" class="slide section level2">
+<h1>Irreducibility</h1>
+<p>We will want Markov chains that are <em>irreducible</em>.</p>
+<p>A chain with transition matrix <span class="math inline">\(P\)</span> is <em>irreducible</em> if the state space <span class="math inline">\(I\)</span> forms a single class.</p>
+<div class="incremental">
+<p>Is the little frog Markov chain irreducible?</p>
+<p><img src="Frog.png" /></p>
+</div>
+</div>
+<div id="invariant-distributions" class="slide section level2">
+<h1>Invariant distributions</h1>
+<p>Definition:</p>
+<ul class="incremental">
+<li><p>Let <span class="math inline">\(\lambda \in \mathbb R^n\)</span> be a row vector such that <span class="math inline">\(\sum_i \lambda_i = 1\)</span>.</p></li>
+<li><p><span class="math inline">\(\lambda\)</span> is an invariant distribution if <span class="math inline">\(\lambda P = \lambda\)</span>.</p></li>
+</ul>
+<div class="incremental">
+<p>Interpretation:</p>
+<ul class="incremental">
+<li>If we start a chain by choosing <span class="math inline">\(X_0\)</span> with probabilities as given in <span class="math inline">\(\lambda\)</span>, <span class="math inline">\(P(X_n = i) = \lambda_i\)</span> for any <span class="math inline">\(n, i\)</span>.</li>
+</ul>
+</div>
+</div>
+<div id="convergence-of-chains-to-equilibrium" class="slide section level2">
+<h1>Convergence of chains to equilibrium</h1>
+<p>(Theorem 9.8 in the linked notes)</p>
+<p>Let <span class="math inline">\(P\)</span> be irreducible, positive recurrent, and aperiodic (we haven’t defined positive recurrent or aperiodic here, but you can look in the notes), with invariant distribution <span class="math inline">\(\pi\)</span>.</p>
+<p>Then for any initial distribution, <span class="math inline">\(P(X_n = j) \to \pi_j\)</span> as <span class="math inline">\(n \to \infty\)</span>.</p>
+<div class="incremental">
+<p>Interpretation: No matter where we start, the chain converges to a unique distribution.</p>
+<ul class="incremental">
+<li><p>We saw in the 3-lily-pad frog example that we got this convergence to an equilibrium distribution.</p></li>
+<li><p>In the 7-lily-pad example, the starting position of the frog mattered.</p></li>
+</ul>
+</div>
+</div>
+<div id="ergodic-theorem" class="slide section level2">
+<h1>Ergodic theorem</h1>
+<p>Let <span class="math inline">\((X_n)_{0 \le n \le N}\)</span> be a Markov chain with transition matrix <span class="math inline">\(P\)</span>.</p>
+<p>If <span class="math inline">\(P\)</span> is irreducible and positive recurrent, then for any bounded function <span class="math inline">\(f\)</span> we have <span class="math display">\[
+P(\frac{1}{n} \sum_{k=1}^n f(X_k) \to \bar f \text{ as } n \to \infty) = 1
+\]</span> where <span class="math display">\[
+\bar f = \sum_{x} \pi_i f(i)
+\]</span> and <span class="math inline">\(\pi\)</span> is the unique invariant distribution.</p>
+<div class="incremental">
+<p>Why is this useful?</p>
+<ul class="incremental">
+<li><p>We can use this like we use the law of large numbers.</p></li>
+<li><p>If we want to compute <span class="math inline">\(E_{X \sim \pi}[(f(X))]\)</span>, we can run a Markov chain with invariant distribution <span class="math inline">\(\pi\)</span> and use <span class="math inline">\(\frac{1}{n} \sum_{i=1}^n f(X_i)\)</span> as an estimate.</p></li>
+</ul>
+</div>
+</div>
+<div id="looking-forward" class="slide section level2">
+<h1>Looking forward</h1>
+<p>Now we know:</p>
+<ul class="incremental">
+<li><p>Markov chains, under certain conditions, have invariant distributions.</p></li>
+<li><p>If we have a Markov chain and know its invariant distribution, we can use it to approximate expected values of random variables taken from that distribution.</p></li>
+</ul>
+<p>Next time:</p>
+<ul class="incremental">
+<li><p>Given a target distribution (usually a posterior), we will construct a Markov chain that has that target distribution as the invariant distribution.</p></li>
+<li><p>The Markov chain won’t give us independent samples from the distribution, but it will allow us to approximate expected values of functions under that distribution.</p></li>
+</ul>
+<div class="incremental">
+<p>By the way:</p>
+<ul class="incremental">
+<li><p>This semester we’re just using Markov chains to sample from probability distributions, but they are interesting models in their own right</p></li>
+<li><p>The frog example seems silly, but it’s actually the model behind the initial version of google’s web page indexing algorithm. Lily pads are websites, connections between lily pads are links between websites. See the linked notes for a little more detail.</p></li>
+</ul>
+</div>
 </div>
 </body>
 </html>
