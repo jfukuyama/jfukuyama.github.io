@@ -1,350 +1,352 @@
-## Monte Carlo methods: Approximate Bayesian Computation
+## Metropolis Hastings
 
 ```{r setup, echo = FALSE, message = FALSE}
 library(knitr)
 opts_chunk$set(fig.cap="",
-               fig.path="lecture-25-fig/",
+               fig.path="lecture-27-fig/",
                fig.width=6, fig.height=4, dpi=150,
                warning = FALSE)
 set.seed(1)
 ```
 
 
-Today: Approximate Bayesian Computation
+Today: Metropolis Hastings
 
-Reading: [Sisson, Fan, Beaumont](https://arxiv.org/pdf/1802.09720.pdf), "Overview of Approximate Bayesian Computation"
+Reading:
+
+- Lange, Chapter 24.1, 24.2
+
+- More fun: [Section 1 of this paper has an interesting example](https://math.uchicago.edu/~shmuel/Network-course-readings/MCMCRev.pdf)
+
+- Some practical advice about using Markov chains by Charles Geyer: [One long run](http://users.stat.umn.edu/~geyer/mcmc/one.html), [Burn in is unnecessary](http://users.stat.umn.edu/~geyer/mcmc/burn.html), [Bogosity of MCMC diagnostics](http://users.stat.umn.edu/~geyer/mcmc/diag.html)
+
 
 ## Our goals
 
-Next two weeks:
+- Sample from any probability distribution $\pi$.
 
-- Methods for sampling from arbitrary probability distributions.
+- Compute expected value of functions of random variables drawn from these distributions, $E_{X \sim \pi}(f(X))$
 
-- Main application: sampling from posterior distributions
+. . .
+
+- Last time we saw that if a Markov chain has a stationary distribution $\pi$, we can estimate $E_{X \sim \pi}(f(X))$ as $\frac{1}{n} \sum_{i=1}^n f(X_i)$, where $X_1,X_2, \ldots, X_n$ are drawn from the Markov chain.
+
+- Metropolis-Hastings will let us specify a stationary distribution $\pi$ and build a Markov chain having $\pi$ as its stationary distribution.
 
 
-## Bayesian Statistics
+## Metropolis-Hastings: The Idea
 
-Suppose we have data $y_1,\ldots, y_n$ that we believe can be described by a probability model with parameters $\theta$.
+- Start off with a Markov chain that has the wrong stationary distribution, e.g., a random walk
 
-We also have a prior distribution on the parameters $\theta$, describing our belief about the values of those parameters before seeing any of the data.
+- Modify the chain so that it spends more time in regions of high probability under the target distribution.
+
+
+## Metropolis-Hastings: Algorithm with a symmetric proposal distribution
+
+Given:
+
+- A proposal distribution $q$ such that $q(y \mid x) = q(x \mid y)$
+
+- A target stationary distribution $\pi$
+
+. . .
+
+Pick a starting value for the chain $X_0$.
+
+For $i = 1, \ldots, n$:
+
+- Pick a proposed move from $Y \sim q(\cdot \mid X_{i-1})$
+
+- Compute the acceptance probability:
+$$
+a = \text{min} \left \{ \frac{\pi(Y)}{\pi(X_{i-1})}, 1 \right\}
+$$
+
+- Let $X_i$ be
+$$
+X_i = \begin{cases}
+Y & \text{w.p. } a \\
+X_{i-1} & \text{w.p. }1 - a
+\end{cases}
+$$
+
+. . .
+
+Note:
+
+- If the proposed state has a higher probability than the current state, we move there deterministically.
+
+- If the proposed state has a lower probability than the current state, we move there with probability proportional to the ratio of the probabilities.
+
+## Aside: Reversible chains and detailed balance
+
+- Last time we talked about conditions for a Markov chain to have an invariant distribution.
+
+- Some Markov chains are "reversible". This is a stronger condition than the chain simply having an invariant distribution.
+
+- To check whether a chain is reversible, we check the "detailed balance" condition: A Markov chain with transition probability matrix $P$ and invariant distribution $\pi$ satisfies the _detailed balance_ equations and is _reversible_ if
+$$
+\pi_i P_{ij} = \pi_j P_{ji}
+$$
+
+## Checking that the Metropolis algorithm has the correct invariant distribution
+
+Let $X_i$ and $X_j$ be any two elements in the state space and let $a_{ij}$ be the acceptance probability given that we start at $X_i$ and propose $X_j$.
+
+Suppose further that $\pi(X_j) \le \pi(X_i)$ so that $a_{ij} \le 1$
+
+We can check that $\pi$ is the invariant distribution by checking detailed balance:
 
 $$
 \begin{align*}
-y_i \mid \theta &\sim P(y_i \mid \theta), \quad i = 1,\ldots, n\\
-\theta & \sim \pi(\theta)
+\pi(X_i)q(X_j \mid X_i) a_{ij} &= \pi(X_i) q(X_j \mid X_i) \frac{\pi(X_j)}{\pi(X_i)} \\ 
+&= q(X_j \mid X_i) \pi(X_j) \\
+&= \pi(X_j) q(X_j \mid X_i) a_{ji}
 \end{align*}
 $$
 
------
+The last line follows because $a_{ji} = 1$ and the proposal distribution is symmetric.
 
-For example:
 
-- Data $y_i$ are heights of men entering the military
+## Metropolis-Hastings with non-symmetric proposal distribution
 
-- We think that the $y_i$ are distributed $\mathcal N(\theta, \sigma^2)$
+Given:
 
-- We have some prior belief about $\theta$, maybe that it is around 70".
+- A proposal distribution $q$, not necessarily such that $q(y \mid x) = q(x \mid y)$
 
-- We quantify our prior belief about $\theta$ as $\theta \sim \mathcal N(70, 5)$
-
-- Once we have seen the actual heights, we can "update" our belief about $\theta$ by computing the posterior distribution $P(\theta \mid y_1,\ldots, y_n)$
+- A target stationary distribution $\pi$
 
 . . .
 
-This posterior distribution is the Bayesian analog of a confidence interval for a normal mean.
+Pick a starting value for the chain $X_0$.
 
-## Some more complicated examples
+For $i = 1, \ldots, n$:
 
-Finance:
+- Pick a proposed move from $Y \sim q(\cdot \mid X_{i-1})$
 
-- Data are historical stock prices.
+- Compute the acceptance probability:
+$$
+a = \text{min} \left \{ \frac{\pi(Y)q(X_{i-1} \mid Y)}{\pi(X_{i-1})q(Y \mid X_{i-1})}, 1 \right\}
+$$
 
-- Stock prices assumed to come from a probabilistic model with parameters having to do with the expected return of each stock and the correlations between them.
-
-- Given some prior on the expected returns and correlations, we can compute posterior distributions of the expected returns and correlations.
+- Let $X_i$ be
+$$
+X_i = \begin{cases}
+Y & \text{w.p. } a \\
+X_{i-1} & \text{w.p. }1 - a
+\end{cases}
+$$
 
 . . .
 
-Epidemiology
+Notes:
 
-- Data are dates at which people are infected with a virus
+- The difference in the acceptance probability accounts for the fact that the proposal distribution favors some parts of the space over others.
 
-- Infection dates come from a probabilistic model of disease spread. Parameters in the model are transmission probabilities due to contact between individuals.
+- You can derive the acceptance probability from the detailed balance equations or check the detailed balance equations with the acceptance probabilities given here.
 
-- If we specify prior beliefs about the transmission probabilities, we can compute a posterior distribution on transmission probabilities.
+## Simple Example: Normal Distribution
 
+- Proposal distribution: $q(x \mid y) = N(y, .3)$
 
+- Target distribution: $\pi(x) = N(0,1)$
 
-## Posterior distribution
-
-By applying Bayes' rule, we can compute the _posterior distribution_ of the parameters given the data:
-$$
-\begin{align*}
-P(\theta \mid y_1,\ldots, y_n) &= \frac{P(y_1,\ldots, y_n \mid \theta)\pi(\theta)}{P(y_1,\ldots, y_n)}
-\end{align*}
-$$
-
-- We want to know as much about this distribution as possible.
-
-- For simple cases it is available in closed form
-
-- For more complicated cases our best hope is to draw samples of it
-
-- From those samples we can compute posterior means, variances, etc. using the Monte Carlo methods from last two classes.
-
-## One way of drawing samples from the posterior
-
-Inputs:
-
-- A target posterior: $P(\theta \mid y_{\text{obs}}) \propto P(y_{\text{obs}} \mid \theta) \pi(\theta)$
-
-- A way of simulating from $P(y_{\text{obs}} \mid \theta)$
-
-- A prior on the parameters  $\pi(\theta)$
-
+- Start at $X_0 = -10$
 
 . . .
 
-Sampling: for $i = 1,\ldots, N$:
-
-- Generate $\theta^{(i)} \sim \pi(\theta)$
-
-- Generate $y^{(i)} \sim p(y \mid \theta^{(i)})$
-
-- If $y^{(i)} = y_{\text{obs}}$, accept $\theta^{(i)}$
-
-. . .
-
-Why does this work?
-
-- Our draws $(\theta^{(i)}, y^{(i)})$ are samples from the joint distribution $P(\theta, y)$
-
-- Keeping only the values for which $y^{(i)} = y_{\text{obs}}$ is the definition of conditioning on $y_{\text{obs}}$.
-
-## ABC: Simple Example
-
-Bayesian analysis for a Poisson random variable.
-
-Model is:
-$$
-\begin{align*}
-Y_i &\sim \text{Poisson}(\theta), \quad i = 1,\ldots, n \\
-\theta &\sim \text{Gamma}(\alpha, \beta)
-\end{align*}
-$$
-
-By Bayes rule, we can find in closed form that the posterior, $P(\theta \mid Y_1, \ldots, Y_n)$ has a $\text{Gamma}(\sum_{i=1}^n Y_i + \alpha, n + \beta)$ distribution.
-
-Let's pretend we can't do that though, and try using ABC.
-
-------
-
-Set up the function:
+- Notice that $q$ is symmetric, and so the acceptance probability for moving from $X$ to $Y$ is $\text{min}\{\pi(Y) / \pi(X), 1\}$
 
 ```{r}
-generate_abc_sample = function(observed_data,
-    prior_distribution,
-    data_generating_function) {
-    while(TRUE) {
-        theta = prior_distribution()
-        y = data_generating_function(theta)
-        if(all(y == observed_data)) {
-            return(theta)
-        }
-    }
+sample_with_symmetric_proposal =
+    function(proposal_function, target_distribution, current_state) {
+        proposal = proposal_function(current_state)
+        acceptance_probability = min(1, target_distribution(proposal) / target_distribution(current_state))
+        if(runif(1) <= acceptance_probability) {
+            return(proposal)
+        } else {
+            return(current_state)
+        }   
 }
 ```
 
 -----
 
-Analysis for:
-
-- Prior distribution: $\theta \sim \text{Gamma}(1, 1)$
-
-- Likelihood: $y \mid \theta \sim \text{Poisson}(\theta)$
-
-- Observed data: $y = 3$
-
-. . .
-
 ```{r}
-prior_distribution = function() rgamma(n = 1, shape = 1, rate = 1)
-data_generating_function = function(theta) rpois(n = 1, lambda = theta)
-observed_data = 3
-generate_abc_sample(observed_data, prior_distribution, data_generating_function)
-posterior_samples = replicate(n = 1000, generate_abc_sample(observed_data, prior_distribution, data_generating_function))
-```
-
------
-
-. . .
-
-```{r}
-## our posterior should be gamma(y + alpha, 1 + beta) or gamma(4, 2)
-## The mean of a gamma distribution is alpha / beta, so should be 2
-mean(posterior_samples)
-## The variance of a gamma distribution is alpha / beta^2, so should be 1
-var(posterior_samples)
-qplot(posterior_samples)
-theta_vec = seq(0, 6, length.out = 1000)
-plot(dgamma(theta_vec, shape = 4, rate = 2) ~ theta_vec, type = 'l', ylab="true posterior density", xlab = "theta")
-```
-
-
------
-
-What if you have more than one sample?
-
-. . .
-
-We still have
-
-- Prior distribution: $\theta \sim \text{Gamma}(1, 1)$
-
-- Likelihood: $y_i \mid \theta \sim \text{Poisson}(\theta)$
-
-- Observed data: $y_1 = 3, y_2 = 3$
-
-```{r}
-n_samples = 2
-data_generating_function = function(theta) rpois(n = n_samples, lambda = theta)
-observed_data = rep(3, n_samples)
-generate_abc_sample(observed_data, prior_distribution, data_generating_function)
-system.time(replicate(n = 1000, generate_abc_sample(observed_data, prior_distribution, data_generating_function)))
-```
-
-(Try changing `n_samples` to something bigger on your own computer...)
-
-## Problems
-
-- Only works for discrete data.
-
-- Very low acceptance probabilities, so it can take a very long time.
-
-Therefore:
-
-- Modify the acceptance parameters.
-
-- This makes the method give approximate samples from the posterior instead of exact samples.
-
-
-## ABC: The algorithm
-
-Inputs:
-
-- A target posterior: $\pi(\theta \mid y_{\text{obs}}) \propto p(y_{\text{obs}} \mid \theta) \pi(\theta)$
-
-- A way of simulating from $p(y_{\text{obs}} \mid \theta)$
-
-- A prior on the parameters  $\pi(\theta)$
-
-- A summary statistic function $s$
-
-- A tolerance $\epsilon$
-
-. . .
-
-Sampling: for $i = 1,\ldots, N$:
-
-- Generate $\theta^{(i)} \sim g(\theta)$
-
-- Generate $y^{(i)} \sim p(y \mid \theta^{(i)})$
-
-- If $\|s(y^{(i)}) - s(y_{\text{obs}})\| < \epsilon$, accept $\theta^{(i)}$
-
-. . .
-
-This method generates approximate samples from the posterior distribution
-
-
------
-
-Set up a function for the approximate version of ABC:
-
-```{r}
-generate_abc_sample_2 = function(observed_data,
-    summary_statistic,
-    prior_distribution,
-    data_generating_function,
-    epsilon) {
-    while(TRUE) {
-        theta = prior_distribution()
-        y = data_generating_function(theta)
-        if(abs(summary_statistic(y) -  summary_statistic(observed_data)) < epsilon) {
-            return(theta)
-        }
-    }
+## The proposal distribution is normal, centered at the current state, standard deviation .3
+proposal_function = function(x) rnorm(n = 1, mean = x, sd = .3)
+## The target distribution is N(0,1)
+target_distribution = dnorm
+## check the sampling:
+sample_with_symmetric_proposal(proposal_function, target_distribution, -10)
+n_samples = 1000
+chain_output = numeric(n_samples)
+chain_output[1] = -10
+for(i in 2:n_samples) {
+    chain_output[i] = sample_with_symmetric_proposal(proposal_function, target_distribution, chain_output[i-1])
 }
+plot(chain_output)
+mean(chain_output)
+sd(chain_output)
 ```
 
 -----
+
+Notice:
+
+- We see that before about 200 steps, the chain has not converged to its stationary distribution.
+
+- Even after it has converged, the elements in the chain are not independent.
+
+
+
+-----
+
+Let's run the chain longer and discard the first 200 steps as "burn-in"
+
+```{r}
+n_samples = 10000
+chain_output = numeric(n_samples)
+chain_output[1] = -10
+for(i in 2:n_samples) {
+    chain_output[i] = sample_with_symmetric_proposal(proposal_function, target_distribution, chain_output[i-1])
+}
+chain_no_burnin = chain_output[201:n_samples]
+plot(chain_no_burnin)
+mean(chain_no_burnin)
+sd(chain_no_burnin)
+```
+
+-----
+
+Note:
+
+- This chain looks like it has reached its stationary distribution, and we can confirm that by checking that the sample expected values match what they should be for a $N(0,1)$ distribution.
+
+- The ergodic theorem doesn't require that we discard the burn-in period, but people often do anyway.
+
+
+## Example 2: Mixture distributions
+
+
+- Proposal distribution: $q(x \mid y) = N(y, .3)$
+
+- Target distribution: Let $\phi_{\mu, \sigma}(x)$ be the pdf for a $N(\mu, \sigma)$ random variable. Our target distribution is $\pi(x) = .25 \phi_{1, 1}(x) + .75 \phi_{5,.2}(x)$.
+
+- Start at $X_0 = -10$
 
 . . .
 
-Let's see what happens with the approximate version:
-
-We still have
-
-- Prior distribution: $\theta \sim \text{Gamma}(1, 1)$
-
-- Likelihood: $y_i \mid \theta \sim \text{Poisson}(\theta)$
-
-- Observed data: $y_i = 3$, $i = 1,\ldots, 10$
-
-- Summary statistic $s$ is the mean function, so $s(y_1,\ldots, y_n) = \frac{1}{n} \sum_{i=1}^n y_i$
-
-- Our tolerance is $\epsilon = .1$
-
 ```{r}
-n_samples = 10
-prior_distribution = function() rgamma(n = 1, shape = 1, rate = 1)
-data_generating_function = function(theta) rpois(n = n_samples, lambda = theta)
-observed_data = rep(3, n_samples)
-summary_statistic = mean
-epsilon = .1
-generate_abc_sample_2(observed_data, summary_statistic, prior_distribution, data_generating_function, epsilon)
-posterior_samples = replicate(n = 1000,
-    generate_abc_sample_2(observed_data,
-                          summary_statistic,
-                          prior_distribution,
-                          data_generating_function,
-                          epsilon))
+## The proposal distribution is normal, centered at the current state, standard deviation .3
+proposal_function = function(x) rnorm(n = 1, mean = x, sd = .3)
+## The target distribution is N(0,1)
+target_distribution = function(x) .25 * dnorm(x, mean = 1, sd = 1) + .75 * dnorm(x, mean = 5, sd = .2)
+n_samples = 1000
+chain_output = numeric(n_samples)
+chain_output[1] = -10
+for(i in 2:n_samples) {
+    chain_output[i] = sample_with_symmetric_proposal(proposal_function, target_distribution, chain_output[i-1])
+}
+plot(chain_output)
+mean(chain_output)
+sd(chain_output)
 ```
-
------
-
-
-Checking on the posterior means and variances:
 
 . . .
 
+Notice:
+
+- Still takes about 200 steps to get to something that looks like a stationary distribution
+
+- No samples with values above 2!
+
+
+-----
+
+Let's try running the chain a lot longer:
+
 ```{r}
-(true_posterior_mean = (1 + sum(observed_data)) / (n_samples + 1))
-mean(posterior_samples)
-(true_posterior_variance = (1 + sum(observed_data)) / (n_samples + 1)^2)
-var(posterior_samples)
+n_samples = 100000
+chain_output = numeric(n_samples)
+chain_output[1] = -10
+for(i in 2:n_samples) {
+    chain_output[i] = sample_with_symmetric_proposal(proposal_function, target_distribution, chain_output[i-1])
+}
+plot(chain_output)
+mean(chain_output)
+sd(chain_output)
+```
+
+What's happening?
+
+
+-----
+
+Another way to fix this: change the proposal distribution.
+
+```{r}
+proposal_function = function(x) rnorm(n = 1, mean = x, sd = 2)
+n_samples = 1000
+chain_output = numeric(n_samples)
+chain_output[1] = -10
+for(i in 2:n_samples) {
+    chain_output[i] = sample_with_symmetric_proposal(proposal_function, target_distribution, chain_output[i-1])
+}
+plot(chain_output)
+mean(chain_output)
+sd(chain_output)
 ```
 
 -----
 
-Checking on the posterior distributions:
+Why not always have a really diffuse proposal distribution?
+
+- Tradeoff between exploring the space well and proposing high probability moves.
+
+- With a diffuse proposal distribution, many of the proposals are to low-probability areas, and the chain stays in the same place a lot.
+
+. . .
+
+Plot below shows how far the chain moved on each step when we used the diffuse proposal distribution:
 
 ```{r}
-qplot(posterior_samples) + xlim(c(0, max(theta_vec)))
-plot(dgamma(theta_vec, shape = 1 + sum(observed_data), rate = n_samples + 1) ~ x_vec, type = 'l', ylab = "True posterior density", xlab = "theta")
+plot(diff(chain_output))
 ```
 
-## ABC: Some notes
 
-- Difficulties: choice of summary statistics:
+-----
 
-    - Theory says they should be sufficient statistics for the model.
+Overall:
 
-    - In practice, they are chosen by expert opinion to be features of the data that are thought to be informative about the underlying parameters.
+- Choosing the proposal distribution involves balancing between moving long distances and having a high proportion of the moves accepted.
 
-- Advantage: you need to know hardly anything about the likelihood, you just need to be able to simulate data from it.
+- This will be problem-specific, and you often have to experiment with different proposal distributions.
 
-- Interpretation of Bayesian inference: parameters with higher posterior probability are simply those that make the observed data match data that we simulate under those parameters.
+- There are more formal diagnostics for assessing convergence, but you should really look at the plots of the parameters.
 
-- Next week we'll talk about more exact methods for sampling from posteriors, but they will require us to know more about the functions
+- You can never be sure that your chain isn't completely missing part of the space.
+
+## Summing up
+
+Metropolis Hastings is a simple, general-purpose method for creating a Markov chain with a specified stationary distribution. It is particularly useful when:
+
+- You only know the target distribution up to a constant of proportionality.
+
+- All the regions of high density in the target distribution are connected to each other.
+
+- The target distribution is high dimensional.
+
+. . .
+
+You should be scared because:
+
+- You can never be sure that your chain has explored the space adequately
+
+- There is theory on convergence times, but they tend to say you have to run your chain past the heat death of the universe.
+
+. . .
+
+Next time:
+
+- More interesting examples
