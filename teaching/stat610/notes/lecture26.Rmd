@@ -1,344 +1,587 @@
-## Monte Carlo methods: Markov Chains
+## Lecture 28: MCMC Applications
 
-```{r setup, echo = FALSE, message = FALSE}
+```{r setup, echo = FALSE, message = FALSE, warning = FALSE}
+library(rstan)
 library(knitr)
 opts_chunk$set(fig.cap="",
-               fig.path="lecture-24-fig/",
+               fig.path="lecture-28-fig/",
                fig.width=6, fig.height=4, dpi=150,
+               cache=TRUE,
                warning = FALSE)
 set.seed(1)
 ```
 
 
-Today: Markov Chains
+Today:
 
-Our goals:
+- Examples of Bayesian analysis using MCMC
 
-- Building towards Markov chain monte carlo
+- We will use stan
 
-- We will eventually use Markov chains to get samples from arbitrary probability distributions
+Reading:
 
-- Today we will just look at Markov chains, define them, establish some of their properties
+- Examples are all taken from ["Bayesian Cognitive Modeling: A Practical Course" by Lee and Wagenmakers](https://bayesmodels.com/), and the implementations in stan are taken from the `rstan` [package](https://github.com/stan-dev/example-models/tree/master/Bayesian_Cognitive_Modeling)
 
-Reading: [Notes from Richard Weber's course on Markov chains](http://www.statslab.cam.ac.uk/~rrw1/markov/M.pdf), or Lange, Chapter 23.
+## The Bayesian Setup
 
-- Weber's notes have proofs and examples, and much more detail than we'll use here. I'm following his notation.
+Given:
 
-- Lange Chapter 23 is quite succinct.
+- Data: $x_1, \ldots, x_n$
+
+- A set of parameters $\theta$
+
+- A model $P(x_1,\ldots, x_n\mid \theta)$ giving the likelihood of the data given the parameters
+
+- A prior distribution over the parameters $\theta$, $P(\theta)$
+
+## The Bayesian Goal
+
+In Bayesian inference, we want to compute the posterior distribution over the parameters:
+$$
+P(\theta \mid x_1,\ldots, x_n) = \frac{P(x_1, \ldots, x_n \mid \theta)P(\theta)}{P(x_1,\ldots, x_n)}
+$$
+
+. . .
+
+Notes:
+
+- Sometimes there is an analytic solution.
+
+- If there is no analytic solution, we try to sample from $P(\theta \mid x_1,\ldots, x_n)$ instead.
+
+- Most of the time it is hard to compute $P(x_1, \ldots, x_n)$.
+
+- To use Metropolis-Hastings to sample from $P(\theta \mid x_1,\ldots, x_n)$, we only need to be able to compute $P(x_1, \ldots, x_n \mid \theta)P(\theta)$.
+
+## Example 1: Estimating a correlation
+
+(Example 5.2 in the book). We have two variables measured on $n$ cases, and we would like to estimate the correlation between them.
+
+For this problem, we have
+
+- Data: $x_i \in \mathbb R^2$, $i = 1,\ldots, n$
+
+- Model:
+$$
+P(x_i \mid \mu_1, \mu_2, \sigma_1, \sigma_2, r) = \mathcal N_2 \left( \begin{pmatrix}\mu_1 \\ \mu_2 \end{pmatrix}, \begin{pmatrix} \sigma_1^2 & r \sigma_1 \sigma_2 \\ r \sigma_1 \sigma_2 & \sigma_2^2 \end{pmatrix} \right)
+$$
+
+- Parameters: $\mu_1, \mu_2, \sigma_1, \sigma_2, r$
+
+- Prior on the parameters:
+$$
+\begin{align*}
+P(\mu_1) &= \mathcal N(0, 1000)\\
+P(\mu_2) &= \mathcal N(0, 1000)\\
+P(\sigma_1) &= \text{InvSqrtGamma}(.001, .001)\\
+P(\sigma_2) &= \text{InvSqrtGamma}(.001, .001)\\
+P(r) &= \text{Uniform}(-1,1)
+\end{align*}
+$$
+
 
 -----
 
-## A silly example
-
-![](Frog.png)
-
-A frog hops around on some lily pads, choosing where to hop somewhat randomly.
-
-We would like to be able to make probability statements about where the frog is.
-
-- After $n$ hops, what is the probability that the frog is on the 3rd lily pad?
-
-- As $n \to \infty$, what is the probability that the frog is on the 3rd lily pad? Does the starting location of the frog matter?
-
-## Definitions
-
-. . .
-
-- Let $I$ be a countable set, $\{ i, j, k, \ldots \}$.
-
-- Each $i \in I$ is called a _state_ and $I$ is the _state space_.
-
-- Let $\lambda = (\lambda_i, i \in I)$ be a row vector with $i$th element $\lambda_i$ such that $\sum_{i} \lambda_i = 1$. $\lambda$ defines the _initial distribution_ over $I$.
-
-- Let $P = (p_{ij}: i,j \in I)$ with $p_{ij} \ge 0$ for all $i,j$ and such that $\sum_{j \in I} p_{ij} = 1$. $P$ is a transition probability matrix.
-
-- A sequence of random variables, $(X_n)_{n \ge 0}$ is a _Markov chain_ with initial distribution $\lambda$ and transition matrix $P$ if for all $n \ge 0$, and all $i \in I$:
-
-- $P(X_0 = i) = \lambda_i$
-
-- $P(X_{n+1}= i_{n+1}\mid X_0 = i_0, \ldots, X_n = i_n) = P(X_{n+1} = i_{n+1} \mid X_{n} = i_n) = p_{i_n, i_{n+1}}$
-
-
-## A silly example
-
-![](Frog.png)
-
-A frog hops around on some lily pads, choosing where to hop somewhat randomly.
-
-- State space: $I = \{1,2,3\}$ (the three lily pads)
-
-- Starting distribution $\lambda = (1, 0,0)$ (starts on lily pad 1)
-
-- Transition matrix: $P = \begin{pmatrix} 0 & 1 & 0 \\ 0 & .5 & .5 \\ .5 & 0 & .5 \end{pmatrix}$
-
-## n-step transition matrix
-
-Given a starting distribution $\lambda$, we would like to know $P(X_n = j)$.
-
-We will use the notation $P_i(A) = P(A \mid X_0 = i)$ for $A$ any event.
-
-. . .
-
-For $n = 1$, we know that
+Posterior distribution on the parameters:
 $$
-P(X_1 = j) = \sum_{i \in I} \lambda_i P_i(X_1 = j) = \sum_{i \in I} \lambda_i p_{ij} = (\lambda P)_j
+P(\mu_1, \mu_2,\sigma_1, \sigma_2, r \mid x_1, \ldots, x_n) \propto \prod_{i=1}^n P(x_i \mid \mu_1, \mu_2, \sigma_1, \sigma_2, r) P(\mu_1) P(\mu_2) P(\sigma_1) P(\sigma_2) P(r)
 $$
 
-. . .
-
-For $n = 2$, we can write
-$$
-P_i(X_2 = j) = \sum_k P_i(X_1 = k, X_2 = j) = \sum_k p_{ik} p_{kj} = (P^2)_{ij}
-$$
-
-. . .
-
-$$
-P(X_2 = j) = \sum_{i,k} \lambda_i P_i(X_1 = k, X_2 = j) = \sum_{i,k} \lambda_i p_{ik} p_{kj} = (\lambda P^2)_j
-$$
-
-. . .
-
-So in general, if $\delta_i$ is the vector with a 1 at index $i$ and 0's everywhere else,
-$$
-P_i(X_n = j) = (\delta_i P^n)_j = (P^n)_{ij}
-$$
-and
-$$
-P(X_n = j) = \sum_i \lambda_i P_i(X_n = j) = (\lambda P^n)_j
-$$
-
-. . .
-
-So the $n$-step transition matrix is simply $P^n$.
-
-## Example of n-step transition matrix computations
-
-![](Frog.png)
-
-```{r}
-P = matrix(0, nrow = 3, ncol = 3)
-P[1,2] = 1
-P[2,2] = P[2,3] = P[3,1] = P[3,3] = 1/2
-P
-```
-
-. . .
-
-```{r}
-lambda = c(1,0,0)
-lambda %*% P
-lambda %*% P %*% P
-```
+Everything on the right-hand side is easily computable, and that is all we need for MCMC.
 
 -----
 
 
-What happens after a long time?
+What would Metropolis-Hastings look like here?
 
-. . .
+Start with some initial values of the parameters: $\mu_1^{(0)}, \mu_2^{(0)}, \sigma_1^{(0)}, \sigma_2^{(0)}, r^{(0)}$
+
+For i in 1 to as many iterations as desired:
+
+- Propose a new set of parameters $\mu_1^{(i)}, \mu_2^{(i)}, \sigma_1^{(i)}, \sigma_2^{(i)}, r^{(i)}$ from a proposal distribution around $\mu_1^{(i-1)}, \mu_2^{(i-1)}, \sigma_1^{(i-1)}, \sigma_2^{(i-1)}, r^{(i-1)}$.
+
+- Compute the ratio
+$$
+\begin{align*}
+a = &\frac{P(\mu_1^{(i)}, \mu_2^{(i)}, \sigma_1^{(i)}, \sigma_2^{(i)}, r^{(i)} \mid x_1,\ldots, x_n)}{P(\mu_1^{(i)}, \mu_2^{(i)}, \sigma_1^{(i)}, \sigma_2^{(i)}, r^{(i)} \mid x_1,\ldots, x_n )} \\
+\quad &= \frac{ \prod_{i=1}^n P(x_i \mid \mu_1^{(i)}, \mu_2^{(i)}, \sigma_1^{(i)}, \sigma_2^{(i)}, r^{(i)}) P(\mu_1^{(i)}) P(\mu_2^{(i)}) P(\sigma_1^{(i)}) P(\sigma_2^{(i)}) P(r^{(i)})}{ \prod_{i=1}^n P(x_i \mid \mu_1^{(i-1)}, \mu_2^{(i-1)}, \sigma_1^{(i-1)}, \sigma_2^{(i-1)}, r^{(i-1)}) P(\mu_1^{(i-1)}) P(\mu_2^{(i-1)}) P(\sigma_1^{(i-1)}) P(\sigma_2^{(i-1)}) P(r^{(i-1)})}
+\end{align*}
+$$
+
+- If $a > 1$, move to the proposed set of parameters, otherwise move to the proposed set of parameters with probability $a$ and stay at the current set with probability $1 - a$
+
+-----
 
 ```{r}
-## computes P^(2^k)
-pow_P = function(P, k) {
-    for(i in 1:k) {
-        P = P %*% P
-    }
-    return(P)
+model_correlation <- "
+// Pearson Correlation
+data { 
+  int<lower=0> n;
+  vector[2] x[n];
 }
-## 8-step probabilities 
-lambda %*% pow_P(P, 3)
-## 16-step probabilities 
-lambda %*% pow_P(P, 4)
-## 32-step probabilities 
-lambda %*% pow_P(P, 5)
-## 64-step probabilities 
-lambda %*% pow_P(P, 6)
+parameters {
+  vector[2] mu;
+  vector<lower=0>[2] lambda;
+  real<lower=-1,upper=1> r;
+} 
+transformed parameters {
+  vector<lower=0>[2] sigma;
+  cov_matrix[2] T;
+  // Reparameterization
+  sigma[1] = inv_sqrt(lambda[1]);
+  sigma[2] = inv_sqrt(lambda[2]);
+  T[1,1] = square(sigma[1]);
+  T[1,2] = r * sigma[1] * sigma[2];
+  T[2,1] = r * sigma[1] * sigma[2];
+  T[2,2] = square(sigma[2]);
+}
+model {
+  // Priors
+  mu ~ normal(0, inv_sqrt(.001));
+  lambda ~ gamma(.001, .001);
+  
+  // Data
+  x ~ multi_normal(mu, T);
+}"
+
+# The dataset:
+  x <- matrix(c( .8, 102, 
+                1.0,  98, 
+                 .5, 100,
+                 .9, 105, 
+                 .7, 103, 
+                 .4, 110,
+                1.2,  99, 
+                1.4,  87,
+                 .6, 113,
+                1.1,  89,
+                1.3,  93), nrow=11, ncol=2, byrow=T) 
+
+n <- nrow(x) # number of people/units measured
+
+data <- list(x=x, n=n) # to be passed on to Stan
+myinits <- list(
+  list(r=0, mu=c(0, 0), lambda=c(1, 1)))
+
+# parameters to be monitored: 
+parameters <- c("r", "mu", "sigma")
+
+samples <- stan(model_code=model_correlation,   
+                data=data, 
+                init=myinits,
+                pars=parameters,
+                iter=10000, 
+                chains=1, 
+                thin=1)
 ```
 
 -----
 
-What if the frog starts at a different location?
+. . .
+
+```{r}
+r <- extract(samples)$r
+plot(r)
+qplot(r, geom = "density")
+## 95% credible interval
+quantile(r, c(.025, .975))
+## posterior mean
+mean(r)
+#Frequentist point-estimate of r:
+(freq.r <- cor(x[,1],x[,2]))
+
+```
+
+## Estimating a correlation with measurement error
+
+(Example 5.2 in the book)
+
+Problem: Suppose that our data come from a study of the relationship between "response time on a semantic verification task" and IQ.
+
+- The researchers want to estimate the correlation between response time and IQ.
+
+- The problem is that the IQ measurement has some uncertainty associated with it, and so the previous model we used to estimate the correlation is incorrect.
+
+------
+
+For the model with uncertainy in measurements, we again have two variables (response time and IQ) measured on $n$ cases, and we would like to estimate the correlation between them.
+
+- Data: $x_i \in \mathbb R^2$, $i = 1,\ldots, n$
+
+- Model:
+$$
+\begin{align*}
+P(y_i \mid \mu_1, \mu_2, \sigma_1, \sigma_2, r) &= \mathcal N_2 \left( \begin{pmatrix}\mu_1 \\ \mu_2 \end{pmatrix}, \begin{pmatrix} \sigma_1^2 & r \sigma_1 \sigma_2 \\ r \sigma_1 \sigma_2 & \sigma_2^2 \end{pmatrix} \right)\\
+P(x_{i} \mid y_{i}) &= \mathcal N_2\left(y_{i}, \begin{pmatrix} \sigma^e_1 & 0 \\ 0 & \sigma_2^e \end{pmatrix} \right)
+\end{align*}
+$$
+
+
+- Parameters: $\mu_1, \mu_2, \sigma_1, \sigma_2, r$ (we assume that the measurement errors, $\sigma^e_1, \sigma^e_2$, are known)
+
+- Prior on the parameters:
+$$
+\begin{align*}
+P(\mu_1) &= \mathcal N(0, 1000)\\
+P(\mu_2) &= \mathcal N(0, 1000)\\
+P(\sigma_1) &= \text{InvSqrtGamma}(.001, .001)\\
+P(\sigma_2) &= \text{InvSqrtGamma}(.001, .001)\\
+P(r) &= \text{Uniform}(-1,1)
+\end{align*}
+$$
+
+-----
+
+Posterior distribution:
+
+$$
+P(  \mu_1, \mu_2, \sigma_1, \sigma_2, r \mid x_1,\ldots, x_n) \propto \prod_{i=1}^n P(x_i \mid y_i) P(y_i \mid \mu_1, \mu_2, \sigma_1, \sigma_2, r) P(\mu_1)P(\mu_2)P(\sigma_1)P(\sigma_2)P(r)
+$$
+
+Again, everything is easily computable, and we can use MCMC to obtain samples from the posterior distribution.
+
+-----
+
+
+```{r}
+model <- "
+// Pearson Correlation With Uncertainty in Measurement
+data { 
+  int<lower=0> n;
+  vector[2] x[n];
+  vector[2] sigmaerror;
+}
+parameters {
+  vector[2] mu;
+  vector<lower=0>[2] lambda;
+  real<lower=-1,upper=1> r;
+  vector[2] y[n];
+} 
+transformed parameters {
+  vector<lower=0>[2] sigma;
+  cov_matrix[2] T;
+  // Reparameterization
+  sigma[1] = inv_sqrt(lambda[1]);
+  sigma[2] = inv_sqrt(lambda[2]);
+  
+  T[1,1] = square(sigma[1]);
+  T[1,2] = r * sigma[1] * sigma[2];
+  T[2,1] = r * sigma[1] * sigma[2];
+  T[2,2] = square(sigma[2]);
+}
+model {
+  // Priors
+  mu ~ normal(0, inv_sqrt(.001));
+  lambda ~ gamma(.001, .001);
+  // Data
+  y ~ multi_normal(mu, T);
+  for (i in 1:n)
+    x[i] ~ normal(y[i], sigmaerror);
+}"
+
+x <- matrix(c( .8, 102, 
+              1.0,  98, 
+               .5, 100,
+               .9, 105, 
+               .7, 103, 
+               .4, 110,
+              1.2,  99, 
+              1.4,  87,
+               .6, 113,
+              1.1,  89,
+              1.3,  93), nrow=11, ncol=2, byrow=T) 
+
+n <- nrow(x) # number of people/units measured
+
+# precision of measurement:
+sigmaerror = c(.03, 5)
+
+data <- list(x=x, n=n, sigmaerror=sigmaerror) # to be passed on to Stan
+myinits <- list(
+  list(r=0, mu=c(0, 0), lambda=c(1, 1), y=matrix(c(rep(1, n), rep(100, n)), n, 2)))
+
+# parameters to be monitored:  
+parameters <- c("r", "mu", "sigma")
+samples <- stan(model_code=model,   
+                data=data, 
+                init=myinits,
+                pars=parameters,
+                iter=20000, 
+                chains=1, 
+                thin=1)
+```
+
+-----
 
 . . .
 
 ```{r}
-## 2^6-step probabilities, starting at 2
-lambda = c(0,1,0)
-lambda %*% pow_P(P, 6)
-## 2^6-step probabilities, starting at 3
-lambda = c(0,0,1)
-lambda %*% pow_P(P, 6)
+r = extract(samples)$r
+plot(r)
+## posterior density for r
+qplot(r, geom = "density")
+## 95% credible interval
+quantile(r, c(.025, .975))
+## posterior mean
+mean(r)
+#Frequentist point-estimate of r:
+(freq.r <- cor(x[,1],x[,2]))
 ```
+
+
+## Example 3: Seven scientists
+
+(Example 4.2 in the book). Seven scientists with dramatically different capabilities run an experiment to measure a certain quantity.
+
+The get the results: -27.020, 3.570, 8.191, 9.898, 9.603, 9.945, 10.056
+
+We would like to combine their results to get an estimate of the true value of the quantity they were trying to measure.
+
+We can model this as:
+
+- The result each of the scientists obtained comes from a normal distribution
+
+- All seven distributions have the same mean
+
+- All seven distributions have different variances
 
 
 -----
 
-In this case, no matter where the frog starts, we get the same probabilities:
+Listing everything out:
 
-```{r}
-pow_P(P, 6)
-```
+- Data: $x_i \in \mathbb R^1$, $i = 1,\ldots, 7$
 
+- Likelihood:
+$$
+P(x_i \mid \mu, \lambda_i ) = \mathcal N(\mu, \lambda_i^{-1})
+$$
 
+- Parameters: $\mu, \lambda_1,\ldots, \lambda_7$
 
-## Another example
-
-![](Frog-big.png)
-
-```{r}
-P_big = matrix(0, nrow = 7, ncol = 7)
-P_big[1:3,1:3] = P
-P_big[4,3:5] = c(.25, .5, .25)
-P_big[5, 6:7] = c(.5, .5)
-P_big[6,4] = 1
-P_big[7,7] = 1
-P_big
-```
-
--------
+- Prior:
+$$
+\begin{align*}
+P(\mu) &= \mathcal N(0, 1000) \\
+P(\lambda_i) &= \text{Gamma}(.001, .001)
+\end{align*}
+$$
 
 . . .
 
-Let's do the same thing: if we start the frog at different locations, compute the probability of being at any of the lily pads after 64 steps.
+Posterior:
+$$
+P(\mu, \lambda_1,\ldots, \lambda_7  \mid x_1,\ldots, x_7) \propto \prod_{i=1}^7 P(x_i \mid \mu, \lambda_1,\ldots, \lambda_7) P(\mu) \prod_{i=1}^7 P(\lambda_i)
+$$
+
+Again, everything on the right can be evaluated easily, and we can use MCMC to sample from the distribution.
+
+-----
 
 ```{r}
-## 2^6-step probabilities, starting at 1
-lambda = c(1, rep(0, 6))
-lambda %*% pow_P(P_big, 6)
-## 2^6-step probabilities, starting at 7
-lambda = c(rep(0, 6), 1)
-lambda %*% pow_P(P_big, 6)
-## 2^6-step probabilities, starting at 6
-lambda = c(rep(0, 5), 1, 0)
-lambda %*% pow_P(P_big, 6)
-round(pow_P(P_big, 6), digits = 2)
+model_seven_scientists = "
+// The Seven Scientists
+data { 
+  int<lower=1> n;
+  vector[n] x;
+}
+parameters {
+  real mu;
+  vector<lower=0>[n] lambda;
+} 
+transformed parameters {
+  vector[n] sigma;
+  
+  for (i in 1:n)
+    sigma[i] = inv_sqrt(lambda[i]);
+}
+model {
+  // Priors
+  mu ~ normal(0, sqrt(1000));
+  lambda ~ gamma(.001, .001);
+  
+  // Data Come From Gaussians With Common Mean But Different Precisions
+  x ~ normal(mu, sigma);
+}"
+
+x <- c(-27.020, 3.570, 8.191, 9.898, 9.603, 9.945, 10.056)
+n <- length(x)
+
+data <- list(x=x, n=n) # to be passed on to Stan
+myinits <- list(
+  list(mu=0, lambda=rep(1,n)))
+
+# parameters to be monitored:  
+parameters <- c("mu", "lambda")
+
+samples_seven_scientists <- stan(model_code=model_seven_scientists,   
+                data=data, 
+                init=myinits,
+                pars=parameters,
+                iter=20000, 
+                chains=1, 
+                thin=1)
 ```
 
 -----
 
-Our next goal is to find the conditions under which this convergence occurs.
+. . .
 
-We'll need two concepts:
+```{r}
+samples_extracted = extract(samples_seven_scientists)
+## show the chain
+plot(samples_extracted$mu)
+## posterior mean of mu
+mean(samples_extracted$mu)
+## frequentist mean of mu
+mean(x)
+```
 
-- Communicating classes/irreducibility
+-----
 
-- Invariant distributions
+We can also look at the posteriors for each of the variances:
 
-## Class structure
+```{r}
+plot(samples_extracted$lambda[,1], ylab = "Precision for Scientist 1")
+plot(samples_extracted$lambda[,2], ylab = "Precision for Scientist 2")
+plot(samples_extracted$lambda[,7], ylab = "Precision for Scientist 7")
+round(apply(samples_extracted$lambda, 2, mean), digits = 4)
+```
 
-We say state $i$ leads to $j$, $i \to j$ if
+
+## Example 4: Changepoint detection
+
+(Example 5.4 in the book)
+
+We have data on frontal lobe activity in a study of adults with ADHD.
+
+In the experiment, we expect to see a "changepoint" in the measure of frontal lobe activity.
+The mean activity level will be different before and after the changepoint, and we want to estimate both the time of the change and the mean activity level before and after.
+
+
+```{r}
+c = scan("changepointdata.txt")
+ggplot(data.frame(activity = c, time = 1:length(c))) + geom_point(aes(x = time, y = activity))
+```
+
+-----
+
+Listing everything out:
+
+- Data: $x_i \in \mathbb R$, $i = 1,\ldots, n$
+
+- Likelihood:
 $$
-P_i(X_n = j \text{ for some } n \ge 0) > 0
+P(x_i \mid \mu_1, \mu_2, \tau, \lambda ) = \begin{cases}
+\mathcal N(\mu_1, \lambda^{-1}) & i \le \tau \\
+\mathcal N(\mu_2, \lambda^{-1}) & i > \tau
+\end{cases}
 $$
 
-. . .
+- Parameters: $\mu_1, \mu_2, \tau, \lambda$
 
-We say that $i$ communicates with $j$ and write $i \leftrightarrow j$ if $i \to j$ and $j \to i$.
-
-
-
-## Communicating classes
-
-From what we saw before, we can see that
-
-- $i \leftrightarrow j$ and $j \leftrightarrow k$ implies $i \leftrightarrow k$
-
-If we add that $i \leftrightarrow i$, $\leftrightarrow$ satisfies the conditions for an [equivalence relation](https://en.wikipedia.org/wiki/Equivalence_relation).
-
-We use $\leftrightarrow$ to partition the state space $I$ into communicating clases.
-
-. . .
-
-![](Frog-big.png)
-
-## Irreducibility
-
-We will want Markov chains that are _irreducible_.
-
-A chain with transition matrix $P$ is _irreducible_ if the state space $I$ forms a single class.
-
-. . .
-
-Is the little frog Markov chain irreducible?
-
-![](Frog.png)
-
-
-
-## Invariant distributions
-
-Definition:
-
-- Let $\lambda \in \mathbb R^n$  be a row vector such that $\sum_i \lambda_i = 1$.
-
-- $\lambda$ is an invariant distribution if $\lambda P = \lambda$.
-
-. . .
-
-Interpretation:
-
-- If we start a chain by choosing $X_0$ with probabilities as given in $\lambda$, $P(X_n = i) = \lambda_i$ for any $n, i$.
-
-
-## Convergence of chains to equilibrium
-
-(Theorem 9.8 in the linked notes)
-
-Let $P$ be irreducible, positive recurrent, and aperiodic (we haven't defined positive recurrent or aperiodic here, but you can look in the notes), with invariant distribution $\pi$.
-
-Then for any initial distribution, $P(X_n = j) \to \pi_j$ as $n \to \infty$.
-
-. . .
-
-Interpretation: No matter where we start, the chain converges to a unique distribution.
-
-- We saw in the 3-lily-pad frog example that we got this convergence to an equilibrium distribution.
-
-- In the 7-lily-pad example, the starting position of the frog mattered.
-
-## Ergodic theorem
-
-Let $(X_n)_{0 \le n \le N}$ be a Markov chain with transition matrix $P$.
-
-If $P$ is irreducible and positive recurrent, then for any bounded function $f$ we have
+- Prior:
 $$
-P(\frac{1}{n} \sum_{k=1}^n f(X_k) \to \bar f \text{ as } n \to \infty) = 1
+\begin{align*}
+P(\mu_1) &= \mathcal N(0, 1000) \\
+P(\mu_2) &= \mathcal N(0, 1000) \\
+P(\lambda) &= \text{Gamma}(.001, .001)\\
+P(\tau) &= \text{Uniform}(0, n)
+\end{align*}
 $$
-where
-$$
-\bar f = \sum_{x} \pi_i f(i)
-$$
-and $\pi$ is the unique invariant distribution.
 
+-----
+
+Posterior:
+$$
+P(\mu_1, \mu_2, \lambda, \tau \mid x_1,\ldots, x_n) \propto \prod_{i=1}^n P(x_i \mid \mu_1, \mu_2 \lambda, \tau) P(\mu_1) P(\mu_2) P(\lambda) P(\tau)
+$$
+
+Again, everything on the right can be evaluated easily, and we can use MCMC to sample from the distribution.
+
+-----
+
+```{r}
+model_changepoint <- "
+// Change Detection
+data { 
+  int n;
+  vector[n] t;
+  vector[n] c;
+}
+parameters {
+  vector[2] mu;
+  real<lower=0> lambda;
+  real<lower=0,upper=n> tau;
+} 
+transformed parameters {
+  real<lower=0> sigma;
+  sigma <- inv_sqrt(lambda);
+}
+model { 
+  // Group Means
+  mu ~ normal(0, inv_sqrt(.001));
+  // Common Precision
+  lambda ~ gamma(.001, .001);
+    
+  // Which Side is Time of Change Point?
+  // Data Come From A Gaussian
+  for (i in 1:n) {
+    if ((t[i] - tau) < 0.0)
+      c[i] ~ normal(mu[1], sigma);
+    else 
+      c[i] ~ normal(mu[2], sigma);
+  }
+}"
+
+c <- scan("changepointdata.txt")
+n <- length(c)
+t <- 1:n
+
+data <- list(c=c, n=n, t=t) # to be passed on to Stan
+myinits <- list(
+  list(mu=c(1, 1), lambda=1, tau=n / 2))
+
+# parameters to be monitored:  
+parameters <- c("mu", "sigma", "tau")
+
+samples_changepoint <- stan(model_code=model_changepoint,   
+                data=data, 
+                init=myinits,
+                pars=parameters,
+                iter=250, 
+                chains=1, 
+                thin=1,
+                warmup = 150,
+                            seed = 1)
+```
+
+-----
 
 . . .
 
-Why is this useful?
+```{r}
+# Now the values for the monitored parameters are in the "samples" object, 
+# ready for inspection.
+plot(extract(samples_changepoint)$tau, ylab = "Changepoint (tau)")
+plot(extract(samples_changepoint)$mu[,1], ylab = "mu1")
+plot(extract(samples_changepoint)$mu[,2], ylab = "mu2")
+(mean.tau <- mean(extract(samples_changepoint)$tau))
+(mean.mu1 <- mean(extract(samples_changepoint)$mu[,1]))
+(mean.mu2 <- mean(extract(samples_changepoint)$mu[,2]))
+```
 
-- We can use this like we use the law of large numbers.
+```{r}
+time_data = data.frame(activity = c, time = 1:length(c))
+time_data$activity_fitted = ifelse(time_data$time <= mean.tau, mean.mu1, mean.mu2)
+ggplot(time_data) + geom_point(aes(x = time, y = activity)) +
+    geom_line(aes(x = time, y = activity_fitted), color = "red")
+```
 
-- If we want to compute $E_{X \sim \pi}[(f(X))]$, we can run a Markov chain with invariant distribution $\pi$ and use $\frac{1}{n} \sum_{i=1}^n f(X_i)$ as an estimate.
+## Summing up
 
-## Looking forward
+- Bayesian modeling is very flexible
 
-Now we know:
+- The MCMC methods we've looked at allow us to sample easily from pretty the posterior distribution in pretty much any Bayesian model we can write down
 
-- Markov chains, under certain conditions, have invariant distributions.
-
-- If we have a Markov chain and know its invariant distribution, we can use it to approximate expected values of random variables taken from that distribution.
-
-Next time:
-
-- Given a target distribution (usually a posterior), we will construct a Markov chain that has that target distribution as the invariant distribution.
-
-- The Markov chain won't give us independent samples from the distribution, but it will allow us to approximate expected values of functions under that distribution.
-
-
-. . .
-
-By the way:
-
-- This semester we're just using Markov chains to sample from probability distributions, but they are interesting models in their own right
-
-- The frog example seems silly, but it's actually the model behind the initial version of google's web page indexing algorithm. Lily pads are websites, connections between lily pads are links between websites. See the linked notes for a little more detail.
+- The samples from the posterior give us estimates of parameters and their uncertainties.
