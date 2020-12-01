@@ -1,352 +1,330 @@
-## Metropolis Hastings
+## Neural nets/Deep learning
 
 ```{r setup, echo = FALSE, message = FALSE}
 library(knitr)
 opts_chunk$set(fig.cap="",
                fig.path="lecture-27-fig/",
-               fig.width=6, fig.height=4, dpi=150,
+               fig.width=3, fig.height=2, dpi=70,
                warning = FALSE)
 set.seed(1)
 ```
 
 
-Today: Metropolis Hastings
+> - Today: What are neural nets, how are they fit
 
-Reading:
+> - Thursday: Cross validation, some examples, show you how to use R interfaces to net fitting software
 
-- Lange, Chapter 24.1, 24.2
+Reading: Elements of Statistical Learning, Chapter 11.3-11.8
 
-- More fun: [Section 1 of this paper has an interesting example](https://math.uchicago.edu/~shmuel/Network-course-readings/MCMCRev.pdf)
+## Review: The brain
 
-- Some practical advice about using Markov chains by Charles Geyer: [One long run](http://users.stat.umn.edu/~geyer/mcmc/one.html), [Burn in is unnecessary](http://users.stat.umn.edu/~geyer/mcmc/burn.html), [Bogosity of MCMC diagnostics](http://users.stat.umn.edu/~geyer/mcmc/diag.html)
+> - Made up of neurons.
 
+> - Neurons connected to each other.
 
-## Our goals
+> - Neuron takes input from some of its neighbors, when there is enough input it is "activated" and the neuron fires.
 
-- Sample from any probability distribution $\pi$.
-
-- Compute expected value of functions of random variables drawn from these distributions, $E_{X \sim \pi}(f(X))$
-
-. . .
-
-- Last time we saw that if a Markov chain has a stationary distribution $\pi$, we can estimate $E_{X \sim \pi}(f(X))$ as $\frac{1}{n} \sum_{i=1}^n f(X_i)$, where $X_1,X_2, \ldots, X_n$ are drawn from the Markov chain.
-
-- Metropolis-Hastings will let us specify a stationary distribution $\pi$ and build a Markov chain having $\pi$ as its stationary distribution.
+> - When the neuron fires, it sends the signal to its downstream neighbors, potentially causing them to activate and fire as well.
 
 
-## Metropolis-Hastings: The Idea
+[wikipedia's illustration](https://en.wikipedia.org/wiki/Neuron#/media/File:Chemical_synapse_schema_cropped.jpg)
 
-- Start off with a Markov chain that has the wrong stationary distribution, e.g., a random walk
+-------
 
-- Modify the chain so that it spends more time in regions of high probability under the target distribution.
+Idea:
 
+> - The brain somehow takes inputs and produces outputs (e.g. patterns of light on the retina to a classification of the objects in your field of vision, sensations in the periphery to a measure of temperature, etc.).
 
-## Metropolis-Hastings: Algorithm with a symmetric proposal distribution
+> - If we make a computational structure that mimics the brain, we can train it to make predictions from arbitrary sets of inputs.
 
-Given:
+> - This is just a fancy version of the regression or classification problem.
 
-- A proposal distribution $q$ such that $q(y \mid x) = q(x \mid y)$
+## Neural networks
 
-- A target stationary distribution $\pi$
+Neural networks are made up of units that are supposed to mimic neurons in the brain:
 
-. . .
+![](net-unit.png)
 
-Pick a starting value for the chain $X_0$.
+- Input links: can be from other units or from the input data
 
-For $i = 1, \ldots, n$:
+- Aggregation function: Linear combination of the inputs
 
-- Pick a proposed move from $Y \sim q(\cdot \mid X_{i-1})$
+- Activation function: $g$, often the sigmoid function
 
-- Compute the acceptance probability:
-$$
-a = \text{min} \left \{ \frac{\pi(Y)}{\pi(X_{i-1})}, 1 \right\}
-$$
+- Output: $a = g(\sum_i z_i \alpha_i)$, i.e., the activation function applied to the aggregated inputs.
 
-- Let $X_i$ be
-$$
-X_i = \begin{cases}
-Y & \text{w.p. } a \\
-X_{i-1} & \text{w.p. }1 - a
-\end{cases}
-$$
+- Output links: Output $a$ is sent to other units.
+
+-----
+
+Activation functions:
 
 . . .
 
-Note:
+- Initially: a step function
 
-- If the proposed state has a higher probability than the current state, we move there deterministically.
+```{r echo = FALSE}
+x = seq(-5, 5, length.out = 1000)
+y = (x >= 0) + 0
+ggplot(data.frame(x, y)) + geom_line(aes(x = x , y = y))
+```
 
-- If the proposed state has a lower probability than the current state, we move there with probability proportional to the ratio of the probabilities.
+. . .
 
-## Aside: Reversible chains and detailed balance
+- sigmoid, $\sigma(x) = \frac{1}{1 + \exp(-x)}$
 
-- Last time we talked about conditions for a Markov chain to have an invariant distribution.
+```{r echo = FALSE}
+y = 1 / (1 + exp(-x))
+ggplot(data.frame(x, y)) + geom_line(aes(x = x , y = y))
+```
 
-- Some Markov chains are "reversible". This is a stronger condition than the chain simply having an invariant distribution.
+. . .
 
-- To check whether a chain is reversible, we check the "detailed balance" condition: A Markov chain with transition probability matrix $P$ and invariant distribution $\pi$ satisfies the _detailed balance_ equations and is _reversible_ if
+- tanh: $\text{tanh}(x) = \frac{e^x - e^{-x}}{e^x + e^{-x}}$
+
+```{r echo = FALSE}
+y = tanh(x)
+ggplot(data.frame(x, y)) + geom_line(aes(x = x , y = y))
+```
+
+. . .
+
+- relu: $\text{relu}(x) = \text{max}(0, x)$ probably most common now.
+
+```{r echo = FALSE}
+y = sapply(x, max, 0)
+ggplot(data.frame(x, y)) + geom_line(aes(x = x , y = y))
+```
+
+
+Any non-linear activation function allows the net to go beyond linear functions of the input
+
+Activation functions should be smooth for fitting purposes (gradient descent)
+
+-----
+
+Neural net structures: putting the units together
+
+![](nnet-schematic.png)
+
+> - Input layer
+
+> - Hidden layer(s)
+
+> - Output layer
+
+. . .
+
+Multiple hidden layers vs. one hidden layer
+
+Special cases:
+
+> - One hidden layer, one unit in that layer, sigmoid activation = logistic regression
+
+> - Linear activation function = standard regression, parameterized in a strange way
+
+
+
+## Neural nets for regression
+
+Notice that the net is just a fancy function of the inputs, parameterized by the weights. Therefore, we can choose the weights so that the net predicts a response, just like in standard linear regression.
+
+- Function we want to optimize:
 $$
-\pi_i P_{ij} = \pi_j P_{ji}
+R(\theta) = \sum_{i=1}^N R_i = \sum_{i=1}^N (y_i - f(x_i; \theta))^2
 $$
 
-## Checking that the Metropolis algorithm has the correct invariant distribution
+- $\theta$ is the parameter vector we want to optimize over, containing the weights. We want to find $\theta$ that minimizes $R(\theta)$.
 
-Let $X_i$ and $X_j$ be any two elements in the state space and let $a_{ij}$ be the acceptance probability given that we start at $X_i$ and propose $X_j$.
+- $f(x_i; \theta)$ is the value computed by the net on an input point $x_i$ with parameters $\theta$
 
-Suppose further that $\pi(X_j) \le \pi(X_i)$ so that $a_{ij} \le 1$
+- Fitting is by "backpropagation", which means gradient descent with the computations organized in a particularly convenient way.
 
-We can check that $\pi$ is the invariant distribution by checking detailed balance:
+-----
 
+## Backpropagation derivation
+
+Simple case:
+
+- One hidden layer with $M$ hidden units
+
+- Input variables $x_i \in \mathbb R^p$, $i = 1,\ldots, N$
+
+- Values of the hidden unit $m$ for observation $i$ is $z_{mi} = \sigma(\alpha_{0m} + \alpha_m^T x_i)$. The vector containing the values for all the hidden units for sample $i$ is $z_i = (z_{1i}, z_{2i}, \ldots, z_{Mi})$.
+
+- Value at the final layer is for observation $i$ is $f(x_i) = g(\beta_0 + \beta^T z_i)$.
+
+- $\theta$ is the set of weights $\alpha_{0m}, \alpha_m, \beta_0, \beta$.
+
+- We want to find $\theta$ to minimize
+$$
+R(\theta) = \sum_{i=1}^N R_i = \sum_{i=1}^N (y_i - f(x_i; \theta))^2
+$$
+
+- We fit by gradient descent, so we need dereivatives of this function
+
+-----
+
+Derivative for the weights connecting the hidden layer to the output layer for $m = 1,\ldots, M$:
+$$
+\frac{\partial R_i}{\partial \beta_{m}} = -2(y_i - f(x_i)) g'(\beta_0 + \beta^T z_i) z_{mi}
+$$
+
+. . .
+
+For the case $m = 0$:
+$$
+\frac{\partial R_i}{\partial \beta_{m}} = -2(y_i - f(x_i)) g'(\beta_0 + \beta^T z_i)
+$$
+
+
+. . .
+
+Derivative for the weights connecting the input layer to the hidden layer:
+$$
+\frac{\partial R_i}{\partial \alpha_{ml}} = -2(y_i - f(x_i)) g'(\beta_0 + \beta^T z_i) \beta_m\sigma'(\alpha_m^T x_i) x_{il}
+$$
+
+. . .
+
+Gradient descent update is then:
 $$
 \begin{align*}
-\pi(X_i)q(X_j \mid X_i) a_{ij} &= \pi(X_i) q(X_j \mid X_i) \frac{\pi(X_j)}{\pi(X_i)} \\ 
-&= q(X_j \mid X_i) \pi(X_j) \\
-&= \pi(X_j) q(X_j \mid X_i) a_{ji}
+\beta_m^{(r+1)} = \beta_{m}^{(r)} - \gamma_r \sum_{i=1}^N \frac{\partial R_i}{\partial \beta_{m}^{(r)}}\\
+\alpha_{lm}^{(r+1)} = \alpha_{ml}^{(r)} - \gamma_r \sum_{i=1}^N \frac{\partial R_i}{\partial \alpha_{ml}^{(r)}}
 \end{align*}
 $$
 
-The last line follows because $a_{ji} = 1$ and the proposal distribution is symmetric.
+$\gamma_r$ is referred to as the "learning rate", we've seen it as the step size before.
 
+-----
 
-## Metropolis-Hastings with non-symmetric proposal distribution
-
-Given:
-
-- A proposal distribution $q$, not necessarily such that $q(y \mid x) = q(x \mid y)$
-
-- A target stationary distribution $\pi$
+Back-propagation equations, aka "what order do we do the computations in"?
 
 . . .
 
-Pick a starting value for the chain $X_0$.
-
-For $i = 1, \ldots, n$:
-
-- Pick a proposed move from $Y \sim q(\cdot \mid X_{i-1})$
-
-- Compute the acceptance probability:
+Write
 $$
-a = \text{min} \left \{ \frac{\pi(Y)q(X_{i-1} \mid Y)}{\pi(X_{i-1})q(Y \mid X_{i-1})}, 1 \right\}
+\begin{align*}
+\frac{\partial R_i}{\partial \beta_{m}} &= \delta_{i} z_{mi} \\
+\frac{\partial R_i}{\partial \alpha_{ml}} &= s_{mi} x_{il}
+\end{align*}
+$$
+so
+$$
+\begin{align*}
+\delta_i &= -2(y_i - f(x_i))g'(\beta_0 + \beta^T z_i) \\
+s_{mi} &= -2(y_i - f(x_i)) g'(\beta_0 + \beta^T z_i) \beta_m \sigma'(\alpha_m^T x_i)
+\end{align*}
+$$
+and
+$$
+s_{mi} = \sigma'(\alpha_m^T x_i) \beta_m \delta_i
 $$
 
-- Let $X_i$ be
-$$
-X_i = \begin{cases}
-Y & \text{w.p. } a \\
-X_{i-1} & \text{w.p. }1 - a
-\end{cases}
-$$
+Interpretation: $\delta_i$ and $s_{mi}$ are the "errors" from the current model on the output layer and the hidden layers, respectively.
+
+-----
+
+Finally, backpropagation algorithm to compute the gradients:
+
+Forward pass:
+
+> - Fix a set of weights $\theta$
+
+> - Compute $z_i$, $f(x_i)$ given the weights
 
 . . .
+
+Backward pass:
+
+> - Compute $\delta_i$ and $\frac{\partial R_i}{\partial \beta_m}$ from the residuals
+
+> - Compute $s_{mi}$ and $\frac{\partial R_i}{\partial \alpha_{ml}}$ from $\delta_i$, $\theta$, input values
+
+-----
 
 Notes:
 
-- The difference in the acceptance probability accounts for the fact that the proposal distribution favors some parts of the space over others.
+> - Backpropagation equations just rely on the chain rule
 
-- You can derive the acceptance probability from the detailed balance equations or check the detailed balance equations with the acceptance probabilities given here.
+> - Can use any smooth activation function
 
-## Simple Example: Normal Distribution
+> - Can use any architecture (more hidden layers, different kinds of connections between the layers, more than one output layer, etc.)
 
-- Proposal distribution: $q(x \mid y) = N(y, .3)$
-
-- Target distribution: $\pi(x) = N(0,1)$
-
-- Start at $X_0 = -10$
+> - Applies to classification problems as well as regression problems
 
 . . .
 
-- Notice that $q$ is symmetric, and so the acceptance probability for moving from $X$ to $Y$ is $\text{min}\{\pi(Y) / \pi(X), 1\}$
+Issues with fitting:
 
-```{r}
-sample_with_symmetric_proposal =
-    function(proposal_function, target_distribution, current_state) {
-        proposal = proposal_function(current_state)
-        acceptance_probability = min(1, target_distribution(proposal) / target_distribution(current_state))
-        if(runif(1) <= acceptance_probability) {
-            return(proposal)
-        } else {
-            return(current_state)
-        }   
-}
-```
+> - Model is over-parameterized
 
------
+> - Non-convex, many local optima, gradient descent will converge to just one
 
-```{r}
-## The proposal distribution is normal, centered at the current state, standard deviation .3
-proposal_function = function(x) rnorm(n = 1, mean = x, sd = .3)
-## The target distribution is N(0,1)
-target_distribution = dnorm
-## check the sampling:
-sample_with_symmetric_proposal(proposal_function, target_distribution, -10)
-n_samples = 1000
-chain_output = numeric(n_samples)
-chain_output[1] = -10
-for(i in 2:n_samples) {
-    chain_output[i] = sample_with_symmetric_proposal(proposal_function, target_distribution, chain_output[i-1])
-}
-plot(chain_output)
-mean(chain_output)
-sd(chain_output)
-```
+> - Many different strategies to deal with this. Often don't actually want even an exact local optimum, many different "regularization" methods are used.
+
+
+## Example: zip code data
+
+![](zip-code-data.png)
+
+Goal: Given images representing digits, classify them correctly.
+
+Input data, $x_i$, are $16 \times 16$ grayscale images, represented as vectors in $\mathbb R^{256}$
+
+Responses $y_i$ give the digit in the image.
+
+Encode this as a classification problem, use neural nets with different architectures to fit
 
 -----
 
-Notice:
+## Some net architectures
 
-- We see that before about 200 steps, the chain has not converged to its stationary distribution.
+![](zip-code-architectures.png)
 
-- Even after it has converged, the elements in the chain are not independent.
+All cases: 10 output units, corresponding to the 10 possible digits. In all cases the output unit is sigmoidal.
 
+- Net 1: No hidden layer, equivalent to multinomial logistic regression
 
+- Net 2: One hidden layer, 12 hidden units. Each of the hidden units is connected to each of the 256 input variables and to each of the 10 output variables.
 
------
+- Net 3: Two hidden layers
 
-Let's run the chain longer and discard the first 200 steps as "burn-in"
+    - First hidden layer: 64 hidden units arranged in an 8 x 8 grid. Each hidden unit is connected to a 3x3 patch of the input variables.
 
-```{r}
-n_samples = 10000
-chain_output = numeric(n_samples)
-chain_output[1] = -10
-for(i in 2:n_samples) {
-    chain_output[i] = sample_with_symmetric_proposal(proposal_function, target_distribution, chain_output[i-1])
-}
-chain_no_burnin = chain_output[201:n_samples]
-plot(chain_no_burnin)
-mean(chain_no_burnin)
-sd(chain_no_burnin)
-```
+    - Secand hidden layer: 16 hidden units arranged in a 4 x 4 grid. Each hidden unit is connected to a 5 x 5 patch in the first hidden layer.
 
------
+- Net 4: Two hidden layers with weight sharing in the first layer.
 
-Note:
+    - First hidden layer: 128 hidden units, conceptualized as two 8 x 8 grids, each connected to a 3x3 patch of the input variables, similar to Net 3. Additional constraint that each of the units within the 8 x 8 feature map have the same set of 9 weights.
 
-- This chain looks like it has reached its stationary distribution, and we can confirm that by checking that the sample expected values match what they should be for a $N(0,1)$ distribution.
+    - Second hidden layer: 16 hidden units arranged in a 4 x 4 grid, each connected to a 5 x 5 patch in each of the two 8 x 8 grids in the first hidden layer (so each hidden unit connected to 50 units in the first hidden layer).
 
-- The ergodic theorem doesn't require that we discard the burn-in period, but people often do anyway.
+- Net 5: Two hidden layers with weight sharing in both layers:
+
+    - First hidden layer: Same is in Net 4.
+
+    - Second hidden layer: 64 hidden units arranged as four 4 x 4 grids. Each unit connected to a 5 x 5 patch of the fisrt hidden layer, and within each 4 x 4 grid, the weights connecting that unit to the previous input unit are the same.
 
 
-## Example 2: Mixture distributions
-
-
-- Proposal distribution: $q(x \mid y) = N(y, .3)$
-
-- Target distribution: Let $\phi_{\mu, \sigma}(x)$ be the pdf for a $N(\mu, \sigma)$ random variable. Our target distribution is $\pi(x) = .25 \phi_{1, 1}(x) + .75 \phi_{5,.2}(x)$.
-
-- Start at $X_0 = -10$
-
-. . .
-
-```{r}
-## The proposal distribution is normal, centered at the current state, standard deviation .3
-proposal_function = function(x) rnorm(n = 1, mean = x, sd = .3)
-## The target distribution is N(0,1)
-target_distribution = function(x) .25 * dnorm(x, mean = 1, sd = 1) + .75 * dnorm(x, mean = 5, sd = .2)
-n_samples = 1000
-chain_output = numeric(n_samples)
-chain_output[1] = -10
-for(i in 2:n_samples) {
-    chain_output[i] = sample_with_symmetric_proposal(proposal_function, target_distribution, chain_output[i-1])
-}
-plot(chain_output)
-mean(chain_output)
-sd(chain_output)
-```
-
-. . .
-
-Notice:
-
-- Still takes about 200 steps to get to something that looks like a stationary distribution
-
-- No samples with values above 2!
-
+Idea behind weight constraints: Each unit computes the same functional of the previous layer, so they are extracting the same features from different parts of the image. A net with this sort of weight sharing is referred to as a _convolutional_ network.
 
 -----
 
-Let's try running the chain a lot longer:
-
-```{r}
-n_samples = 100000
-chain_output = numeric(n_samples)
-chain_output[1] = -10
-for(i in 2:n_samples) {
-    chain_output[i] = sample_with_symmetric_proposal(proposal_function, target_distribution, chain_output[i-1])
-}
-plot(chain_output)
-mean(chain_output)
-sd(chain_output)
-```
-
-What's happening?
-
+![](zip-code-training.png)
 
 -----
-
-Another way to fix this: change the proposal distribution.
-
-```{r}
-proposal_function = function(x) rnorm(n = 1, mean = x, sd = 2)
-n_samples = 1000
-chain_output = numeric(n_samples)
-chain_output[1] = -10
-for(i in 2:n_samples) {
-    chain_output[i] = sample_with_symmetric_proposal(proposal_function, target_distribution, chain_output[i-1])
-}
-plot(chain_output)
-mean(chain_output)
-sd(chain_output)
-```
-
------
-
-Why not always have a really diffuse proposal distribution?
-
-- Tradeoff between exploring the space well and proposing high probability moves.
-
-- With a diffuse proposal distribution, many of the proposals are to low-probability areas, and the chain stays in the same place a lot.
-
-. . .
-
-Plot below shows how far the chain moved on each step when we used the diffuse proposal distribution:
-
-```{r}
-plot(diff(chain_output))
-```
-
-
------
-
-Overall:
-
-- Choosing the proposal distribution involves balancing between moving long distances and having a high proportion of the moves accepted.
-
-- This will be problem-specific, and you often have to experiment with different proposal distributions.
-
-- There are more formal diagnostics for assessing convergence, but you should really look at the plots of the parameters.
-
-- You can never be sure that your chain isn't completely missing part of the space.
 
 ## Summing up
 
-Metropolis Hastings is a simple, general-purpose method for creating a Markov chain with a specified stationary distribution. It is particularly useful when:
 
-- You only know the target distribution up to a constant of proportionality.
+> - Deep learning = neural nets with more than one hidden layer. In practice, these work better than the single-hidden-layer networks.
 
-- All the regions of high density in the target distribution are connected to each other.
+> - Think of as predictors that can fit complex functions of the input variables
 
-- The target distribution is high dimensional.
+> - Also able to handle other kinds of output, e.g. sequences (natural language processing, machine translation)
 
-. . .
+> - Good when you have a lot of data, are interested solely in prediction
 
-You should be scared because:
-
-- You can never be sure that your chain has explored the space adequately
-
-- There is theory on convergence times, but they tend to say you have to run your chain past the heat death of the universe.
-
-. . .
-
-Next time:
-
-- More interesting examples
+> - Not as good when you don't have so much data or need an interpretation of the relationship between the predictors and response.
