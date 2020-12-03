@@ -85,632 +85,358 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
     charset="utf-8" type="text/javascript"></script>
 </head>
 <body>
-<div id="lecture-28-mcmc-applications" class="slide section level2">
-<h1>Lecture 28: MCMC Applications</h1>
-<p>Today:</p>
+<div id="neural-netsdeep-learning" class="slide section level2">
+<h1>Neural nets/Deep learning</h1>
+<p>Agenda today:</p>
 <ul>
-<li><p>Examples of Bayesian analysis using MCMC</p></li>
-<li><p>We will use stan</p></li>
+<li>More nets</li>
 </ul>
-<p>Reading:</p>
 <ul>
-<li>Examples are all taken from <a href="https://bayesmodels.com/">“Bayesian Cognitive Modeling: A Practical Course” by Lee and Wagenmakers</a>, and the implementations in stan are taken from the <code>rstan</code> <a href="https://github.com/stan-dev/example-models/tree/master/Bayesian_Cognitive_Modeling">package</a></li>
+<li>Cross validation</li>
 </ul>
+<p>Reading: Elements of Statistical Learning, Chapter 11.3-11.8</p>
 </div>
-<div id="the-bayesian-setup" class="slide section level2">
-<h1>The Bayesian Setup</h1>
-<p>Given:</p>
+<div id="example-zip-code-data" class="slide section level2">
+<h1>Example: zip code data</h1>
+<p><img src="zip-code-data.png" /></p>
+<p>Goal: Given images representing digits, classify them correctly.</p>
+<p>Input data, <span class="math inline">\(x_i\)</span>, are <span class="math inline">\(16 \times 16\)</span> grayscale images, represented as vectors in <span class="math inline">\(\mathbb R^{256}\)</span></p>
+<p>Responses <span class="math inline">\(y_i\)</span> give the digit in the image.</p>
+<p>Encode this as a classification problem, use neural nets with different architectures to fit</p>
+</div>
+<div id="some-net-architectures" class="slide section level2">
+<h1>Some net architectures</h1>
+<p><img src="zip-code-architectures.png" /></p>
+<p>All cases: 10 output units, corresponding to the 10 possible digits. In all cases the output unit is sigmoidal.</p>
+<ul class="incremental">
+<li><p>Net 1: No hidden layer, equivalent to multinomial logistic regression</p></li>
+<li><p>Net 2: One hidden layer, 12 hidden units. Each of the hidden units is connected to each of the 256 input variables and to each of the 10 output variables.</p></li>
+<li><p>Net 3: Two hidden layers</p>
 <ul>
-<li><p>Data: <span class="math inline">\(x_1, \ldots, x_n\)</span></p></li>
-<li><p>A set of parameters <span class="math inline">\(\theta\)</span></p></li>
-<li><p>A model <span class="math inline">\(P(x_1,\ldots, x_n\mid \theta)\)</span> giving the likelihood of the data given the parameters</p></li>
-<li><p>A prior distribution over the parameters <span class="math inline">\(\theta\)</span>, <span class="math inline">\(P(\theta)\)</span></p></li>
+<li>First hidden layer: 64 hidden units arranged in an 8 x 8 grid. Each hidden unit is connected to a 3x3 patch of the input variables.</li>
 </ul>
-</div>
-<div id="the-bayesian-goal" class="slide section level2">
-<h1>The Bayesian Goal</h1>
-<p>In Bayesian inference, we want to compute the posterior distribution over the parameters: <span class="math display">\[
-P(\theta \mid x_1,\ldots, x_n) = \frac{P(x_1, \ldots, x_n \mid \theta)P(\theta)}{P(x_1,\ldots, x_n)}
-\]</span></p>
-<div class="incremental">
-<p>Notes:</p>
 <ul>
-<li><p>Sometimes there is an analytic solution.</p></li>
-<li><p>If there is no analytic solution, we try to sample from <span class="math inline">\(P(\theta \mid x_1,\ldots, x_n)\)</span> instead.</p></li>
-<li><p>Most of the time it is hard to compute <span class="math inline">\(P(x_1, \ldots, x_n)\)</span>.</p></li>
-<li><p>To use Metropolis-Hastings to sample from <span class="math inline">\(P(\theta \mid x_1,\ldots, x_n)\)</span>, we only need to be able to compute <span class="math inline">\(P(x_1, \ldots, x_n \mid \theta)P(\theta)\)</span>.</p></li>
+<li>Secand hidden layer: 16 hidden units arranged in a 4 x 4 grid. Each hidden unit is connected to a 5 x 5 patch in the first hidden layer.</li>
+</ul></li>
+<li><p>Net 4: Two hidden layers with weight sharing in the first layer.</p>
+<ul>
+<li>First hidden layer: 128 hidden units, conceptualized as two 8 x 8 grids, each connected to a 3x3 patch of the input variables, similar to Net 3. Additional constraint that each of the units within the 8 x 8 feature map have the same set of 9 weights.</li>
 </ul>
-</div>
-</div>
-<div id="example-1-estimating-a-correlation" class="slide section level2">
-<h1>Example 1: Estimating a correlation</h1>
-<p>(Example 5.2 in the book). We have two variables measured on <span class="math inline">\(n\)</span> cases, and we would like to estimate the correlation between them.</p>
-<p>For this problem, we have</p>
 <ul>
-<li><p>Data: <span class="math inline">\(x_i \in \mathbb R^2\)</span>, <span class="math inline">\(i = 1,\ldots, n\)</span></p></li>
-<li><p>Model: <span class="math display">\[
-P(x_i \mid \mu_1, \mu_2, \sigma_1, \sigma_2, r) = \mathcal N_2 \left( \begin{pmatrix}\mu_1 \\ \mu_2 \end{pmatrix}, \begin{pmatrix} \sigma_1^2 &amp; r \sigma_1 \sigma_2 \\ r \sigma_1 \sigma_2 &amp; \sigma_2^2 \end{pmatrix} \right)
-\]</span></p></li>
-<li><p>Parameters: <span class="math inline">\(\mu_1, \mu_2, \sigma_1, \sigma_2, r\)</span></p></li>
-<li><p>Prior on the parameters: <span class="math display">\[
-\begin{align*}
-P(\mu_1) &amp;= \mathcal N(0, 1000)\\
-P(\mu_2) &amp;= \mathcal N(0, 1000)\\
-P(\sigma_1) &amp;= \text{InvSqrtGamma}(.001, .001)\\
-P(\sigma_2) &amp;= \text{InvSqrtGamma}(.001, .001)\\
-P(r) &amp;= \text{Uniform}(-1,1)
-\end{align*}
-\]</span></p></li>
+<li>Second hidden layer: 16 hidden units arranged in a 4 x 4 grid, each connected to a 5 x 5 patch in each of the two 8 x 8 grids in the first hidden layer (so each hidden unit connected to 50 units in the first hidden layer).</li>
+</ul></li>
+<li><p>Net 5: Two hidden layers with weight sharing in both layers:</p>
+<ul>
+<li>First hidden layer: Same is in Net 4.</li>
+</ul>
+<ul>
+<li>Second hidden layer: 64 hidden units arranged as four 4 x 4 grids. Each unit connected to a 5 x 5 patch of the fisrt hidden layer, and within each 4 x 4 grid, the weights connecting that unit to the previous input unit are the same.</li>
+</ul></li>
+</ul>
+<p>Idea behind weight constraints: Each unit computes the same functional of the previous layer, so they are extracting the same features from different parts of the image. A net with this sort of weight sharing is referred to as a <em>convolutional</em> network.</p>
+</div>
+<div class="slide section level2">
+
+<p><img src="zip-code-training.png" /></p>
+</div>
+<div id="if-you-want-to-play-with-this-in-r" class="slide section level2">
+<h1>If you want to play with this in R</h1>
+<ul>
+<li>R package called <a href="https://keras.rstudio.com/">keras</a></li>
+</ul>
+<ul>
+<li>This is an interface to the python version of <a href="https://keras.io/">keras</a></li>
+</ul>
+<ul>
+<li>Which is itself a frontend for a couple of lower-level packages (TensorFlow, CNTK, Theano)</li>
 </ul>
 </div>
 <div class="slide section level2">
 
-<p>Posterior distribution on the parameters: <span class="math display">\[
-P(\mu_1, \mu_2,\sigma_1, \sigma_2, r \mid x_1, \ldots, x_n) \propto \prod_{i=1}^n P(x_i \mid \mu_1, \mu_2, \sigma_1, \sigma_2, r) P(\mu_1) P(\mu_2) P(\sigma_1) P(\sigma_2) P(r)
-\]</span></p>
-<p>Everything on the right-hand side is easily computable, and that is all we need for MCMC.</p>
+<p>Example: the same zip code data</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="co">## if you want to do this you&#39;ll have to install some the python version of keras first, which requires you to have TensorFlow, CNTK, or Theano installed as well</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="kw">library</span>(keras)</span>
+<span id="cb1-3"><a href="#cb1-3"></a>mnist =<span class="st"> </span><span class="kw">dataset_mnist</span>()</span>
+<span id="cb1-4"><a href="#cb1-4"></a>img_rows =<span class="st"> </span>img_cols =<span class="st"> </span><span class="dv">28</span></span>
+<span id="cb1-5"><a href="#cb1-5"></a>num_classes =<span class="st"> </span><span class="dv">10</span></span>
+<span id="cb1-6"><a href="#cb1-6"></a>x_train =<span class="st"> </span>mnist<span class="op">$</span>train<span class="op">$</span>x</span>
+<span id="cb1-7"><a href="#cb1-7"></a>x_train =<span class="st"> </span><span class="kw">array_reshape</span>(x_train, <span class="kw">c</span>(<span class="kw">nrow</span>(x_train), img_rows, img_cols, <span class="dv">1</span>))</span>
+<span id="cb1-8"><a href="#cb1-8"></a>y_train =<span class="st"> </span>mnist<span class="op">$</span>train<span class="op">$</span>y</span>
+<span id="cb1-9"><a href="#cb1-9"></a>y_train_matrix =<span class="st"> </span><span class="kw">to_categorical</span>(y_train, <span class="dt">num_classes =</span> num_classes)</span>
+<span id="cb1-10"><a href="#cb1-10"></a>x_test =<span class="st"> </span>mnist<span class="op">$</span>test<span class="op">$</span>x</span>
+<span id="cb1-11"><a href="#cb1-11"></a>y_test =<span class="st"> </span>mnist<span class="op">$</span>test<span class="op">$</span>y</span></code></pre></div>
 </div>
 <div class="slide section level2">
 
-<p>What would Metropolis-Hastings look like here?</p>
-<p>Start with some initial values of the parameters: <span class="math inline">\(\mu_1^{(0)}, \mu_2^{(0)}, \sigma_1^{(0)}, \sigma_2^{(0)}, r^{(0)}\)</span></p>
-<p>For i in 1 to as many iterations as desired:</p>
-<ul>
-<li><p>Propose a new set of parameters <span class="math inline">\(\mu_1^{(i)}, \mu_2^{(i)}, \sigma_1^{(i)}, \sigma_2^{(i)}, r^{(i)}\)</span> from a proposal distribution around <span class="math inline">\(\mu_1^{(i-1)}, \mu_2^{(i-1)}, \sigma_1^{(i-1)}, \sigma_2^{(i-1)}, r^{(i-1)}\)</span>.</p></li>
-<li><p>Compute the ratio <span class="math display">\[
-\begin{align*}
-a = &amp;\frac{P(\mu_1^{(i)}, \mu_2^{(i)}, \sigma_1^{(i)}, \sigma_2^{(i)}, r^{(i)} \mid x_1,\ldots, x_n)}{P(\mu_1^{(i)}, \mu_2^{(i)}, \sigma_1^{(i)}, \sigma_2^{(i)}, r^{(i)} \mid x_1,\ldots, x_n )} \\
-\quad &amp;= \frac{ \prod_{i=1}^n P(x_i \mid \mu_1^{(i)}, \mu_2^{(i)}, \sigma_1^{(i)}, \sigma_2^{(i)}, r^{(i)}) P(\mu_1^{(i)}) P(\mu_2^{(i)}) P(\sigma_1^{(i)}) P(\sigma_2^{(i)}) P(r^{(i)})}{ \prod_{i=1}^n P(x_i \mid \mu_1^{(i-1)}, \mu_2^{(i-1)}, \sigma_1^{(i-1)}, \sigma_2^{(i-1)}, r^{(i-1)}) P(\mu_1^{(i-1)}) P(\mu_2^{(i-1)}) P(\sigma_1^{(i-1)}) P(\sigma_2^{(i-1)}) P(r^{(i-1)})}
-\end{align*}
-\]</span></p></li>
-<li><p>If <span class="math inline">\(a &gt; 1\)</span>, move to the proposed set of parameters, otherwise move to the proposed set of parameters with probability <span class="math inline">\(a\)</span> and stay at the current set with probability <span class="math inline">\(1 - a\)</span></p></li>
-</ul>
-</div>
-<div class="slide section level2">
-
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>model_correlation &lt;-<span class="st"> &quot;</span></span>
-<span id="cb1-2"><a href="#cb1-2"></a><span class="st">// Pearson Correlation</span></span>
-<span id="cb1-3"><a href="#cb1-3"></a><span class="st">data { </span></span>
-<span id="cb1-4"><a href="#cb1-4"></a><span class="st">  int&lt;lower=0&gt; n;</span></span>
-<span id="cb1-5"><a href="#cb1-5"></a><span class="st">  vector[2] x[n];</span></span>
-<span id="cb1-6"><a href="#cb1-6"></a><span class="st">}</span></span>
-<span id="cb1-7"><a href="#cb1-7"></a><span class="st">parameters {</span></span>
-<span id="cb1-8"><a href="#cb1-8"></a><span class="st">  vector[2] mu;</span></span>
-<span id="cb1-9"><a href="#cb1-9"></a><span class="st">  vector&lt;lower=0&gt;[2] lambda;</span></span>
-<span id="cb1-10"><a href="#cb1-10"></a><span class="st">  real&lt;lower=-1,upper=1&gt; r;</span></span>
-<span id="cb1-11"><a href="#cb1-11"></a><span class="st">} </span></span>
-<span id="cb1-12"><a href="#cb1-12"></a><span class="st">transformed parameters {</span></span>
-<span id="cb1-13"><a href="#cb1-13"></a><span class="st">  vector&lt;lower=0&gt;[2] sigma;</span></span>
-<span id="cb1-14"><a href="#cb1-14"></a><span class="st">  cov_matrix[2] T;</span></span>
-<span id="cb1-15"><a href="#cb1-15"></a><span class="st">  // Reparameterization</span></span>
-<span id="cb1-16"><a href="#cb1-16"></a><span class="st">  sigma[1] = inv_sqrt(lambda[1]);</span></span>
-<span id="cb1-17"><a href="#cb1-17"></a><span class="st">  sigma[2] = inv_sqrt(lambda[2]);</span></span>
-<span id="cb1-18"><a href="#cb1-18"></a><span class="st">  T[1,1] = square(sigma[1]);</span></span>
-<span id="cb1-19"><a href="#cb1-19"></a><span class="st">  T[1,2] = r * sigma[1] * sigma[2];</span></span>
-<span id="cb1-20"><a href="#cb1-20"></a><span class="st">  T[2,1] = r * sigma[1] * sigma[2];</span></span>
-<span id="cb1-21"><a href="#cb1-21"></a><span class="st">  T[2,2] = square(sigma[2]);</span></span>
-<span id="cb1-22"><a href="#cb1-22"></a><span class="st">}</span></span>
-<span id="cb1-23"><a href="#cb1-23"></a><span class="st">model {</span></span>
-<span id="cb1-24"><a href="#cb1-24"></a><span class="st">  // Priors</span></span>
-<span id="cb1-25"><a href="#cb1-25"></a><span class="st">  mu ~ normal(0, inv_sqrt(.001));</span></span>
-<span id="cb1-26"><a href="#cb1-26"></a><span class="st">  lambda ~ gamma(.001, .001);</span></span>
-<span id="cb1-27"><a href="#cb1-27"></a><span class="st">  </span></span>
-<span id="cb1-28"><a href="#cb1-28"></a><span class="st">  // Data</span></span>
-<span id="cb1-29"><a href="#cb1-29"></a><span class="st">  x ~ multi_normal(mu, T);</span></span>
-<span id="cb1-30"><a href="#cb1-30"></a><span class="st">}&quot;</span></span>
-<span id="cb1-31"><a href="#cb1-31"></a></span>
-<span id="cb1-32"><a href="#cb1-32"></a><span class="co"># The dataset:</span></span>
-<span id="cb1-33"><a href="#cb1-33"></a>  x &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">c</span>( <span class="fl">.8</span>, <span class="dv">102</span>, </span>
-<span id="cb1-34"><a href="#cb1-34"></a>                <span class="fl">1.0</span>,  <span class="dv">98</span>, </span>
-<span id="cb1-35"><a href="#cb1-35"></a>                 <span class="fl">.5</span>, <span class="dv">100</span>,</span>
-<span id="cb1-36"><a href="#cb1-36"></a>                 <span class="fl">.9</span>, <span class="dv">105</span>, </span>
-<span id="cb1-37"><a href="#cb1-37"></a>                 <span class="fl">.7</span>, <span class="dv">103</span>, </span>
-<span id="cb1-38"><a href="#cb1-38"></a>                 <span class="fl">.4</span>, <span class="dv">110</span>,</span>
-<span id="cb1-39"><a href="#cb1-39"></a>                <span class="fl">1.2</span>,  <span class="dv">99</span>, </span>
-<span id="cb1-40"><a href="#cb1-40"></a>                <span class="fl">1.4</span>,  <span class="dv">87</span>,</span>
-<span id="cb1-41"><a href="#cb1-41"></a>                 <span class="fl">.6</span>, <span class="dv">113</span>,</span>
-<span id="cb1-42"><a href="#cb1-42"></a>                <span class="fl">1.1</span>,  <span class="dv">89</span>,</span>
-<span id="cb1-43"><a href="#cb1-43"></a>                <span class="fl">1.3</span>,  <span class="dv">93</span>), <span class="dt">nrow=</span><span class="dv">11</span>, <span class="dt">ncol=</span><span class="dv">2</span>, <span class="dt">byrow=</span>T) </span>
-<span id="cb1-44"><a href="#cb1-44"></a></span>
-<span id="cb1-45"><a href="#cb1-45"></a>n &lt;-<span class="st"> </span><span class="kw">nrow</span>(x) <span class="co"># number of people/units measured</span></span>
-<span id="cb1-46"><a href="#cb1-46"></a></span>
-<span id="cb1-47"><a href="#cb1-47"></a>data &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">x=</span>x, <span class="dt">n=</span>n) <span class="co"># to be passed on to Stan</span></span>
-<span id="cb1-48"><a href="#cb1-48"></a>myinits &lt;-<span class="st"> </span><span class="kw">list</span>(</span>
-<span id="cb1-49"><a href="#cb1-49"></a>  <span class="kw">list</span>(<span class="dt">r=</span><span class="dv">0</span>, <span class="dt">mu=</span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">0</span>), <span class="dt">lambda=</span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">1</span>)))</span>
-<span id="cb1-50"><a href="#cb1-50"></a></span>
-<span id="cb1-51"><a href="#cb1-51"></a><span class="co"># parameters to be monitored: </span></span>
-<span id="cb1-52"><a href="#cb1-52"></a>parameters &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;r&quot;</span>, <span class="st">&quot;mu&quot;</span>, <span class="st">&quot;sigma&quot;</span>)</span>
-<span id="cb1-53"><a href="#cb1-53"></a></span>
-<span id="cb1-54"><a href="#cb1-54"></a>samples &lt;-<span class="st"> </span><span class="kw">stan</span>(<span class="dt">model_code=</span>model_correlation,   </span>
-<span id="cb1-55"><a href="#cb1-55"></a>                <span class="dt">data=</span>data, </span>
-<span id="cb1-56"><a href="#cb1-56"></a>                <span class="dt">init=</span>myinits,</span>
-<span id="cb1-57"><a href="#cb1-57"></a>                <span class="dt">pars=</span>parameters,</span>
-<span id="cb1-58"><a href="#cb1-58"></a>                <span class="dt">iter=</span><span class="dv">10000</span>, </span>
-<span id="cb1-59"><a href="#cb1-59"></a>                <span class="dt">chains=</span><span class="dv">1</span>, </span>
-<span id="cb1-60"><a href="#cb1-60"></a>                <span class="dt">thin=</span><span class="dv">1</span>)</span></code></pre></div>
-<pre><code>## 
-## SAMPLING FOR MODEL &#39;31aefbc6f9701279b306e349956c379c&#39; NOW (CHAIN 1).
-## Chain 1: 
-## Chain 1: Gradient evaluation took 7.9e-05 seconds
-## Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.79 seconds.
-## Chain 1: Adjust your expectations accordingly!
-## Chain 1: 
-## Chain 1: 
-## Chain 1: Iteration:    1 / 10000 [  0%]  (Warmup)
-## Chain 1: Iteration: 1000 / 10000 [ 10%]  (Warmup)
-## Chain 1: Iteration: 2000 / 10000 [ 20%]  (Warmup)
-## Chain 1: Iteration: 3000 / 10000 [ 30%]  (Warmup)
-## Chain 1: Iteration: 4000 / 10000 [ 40%]  (Warmup)
-## Chain 1: Iteration: 5000 / 10000 [ 50%]  (Warmup)
-## Chain 1: Iteration: 5001 / 10000 [ 50%]  (Sampling)
-## Chain 1: Iteration: 6000 / 10000 [ 60%]  (Sampling)
-## Chain 1: Iteration: 7000 / 10000 [ 70%]  (Sampling)
-## Chain 1: Iteration: 8000 / 10000 [ 80%]  (Sampling)
-## Chain 1: Iteration: 9000 / 10000 [ 90%]  (Sampling)
-## Chain 1: Iteration: 10000 / 10000 [100%]  (Sampling)
-## Chain 1: 
-## Chain 1:  Elapsed Time: 1.26832 seconds (Warm-up)
-## Chain 1:                1.25242 seconds (Sampling)
-## Chain 1:                2.52074 seconds (Total)
-## Chain 1:</code></pre>
-</div>
-<div class="slide section level2">
-
-<div class="incremental">
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>r &lt;-<span class="st"> </span><span class="kw">extract</span>(samples)<span class="op">$</span>r</span>
-<span id="cb3-2"><a href="#cb3-2"></a><span class="kw">plot</span>(r)</span></code></pre></div>
+<p>Let’s look at some of the images:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="co">## function to rearrange things so that we can plot them</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a>flip_image =<span class="st"> </span><span class="cf">function</span>(x) {</span>
+<span id="cb2-3"><a href="#cb2-3"></a>    n =<span class="st"> </span><span class="kw">nrow</span>(x)</span>
+<span id="cb2-4"><a href="#cb2-4"></a>    <span class="kw">return</span>(<span class="kw">t</span>(x[n<span class="op">:</span><span class="dv">1</span>,]))</span>
+<span id="cb2-5"><a href="#cb2-5"></a>}</span>
+<span id="cb2-6"><a href="#cb2-6"></a><span class="kw">par</span>(<span class="dt">mfrow =</span> <span class="kw">c</span>(<span class="dv">3</span>,<span class="dv">3</span>))</span>
+<span id="cb2-7"><a href="#cb2-7"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="dv">9</span>) {</span>
+<span id="cb2-8"><a href="#cb2-8"></a>    <span class="kw">image</span>(<span class="kw">flip_image</span>(x_train[i,,,]), <span class="dt">col =</span> <span class="kw">topo.colors</span>(<span class="dv">100</span>), <span class="dt">axes =</span> <span class="ot">FALSE</span>,</span>
+<span id="cb2-9"><a href="#cb2-9"></a>          <span class="dt">main =</span> y_train[i])</span>
+<span id="cb2-10"><a href="#cb2-10"></a>}</span></code></pre></div>
 <p><img src="lecture-28-fig/unnamed-chunk-2-1.png" /></p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="kw">qplot</span>(r, <span class="dt">geom =</span> <span class="st">&quot;density&quot;</span>)</span></code></pre></div>
-<p><img src="lecture-28-fig/unnamed-chunk-2-2.png" /></p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="co">## 95% credible interval</span></span>
-<span id="cb5-2"><a href="#cb5-2"></a><span class="kw">quantile</span>(r, <span class="kw">c</span>(.<span class="dv">025</span>, <span class="fl">.975</span>))</span></code></pre></div>
-<pre><code>##       2.5%      97.5% 
-## -0.9196590 -0.2799391</code></pre>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="co">## posterior mean</span></span>
-<span id="cb7-2"><a href="#cb7-2"></a><span class="kw">mean</span>(r)</span></code></pre></div>
-<pre><code>## [1] -0.7021456</code></pre>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a><span class="co">#Frequentist point-estimate of r:</span></span>
-<span id="cb9-2"><a href="#cb9-2"></a>(freq.r &lt;-<span class="st"> </span><span class="kw">cor</span>(x[,<span class="dv">1</span>],x[,<span class="dv">2</span>]))</span></code></pre></div>
-<pre><code>## [1] -0.8109671</code></pre>
-</div>
-</div>
-<div id="estimating-a-correlation-with-measurement-error" class="slide section level2">
-<h1>Estimating a correlation with measurement error</h1>
-<p>(Example 5.2 in the book)</p>
-<p>Problem: Suppose that our data come from a study of the relationship between “response time on a semantic verification task” and IQ.</p>
-<ul>
-<li><p>The researchers want to estimate the correlation between response time and IQ.</p></li>
-<li><p>The problem is that the IQ measurement has some uncertainty associated with it, and so the previous model we used to estimate the correlation is incorrect.</p></li>
-</ul>
 </div>
 <div class="slide section level2">
 
-<p>For the model with uncertainy in measurements, we again have two variables (response time and IQ) measured on <span class="math inline">\(n\)</span> cases, and we would like to estimate the correlation between them.</p>
-<ul>
-<li><p>Data: <span class="math inline">\(x_i \in \mathbb R^2\)</span>, <span class="math inline">\(i = 1,\ldots, n\)</span></p></li>
-<li><p>Model: <span class="math display">\[
-\begin{align*}
-P(y_i \mid \mu_1, \mu_2, \sigma_1, \sigma_2, r) &amp;= \mathcal N_2 \left( \begin{pmatrix}\mu_1 \\ \mu_2 \end{pmatrix}, \begin{pmatrix} \sigma_1^2 &amp; r \sigma_1 \sigma_2 \\ r \sigma_1 \sigma_2 &amp; \sigma_2^2 \end{pmatrix} \right)\\
-P(x_{i} \mid y_{i}) &amp;= \mathcal N_2\left(y_{i}, \begin{pmatrix} \sigma^e_1 &amp; 0 \\ 0 &amp; \sigma_2^e \end{pmatrix} \right)
-\end{align*}
-\]</span></p></li>
-<li><p>Parameters: <span class="math inline">\(\mu_1, \mu_2, \sigma_1, \sigma_2, r\)</span> (we assume that the measurement errors, <span class="math inline">\(\sigma^e_1, \sigma^e_2\)</span>, are known)</p></li>
-<li><p>Prior on the parameters: <span class="math display">\[
-\begin{align*}
-P(\mu_1) &amp;= \mathcal N(0, 1000)\\
-P(\mu_2) &amp;= \mathcal N(0, 1000)\\
-P(\sigma_1) &amp;= \text{InvSqrtGamma}(.001, .001)\\
-P(\sigma_2) &amp;= \text{InvSqrtGamma}(.001, .001)\\
-P(r) &amp;= \text{Uniform}(-1,1)
-\end{align*}
-\]</span></p></li>
-</ul>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>model =<span class="st"> </span><span class="kw">keras_model_sequential</span>()</span>
+<span id="cb3-2"><a href="#cb3-2"></a>model <span class="op">%&gt;%</span></span>
+<span id="cb3-3"><a href="#cb3-3"></a><span class="st">  </span><span class="kw">layer_flatten</span>(<span class="dt">input_shape =</span> <span class="kw">c</span>(img_rows, img_cols)) <span class="op">%&gt;%</span></span>
+<span id="cb3-4"><a href="#cb3-4"></a><span class="st">  </span><span class="kw">layer_dense</span>(<span class="dt">units =</span> <span class="dv">128</span>, <span class="dt">activation =</span> <span class="st">&#39;relu&#39;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a><span class="st">  </span><span class="kw">layer_dense</span>(<span class="dt">units =</span> num_classes, <span class="dt">activation =</span> <span class="st">&#39;softmax&#39;</span>)</span>
+<span id="cb3-6"><a href="#cb3-6"></a>model <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">compile</span>(</span>
+<span id="cb3-7"><a href="#cb3-7"></a>    <span class="dt">optimizer =</span> <span class="st">&#39;adam&#39;</span>, </span>
+<span id="cb3-8"><a href="#cb3-8"></a>    <span class="dt">loss =</span> loss_categorical_crossentropy,</span>
+<span id="cb3-9"><a href="#cb3-9"></a>    <span class="dt">metrics =</span> <span class="st">&#39;accuracy&#39;</span></span>
+<span id="cb3-10"><a href="#cb3-10"></a>)</span>
+<span id="cb3-11"><a href="#cb3-11"></a>model</span></code></pre></div>
+<pre><code>## Model
+## Model: &quot;sequential_5&quot;
+## ________________________________________________________________________________
+## Layer (type)                        Output Shape                    Param #     
+## ================================================================================
+## flatten_5 (Flatten)                 (None, 784)                     0           
+## ________________________________________________________________________________
+## dense_10 (Dense)                    (None, 128)                     100480      
+## ________________________________________________________________________________
+## dense_11 (Dense)                    (None, 10)                      1290        
+## ================================================================================
+## Total params: 101,770
+## Trainable params: 101,770
+## Non-trainable params: 0
+## ________________________________________________________________________________</code></pre>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="co">## number of parameters for the first layer: each hidden unit has a weight associated with each of the 784 predictor units, plus a bias term</span></span>
+<span id="cb5-2"><a href="#cb5-2"></a>(<span class="dv">784</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span>) <span class="op">*</span><span class="st"> </span><span class="dv">128</span></span></code></pre></div>
+<pre><code>## [1] 100480</code></pre>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="co">## number of parameters for the second layer: each output unit has a weight associated with each of the 128 hidden units, plus a bias term</span></span>
+<span id="cb7-2"><a href="#cb7-2"></a>(<span class="dv">128</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span>)<span class="op">*</span><span class="st"> </span><span class="dv">10</span></span></code></pre></div>
+<pre><code>## [1] 1290</code></pre>
 </div>
 <div class="slide section level2">
 
-<p>Posterior distribution:</p>
-<p><span class="math display">\[
-P(x_1,\ldots, x_n \mid \mu_1, \mu_2, \sigma_1, \sigma_2, r) \propto \prod_{i=1}^n P(x_i \mid y_i) P(y_i \mid \mu_1, \mu_2, \sigma_1, \sigma_2, r) P(\mu_1)P(\mu_2)P(\sigma_1)P(\sigma_2)P(r)
-\]</span></p>
-<p>Again, everything is easily computable, and we can use MCMC to obtain samples from the posterior distribution.</p>
-</div>
-<div class="slide section level2">
-
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a>model &lt;-<span class="st"> &quot;</span></span>
-<span id="cb11-2"><a href="#cb11-2"></a><span class="st">// Pearson Correlation With Uncertainty in Measurement</span></span>
-<span id="cb11-3"><a href="#cb11-3"></a><span class="st">data { </span></span>
-<span id="cb11-4"><a href="#cb11-4"></a><span class="st">  int&lt;lower=0&gt; n;</span></span>
-<span id="cb11-5"><a href="#cb11-5"></a><span class="st">  vector[2] x[n];</span></span>
-<span id="cb11-6"><a href="#cb11-6"></a><span class="st">  vector[2] sigmaerror;</span></span>
-<span id="cb11-7"><a href="#cb11-7"></a><span class="st">}</span></span>
-<span id="cb11-8"><a href="#cb11-8"></a><span class="st">parameters {</span></span>
-<span id="cb11-9"><a href="#cb11-9"></a><span class="st">  vector[2] mu;</span></span>
-<span id="cb11-10"><a href="#cb11-10"></a><span class="st">  vector&lt;lower=0&gt;[2] lambda;</span></span>
-<span id="cb11-11"><a href="#cb11-11"></a><span class="st">  real&lt;lower=-1,upper=1&gt; r;</span></span>
-<span id="cb11-12"><a href="#cb11-12"></a><span class="st">  vector[2] y[n];</span></span>
-<span id="cb11-13"><a href="#cb11-13"></a><span class="st">} </span></span>
-<span id="cb11-14"><a href="#cb11-14"></a><span class="st">transformed parameters {</span></span>
-<span id="cb11-15"><a href="#cb11-15"></a><span class="st">  vector&lt;lower=0&gt;[2] sigma;</span></span>
-<span id="cb11-16"><a href="#cb11-16"></a><span class="st">  cov_matrix[2] T;</span></span>
-<span id="cb11-17"><a href="#cb11-17"></a><span class="st">  // Reparameterization</span></span>
-<span id="cb11-18"><a href="#cb11-18"></a><span class="st">  sigma[1] = inv_sqrt(lambda[1]);</span></span>
-<span id="cb11-19"><a href="#cb11-19"></a><span class="st">  sigma[2] = inv_sqrt(lambda[2]);</span></span>
-<span id="cb11-20"><a href="#cb11-20"></a><span class="st">  </span></span>
-<span id="cb11-21"><a href="#cb11-21"></a><span class="st">  T[1,1] = square(sigma[1]);</span></span>
-<span id="cb11-22"><a href="#cb11-22"></a><span class="st">  T[1,2] = r * sigma[1] * sigma[2];</span></span>
-<span id="cb11-23"><a href="#cb11-23"></a><span class="st">  T[2,1] = r * sigma[1] * sigma[2];</span></span>
-<span id="cb11-24"><a href="#cb11-24"></a><span class="st">  T[2,2] = square(sigma[2]);</span></span>
-<span id="cb11-25"><a href="#cb11-25"></a><span class="st">}</span></span>
-<span id="cb11-26"><a href="#cb11-26"></a><span class="st">model {</span></span>
-<span id="cb11-27"><a href="#cb11-27"></a><span class="st">  // Priors</span></span>
-<span id="cb11-28"><a href="#cb11-28"></a><span class="st">  mu ~ normal(0, inv_sqrt(.001));</span></span>
-<span id="cb11-29"><a href="#cb11-29"></a><span class="st">  lambda ~ gamma(.001, .001);</span></span>
-<span id="cb11-30"><a href="#cb11-30"></a><span class="st">  // Data</span></span>
-<span id="cb11-31"><a href="#cb11-31"></a><span class="st">  y ~ multi_normal(mu, T);</span></span>
-<span id="cb11-32"><a href="#cb11-32"></a><span class="st">  for (i in 1:n)</span></span>
-<span id="cb11-33"><a href="#cb11-33"></a><span class="st">    x[i] ~ normal(y[i], sigmaerror);</span></span>
-<span id="cb11-34"><a href="#cb11-34"></a><span class="st">}&quot;</span></span>
-<span id="cb11-35"><a href="#cb11-35"></a></span>
-<span id="cb11-36"><a href="#cb11-36"></a>x &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">c</span>( <span class="fl">.8</span>, <span class="dv">102</span>, </span>
-<span id="cb11-37"><a href="#cb11-37"></a>              <span class="fl">1.0</span>,  <span class="dv">98</span>, </span>
-<span id="cb11-38"><a href="#cb11-38"></a>               <span class="fl">.5</span>, <span class="dv">100</span>,</span>
-<span id="cb11-39"><a href="#cb11-39"></a>               <span class="fl">.9</span>, <span class="dv">105</span>, </span>
-<span id="cb11-40"><a href="#cb11-40"></a>               <span class="fl">.7</span>, <span class="dv">103</span>, </span>
-<span id="cb11-41"><a href="#cb11-41"></a>               <span class="fl">.4</span>, <span class="dv">110</span>,</span>
-<span id="cb11-42"><a href="#cb11-42"></a>              <span class="fl">1.2</span>,  <span class="dv">99</span>, </span>
-<span id="cb11-43"><a href="#cb11-43"></a>              <span class="fl">1.4</span>,  <span class="dv">87</span>,</span>
-<span id="cb11-44"><a href="#cb11-44"></a>               <span class="fl">.6</span>, <span class="dv">113</span>,</span>
-<span id="cb11-45"><a href="#cb11-45"></a>              <span class="fl">1.1</span>,  <span class="dv">89</span>,</span>
-<span id="cb11-46"><a href="#cb11-46"></a>              <span class="fl">1.3</span>,  <span class="dv">93</span>), <span class="dt">nrow=</span><span class="dv">11</span>, <span class="dt">ncol=</span><span class="dv">2</span>, <span class="dt">byrow=</span>T) </span>
-<span id="cb11-47"><a href="#cb11-47"></a></span>
-<span id="cb11-48"><a href="#cb11-48"></a>n &lt;-<span class="st"> </span><span class="kw">nrow</span>(x) <span class="co"># number of people/units measured</span></span>
-<span id="cb11-49"><a href="#cb11-49"></a></span>
-<span id="cb11-50"><a href="#cb11-50"></a><span class="co"># precision of measurement:</span></span>
-<span id="cb11-51"><a href="#cb11-51"></a>sigmaerror =<span class="st"> </span><span class="kw">c</span>(.<span class="dv">03</span>, <span class="dv">5</span>)</span>
-<span id="cb11-52"><a href="#cb11-52"></a></span>
-<span id="cb11-53"><a href="#cb11-53"></a>data &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">x=</span>x, <span class="dt">n=</span>n, <span class="dt">sigmaerror=</span>sigmaerror) <span class="co"># to be passed on to Stan</span></span>
-<span id="cb11-54"><a href="#cb11-54"></a>myinits &lt;-<span class="st"> </span><span class="kw">list</span>(</span>
-<span id="cb11-55"><a href="#cb11-55"></a>  <span class="kw">list</span>(<span class="dt">r=</span><span class="dv">0</span>, <span class="dt">mu=</span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">0</span>), <span class="dt">lambda=</span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">1</span>), <span class="dt">y=</span><span class="kw">matrix</span>(<span class="kw">c</span>(<span class="kw">rep</span>(<span class="dv">1</span>, n), <span class="kw">rep</span>(<span class="dv">100</span>, n)), n, <span class="dv">2</span>)))</span>
-<span id="cb11-56"><a href="#cb11-56"></a></span>
-<span id="cb11-57"><a href="#cb11-57"></a><span class="co"># parameters to be monitored:  </span></span>
-<span id="cb11-58"><a href="#cb11-58"></a>parameters &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;r&quot;</span>, <span class="st">&quot;mu&quot;</span>, <span class="st">&quot;sigma&quot;</span>)</span>
-<span id="cb11-59"><a href="#cb11-59"></a>samples &lt;-<span class="st"> </span><span class="kw">stan</span>(<span class="dt">model_code=</span>model,   </span>
-<span id="cb11-60"><a href="#cb11-60"></a>                <span class="dt">data=</span>data, </span>
-<span id="cb11-61"><a href="#cb11-61"></a>                <span class="dt">init=</span>myinits,</span>
-<span id="cb11-62"><a href="#cb11-62"></a>                <span class="dt">pars=</span>parameters,</span>
-<span id="cb11-63"><a href="#cb11-63"></a>                <span class="dt">iter=</span><span class="dv">20000</span>, </span>
-<span id="cb11-64"><a href="#cb11-64"></a>                <span class="dt">chains=</span><span class="dv">1</span>, </span>
-<span id="cb11-65"><a href="#cb11-65"></a>                <span class="dt">thin=</span><span class="dv">1</span>)</span></code></pre></div>
-<pre><code>## 
-## SAMPLING FOR MODEL &#39;ca98a184003e9d2907fcd31a07a7d500&#39; NOW (CHAIN 1).
-## Chain 1: 
-## Chain 1: Gradient evaluation took 6.8e-05 seconds
-## Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.68 seconds.
-## Chain 1: Adjust your expectations accordingly!
-## Chain 1: 
-## Chain 1: 
-## Chain 1: Iteration:     1 / 20000 [  0%]  (Warmup)
-## Chain 1: Iteration:  2000 / 20000 [ 10%]  (Warmup)
-## Chain 1: Iteration:  4000 / 20000 [ 20%]  (Warmup)
-## Chain 1: Iteration:  6000 / 20000 [ 30%]  (Warmup)
-## Chain 1: Iteration:  8000 / 20000 [ 40%]  (Warmup)
-## Chain 1: Iteration: 10000 / 20000 [ 50%]  (Warmup)
-## Chain 1: Iteration: 10001 / 20000 [ 50%]  (Sampling)
-## Chain 1: Iteration: 12000 / 20000 [ 60%]  (Sampling)
-## Chain 1: Iteration: 14000 / 20000 [ 70%]  (Sampling)
-## Chain 1: Iteration: 16000 / 20000 [ 80%]  (Sampling)
-## Chain 1: Iteration: 18000 / 20000 [ 90%]  (Sampling)
-## Chain 1: Iteration: 20000 / 20000 [100%]  (Sampling)
-## Chain 1: 
-## Chain 1:  Elapsed Time: 9.55882 seconds (Warm-up)
-## Chain 1:                6.51576 seconds (Sampling)
-## Chain 1:                16.0746 seconds (Total)
-## Chain 1:</code></pre>
-</div>
-<div class="slide section level2">
-
-<div class="incremental">
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a>r =<span class="st"> </span><span class="kw">extract</span>(samples)<span class="op">$</span>r</span>
-<span id="cb13-2"><a href="#cb13-2"></a><span class="kw">plot</span>(r)</span></code></pre></div>
+<p>Fit the model, look at the predictions:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a>model <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">fit</span>(<span class="dt">x =</span> x_train, <span class="dt">y =</span> y_train_matrix, <span class="dt">epochs =</span> <span class="dv">15</span>)</span>
+<span id="cb9-2"><a href="#cb9-2"></a>test_predictions =<span class="st"> </span>model <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">predict_classes</span>(x_test)</span>
+<span id="cb9-3"><a href="#cb9-3"></a><span class="kw">par</span>(<span class="dt">mfrow =</span> <span class="kw">c</span>(<span class="dv">3</span>,<span class="dv">3</span>))</span>
+<span id="cb9-4"><a href="#cb9-4"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="dv">9</span>) {</span>
+<span id="cb9-5"><a href="#cb9-5"></a>    <span class="kw">image</span>(<span class="kw">flip_image</span>(x_test[i,,]), <span class="dt">col =</span> <span class="kw">topo.colors</span>(<span class="dv">100</span>), <span class="dt">axes =</span> <span class="ot">FALSE</span>,</span>
+<span id="cb9-6"><a href="#cb9-6"></a>          <span class="dt">main =</span> <span class="kw">sprintf</span>(<span class="st">&quot;True digit: %i, Prediction: %i&quot;</span>, y_test[i], test_predictions[i]))</span>
+<span id="cb9-7"><a href="#cb9-7"></a>}</span></code></pre></div>
 <p><img src="lecture-28-fig/unnamed-chunk-4-1.png" /></p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a><span class="co">## posterior density for r</span></span>
-<span id="cb14-2"><a href="#cb14-2"></a><span class="kw">qplot</span>(r, <span class="dt">geom =</span> <span class="st">&quot;density&quot;</span>)</span></code></pre></div>
-<p><img src="lecture-28-fig/unnamed-chunk-4-2.png" /></p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1"></a><span class="co">## 95% credible interval</span></span>
-<span id="cb15-2"><a href="#cb15-2"></a><span class="kw">quantile</span>(r, <span class="kw">c</span>(.<span class="dv">025</span>, <span class="fl">.975</span>))</span></code></pre></div>
-<pre><code>##       2.5%      97.5% 
-## -0.9845225 -0.2478574</code></pre>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1"></a><span class="co">## posterior mean</span></span>
-<span id="cb17-2"><a href="#cb17-2"></a><span class="kw">mean</span>(r)</span></code></pre></div>
-<pre><code>## [1] -0.7832858</code></pre>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1"></a><span class="co">#Frequentist point-estimate of r:</span></span>
-<span id="cb19-2"><a href="#cb19-2"></a>(freq.r &lt;-<span class="st"> </span><span class="kw">cor</span>(x[,<span class="dv">1</span>],x[,<span class="dv">2</span>]))</span></code></pre></div>
-<pre><code>## [1] -0.8109671</code></pre>
 </div>
+<div class="slide section level2">
+
+<p>More elaborate architectures do much better, for example the <a href="https://keras.rstudio.com/articles/examples/mnist_cnn.html">convolutional model</a>.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a>model_conv &lt;-<span class="st"> </span><span class="kw">keras_model_sequential</span>() <span class="op">%&gt;%</span></span>
+<span id="cb10-2"><a href="#cb10-2"></a><span class="st">    </span><span class="kw">layer_conv_2d</span>(<span class="dt">filters =</span> <span class="dv">32</span>, <span class="dt">kernel_size =</span> <span class="kw">c</span>(<span class="dv">3</span>,<span class="dv">3</span>), <span class="dt">activation =</span> <span class="st">&#39;relu&#39;</span>,</span>
+<span id="cb10-3"><a href="#cb10-3"></a>                  <span class="dt">input_shape =</span> <span class="kw">c</span>(img_rows,img_cols,<span class="dv">1</span>)) <span class="op">%&gt;%</span></span>
+<span id="cb10-4"><a href="#cb10-4"></a><span class="st">    </span><span class="kw">layer_conv_2d</span>(<span class="dt">filters =</span> <span class="dv">64</span>, <span class="dt">kernel_size =</span> <span class="kw">c</span>(<span class="dv">3</span>,<span class="dv">3</span>), <span class="dt">activation =</span> <span class="st">&#39;relu&#39;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb10-5"><a href="#cb10-5"></a><span class="st">    </span><span class="kw">layer_max_pooling_2d</span>(<span class="dt">pool_size =</span> <span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">2</span>)) <span class="op">%&gt;%</span></span>
+<span id="cb10-6"><a href="#cb10-6"></a><span class="st">    </span><span class="kw">layer_dropout</span>(<span class="dt">rate =</span> <span class="fl">0.25</span>) <span class="op">%&gt;%</span></span>
+<span id="cb10-7"><a href="#cb10-7"></a><span class="st">    </span><span class="kw">layer_flatten</span>() <span class="op">%&gt;%</span></span>
+<span id="cb10-8"><a href="#cb10-8"></a><span class="st">    </span><span class="kw">layer_dense</span>(<span class="dt">units =</span> <span class="dv">128</span>, <span class="dt">activation =</span> <span class="st">&#39;relu&#39;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb10-9"><a href="#cb10-9"></a><span class="st">    </span><span class="kw">layer_dropout</span>(<span class="dt">rate =</span> <span class="fl">0.5</span>) <span class="op">%&gt;%</span></span>
+<span id="cb10-10"><a href="#cb10-10"></a><span class="st">    </span><span class="kw">layer_dense</span>(<span class="dt">units =</span> num_classes, <span class="dt">activation =</span> <span class="st">&#39;softmax&#39;</span>)</span>
+<span id="cb10-11"><a href="#cb10-11"></a>model_conv <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">compile</span>(</span>
+<span id="cb10-12"><a href="#cb10-12"></a>  <span class="dt">loss =</span> loss_categorical_crossentropy,</span>
+<span id="cb10-13"><a href="#cb10-13"></a>  <span class="dt">optimizer =</span> <span class="st">&#39;adam&#39;</span>,</span>
+<span id="cb10-14"><a href="#cb10-14"></a>  <span class="dt">metrics =</span> <span class="kw">c</span>(<span class="st">&#39;accuracy&#39;</span>)</span>
+<span id="cb10-15"><a href="#cb10-15"></a>  )</span>
+<span id="cb10-16"><a href="#cb10-16"></a>model_conv</span>
+<span id="cb10-17"><a href="#cb10-17"></a>model_conv <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">fit</span>(<span class="dt">x =</span> x_train, <span class="dt">y =</span> y_train_matrix, <span class="dt">epochs =</span> <span class="dv">15</span>)</span></code></pre></div>
 </div>
-<div id="example-3-seven-scientists" class="slide section level2">
-<h1>Example 3: Seven scientists</h1>
-<p>(Example 4.2 in the book). Seven scientists with dramatically different capabilities run an experiment to measure a certain quantity.</p>
-<p>The get the results: -27.020, 3.570, 8.191, 9.898, 9.603, 9.945, 10.056</p>
-<p>We would like to combine their results to get an estimate of the true value of the quantity they were trying to measure.</p>
-<p>We can model this as:</p>
+<div id="part-2-cross-validation" class="slide section level2">
+<h1>Part 2: Cross validation</h1>
+<p>We have:</p>
 <ul>
-<li><p>The result each of the scientists obtained comes from a normal distribution</p></li>
-<li><p>All seven distributions have the same mean</p></li>
-<li><p>All seven distributions have different variances</p></li>
+<li>Data <span class="math inline">\(X_1, \ldots, X_n\)</span>.</li>
+</ul>
+<ul>
+<li>A set of models for the data.</li>
+</ul>
+<ul>
+<li>A function <span class="math inline">\(L\)</span> that takes a fitted model and a data point and returns a measure of model quality.</li>
+</ul>
+<p>We would like to choose one model from the set of candidate models.</p>
+</div>
+<div id="example-neural-nets" class="slide section level2">
+<h1>Example: Neural nets</h1>
+<ul>
+<li>Data: Pairs of predictors and response variables, <span class="math inline">\((y_i, X_i)\)</span>, <span class="math inline">\(i = 1,\ldots, n\)</span>, <span class="math inline">\(y_i \in \mathbb R\)</span>, <span class="math inline">\(X_i \in \mathbb R^p\)</span></li>
+</ul>
+<ul>
+<li>Models: The two models we defined in the first half of lecture.</li>
+</ul>
+<ul>
+<li>Model quality: Squared-error loss. If <span class="math inline">\(\hat f_1\)</span> and <span class="math inline">\(\hat f_2\)</span> are the functions corresponding to the fitted neural nets, model quality is measured by <span class="math display">\[
+L(\hat \beta_\theta, (y_i, X_i)) = (y_i - \hat f_\theta(X_i))^2, \quad \theta = 1,2
+\]</span></li>
+</ul>
+<p>We want ot decide whether the first or the second neural net is better at explaining the response.</p>
+<div class="incremental">
+<p>Naive solution: Find the model that has the lowest value for the squared-error loss.</p>
+</div>
+</div>
+<div id="example-regression" class="slide section level2">
+<h1>Example: Regression</h1>
+<ul>
+<li>Data: Pairs of predictors and response variables, <span class="math inline">\((y_i, X_i)\)</span>, <span class="math inline">\(i = 1,\ldots, n\)</span>, <span class="math inline">\(y_i \in \mathbb R\)</span>, <span class="math inline">\(X_i \in \mathbb R^p\)</span></li>
+</ul>
+<ul>
+<li>Models: <span class="math inline">\(y_i = X \beta + \epsilon\)</span>, <span class="math inline">\(\beta_j = 0, j \in S_\theta\)</span>, where <span class="math inline">\(S_\theta \subseteq \{1,\ldots, p\}\)</span>.</li>
+</ul>
+<ul>
+<li>Model quality: Squared-error loss. If <span class="math inline">\(\hat \beta_\theta\)</span> are our estimates of the regression coefficients in model <span class="math inline">\(\theta\)</span>, model quality is measured by <span class="math display">\[
+L(\hat \beta_\theta, (y_i, X_i)) = (y_i - X_i^T \hat \beta_\theta)^2
+\]</span></li>
+</ul>
+<p>We want to choose a subset of the predictors that do the best job of explaining the response.</p>
+<div class="incremental">
+<p>Naive solution: Find the model that has the lowest value for the squared-error loss.</p>
+<p>Why doesn’t this work?</p>
+</div>
+</div>
+<div id="example-mixture-models" class="slide section level2">
+<h1>Example: Mixture models</h1>
+<ul>
+<li>Data: <span class="math inline">\(x_1,\ldots, x_n\)</span>, <span class="math inline">\(x_i \in \mathbb R\)</span></li>
+</ul>
+<ul>
+<li>Models: Gaussian mixture models with <span class="math inline">\(\theta\)</span> mixture components.</li>
+</ul>
+<ul>
+<li>Model quality: Log likelihood of the data. If <span class="math inline">\(\hat p_\theta\)</span> is the density of the fitted model with <span class="math inline">\(\theta\)</span> components, model quality is measured by <span class="math inline">\(L(\hat p_\theta, x_i) = \log \hat p_\theta(x_i)\)</span>.</li>
+</ul>
+<p>We want to choose the number of mixture components that best explains the data.</p>
+<div class="incremental">
+<p>Naive solution: Choose the number of mixture components that maximizes the log likelihood of the data.</p>
+</div>
+</div>
+<div id="better-solution-cross-validation" class="slide section level2">
+<h1>Better Solution: Cross validation</h1>
+<p>Idea: Instead of measuring model quality on the same data we used to fit the model, we estimate model quality on new data.</p>
+<p>If we knew the true distribution of the data, we could simulate new data and use a Monte Carlo estimate based on the simulations.</p>
+<p>We can’t actually get new data, and so we hold some back when we fit the model and then pretend that the held back data is new data.</p>
+</div>
+<div class="slide section level2">
+
+<p>Procedure:</p>
+<ul>
+<li>Divide the data into <span class="math inline">\(K\)</span> folds</li>
+</ul>
+<ul>
+<li>Let <span class="math inline">\(X^{(k)}\)</span> denote the data in fold <span class="math inline">\(k\)</span>, and let <span class="math inline">\(X^{(-k)}\)</span> denote the data in all the folds except for <span class="math inline">\(k\)</span>.</li>
+</ul>
+<ul>
+<li>For each fold and each value of the tuning parameter <span class="math inline">\(\theta\)</span>, fit the model on <span class="math inline">\(X^{(-k)}\)</span> to get <span class="math inline">\(\hat f_\theta^{(k)}\)</span></li>
+</ul>
+<ul>
+<li>Compute <span class="math display">\[
+\text{CV}(\theta) = \frac{1}{n} \sum_{k=1}^K \sum_{x \in X^{(k)}} L(\hat f_\theta^{(k)}, x)
+\]</span></li>
+</ul>
+<ul>
+<li>Choose <span class="math inline">\(\hat \theta = \text{argmin}_{\theta} \text{CV}(\theta)\)</span></li>
 </ul>
 </div>
-<div class="slide section level2">
-
-<p>Listing everything out:</p>
-<ul>
-<li><p>Data: <span class="math inline">\(x_i \in \mathbb R^1\)</span>, <span class="math inline">\(i = 1,\ldots, 7\)</span></p></li>
-<li><p>Likelihood: <span class="math display">\[
-P(x_i \mid \mu, \lambda_i ) = \mathcal N(\mu, \lambda_i^{-1})
-\]</span></p></li>
-<li><p>Parameters: <span class="math inline">\(\mu, \lambda_1,\ldots, \lambda_7\)</span></p></li>
-<li><p>Prior: <span class="math display">\[
-\begin{align*}
-P(\mu) &amp;= \mathcal N(0, 1000) \\
-P(\lambda_i) &amp;= \text{Gamma}(.001, .001)
-\end{align*}
-\]</span></p></li>
-</ul>
-<div class="incremental">
-<p>Posterior: <span class="math display">\[
-P(\mu, \lambda_1,\ldots, \lambda_7  \mid x_1,\ldots, x_7) \propto \prod_{i=1}^7 P(x_i \mid \mu, \lambda_1,\ldots, \lambda_7) P(\mu) \prod_{i=1}^7 P(\lambda_i)
-\]</span></p>
-<p>Again, everything on the right can be evaluated easily, and we can use MCMC to sample from the distribution.</p>
-</div>
-</div>
-<div class="slide section level2">
-
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a>model_seven_scientists =<span class="st"> &quot;</span></span>
-<span id="cb21-2"><a href="#cb21-2"></a><span class="st">// The Seven Scientists</span></span>
-<span id="cb21-3"><a href="#cb21-3"></a><span class="st">data { </span></span>
-<span id="cb21-4"><a href="#cb21-4"></a><span class="st">  int&lt;lower=1&gt; n;</span></span>
-<span id="cb21-5"><a href="#cb21-5"></a><span class="st">  vector[n] x;</span></span>
-<span id="cb21-6"><a href="#cb21-6"></a><span class="st">}</span></span>
-<span id="cb21-7"><a href="#cb21-7"></a><span class="st">parameters {</span></span>
-<span id="cb21-8"><a href="#cb21-8"></a><span class="st">  real mu;</span></span>
-<span id="cb21-9"><a href="#cb21-9"></a><span class="st">  vector&lt;lower=0&gt;[n] lambda;</span></span>
-<span id="cb21-10"><a href="#cb21-10"></a><span class="st">} </span></span>
-<span id="cb21-11"><a href="#cb21-11"></a><span class="st">transformed parameters {</span></span>
-<span id="cb21-12"><a href="#cb21-12"></a><span class="st">  vector[n] sigma;</span></span>
-<span id="cb21-13"><a href="#cb21-13"></a><span class="st">  </span></span>
-<span id="cb21-14"><a href="#cb21-14"></a><span class="st">  for (i in 1:n)</span></span>
-<span id="cb21-15"><a href="#cb21-15"></a><span class="st">    sigma[i] = inv_sqrt(lambda[i]);</span></span>
-<span id="cb21-16"><a href="#cb21-16"></a><span class="st">}</span></span>
-<span id="cb21-17"><a href="#cb21-17"></a><span class="st">model {</span></span>
-<span id="cb21-18"><a href="#cb21-18"></a><span class="st">  // Priors</span></span>
-<span id="cb21-19"><a href="#cb21-19"></a><span class="st">  mu ~ normal(0, sqrt(1000));</span></span>
-<span id="cb21-20"><a href="#cb21-20"></a><span class="st">  lambda ~ gamma(.001, .001);</span></span>
-<span id="cb21-21"><a href="#cb21-21"></a><span class="st">  </span></span>
-<span id="cb21-22"><a href="#cb21-22"></a><span class="st">  // Data Come From Gaussians With Common Mean But Different Precisions</span></span>
-<span id="cb21-23"><a href="#cb21-23"></a><span class="st">  x ~ normal(mu, sigma);</span></span>
-<span id="cb21-24"><a href="#cb21-24"></a><span class="st">}&quot;</span></span>
-<span id="cb21-25"><a href="#cb21-25"></a></span>
-<span id="cb21-26"><a href="#cb21-26"></a>x &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="op">-</span><span class="fl">27.020</span>, <span class="fl">3.570</span>, <span class="fl">8.191</span>, <span class="fl">9.898</span>, <span class="fl">9.603</span>, <span class="fl">9.945</span>, <span class="fl">10.056</span>)</span>
-<span id="cb21-27"><a href="#cb21-27"></a>n &lt;-<span class="st"> </span><span class="kw">length</span>(x)</span>
-<span id="cb21-28"><a href="#cb21-28"></a></span>
-<span id="cb21-29"><a href="#cb21-29"></a>data &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">x=</span>x, <span class="dt">n=</span>n) <span class="co"># to be passed on to Stan</span></span>
-<span id="cb21-30"><a href="#cb21-30"></a>myinits &lt;-<span class="st"> </span><span class="kw">list</span>(</span>
-<span id="cb21-31"><a href="#cb21-31"></a>  <span class="kw">list</span>(<span class="dt">mu=</span><span class="dv">0</span>, <span class="dt">lambda=</span><span class="kw">rep</span>(<span class="dv">1</span>,n)))</span>
-<span id="cb21-32"><a href="#cb21-32"></a></span>
-<span id="cb21-33"><a href="#cb21-33"></a><span class="co"># parameters to be monitored:  </span></span>
-<span id="cb21-34"><a href="#cb21-34"></a>parameters &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;mu&quot;</span>, <span class="st">&quot;lambda&quot;</span>)</span>
-<span id="cb21-35"><a href="#cb21-35"></a></span>
-<span id="cb21-36"><a href="#cb21-36"></a>samples_seven_scientists &lt;-<span class="st"> </span><span class="kw">stan</span>(<span class="dt">model_code=</span>model_seven_scientists,   </span>
-<span id="cb21-37"><a href="#cb21-37"></a>                <span class="dt">data=</span>data, </span>
-<span id="cb21-38"><a href="#cb21-38"></a>                <span class="dt">init=</span>myinits,</span>
-<span id="cb21-39"><a href="#cb21-39"></a>                <span class="dt">pars=</span>parameters,</span>
-<span id="cb21-40"><a href="#cb21-40"></a>                <span class="dt">iter=</span><span class="dv">20000</span>, </span>
-<span id="cb21-41"><a href="#cb21-41"></a>                <span class="dt">chains=</span><span class="dv">1</span>, </span>
-<span id="cb21-42"><a href="#cb21-42"></a>                <span class="dt">thin=</span><span class="dv">1</span>)</span></code></pre></div>
-<pre><code>## 
-## SAMPLING FOR MODEL &#39;0ad4c94821220e5bc1c79495c2929f20&#39; NOW (CHAIN 1).
-## Chain 1: 
-## Chain 1: Gradient evaluation took 1.5e-05 seconds
-## Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.15 seconds.
-## Chain 1: Adjust your expectations accordingly!
-## Chain 1: 
-## Chain 1: 
-## Chain 1: Iteration:     1 / 20000 [  0%]  (Warmup)
-## Chain 1: Iteration:  2000 / 20000 [ 10%]  (Warmup)
-## Chain 1: Iteration:  4000 / 20000 [ 20%]  (Warmup)
-## Chain 1: Iteration:  6000 / 20000 [ 30%]  (Warmup)
-## Chain 1: Iteration:  8000 / 20000 [ 40%]  (Warmup)
-## Chain 1: Iteration: 10000 / 20000 [ 50%]  (Warmup)
-## Chain 1: Iteration: 10001 / 20000 [ 50%]  (Sampling)
-## Chain 1: Iteration: 12000 / 20000 [ 60%]  (Sampling)
-## Chain 1: Iteration: 14000 / 20000 [ 70%]  (Sampling)
-## Chain 1: Iteration: 16000 / 20000 [ 80%]  (Sampling)
-## Chain 1: Iteration: 18000 / 20000 [ 90%]  (Sampling)
-## Chain 1: Iteration: 20000 / 20000 [100%]  (Sampling)
-## Chain 1: 
-## Chain 1:  Elapsed Time: 0.541694 seconds (Warm-up)
-## Chain 1:                0.561518 seconds (Sampling)
-## Chain 1:                1.10321 seconds (Total)
-## Chain 1:</code></pre>
-</div>
-<div class="slide section level2">
-
-<div class="incremental">
-<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1"></a>samples_extracted =<span class="st"> </span><span class="kw">extract</span>(samples_seven_scientists)</span>
-<span id="cb23-2"><a href="#cb23-2"></a><span class="co">## show the chain</span></span>
-<span id="cb23-3"><a href="#cb23-3"></a><span class="kw">plot</span>(samples_extracted<span class="op">$</span>mu)</span></code></pre></div>
+<div id="example" class="slide section level2">
+<h1>Example</h1>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a>n =<span class="st"> </span><span class="dv">100</span></span>
+<span id="cb11-2"><a href="#cb11-2"></a>p =<span class="st"> </span><span class="dv">20</span></span>
+<span id="cb11-3"><a href="#cb11-3"></a>X =<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">rnorm</span>(n <span class="op">*</span><span class="st"> </span>p), <span class="dt">nrow =</span> n)</span>
+<span id="cb11-4"><a href="#cb11-4"></a>y =<span class="st"> </span><span class="kw">rnorm</span>(n)</span>
+<span id="cb11-5"><a href="#cb11-5"></a>get_rss_submodels =<span class="st"> </span><span class="cf">function</span>(n_predictors, y, X) {</span>
+<span id="cb11-6"><a href="#cb11-6"></a>    <span class="cf">if</span>(n_predictors <span class="op">==</span><span class="st"> </span><span class="dv">0</span>) {</span>
+<span id="cb11-7"><a href="#cb11-7"></a>        lm_submodel =<span class="st"> </span><span class="kw">lm</span>(y <span class="op">~</span><span class="st"> </span><span class="dv">0</span>)</span>
+<span id="cb11-8"><a href="#cb11-8"></a>    } <span class="cf">else</span> {</span>
+<span id="cb11-9"><a href="#cb11-9"></a>        lm_submodel =<span class="st"> </span><span class="kw">lm</span>(y <span class="op">~</span><span class="st"> </span><span class="dv">0</span> <span class="op">+</span><span class="st"> </span>X[,<span class="dv">1</span><span class="op">:</span>n_predictors, <span class="dt">drop =</span> <span class="ot">FALSE</span>])</span>
+<span id="cb11-10"><a href="#cb11-10"></a>    }</span>
+<span id="cb11-11"><a href="#cb11-11"></a>    <span class="kw">return</span>(<span class="kw">sum</span>(<span class="kw">residuals</span>(lm_submodel)<span class="op">^</span><span class="dv">2</span>))</span>
+<span id="cb11-12"><a href="#cb11-12"></a>}</span>
+<span id="cb11-13"><a href="#cb11-13"></a>p_vec =<span class="st"> </span><span class="dv">0</span><span class="op">:</span>p</span>
+<span id="cb11-14"><a href="#cb11-14"></a>rss =<span class="st"> </span><span class="kw">sapply</span>(p_vec, get_rss_submodels, y, X)</span>
+<span id="cb11-15"><a href="#cb11-15"></a><span class="kw">plot</span>(rss <span class="op">~</span><span class="st"> </span>p_vec)</span></code></pre></div>
 <p><img src="lecture-28-fig/unnamed-chunk-6-1.png" /></p>
-<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1"></a><span class="co">## posterior mean of mu</span></span>
-<span id="cb24-2"><a href="#cb24-2"></a><span class="kw">mean</span>(samples_extracted<span class="op">$</span>mu)</span></code></pre></div>
-<pre><code>## [1] 9.91404</code></pre>
-<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1"></a><span class="co">## frequentist mean of mu</span></span>
-<span id="cb26-2"><a href="#cb26-2"></a><span class="kw">mean</span>(x)</span></code></pre></div>
-<pre><code>## [1] 3.463286</code></pre>
-</div>
 </div>
 <div class="slide section level2">
 
-<p>We can also look at the posteriors for each of the variances:</p>
-<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1"></a><span class="kw">plot</span>(samples_extracted<span class="op">$</span>lambda[,<span class="dv">1</span>], <span class="dt">ylab =</span> <span class="st">&quot;Precision for Scientist 1&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a>get_cv_error =<span class="st"> </span><span class="cf">function</span>(n_predictors, y, X, folds) {</span>
+<span id="cb12-2"><a href="#cb12-2"></a>    cv_vec =<span class="st"> </span><span class="kw">numeric</span>(<span class="kw">length</span>(<span class="kw">unique</span>(folds)))</span>
+<span id="cb12-3"><a href="#cb12-3"></a>    <span class="cf">for</span>(f <span class="cf">in</span> <span class="kw">unique</span>(folds)) {</span>
+<span id="cb12-4"><a href="#cb12-4"></a>        cv_vec[f] =<span class="st"> </span><span class="kw">rss_on_held_out</span>(</span>
+<span id="cb12-5"><a href="#cb12-5"></a>                  n_predictors,</span>
+<span id="cb12-6"><a href="#cb12-6"></a>                  <span class="dt">y_train =</span> y[folds <span class="op">!=</span><span class="st"> </span>f],</span>
+<span id="cb12-7"><a href="#cb12-7"></a>                  <span class="dt">X_train =</span> X[folds <span class="op">!=</span><span class="st"> </span>f,],</span>
+<span id="cb12-8"><a href="#cb12-8"></a>                  <span class="dt">y_test =</span> y[folds <span class="op">==</span><span class="st"> </span>f],</span>
+<span id="cb12-9"><a href="#cb12-9"></a>                  <span class="dt">X_test =</span> X[folds <span class="op">==</span><span class="st"> </span>f,])</span>
+<span id="cb12-10"><a href="#cb12-10"></a>    }</span>
+<span id="cb12-11"><a href="#cb12-11"></a>    <span class="kw">return</span>(<span class="kw">mean</span>(cv_vec))</span>
+<span id="cb12-12"><a href="#cb12-12"></a>}</span>
+<span id="cb12-13"><a href="#cb12-13"></a></span>
+<span id="cb12-14"><a href="#cb12-14"></a>rss_on_held_out =<span class="st"> </span><span class="cf">function</span>(n_predictors, y_train, X_train, y_test, X_test) {</span>
+<span id="cb12-15"><a href="#cb12-15"></a>    <span class="cf">if</span>(n_predictors <span class="op">==</span><span class="st"> </span><span class="dv">0</span>) {</span>
+<span id="cb12-16"><a href="#cb12-16"></a>        lm_submodel =<span class="st"> </span><span class="kw">lm</span>(y_train <span class="op">~</span><span class="st"> </span><span class="dv">0</span>)</span>
+<span id="cb12-17"><a href="#cb12-17"></a>        preds_on_test =<span class="st"> </span><span class="kw">rep</span>(<span class="dv">0</span>, <span class="kw">length</span>(y_test))</span>
+<span id="cb12-18"><a href="#cb12-18"></a>    } <span class="cf">else</span> {</span>
+<span id="cb12-19"><a href="#cb12-19"></a>        lm_submodel =<span class="st"> </span><span class="kw">lm</span>(y_train <span class="op">~</span><span class="st"> </span><span class="dv">0</span> <span class="op">+</span><span class="st"> </span>X_train[,<span class="dv">1</span><span class="op">:</span>n_predictors, <span class="dt">drop =</span> <span class="ot">FALSE</span>])</span>
+<span id="cb12-20"><a href="#cb12-20"></a>        preds_on_test =<span class="st"> </span>X_test[,<span class="dv">1</span><span class="op">:</span>n_predictors, drop=<span class="st"> </span><span class="ot">FALSE</span>] <span class="op">%*%</span><span class="st"> </span><span class="kw">coef</span>(lm_submodel)</span>
+<span id="cb12-21"><a href="#cb12-21"></a>    }</span>
+<span id="cb12-22"><a href="#cb12-22"></a></span>
+<span id="cb12-23"><a href="#cb12-23"></a>    <span class="kw">return</span>(<span class="kw">sum</span>((y_test <span class="op">-</span><span class="st"> </span>preds_on_test)<span class="op">^</span><span class="dv">2</span>))</span>
+<span id="cb12-24"><a href="#cb12-24"></a>}</span>
+<span id="cb12-25"><a href="#cb12-25"></a>K =<span class="st"> </span><span class="dv">5</span></span>
+<span id="cb12-26"><a href="#cb12-26"></a><span class="co">## normally you would do this at random</span></span>
+<span id="cb12-27"><a href="#cb12-27"></a>folds =<span class="st"> </span><span class="kw">rep</span>(<span class="dv">1</span><span class="op">:</span>K, <span class="dt">each =</span> n <span class="op">/</span><span class="st"> </span>K)</span>
+<span id="cb12-28"><a href="#cb12-28"></a>p_vec =<span class="st"> </span><span class="dv">0</span><span class="op">:</span>p</span>
+<span id="cb12-29"><a href="#cb12-29"></a>cv_errors =<span class="st"> </span><span class="kw">sapply</span>(p_vec, get_cv_error, y, X, folds)</span>
+<span id="cb12-30"><a href="#cb12-30"></a><span class="kw">plot</span>(cv_errors <span class="op">~</span><span class="st"> </span>p_vec)</span></code></pre></div>
 <p><img src="lecture-28-fig/unnamed-chunk-7-1.png" /></p>
-<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1"></a><span class="kw">plot</span>(samples_extracted<span class="op">$</span>lambda[,<span class="dv">2</span>], <span class="dt">ylab =</span> <span class="st">&quot;Precision for Scientist 2&quot;</span>)</span></code></pre></div>
-<p><img src="lecture-28-fig/unnamed-chunk-7-2.png" /></p>
-<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1"></a><span class="kw">plot</span>(samples_extracted<span class="op">$</span>lambda[,<span class="dv">7</span>], <span class="dt">ylab =</span> <span class="st">&quot;Precision for Scientist 7&quot;</span>)</span></code></pre></div>
-<p><img src="lecture-28-fig/unnamed-chunk-7-3.png" /></p>
-<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1"></a><span class="kw">round</span>(<span class="kw">apply</span>(samples_extracted<span class="op">$</span>lambda, <span class="dv">2</span>, mean), <span class="dt">digits =</span> <span class="dv">4</span>)</span></code></pre></div>
-<pre><code>## [1]   0.0007   0.0250   0.3425 209.6449  24.1470 234.6912 105.9844</code></pre>
 </div>
-<div id="example-4-changepoint-detection" class="slide section level2">
-<h1>Example 4: Changepoint detection</h1>
-<p>(Example 5.4 in the book)</p>
-<p>We have data on frontal lobe activity in a study of adults with ADHD.</p>
-<p>In the experiment, we expect to see a “changepoint” in the measure of frontal lobe activity. The mean activity level will be different before and after the changepoint, and we want to estimate both the time of the change and the mean activity level before and after.</p>
-<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1"></a>c =<span class="st"> </span><span class="kw">scan</span>(<span class="st">&quot;changepointdata.txt&quot;</span>)</span>
-<span id="cb33-2"><a href="#cb33-2"></a><span class="kw">ggplot</span>(<span class="kw">data.frame</span>(<span class="dt">activity =</span> c, <span class="dt">time =</span> <span class="dv">1</span><span class="op">:</span><span class="kw">length</span>(c))) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> time, <span class="dt">y =</span> activity))</span></code></pre></div>
-<p><img src="lecture-28-fig/unnamed-chunk-8-1.png" /></p>
-</div>
-<div class="slide section level2">
-
-<p>Listing everything out:</p>
+<div id="choice-of-k" class="slide section level2">
+<h1>Choice of <span class="math inline">\(K\)</span></h1>
+<p>Considerations:</p>
 <ul>
-<li><p>Data: <span class="math inline">\(x_i \in \mathbb R\)</span>, <span class="math inline">\(i = 1,\ldots, n\)</span></p></li>
-<li><p>Likelihood: <span class="math display">\[
-P(x_i \mid \mu_1, \mu_2, \tau, \lambda ) = \begin{cases}
-\mathcal N(\mu_1, \lambda^{-1}) &amp; i \le \tau \\
-\mathcal N(\mu_2, \lambda^{-1}) &amp; i &gt; \tau
-\end{cases}
-\]</span></p></li>
-<li><p>Parameters: <span class="math inline">\(\mu_1, \mu_2, \tau, \lambda\)</span></p></li>
-<li><p>Prior: <span class="math display">\[
-\begin{align*}
-P(\mu_1) &amp;= \mathcal N(0, 1000) \\
-P(\mu_2) &amp;= \mathcal N(0, 1000) \\
-P(\lambda) &amp;= \text{Gamma}(.001, .001)\\
-P(\tau) &amp;= \text{Uniform}(0, n)
-\end{align*}
-\]</span></p></li>
+<li>Larger <span class="math inline">\(K\)</span> means more computation (although sometimes there is a shortcut for leave-one-out cross validation)</li>
 </ul>
-</div>
-<div class="slide section level2">
-
-<p>Posterior: <span class="math display">\[
-P(\mu_1, \mu_2, \lambda, \tau \mid x_1,\ldots, x_n) \propto \prod_{i=1}^n P(x_i \mid \mu_1, \mu_2 \lambda, \tau) P(\mu_1) P(\mu_2) P(\lambda) P(\tau)
-\]</span></p>
-<p>Again, everything on the right can be evaluated easily, and we can use MCMC to sample from the distribution.</p>
-</div>
-<div class="slide section level2">
-
-<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1"></a>model_changepoint &lt;-<span class="st"> &quot;</span></span>
-<span id="cb34-2"><a href="#cb34-2"></a><span class="st">// Change Detection</span></span>
-<span id="cb34-3"><a href="#cb34-3"></a><span class="st">data { </span></span>
-<span id="cb34-4"><a href="#cb34-4"></a><span class="st">  int n;</span></span>
-<span id="cb34-5"><a href="#cb34-5"></a><span class="st">  vector[n] t;</span></span>
-<span id="cb34-6"><a href="#cb34-6"></a><span class="st">  vector[n] c;</span></span>
-<span id="cb34-7"><a href="#cb34-7"></a><span class="st">}</span></span>
-<span id="cb34-8"><a href="#cb34-8"></a><span class="st">parameters {</span></span>
-<span id="cb34-9"><a href="#cb34-9"></a><span class="st">  vector[2] mu;</span></span>
-<span id="cb34-10"><a href="#cb34-10"></a><span class="st">  real&lt;lower=0&gt; lambda;</span></span>
-<span id="cb34-11"><a href="#cb34-11"></a><span class="st">  real&lt;lower=0,upper=n&gt; tau;</span></span>
-<span id="cb34-12"><a href="#cb34-12"></a><span class="st">} </span></span>
-<span id="cb34-13"><a href="#cb34-13"></a><span class="st">transformed parameters {</span></span>
-<span id="cb34-14"><a href="#cb34-14"></a><span class="st">  real&lt;lower=0&gt; sigma;</span></span>
-<span id="cb34-15"><a href="#cb34-15"></a><span class="st">  sigma &lt;- inv_sqrt(lambda);</span></span>
-<span id="cb34-16"><a href="#cb34-16"></a><span class="st">}</span></span>
-<span id="cb34-17"><a href="#cb34-17"></a><span class="st">model { </span></span>
-<span id="cb34-18"><a href="#cb34-18"></a><span class="st">  // Group Means</span></span>
-<span id="cb34-19"><a href="#cb34-19"></a><span class="st">  mu ~ normal(0, inv_sqrt(.001));</span></span>
-<span id="cb34-20"><a href="#cb34-20"></a><span class="st">  // Common Precision</span></span>
-<span id="cb34-21"><a href="#cb34-21"></a><span class="st">  lambda ~ gamma(.001, .001);</span></span>
-<span id="cb34-22"><a href="#cb34-22"></a><span class="st">    </span></span>
-<span id="cb34-23"><a href="#cb34-23"></a><span class="st">  // Which Side is Time of Change Point?</span></span>
-<span id="cb34-24"><a href="#cb34-24"></a><span class="st">  // Data Come From A Gaussian</span></span>
-<span id="cb34-25"><a href="#cb34-25"></a><span class="st">  for (i in 1:n) {</span></span>
-<span id="cb34-26"><a href="#cb34-26"></a><span class="st">    if ((t[i] - tau) &lt; 0.0)</span></span>
-<span id="cb34-27"><a href="#cb34-27"></a><span class="st">      c[i] ~ normal(mu[1], sigma);</span></span>
-<span id="cb34-28"><a href="#cb34-28"></a><span class="st">    else </span></span>
-<span id="cb34-29"><a href="#cb34-29"></a><span class="st">      c[i] ~ normal(mu[2], sigma);</span></span>
-<span id="cb34-30"><a href="#cb34-30"></a><span class="st">  }</span></span>
-<span id="cb34-31"><a href="#cb34-31"></a><span class="st">}&quot;</span></span>
-<span id="cb34-32"><a href="#cb34-32"></a></span>
-<span id="cb34-33"><a href="#cb34-33"></a>c &lt;-<span class="st"> </span><span class="kw">scan</span>(<span class="st">&quot;changepointdata.txt&quot;</span>)</span>
-<span id="cb34-34"><a href="#cb34-34"></a>n &lt;-<span class="st"> </span><span class="kw">length</span>(c)</span>
-<span id="cb34-35"><a href="#cb34-35"></a>t &lt;-<span class="st"> </span><span class="dv">1</span><span class="op">:</span>n</span>
-<span id="cb34-36"><a href="#cb34-36"></a></span>
-<span id="cb34-37"><a href="#cb34-37"></a>data &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">c=</span>c, <span class="dt">n=</span>n, <span class="dt">t=</span>t) <span class="co"># to be passed on to Stan</span></span>
-<span id="cb34-38"><a href="#cb34-38"></a>myinits &lt;-<span class="st"> </span><span class="kw">list</span>(</span>
-<span id="cb34-39"><a href="#cb34-39"></a>  <span class="kw">list</span>(<span class="dt">mu=</span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">1</span>), <span class="dt">lambda=</span><span class="dv">1</span>, <span class="dt">tau=</span>n <span class="op">/</span><span class="st"> </span><span class="dv">2</span>))</span>
-<span id="cb34-40"><a href="#cb34-40"></a></span>
-<span id="cb34-41"><a href="#cb34-41"></a><span class="co"># parameters to be monitored:  </span></span>
-<span id="cb34-42"><a href="#cb34-42"></a>parameters &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;mu&quot;</span>, <span class="st">&quot;sigma&quot;</span>, <span class="st">&quot;tau&quot;</span>)</span>
-<span id="cb34-43"><a href="#cb34-43"></a></span>
-<span id="cb34-44"><a href="#cb34-44"></a>samples_changepoint &lt;-<span class="st"> </span><span class="kw">stan</span>(<span class="dt">model_code=</span>model_changepoint,   </span>
-<span id="cb34-45"><a href="#cb34-45"></a>                <span class="dt">data=</span>data, </span>
-<span id="cb34-46"><a href="#cb34-46"></a>                <span class="dt">init=</span>myinits,</span>
-<span id="cb34-47"><a href="#cb34-47"></a>                <span class="dt">pars=</span>parameters,</span>
-<span id="cb34-48"><a href="#cb34-48"></a>                <span class="dt">iter=</span><span class="dv">250</span>, </span>
-<span id="cb34-49"><a href="#cb34-49"></a>                <span class="dt">chains=</span><span class="dv">1</span>, </span>
-<span id="cb34-50"><a href="#cb34-50"></a>                <span class="dt">thin=</span><span class="dv">1</span>,</span>
-<span id="cb34-51"><a href="#cb34-51"></a>                <span class="dt">warmup =</span> <span class="dv">150</span>,</span>
-<span id="cb34-52"><a href="#cb34-52"></a>                            <span class="dt">seed =</span> <span class="dv">1</span>)</span></code></pre></div>
-<pre><code>## DIAGNOSTIC(S) FROM PARSER:
-## Info: assignment operator &lt;- deprecated in the Stan language; use = instead.
-## 
-## 
-## SAMPLING FOR MODEL &#39;6be547ad16619cfe59f852b122ee76ef&#39; NOW (CHAIN 1).
-## Chain 1: 
-## Chain 1: Gradient evaluation took 0.000106 seconds
-## Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 1.06 seconds.
-## Chain 1: Adjust your expectations accordingly!
-## Chain 1: 
-## Chain 1: 
-## Chain 1: Iteration:   1 / 250 [  0%]  (Warmup)
-## Chain 1: Iteration:  25 / 250 [ 10%]  (Warmup)
-## Chain 1: Iteration:  50 / 250 [ 20%]  (Warmup)
-## Chain 1: Iteration:  75 / 250 [ 30%]  (Warmup)
-## Chain 1: Iteration: 100 / 250 [ 40%]  (Warmup)
-## Chain 1: Iteration: 125 / 250 [ 50%]  (Warmup)
-## Chain 1: Iteration: 150 / 250 [ 60%]  (Warmup)
-## Chain 1: Iteration: 151 / 250 [ 60%]  (Sampling)
-## Chain 1: Iteration: 175 / 250 [ 70%]  (Sampling)
-## Chain 1: Iteration: 200 / 250 [ 80%]  (Sampling)
-## Chain 1: Iteration: 225 / 250 [ 90%]  (Sampling)
-## Chain 1: Iteration: 250 / 250 [100%]  (Sampling)
-## Chain 1: 
-## Chain 1:  Elapsed Time: 7.61497 seconds (Warm-up)
-## Chain 1:                5.84479 seconds (Sampling)
-## Chain 1:                13.4598 seconds (Total)
-## Chain 1:</code></pre>
-</div>
-<div class="slide section level2">
-
-<div class="incremental">
-<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1"></a><span class="co"># Now the values for the monitored parameters are in the &quot;samples&quot; object, </span></span>
-<span id="cb36-2"><a href="#cb36-2"></a><span class="co"># ready for inspection.</span></span>
-<span id="cb36-3"><a href="#cb36-3"></a><span class="kw">plot</span>(<span class="kw">extract</span>(samples_changepoint)<span class="op">$</span>tau, <span class="dt">ylab =</span> <span class="st">&quot;Changepoint (tau)&quot;</span>)</span></code></pre></div>
-<p><img src="lecture-28-fig/unnamed-chunk-10-1.png" /></p>
-<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1"></a><span class="kw">plot</span>(<span class="kw">extract</span>(samples_changepoint)<span class="op">$</span>mu[,<span class="dv">1</span>], <span class="dt">ylab =</span> <span class="st">&quot;mu1&quot;</span>)</span></code></pre></div>
-<p><img src="lecture-28-fig/unnamed-chunk-10-2.png" /></p>
-<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1"></a><span class="kw">plot</span>(<span class="kw">extract</span>(samples_changepoint)<span class="op">$</span>mu[,<span class="dv">2</span>], <span class="dt">ylab =</span> <span class="st">&quot;mu2&quot;</span>)</span></code></pre></div>
-<p><img src="lecture-28-fig/unnamed-chunk-10-3.png" /></p>
-<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1"></a>(mean.tau &lt;-<span class="st"> </span><span class="kw">mean</span>(<span class="kw">extract</span>(samples_changepoint)<span class="op">$</span>tau))</span></code></pre></div>
-<pre><code>## [1] 731.1781</code></pre>
-<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1"></a>(mean.mu1 &lt;-<span class="st"> </span><span class="kw">mean</span>(<span class="kw">extract</span>(samples_changepoint)<span class="op">$</span>mu[,<span class="dv">1</span>]))</span></code></pre></div>
-<pre><code>## [1] 39.5996</code></pre>
-<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1"></a>(mean.mu2 &lt;-<span class="st"> </span><span class="kw">mean</span>(<span class="kw">extract</span>(samples_changepoint)<span class="op">$</span>mu[,<span class="dv">2</span>]))</span></code></pre></div>
-<pre><code>## [1] 27.11919</code></pre>
-<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1"></a>time_data =<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">activity =</span> c, <span class="dt">time =</span> <span class="dv">1</span><span class="op">:</span><span class="kw">length</span>(c))</span>
-<span id="cb45-2"><a href="#cb45-2"></a>time_data<span class="op">$</span>activity_fitted =<span class="st"> </span><span class="kw">ifelse</span>(time_data<span class="op">$</span>time <span class="op">&lt;=</span><span class="st"> </span>mean.tau, mean.mu1, mean.mu2)</span>
-<span id="cb45-3"><a href="#cb45-3"></a><span class="kw">ggplot</span>(time_data) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> time, <span class="dt">y =</span> activity)) <span class="op">+</span></span>
-<span id="cb45-4"><a href="#cb45-4"></a><span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">x =</span> time, <span class="dt">y =</span> activity_fitted), <span class="dt">color =</span> <span class="st">&quot;red&quot;</span>)</span></code></pre></div>
-<p><img src="lecture-28-fig/unnamed-chunk-11-1.png" /></p>
-</div>
+<ul>
+<li>Larger <span class="math inline">\(K\)</span> means less bias in the estimate of model accuracy</li>
+</ul>
+<ul>
+<li>Larger <span class="math inline">\(K\)</span> also means more variance in the estimate, so we don’t necessarily want <span class="math inline">\(K = n\)</span></li>
+</ul>
+<ul>
+<li>Usually choose <span class="math inline">\(K = 5\)</span> or <span class="math inline">\(K = 10\)</span></li>
+</ul>
+<ul>
+<li>If your problem is structured (e.g. time series, spatial), you should choose the folds to respect the structure.</li>
+</ul>
 </div>
 <div id="summing-up" class="slide section level2">
 <h1>Summing up</h1>
 <ul>
-<li><p>Bayesian modeling is very flexible</p></li>
-<li><p>The MCMC methods we’ve looked at allow us to sample easily from pretty the posterior distribution in pretty much any Bayesian model we can write down</p></li>
-<li><p>The samples from the posterior give us estimates of parameters and their uncertainties.</p></li>
+<li>Deep learning = neural nets with more than one hidden layer. In practice, these work better than the single-hidden-layer networks.</li>
+</ul>
+<ul>
+<li>Think of as predictors that can fit complex functions of the input variables</li>
+</ul>
+<ul>
+<li>Also able to handle other kinds of output, e.g. sequences (natural language processing, machine translation)</li>
+</ul>
+<ul>
+<li>Good when you have a lot of data, are interested solely in prediction</li>
+</ul>
+<ul>
+<li>Not as good when you don’t have so much data or need an interpretation of the relationship between the predictors and response.</li>
+</ul>
+<ul>
+<li>No measure of uncertainty: the models look like regression models, but standard nets don’t give measures of predictive accuracy.</li>
+</ul>
+<ul>
+<li>Cross-validation a way to choose between models.</li>
 </ul>
 </div>
 </body>
