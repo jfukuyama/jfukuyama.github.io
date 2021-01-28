@@ -1,0 +1,582 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <meta name="author" content="Julia Fukuyama" />
+  <meta name="date" content="2021-01-28" />
+  <title>Stat 470/670 Lecture 4</title>
+  <style type="text/css">
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <style type="text/css">
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="https://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-AMS_CHTML-full" type="text/javascript"></script>
+  <script src="https://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div class="slide titlepage">
+  <h1 class="title">Stat 470/670 Lecture 4</h1>
+  <p class="author">
+Julia Fukuyama
+  </p>
+  <p class="date">January 28, 2021</p>
+</div>
+<div id="today" class="slide section level2">
+<h1>Today</h1>
+<ul class="incremental">
+<li><p>Review some of the computational tools</p></li>
+<li><p>Transformations</p></li>
+</ul>
+<p>Reading: R for data science chapters <a href="https://r4ds.had.co.nz/tibbles.html">10</a> and <a href="https://r4ds.had.co.nz/tidy-data.html">12</a>, Cleveland pp. 42–67.</p>
+</div>
+<div id="computational-interlude-data-structures-in-r" class="slide section level2">
+<h1>Computational Interlude: Data structures in R</h1>
+<p>Three main ways to store data</p>
+<ul class="incremental">
+<li><p>Matrix: Requires all the elements to be of the same type (e.g. numeric or character)</p></li>
+<li><p>Data frame: Allows for mixed types of variables</p></li>
+<li><p>Tibble: Like a data frame, but works more consistently</p></li>
+</ul>
+</div>
+<div id="tibbles" class="slide section level2">
+<h1>Tibbles</h1>
+<p>Tibbles are a better version of data frames.</p>
+<p>The <a href="https://tibble.tidyverse.org/">documentation</a> describes them as “data.frames for the lazy and surly: they do less (i.e. they don’t change variable names or types, and don’t do partial matching) and complain more (e.g. when a variable does not exist).”</p>
+<p>Two other advantages:</p>
+<ul class="incremental">
+<li><p>They subset more consistently: when you use square brackets to subset a tibble, you always get another tibble. With data frames you sometimes get a vector and sometimes get a data frame.</p></li>
+<li><p>They print more elegantly.</p></li>
+</ul>
+<p>Base R functions, including those for data frames, try to guess what you want to do.</p>
+<p>This sometimes leads to unexpected outcomes, so tibbles have done away with most of that.</p>
+</div>
+<div id="tibbles-dont-change-names" class="slide section level2">
+<h1>Tibbles don’t change names</h1>
+<div class="incremental">
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">library</span>(tidyverse)</span>
+<span id="cb1-2"><a href="#cb1-2"></a>(<span class="dt">df =</span> <span class="kw">data.frame</span>(<span class="st">&quot;a&quot;</span> =<span class="st"> </span><span class="dv">1</span><span class="op">:</span><span class="dv">5</span>, <span class="st">&quot;b 2&quot;</span> =<span class="st"> </span><span class="dv">5</span><span class="op">:</span><span class="dv">1</span>))</span></code></pre></div>
+<pre><code>##   a b.2
+## 1 1   5
+## 2 2   4
+## 3 3   3
+## 4 4   2
+## 5 5   1</code></pre>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>(<span class="dt">ti =</span> <span class="kw">tibble</span>(<span class="st">&quot;a&quot;</span> =<span class="st"> </span><span class="dv">1</span><span class="op">:</span><span class="dv">5</span>, <span class="st">&quot;b 2&quot;</span> =<span class="st"> </span><span class="dv">5</span><span class="op">:</span><span class="dv">1</span>))</span></code></pre></div>
+<pre><code>## # A tibble: 5 x 2
+##       a `b 2`
+##   &lt;int&gt; &lt;int&gt;
+## 1     1     5
+## 2     2     4
+## 3     3     3
+## 4     4     2
+## 5     5     1</code></pre>
+</div>
+</div>
+<div id="tibbles-complain-about-bad-column-names" class="slide section level2">
+<h1>Tibbles complain about bad column names</h1>
+<div class="incremental">
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>df<span class="op">$</span>c</span></code></pre></div>
+<pre><code>## NULL</code></pre>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a>ti<span class="op">$</span>c</span></code></pre></div>
+<pre><code>## Warning: Unknown or uninitialised column: `c`.</code></pre>
+<pre><code>## NULL</code></pre>
+</div>
+</div>
+<div id="tibbles-subset-consistently" class="slide section level2">
+<h1>Tibbles subset consistently</h1>
+<div class="incremental">
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a>df[,<span class="dv">1</span>]</span></code></pre></div>
+<pre><code>## [1] 1 2 3 4 5</code></pre>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a>ti[,<span class="dv">1</span>]</span></code></pre></div>
+<pre><code>## # A tibble: 5 x 1
+##       a
+##   &lt;int&gt;
+## 1     1
+## 2     2
+## 3     3
+## 4     4
+## 5     5</code></pre>
+</div>
+</div>
+<div id="tibbles-dont-do-partial-matching" class="slide section level2">
+<h1>Tibbles don’t do partial matching</h1>
+<div class="incremental">
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a>df<span class="op">$</span>b</span></code></pre></div>
+<pre><code>## [1] 5 4 3 2 1</code></pre>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a>ti<span class="op">$</span>b</span></code></pre></div>
+<pre><code>## Warning: Unknown or uninitialised column: `b`.</code></pre>
+<pre><code>## NULL</code></pre>
+</div>
+</div>
+<div id="tibbles-dont-coerce-strings-to-factors" class="slide section level2">
+<h1>Tibbles don’t coerce strings to factors</h1>
+<p>The most annoying thing about data frames:</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1"></a><span class="co">## arrrgh so inconsistent!</span></span>
+<span id="cb19-2"><a href="#cb19-2"></a>df =<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">l1 =</span> letters[<span class="dv">1</span><span class="op">:</span><span class="dv">5</span>])</span>
+<span id="cb19-3"><a href="#cb19-3"></a>df<span class="op">$</span>l2 =<span class="st"> </span>letters[<span class="dv">1</span><span class="op">:</span><span class="dv">5</span>]</span>
+<span id="cb19-4"><a href="#cb19-4"></a><span class="kw">class</span>(df<span class="op">$</span>l1)</span></code></pre></div>
+<pre><code>## [1] &quot;factor&quot;</code></pre>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a><span class="kw">class</span>(df<span class="op">$</span>l2)</span></code></pre></div>
+<pre><code>## [1] &quot;character&quot;</code></pre>
+<p>Tibbles don’t have this problem</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1"></a><span class="co">## but with tibbles it&#39;s all the same</span></span>
+<span id="cb23-2"><a href="#cb23-2"></a>ti =<span class="st"> </span><span class="kw">tibble</span>(<span class="dt">l1 =</span> letters[<span class="dv">1</span><span class="op">:</span><span class="dv">5</span>])</span>
+<span id="cb23-3"><a href="#cb23-3"></a>ti<span class="op">$</span>l2 =<span class="st"> </span>letters[<span class="dv">1</span><span class="op">:</span><span class="dv">5</span>]</span>
+<span id="cb23-4"><a href="#cb23-4"></a><span class="kw">class</span>(ti<span class="op">$</span>l1)</span></code></pre></div>
+<pre><code>## [1] &quot;character&quot;</code></pre>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1"></a><span class="kw">class</span>(ti<span class="op">$</span>l2)</span></code></pre></div>
+<pre><code>## [1] &quot;character&quot;</code></pre>
+</div>
+<div id="example" class="slide section level2">
+<h1>Example</h1>
+<p>Let’s read in a .csv file on lengths of Billboard Hot 100 songs in 2000:</p>
+<div class="incremental">
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1"></a>billboard_tidy =<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&quot;https://github.com/hadley/tidy-data/raw/master/data/billboard.csv&quot;</span>)</span></code></pre></div>
+<pre><code>## Parsed with column specification:
+## cols(
+##   .default = col_double(),
+##   artist.inverted = col_character(),
+##   track = col_character(),
+##   time = col_time(format = &quot;&quot;),
+##   genre = col_character(),
+##   date.entered = col_date(format = &quot;&quot;),
+##   date.peaked = col_date(format = &quot;&quot;),
+##   x66th.week = col_logical(),
+##   x67th.week = col_logical(),
+##   x68th.week = col_logical(),
+##   x69th.week = col_logical(),
+##   x70th.week = col_logical(),
+##   x71st.week = col_logical(),
+##   x72nd.week = col_logical(),
+##   x73rd.week = col_logical(),
+##   x74th.week = col_logical(),
+##   x75th.week = col_logical(),
+##   x76th.week = col_logical()
+## )</code></pre>
+<pre><code>## See spec(...) for full column specifications.</code></pre>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1"></a>billboard_standard =<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;https://github.com/hadley/tidy-data/raw/master/data/billboard.csv&quot;</span>, <span class="dt">stringsAsFactors =</span> <span class="ot">FALSE</span>)</span>
+<span id="cb30-2"><a href="#cb30-2"></a>billboard_tidy</span></code></pre></div>
+<pre><code>## # A tibble: 317 x 83
+##     year artist.inverted track time  genre date.entered date.peaked x1st.week
+##    &lt;dbl&gt; &lt;chr&gt;           &lt;chr&gt; &lt;tim&gt; &lt;chr&gt; &lt;date&gt;       &lt;date&gt;          &lt;dbl&gt;
+##  1  2000 Destiny&#39;s Child Inde… 03:38 Rock  2000-09-23   2000-11-18         78
+##  2  2000 Santana         Mari… 04:18 Rock  2000-02-12   2000-04-08         15
+##  3  2000 Savage Garden   I Kn… 04:07 Rock  1999-10-23   2000-01-29         71
+##  4  2000 Madonna         Music 03:45 Rock  2000-08-12   2000-09-16         41
+##  5  2000 Aguilera, Chri… Come… 03:38 Rock  2000-08-05   2000-10-14         57
+##  6  2000 Janet           Does… 04:17 Rock  2000-06-17   2000-08-26         59
+##  7  2000 Destiny&#39;s Child Say … 04:31 Rock  1999-12-25   2000-03-18         83
+##  8  2000 Iglesias, Enri… Be W… 03:36 Latin 2000-04-01   2000-06-24         63
+##  9  2000 Sisqo           Inco… 03:52 Rock  2000-06-24   2000-08-12         77
+## 10  2000 Lonestar        Amaz… 04:25 Coun… 1999-06-05   2000-03-04         81
+## # … with 307 more rows, and 75 more variables: x2nd.week &lt;dbl&gt;,
+## #   x3rd.week &lt;dbl&gt;, x4th.week &lt;dbl&gt;, x5th.week &lt;dbl&gt;, x6th.week &lt;dbl&gt;,
+## #   x7th.week &lt;dbl&gt;, x8th.week &lt;dbl&gt;, x9th.week &lt;dbl&gt;, x10th.week &lt;dbl&gt;,
+## #   x11th.week &lt;dbl&gt;, x12th.week &lt;dbl&gt;, x13th.week &lt;dbl&gt;, x14th.week &lt;dbl&gt;,
+## #   x15th.week &lt;dbl&gt;, x16th.week &lt;dbl&gt;, x17th.week &lt;dbl&gt;, x18th.week &lt;dbl&gt;,
+## #   x19th.week &lt;dbl&gt;, x20th.week &lt;dbl&gt;, x21st.week &lt;dbl&gt;, x22nd.week &lt;dbl&gt;,
+## #   x23rd.week &lt;dbl&gt;, x24th.week &lt;dbl&gt;, x25th.week &lt;dbl&gt;, x26th.week &lt;dbl&gt;,
+## #   x27th.week &lt;dbl&gt;, x28th.week &lt;dbl&gt;, x29th.week &lt;dbl&gt;, x30th.week &lt;dbl&gt;,
+## #   x31st.week &lt;dbl&gt;, x32nd.week &lt;dbl&gt;, x33rd.week &lt;dbl&gt;, x34th.week &lt;dbl&gt;,
+## #   x35th.week &lt;dbl&gt;, x36th.week &lt;dbl&gt;, x37th.week &lt;dbl&gt;, x38th.week &lt;dbl&gt;,
+## #   x39th.week &lt;dbl&gt;, x40th.week &lt;dbl&gt;, x41st.week &lt;dbl&gt;, x42nd.week &lt;dbl&gt;,
+## #   x43rd.week &lt;dbl&gt;, x44th.week &lt;dbl&gt;, x45th.week &lt;dbl&gt;, x46th.week &lt;dbl&gt;,
+## #   x47th.week &lt;dbl&gt;, x48th.week &lt;dbl&gt;, x49th.week &lt;dbl&gt;, x50th.week &lt;dbl&gt;,
+## #   x51st.week &lt;dbl&gt;, x52nd.week &lt;dbl&gt;, x53rd.week &lt;dbl&gt;, x54th.week &lt;dbl&gt;,
+## #   x55th.week &lt;dbl&gt;, x56th.week &lt;dbl&gt;, x57th.week &lt;dbl&gt;, x58th.week &lt;dbl&gt;,
+## #   x59th.week &lt;dbl&gt;, x60th.week &lt;dbl&gt;, x61st.week &lt;dbl&gt;, x62nd.week &lt;dbl&gt;,
+## #   x63rd.week &lt;dbl&gt;, x64th.week &lt;dbl&gt;, x65th.week &lt;dbl&gt;, x66th.week &lt;lgl&gt;,
+## #   x67th.week &lt;lgl&gt;, x68th.week &lt;lgl&gt;, x69th.week &lt;lgl&gt;, x70th.week &lt;lgl&gt;,
+## #   x71st.week &lt;lgl&gt;, x72nd.week &lt;lgl&gt;, x73rd.week &lt;lgl&gt;, x74th.week &lt;lgl&gt;,
+## #   x75th.week &lt;lgl&gt;, x76th.week &lt;lgl&gt;</code></pre>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1"></a>billboard_standard[<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>, <span class="dv">1</span><span class="op">:</span><span class="dv">8</span>]</span></code></pre></div>
+<pre><code>##    year     artist.inverted                                 track time   genre
+## 1  2000     Destiny&#39;s Child              Independent Women Part I 3:38    Rock
+## 2  2000             Santana                          Maria, Maria 4:18    Rock
+## 3  2000       Savage Garden                    I Knew I Loved You 4:07    Rock
+## 4  2000             Madonna                                 Music 3:45    Rock
+## 5  2000 Aguilera, Christina Come On Over Baby (All I Want Is You) 3:38    Rock
+## 6  2000               Janet                 Doesn&#39;t Really Matter 4:17    Rock
+## 7  2000     Destiny&#39;s Child                           Say My Name 4:31    Rock
+## 8  2000   Iglesias, Enrique                           Be With You 3:36   Latin
+## 9  2000               Sisqo                            Incomplete 3:52    Rock
+## 10 2000            Lonestar                                Amazed 4:25 Country
+##    date.entered date.peaked x1st.week
+## 1    2000-09-23  2000-11-18        78
+## 2    2000-02-12  2000-04-08        15
+## 3    1999-10-23  2000-01-29        71
+## 4    2000-08-12  2000-09-16        41
+## 5    2000-08-05  2000-10-14        57
+## 6    2000-06-17  2000-08-26        59
+## 7    1999-12-25  2000-03-18        83
+## 8    2000-04-01  2000-06-24        63
+## 9    2000-06-24  2000-08-12        77
+## 10   1999-06-05  2000-03-04        81</code></pre>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1"></a><span class="kw">summary</span>(billboard_tidy<span class="op">$</span>date.entered)</span></code></pre></div>
+<pre><code>##         Min.      1st Qu.       Median         Mean      3rd Qu.         Max. 
+## &quot;1999-06-05&quot; &quot;2000-02-05&quot; &quot;2000-04-29&quot; &quot;2000-05-03&quot; &quot;2000-08-12&quot; &quot;2000-12-30&quot;</code></pre>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1"></a><span class="kw">summary</span>(billboard_standard<span class="op">$</span>date.entered)</span></code></pre></div>
+<pre><code>##    Length     Class      Mode 
+##       317 character character</code></pre>
+</div>
+</div>
+<div id="how-long-are-songs" class="slide section level2">
+<h1>How long are songs?</h1>
+<p>How long were the songs on the 2000 Hot 100? The display shows that <code>time</code> is formatted as time. This seems great, but unfortunately there’s been a mistake:</p>
+<div class="incremental">
+<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1"></a>billboard_tidy<span class="op">$</span>time[<span class="dv">1</span>]</span></code></pre></div>
+<pre><code>## 03:38:00</code></pre>
+<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1"></a>billboard_tidy<span class="op">$</span>time[<span class="dv">2</span>]</span></code></pre></div>
+<pre><code>## 04:18:00</code></pre>
+<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1"></a>billboard_tidy<span class="op">$</span>time[<span class="dv">2</span>] <span class="op">-</span><span class="st"> </span>billboard_tidy<span class="op">$</span>time[<span class="dv">1</span>]</span></code></pre></div>
+<pre><code>## Time difference of 2400 secs</code></pre>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>We’ll have to go back and fix this: we can specify the type for a certain column by using the col_types argument. We’ll read the times in as characters and parse them ourselves.</p>
+<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1"></a>billboard_tidy =<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&quot;https://github.com/hadley/tidy-data/raw/master/data/billboard.csv&quot;</span>,</span>
+<span id="cb44-2"><a href="#cb44-2"></a>                          <span class="dt">col_types =</span> <span class="kw">cols</span>(<span class="dt">time =</span> <span class="kw">col_character</span>()))</span></code></pre></div>
+<div class="incremental">
+<p>I’ll show you how to do this two ways, with and without pipes (the <code>%&gt;%</code> function in the <code>magrittr</code> package).</p>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>First let’s try without pipes.</p>
+<p>We need to separate the time into minutes and seconds. For this we can use separate:</p>
+<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1"></a>billboard_min_sec =<span class="st"> </span><span class="kw">separate</span>(billboard_tidy, time,</span>
+<span id="cb45-2"><a href="#cb45-2"></a>    <span class="dt">into =</span> <span class="kw">c</span>(<span class="st">&quot;minutes&quot;</span>, <span class="st">&quot;seconds&quot;</span>), <span class="dt">sep =</span> <span class="st">&quot;:&quot;</span>, <span class="dt">remove =</span> <span class="ot">FALSE</span>)</span></code></pre></div>
+<div class="incremental">
+<p>We can look the columns we have created, plus the original column, to make sure the operation was performed correctly. To look at just a couple of columns, we can use select:</p>
+<div class="sourceCode" id="cb46"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1"></a><span class="kw">select</span>(billboard_min_sec, time, minutes, seconds)</span></code></pre></div>
+<pre><code>## # A tibble: 317 x 3
+##    time  minutes seconds
+##    &lt;chr&gt; &lt;chr&gt;   &lt;chr&gt;  
+##  1 3:38  3       38     
+##  2 4:18  4       18     
+##  3 4:07  4       07     
+##  4 3:45  3       45     
+##  5 3:38  3       38     
+##  6 4:17  4       17     
+##  7 4:31  4       31     
+##  8 3:36  3       36     
+##  9 3:52  3       52     
+## 10 4:25  4       25     
+## # … with 307 more rows</code></pre>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Then we need to add minutes and seconds together to get time in minutes. For this we can use mutate:</p>
+<div class="sourceCode" id="cb48"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1"></a>billboard_time_in_sec =<span class="st"> </span><span class="kw">mutate</span>(billboard_min_sec,</span>
+<span id="cb48-2"><a href="#cb48-2"></a>    <span class="dt">time_in_seconds =</span> <span class="kw">as.numeric</span>(minutes) <span class="op">*</span><span class="st"> </span><span class="dv">60</span> <span class="op">+</span><span class="st"> </span><span class="kw">as.numeric</span>(seconds))</span></code></pre></div>
+<div class="incremental">
+<p>Again, let’s look at the tibble to make sure the operation was done right:</p>
+<div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1"></a><span class="kw">select</span>(billboard_time_in_sec, time, minutes, seconds, time_in_seconds)</span></code></pre></div>
+<pre><code>## # A tibble: 317 x 4
+##    time  minutes seconds time_in_seconds
+##    &lt;chr&gt; &lt;chr&gt;   &lt;chr&gt;             &lt;dbl&gt;
+##  1 3:38  3       38                  218
+##  2 4:18  4       18                  258
+##  3 4:07  4       07                  247
+##  4 3:45  3       45                  225
+##  5 3:38  3       38                  218
+##  6 4:17  4       17                  257
+##  7 4:31  4       31                  271
+##  8 3:36  3       36                  216
+##  9 3:52  3       52                  232
+## 10 4:25  4       25                  265
+## # … with 307 more rows</code></pre>
+</div>
+</div>
+<div id="pipes" class="slide section level2">
+<h1>Pipes</h1>
+<p>The operations above motivate the use of pipes.</p>
+<p>The pipe operation, %&gt;%, simply allows you to lay out your code in a different way.</p>
+<p>When you use a pipe, whatever is to the left of the pipe becomes the first argument to the function on the right of the pipe.</p>
+<p>So: <code>x %&gt;% function(y)</code> is the same as <code>function(x, y)</code>.</p>
+</div>
+<div id="repeating-the-code-from-before-with-pipes" class="slide section level2">
+<h1>Repeating the code from before with pipes</h1>
+<p>Let’s see how this changes the code we used above.</p>
+<p>Remember that we had</p>
+<div class="sourceCode" id="cb51"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1"></a>billboard_min_sec =<span class="st"> </span><span class="kw">separate</span>(billboard_tidy, time,</span>
+<span id="cb51-2"><a href="#cb51-2"></a>    <span class="dt">into =</span> <span class="kw">c</span>(<span class="st">&quot;minutes&quot;</span>, <span class="st">&quot;seconds&quot;</span>), <span class="dt">sep =</span> <span class="st">&quot;:&quot;</span>, <span class="dt">remove =</span> <span class="ot">FALSE</span>)</span>
+<span id="cb51-3"><a href="#cb51-3"></a>billboard_time_in_sec =<span class="st"> </span><span class="kw">mutate</span>(billboard_min_sec,</span>
+<span id="cb51-4"><a href="#cb51-4"></a>    <span class="dt">time_in_seconds =</span> <span class="kw">as.numeric</span>(minutes) <span class="op">*</span><span class="st"> </span><span class="dv">60</span> <span class="op">+</span><span class="st"> </span><span class="kw">as.numeric</span>(seconds))</span></code></pre></div>
+<div class="incremental">
+<p>Or equivalently, without making an intermediate tibble:</p>
+<div class="sourceCode" id="cb52"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1"></a>billboard_time_in_sec =<span class="st"> </span><span class="kw">mutate</span>(</span>
+<span id="cb52-2"><a href="#cb52-2"></a>    <span class="kw">separate</span>(billboard_tidy, time, <span class="dt">into =</span> <span class="kw">c</span>(<span class="st">&quot;minutes&quot;</span>, <span class="st">&quot;seconds&quot;</span>), <span class="dt">sep =</span> <span class="st">&quot;:&quot;</span>, <span class="dt">remove =</span> <span class="ot">FALSE</span>),</span>
+<span id="cb52-3"><a href="#cb52-3"></a>    <span class="dt">time_in_seconds =</span> <span class="kw">as.numeric</span>(minutes) <span class="op">*</span><span class="st"> </span><span class="dv">60</span> <span class="op">+</span><span class="st"> </span><span class="kw">as.numeric</span>(seconds))</span></code></pre></div>
+</div>
+<div class="incremental">
+<p>With pipes, the same operations are:</p>
+<div class="sourceCode" id="cb53"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1"></a>billboard =<span class="st"> </span>billboard_tidy <span class="op">%&gt;%</span></span>
+<span id="cb53-2"><a href="#cb53-2"></a><span class="st">    </span><span class="kw">separate</span>(time, <span class="dt">into =</span> <span class="kw">c</span>(<span class="st">&quot;minutes&quot;</span>, <span class="st">&quot;seconds&quot;</span>), <span class="dt">sep =</span> <span class="st">&quot;:&quot;</span>, <span class="dt">remove =</span> <span class="ot">FALSE</span>) <span class="op">%&gt;%</span></span>
+<span id="cb53-3"><a href="#cb53-3"></a><span class="st">    </span><span class="kw">mutate</span>(<span class="dt">time_in_seconds =</span> <span class="kw">as.numeric</span>(minutes) <span class="op">*</span><span class="st"> </span><span class="dv">60</span> <span class="op">+</span><span class="st"> </span><span class="kw">as.numeric</span>(seconds))</span></code></pre></div>
+</div>
+</div>
+<div id="back-to-data-analysis-how-long-are-the-songs" class="slide section level2">
+<h1>Back to data analysis: how long are the songs?</h1>
+<p>Now that we have our dataset in a nice format, let’s try looking at the distribution of song lengths:</p>
+<div class="incremental">
+<div class="sourceCode" id="cb54"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1"></a><span class="kw">ggplot</span>(billboard, <span class="kw">aes</span>(<span class="dt">x=</span>time_in_seconds <span class="op">/</span><span class="st"> </span><span class="dv">60</span>)) <span class="op">+</span></span>
+<span id="cb54-2"><a href="#cb54-2"></a><span class="st">    </span><span class="kw">geom_histogram</span>(<span class="dt">breaks=</span><span class="kw">seq</span>(<span class="fl">2.5</span>, <span class="dv">8</span>, <span class="dt">by =</span> <span class="fl">.2</span>)) <span class="op">+</span></span>
+<span id="cb54-3"><a href="#cb54-3"></a><span class="st">    </span><span class="kw">xlab</span>(<span class="st">&quot;Time in Minutes&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-4-fig/unnamed-chunk-17-1.png" /></p>
+<div class="sourceCode" id="cb55"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1"></a><span class="kw">ggplot</span>(billboard, <span class="kw">aes</span>(<span class="dt">x =</span> time_in_seconds <span class="op">/</span><span class="st"> </span><span class="dv">60</span>)) <span class="op">+</span><span class="st"> </span><span class="kw">stat_ecdf</span>() <span class="op">+</span></span>
+<span id="cb55-2"><a href="#cb55-2"></a><span class="st">    </span><span class="kw">scale_x_continuous</span>(<span class="dt">breaks =</span> <span class="kw">seq</span>(<span class="fl">2.5</span>, <span class="dv">8</span>, <span class="dt">by =</span> <span class="fl">.5</span>)) <span class="op">+</span></span>
+<span id="cb55-3"><a href="#cb55-3"></a><span class="st">    </span><span class="kw">scale_y_continuous</span>(<span class="dt">breaks =</span> <span class="kw">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dt">by =</span> <span class="fl">.1</span>)) <span class="op">+</span><span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;Time in Minutes&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-4-fig/unnamed-chunk-17-2.png" /></p>
+<p>The majority of Hot 100 songs (about three quarters) are between 3:15 and 4:30.</p>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>But maybe we’re unfairly penalizing songs that are on the charts for a long time: they’re only represented once in our histogram even though they are in the top 100 for multiple weeks.</p>
+<div class="incremental">
+<p>If we want to investigate this, we need to make one row in our tibble for each week:</p>
+<div class="sourceCode" id="cb56"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1"></a>billboard_long =<span class="st"> </span>billboard <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">pivot_longer</span>(x1st.week<span class="op">:</span>x76th.week, <span class="dt">names_to =</span> <span class="st">&quot;week&quot;</span>, <span class="dt">values_to =</span> <span class="st">&quot;rank&quot;</span>, <span class="dt">values_drop_na =</span> <span class="ot">TRUE</span>)</span>
+<span id="cb56-2"><a href="#cb56-2"></a>billboard_long</span></code></pre></div>
+<pre><code>## # A tibble: 5,307 x 12
+##     year artist.inverted track time  minutes seconds genre date.entered
+##    &lt;dbl&gt; &lt;chr&gt;           &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt; &lt;date&gt;      
+##  1  2000 Destiny&#39;s Child Inde… 3:38  3       38      Rock  2000-09-23  
+##  2  2000 Destiny&#39;s Child Inde… 3:38  3       38      Rock  2000-09-23  
+##  3  2000 Destiny&#39;s Child Inde… 3:38  3       38      Rock  2000-09-23  
+##  4  2000 Destiny&#39;s Child Inde… 3:38  3       38      Rock  2000-09-23  
+##  5  2000 Destiny&#39;s Child Inde… 3:38  3       38      Rock  2000-09-23  
+##  6  2000 Destiny&#39;s Child Inde… 3:38  3       38      Rock  2000-09-23  
+##  7  2000 Destiny&#39;s Child Inde… 3:38  3       38      Rock  2000-09-23  
+##  8  2000 Destiny&#39;s Child Inde… 3:38  3       38      Rock  2000-09-23  
+##  9  2000 Destiny&#39;s Child Inde… 3:38  3       38      Rock  2000-09-23  
+## 10  2000 Destiny&#39;s Child Inde… 3:38  3       38      Rock  2000-09-23  
+## # … with 5,297 more rows, and 4 more variables: date.peaked &lt;date&gt;,
+## #   time_in_seconds &lt;dbl&gt;, week &lt;chr&gt;, rank &lt;dbl&gt;</code></pre>
+<div class="sourceCode" id="cb58"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1"></a><span class="co">## why are there 5307 observations? Shouldn&#39;t there be 5200 (52 weeks times 100 songs)?</span></span>
+<span id="cb58-2"><a href="#cb58-2"></a></span>
+<span id="cb58-3"><a href="#cb58-3"></a><span class="kw">ggplot</span>(billboard_long, <span class="kw">aes</span>(<span class="dt">x=</span>time_in_seconds <span class="op">/</span><span class="st"> </span><span class="dv">60</span>)) <span class="op">+</span></span>
+<span id="cb58-4"><a href="#cb58-4"></a><span class="st">    </span><span class="kw">geom_histogram</span>(<span class="dt">breaks=</span><span class="kw">seq</span>(<span class="fl">2.5</span>, <span class="dv">8</span>, <span class="dt">by =</span> <span class="fl">.2</span>)) <span class="op">+</span></span>
+<span id="cb58-5"><a href="#cb58-5"></a><span class="st">    </span><span class="kw">xlab</span>(<span class="st">&quot;Time in Minutes&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-4-fig/unnamed-chunk-18-1.png" /></p>
+<div class="sourceCode" id="cb59"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1"></a><span class="kw">ggplot</span>(billboard_long, <span class="kw">aes</span>(<span class="dt">x =</span> time_in_seconds <span class="op">/</span><span class="st"> </span><span class="dv">60</span>)) <span class="op">+</span><span class="st"> </span><span class="kw">stat_ecdf</span>() <span class="op">+</span></span>
+<span id="cb59-2"><a href="#cb59-2"></a><span class="st">    </span><span class="kw">scale_x_continuous</span>(<span class="dt">breaks =</span> <span class="kw">seq</span>(<span class="fl">2.5</span>, <span class="dv">8</span>, <span class="dt">by =</span> <span class="fl">.5</span>)) <span class="op">+</span></span>
+<span id="cb59-3"><a href="#cb59-3"></a><span class="st">    </span><span class="kw">scale_y_continuous</span>(<span class="dt">breaks =</span> <span class="kw">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dt">by =</span> <span class="fl">.1</span>)) <span class="op">+</span><span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;Time in Minutes&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-4-fig/unnamed-chunk-18-2.png" /></p>
+</div>
+<div class="incremental">
+<p>The <span class="math inline">\(y\)</span>-axis scale has changed (since there are more observations.) However, the shape of the distributions are pretty much the same, suggesting that weighting by number of weeks on the chart doesn’t make much difference.</p>
+</div>
+</div>
+<div id="does-song-length-change-by-rank" class="slide section level2">
+<h1>Does song length change by rank?</h1>
+<p>Another question we might be interested in is whether the length of the songs changes with rank. As a first stab at this, we can facet by chart position. To avoid drawing 100 graphs, we use <code>subset()</code> to only consider the top 10 chart positions:</p>
+<div class="incremental">
+<div class="sourceCode" id="cb60"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1"></a>top10 =<span class="st"> </span>billboard_long <span class="op">%&gt;%</span></span>
+<span id="cb60-2"><a href="#cb60-2"></a><span class="st">    </span><span class="kw">subset</span>(rank <span class="op">&lt;=</span><span class="st"> </span><span class="dv">10</span>)</span>
+<span id="cb60-3"><a href="#cb60-3"></a><span class="kw">ggplot</span>(top10, <span class="kw">aes</span>(<span class="dt">x =</span> time_in_seconds <span class="op">/</span><span class="st"> </span><span class="dv">60</span>)) <span class="op">+</span></span>
+<span id="cb60-4"><a href="#cb60-4"></a><span class="st">    </span><span class="kw">geom_density</span>() <span class="op">+</span><span class="st">  </span><span class="kw">geom_rug</span>() <span class="op">+</span></span>
+<span id="cb60-5"><a href="#cb60-5"></a><span class="st">    </span><span class="kw">facet_wrap</span>(<span class="op">~</span><span class="st"> </span>rank, <span class="dt">ncol =</span> <span class="dv">4</span>) <span class="op">+</span><span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;Time in minutes&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-4-fig/unnamed-chunk-19-1.png" /></p>
+<div class="sourceCode" id="cb61"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1"></a><span class="kw">ggplot</span>(top10, <span class="kw">aes</span>(<span class="dt">x =</span> time_in_seconds <span class="op">/</span><span class="st"> </span><span class="dv">60</span>)) <span class="op">+</span></span>
+<span id="cb61-2"><a href="#cb61-2"></a><span class="st">    </span><span class="kw">geom_histogram</span>() <span class="op">+</span><span class="st"> </span></span>
+<span id="cb61-3"><a href="#cb61-3"></a><span class="st">    </span><span class="kw">facet_wrap</span>(<span class="op">~</span><span class="st"> </span>rank, <span class="dt">ncol =</span> <span class="dv">4</span>) <span class="op">+</span><span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;Time in minutes&quot;</span>)</span></code></pre></div>
+<pre><code>## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+<p><img src="lecture-4-fig/unnamed-chunk-19-2.png" /></p>
+<div class="sourceCode" id="cb63"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1"></a><span class="kw">ggplot</span>(top10, <span class="kw">aes</span>(<span class="dt">x =</span> time_in_seconds <span class="op">/</span><span class="st"> </span><span class="dv">60</span>)) <span class="op">+</span></span>
+<span id="cb63-2"><a href="#cb63-2"></a><span class="st">    </span><span class="kw">stat_ecdf</span>(<span class="kw">aes</span>(<span class="dt">color =</span> <span class="kw">as.factor</span>(rank))) <span class="op">+</span><span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;Time in minutes&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-4-fig/unnamed-chunk-19-3.png" /></p>
+<div class="sourceCode" id="cb64"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1"></a><span class="kw">ggplot</span>(top10, <span class="kw">aes</span>(<span class="dt">x =</span> time_in_seconds <span class="op">/</span><span class="st"> </span><span class="dv">60</span>)) <span class="op">+</span></span>
+<span id="cb64-2"><a href="#cb64-2"></a><span class="st">    </span><span class="kw">stat_ecdf</span>() <span class="op">+</span><span class="st"> </span><span class="kw">facet_wrap</span>(<span class="op">~</span><span class="st"> </span>rank) <span class="op">+</span><span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;Time in minutes&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-4-fig/unnamed-chunk-19-4.png" /></p>
+<p>Which plot do you think makes it the easiest to compare the distributions?</p>
+</div>
+</div>
+<div id="using-simpler-summaries-to-visualize-length-by-chart-position" class="slide section level2">
+<h1>Using simpler summaries to visualize length by chart position</h1>
+<p>Finally, let’s find mean song length by chart position.</p>
+<p>This will allow us to compare all 100 chart positions instead of just the first 10.</p>
+<div class="incremental">
+<div class="sourceCode" id="cb65"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1"></a>mean_times =<span class="st"> </span>billboard_long <span class="op">%&gt;%</span></span>
+<span id="cb65-2"><a href="#cb65-2"></a><span class="st">    </span><span class="kw">group_by</span>(rank) <span class="op">%&gt;%</span></span>
+<span id="cb65-3"><a href="#cb65-3"></a><span class="st">    </span><span class="kw">summarise</span>(<span class="dt">avg_time_in_minutes =</span> <span class="kw">mean</span>(time_in_seconds) <span class="op">/</span><span class="st"> </span><span class="dv">60</span>)</span></code></pre></div>
+<pre><code>## `summarise()` ungrouping output (override with `.groups` argument)</code></pre>
+<div class="sourceCode" id="cb67"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb67-1"><a href="#cb67-1"></a><span class="co">## remember this is the same as</span></span>
+<span id="cb67-2"><a href="#cb67-2"></a>mean_times_alt =<span class="st"> </span><span class="kw">summarise</span>(<span class="kw">group_by</span>(billboard_long, rank),</span>
+<span id="cb67-3"><a href="#cb67-3"></a>    <span class="dt">avg_time_in_minutes =</span> <span class="kw">mean</span>(time_in_seconds) <span class="op">/</span><span class="st"> </span><span class="dv">60</span>)</span></code></pre></div>
+<pre><code>## `summarise()` ungrouping output (override with `.groups` argument)</code></pre>
+<div class="sourceCode" id="cb69"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb69-1"><a href="#cb69-1"></a><span class="kw">ggplot</span>(mean_times, <span class="kw">aes</span>(<span class="dt">x =</span> rank, <span class="dt">y =</span> avg_time_in_minutes)) <span class="op">+</span></span>
+<span id="cb69-2"><a href="#cb69-2"></a><span class="st">  </span><span class="kw">geom_point</span>() <span class="op">+</span><span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;Average time in minutes&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-4-fig/unnamed-chunk-21-1.png" /></p>
+<p>There is enough noise here that it’s hard to see if there’s a relationship between rank and song length. Later on we’ll learn a bit about <em>smoothing</em>, which would help a lot here.</p>
+</div>
+</div>
+<div id="transformations" class="slide section level2">
+<h1>Transformations</h1>
+<p>Reading: Cleveland pp. 42–67.</p>
+<h3 id="log-transformation">Log transformation</h3>
+<p>In an intro course like S320/520, you learned to use the most common transformation, the log.</p>
+<p>The main reason we gave was that it often made positive data more normal.</p>
+<p>But there’s another and perhaps more fundamental reason: It often leads to differences between samples that we can interpret as a <em>multiplicative shift</em>.</p>
+<p>Some statisticians will go as far as to recommend log transforming positive data by default, though by the end of Cleveland’s chapter 2, we’ll see an example where that backfires.</p>
+</div>
+<div id="power-transformations" class="slide section level2">
+<h1>Power transformations</h1>
+<p>The log transformation doesn’t always work – for a start, you can’t log zero or a negative number.</p>
+<p><strong>Power transformations</strong> allow a wider range of options.</p>
+<p>Define a power transformation with parameter <span class="math inline">\(\tau\)</span> to be <span class="math inline">\(x^\tau\)</span>.</p>
+<p>Where practical, we’ll hugely prefer <span class="math inline">\(\tau = 1\)</span> (no transformation), <span class="math inline">\(\tau = 0\)</span>, or possibly <span class="math inline">\(\tau = -1\)</span> (inverse transformation) because they’re much easier to interpret.</p>
+</div>
+<div id="box-cox-transformation" class="slide section level2">
+<h1>Box-Cox transformation</h1>
+<p>You might also see Box-Cox transformations: these are really just power transformations, but re-scaled so that they go continuously to the log transform as <span class="math inline">\(\tau \to 0\)</span> on either side.</p>
+<p>Let <span class="math inline">\(x\)</span> be the original data value, and let <span class="math inline">\(f_\tau\)</span> be the Box-Cox transformation with parameter <span class="math inline">\(\tau\)</span>. It is defined as:</p>
+<p><span class="math display">\[
+f_\tau(x) = \begin{cases}
+\frac{x^{\tau} - 1}{\tau} &amp; \tau \ne 0\\
+\log x &amp; \tau = 0
+\end{cases}
+\]</span></p>
+</div>
+<div class="slide section level2">
+
+<p>Here’s a little picture of the transformations, note how the log transformation floats nicely in between the negative and positive values of <span class="math inline">\(\tau\)</span>.</p>
+<div class="sourceCode" id="cb70"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb70-1"><a href="#cb70-1"></a>x =<span class="st"> </span><span class="kw">seq</span>(<span class="dv">0</span>, <span class="dv">5</span>, <span class="dt">length.out =</span> <span class="dv">100</span>)[<span class="op">-</span><span class="dv">1</span>]</span>
+<span id="cb70-2"><a href="#cb70-2"></a>bc_trans =<span class="st"> </span><span class="cf">function</span>(x, tau) {</span>
+<span id="cb70-3"><a href="#cb70-3"></a>    <span class="cf">if</span>(tau <span class="op">==</span><span class="st"> </span><span class="dv">0</span>){</span>
+<span id="cb70-4"><a href="#cb70-4"></a>        <span class="kw">return</span>(<span class="kw">log</span>(x))</span>
+<span id="cb70-5"><a href="#cb70-5"></a>    }</span>
+<span id="cb70-6"><a href="#cb70-6"></a>    <span class="kw">return</span>((x<span class="op">^</span>tau <span class="op">-</span><span class="st"> </span><span class="dv">1</span>) <span class="op">/</span><span class="st"> </span>tau)</span>
+<span id="cb70-7"><a href="#cb70-7"></a>}</span>
+<span id="cb70-8"><a href="#cb70-8"></a>tau_vec =<span class="st"> </span><span class="kw">seq</span>(<span class="op">-</span>.<span class="dv">4</span>, <span class="fl">1.4</span>, <span class="dt">by =</span> <span class="fl">.2</span>)</span>
+<span id="cb70-9"><a href="#cb70-9"></a>transforms =<span class="st"> </span><span class="kw">sapply</span>(tau_vec, <span class="cf">function</span>(tau) <span class="kw">bc_trans</span>(x, tau))</span>
+<span id="cb70-10"><a href="#cb70-10"></a>transforms_melted =<span class="st"> </span><span class="kw">melt</span>(transforms)</span>
+<span id="cb70-11"><a href="#cb70-11"></a>transforms_for_plotting =<span class="st"> </span>transforms_melted <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">mutate</span>(<span class="dt">x =</span> x[Var1], <span class="dt">tau =</span> tau_vec[Var2])</span>
+<span id="cb70-12"><a href="#cb70-12"></a><span class="kw">ggplot</span>(transforms_for_plotting) <span class="op">+</span></span>
+<span id="cb70-13"><a href="#cb70-13"></a><span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> value, <span class="dt">color =</span> <span class="kw">as.factor</span>(tau))) <span class="op">+</span></span>
+<span id="cb70-14"><a href="#cb70-14"></a><span class="st">    </span><span class="kw">xlab</span>(<span class="st">&quot;Original Data Value&quot;</span>) <span class="op">+</span><span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;Transformed Value&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-4-fig/unnamed-chunk-22-1.png" /></p>
+</div>
+<div id="lets-see-how-these-work-on-real-data" class="slide section level2">
+<h1>Let’s see how these work on real data</h1>
+<p>Load <code>ggplot2</code>:</p>
+<div class="sourceCode" id="cb71"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb71-1"><a href="#cb71-1"></a><span class="kw">library</span>(ggplot2)</span></code></pre></div>
+<p>We’ll also use an R workspace prepared by Cleveland to use in conjunction with the book. Among other things, this contains the data sets used in the book.</p>
+<div class="sourceCode" id="cb72"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb72-1"><a href="#cb72-1"></a><span class="kw">load</span>(<span class="st">&quot;lattice.RData&quot;</span>)</span></code></pre></div>
+<p>We’ll use the stereogram fusion time data in <code>fusion.time</code>, which contains the group variable <code>nv.vv</code> (where “NV” means no visual information and “VV” means visual information) and the quantitative variable <code>time</code> (a positive number.)</p>
+</div>
+<div id="power-transformations-on-fusion-time-data" class="slide section level2">
+<h1>Power transformations on fusion time data</h1>
+<p>Let’s try some of the power transformations on the fusion time data — we would like to see which gives a distribution closest to normal. (Why?)</p>
+<p>We’ll just look at the VV times for now.</p>
+<div class="sourceCode" id="cb73"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb73-1"><a href="#cb73-1"></a>vv =<span class="st"> </span>fusion.time <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">subset</span>(nv.vv <span class="op">==</span><span class="st"> &quot;VV&quot;</span>)</span>
+<span id="cb73-2"><a href="#cb73-2"></a>tau_vec =<span class="st"> </span><span class="kw">seq</span>(<span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>, <span class="dt">by =</span> <span class="fl">.25</span>)</span>
+<span id="cb73-3"><a href="#cb73-3"></a>transforms =<span class="st"> </span><span class="kw">sapply</span>(tau_vec, <span class="cf">function</span>(tau) <span class="kw">bc_trans</span>(vv<span class="op">$</span>time, tau))</span>
+<span id="cb73-4"><a href="#cb73-4"></a>transforms_melted =<span class="st"> </span><span class="kw">melt</span>(transforms)</span>
+<span id="cb73-5"><a href="#cb73-5"></a>transforms_for_plotting =<span class="st"> </span>transforms_melted <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">mutate</span>(<span class="dt">tau =</span> tau_vec[Var2])</span>
+<span id="cb73-6"><a href="#cb73-6"></a></span>
+<span id="cb73-7"><a href="#cb73-7"></a><span class="kw">ggplot</span>(transforms_for_plotting) <span class="op">+</span></span>
+<span id="cb73-8"><a href="#cb73-8"></a><span class="st">    </span><span class="kw">stat_qq</span>(<span class="kw">aes</span>(<span class="dt">sample =</span> value)) <span class="op">+</span></span>
+<span id="cb73-9"><a href="#cb73-9"></a><span class="st">    </span><span class="kw">facet_wrap</span>(<span class="op">~</span><span class="st"> </span>tau, <span class="dt">scales =</span> <span class="st">&quot;free&quot;</span>, <span class="dt">ncol =</span> <span class="dv">5</span>)</span></code></pre></div>
+<p><img src="lecture-4-fig/unnamed-chunk-25-1.png" /></p>
+<p>Here <span class="math inline">\(\tau\)</span>-values of <span class="math inline">\(0\)</span> (the log transformation) and <span class="math inline">\(-0.25\)</span> give the straightest normal QQ plots.</p>
+<p>Since it’s much, much easier to interpret <span class="math inline">\(\log(x)\)</span> than <span class="math inline">\(x^{-0.25}\)</span>, we strongly prefer the log transformation.</p>
+</div>
+<div id="theoretical-reasons-for-transformations" class="slide section level2">
+<h1>Theoretical reasons for transformations</h1>
+<p>In your more theoretical statistics courses, you might come across <em>variance-stabilizing transformations</em>.</p>
+<p>In real data, we often see that the variance depends on the mean.</p>
+<div class="incremental">
+<p>For example, if <span class="math inline">\(X\)</span> is distributed <span class="math inline">\(\text{Poisson}(\lambda)\)</span>, <span class="math inline">\(E_\lambda(X) = \lambda\)</span>, and <span class="math inline">\(\text{Var}_\lambda(X) = \lambda\)</span>.</p>
+<p>For Poisson random variables, the square root transformation (<span class="math inline">\(\tau = 1/2\)</span>) is approximately variance stabilizing, that is, <span class="math inline">\(X^{1/2}\)</span> will have variance that is about the same no matter what <span class="math inline">\(\lambda\)</span> is.</p>
+<p>Conut data often have a Poisson distribution, and so it is often useful to use a square root transformation for counts.</p>
+<blockquote>
+<p>The re-expressions most frequently useful for counts are logs and (square) roots. In fact, it is rather hard to find a set of counts that are better analyzed as raw counts than as root counts.</p>
+</blockquote>
+<p>Tukey, EDA, p. 83-84</p>
+</div>
+<div class="incremental">
+<p>If we have random variables <span class="math inline">\(X_i\)</span>, with <span class="math inline">\(E(X_i) = \mu\)</span> and <span class="math inline">\(\text{Var}(X_i) = s^2 \mu^2\)</span> (the standard deviation is proportional to the mean), then the log transformation (<span class="math inline">\(\tau = 0\)</span>) is approximately variance stabilizing.</p>
+</div>
+</div>
+<div id="next-time" class="slide section level2">
+<h1>Next time</h1>
+<p>Putting everything together to build simple models.</p>
+</div>
+</body>
+</html>
