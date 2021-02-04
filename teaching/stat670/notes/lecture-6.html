@@ -1,0 +1,404 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <meta name="author" content="Julia Fukuyama" />
+  <meta name="date" content="2021-02-04" />
+  <title>Stat 470/670 Lecture 6: ggplot2, more formally</title>
+  <style type="text/css">
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <style type="text/css">
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="https://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-AMS_CHTML-full" type="text/javascript"></script>
+  <script src="https://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div class="slide titlepage">
+  <h1 class="title">Stat 470/670 Lecture 6: ggplot2, more formally</h1>
+  <p class="author">
+Julia Fukuyama
+  </p>
+  <p class="date">February 4, 2021</p>
+</div>
+<div id="today" class="slide section level2">
+<h1>Today</h1>
+<p>Reading: Wickham (2010), A Layered Grammar of Graphics, JCGS.</p>
+<p>ggplot2 and the grammar of graphics</p>
+</div>
+<div id="grammar-of-graphics" class="slide section level2">
+<h1>Grammar of graphics</h1>
+<p>What does “grammar of graphics” mean?</p>
+<p>The analogy with English grammar, or any language’s grammar, is that it allows you to put together component parts</p>
+<p>Better than “grammar of graphics” might be the “orthogonal components of graphics,” but that doesn’t have the same alliterative appeal.</p>
+<p>The power of the grammar of graphics is that it is modular: different aspects of the plot can be specified independently of each other.</p>
+</div>
+<div class="slide section level2">
+
+<p>As an example, the coordinate system is specified separately from the geometric object used to represent the points.</p>
+<p>Here we have three representations of the same data, the only difference between them being the coordinate system used to represent them.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>bar_plot =<span class="st"> </span><span class="kw">ggplot</span>(diamonds) <span class="op">+</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="st">    </span><span class="kw">geom_bar</span>(<span class="kw">aes</span>(<span class="dt">x =</span> <span class="st">&quot;&quot;</span>, <span class="dt">fill =</span> clarity), <span class="dt">width =</span> <span class="dv">1</span>, <span class="dt">position =</span> <span class="st">&quot;stack&quot;</span>)</span>
+<span id="cb1-3"><a href="#cb1-3"></a>bar_plot</span></code></pre></div>
+<p><img src="lecture-6-fig/unnamed-chunk-1-1.png" /></p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>bar_plot <span class="op">+</span><span class="st"> </span><span class="kw">coord_polar</span>()</span></code></pre></div>
+<p><img src="lecture-6-fig/unnamed-chunk-1-2.png" /></p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>bar_plot <span class="op">+</span><span class="st"> </span><span class="kw">coord_polar</span>(<span class="dt">theta =</span> <span class="st">&quot;y&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-6-fig/unnamed-chunk-1-3.png" /></p>
+</div>
+<div class="slide section level2">
+
+<p>Again, the same dataset, three different coordinate systems, very different representations:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a>dodged_bar_plot =<span class="st"> </span><span class="kw">ggplot</span>(diamonds) <span class="op">+</span></span>
+<span id="cb4-2"><a href="#cb4-2"></a><span class="st">    </span><span class="kw">geom_bar</span>(<span class="kw">aes</span>(<span class="dt">x =</span> <span class="st">&quot;&quot;</span>, <span class="dt">fill =</span> clarity), <span class="dt">width =</span> <span class="dv">1</span>, <span class="dt">position =</span> <span class="st">&quot;dodge&quot;</span>)</span>
+<span id="cb4-3"><a href="#cb4-3"></a>dodged_bar_plot</span></code></pre></div>
+<p><img src="lecture-6-fig/unnamed-chunk-2-1.png" /></p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>dodged_bar_plot <span class="op">+</span><span class="st"> </span><span class="kw">coord_polar</span>()</span></code></pre></div>
+<p><img src="lecture-6-fig/unnamed-chunk-2-2.png" /></p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a>dodged_bar_plot <span class="op">+</span><span class="st"> </span><span class="kw">coord_polar</span>(<span class="dt">theta =</span> <span class="st">&quot;y&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-6-fig/unnamed-chunk-2-3.png" /></p>
+</div>
+<div id="what-are-the-components-of-a-plot" class="slide section level2">
+<h1>What are the components of a plot?</h1>
+<ul class="incremental">
+<li><p>A default dataset and set of mappings from variables to aesthetics.</p></li>
+<li><p>One or more <em>layers</em>, each of which contains one geometric (<code>geom_*</code>) object, one statistical transformation (<code>stat_*</code>), one position adjustment (<code>position_*</code>), and one dataset and set of aesthetic mappings.</p></li>
+<li><p>One scale for each aesthetic mapping.</p></li>
+<li><p>A coordinate system (<code>coord_*</code>).</p></li>
+<li><p>A facet specification (<code>facet_*</code>).</p></li>
+</ul>
+<p>Layers are the most important and involved part of the plot.</p>
+</div>
+<div id="layers" class="slide section level2">
+<h1>Layers</h1>
+<p>ggplots are composed of one or more layers</p>
+<ul class="incremental">
+<li><p>If you want anything to show up, you need to create a layer: any of the <code>geom_*</code> or <code>stat_*</code> commands create a layer for you.</p></li>
+<li><p>Layers can also be created by hand using the <code>layer</code> command, and we’ll see that today for teaching purposes, but in practice you make layers with <code>geom_*</code> or <code>stat_*</code></p></li>
+<li><p>The <code>ggplot</code> function on its own does not create a layer.</p></li>
+</ul>
+</div>
+<div id="what-is-a-layer" class="slide section level2">
+<h1>What is a layer?</h1>
+<ul class="incremental">
+<li><p>data and aesthetic mapping</p></li>
+<li><p>statistical transformation (stat)</p></li>
+<li><p>geometric object (geom)</p></li>
+<li><p>position adjustment</p></li>
+</ul>
+<div class="incremental">
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a>p =<span class="st"> </span><span class="kw">ggplot</span>() <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> color, <span class="dt">y =</span> clarity), <span class="dt">data =</span> diamonds)</span>
+<span id="cb7-2"><a href="#cb7-2"></a>p<span class="op">$</span>layers</span></code></pre></div>
+<pre><code>## [[1]]
+## mapping: x = ~color, y = ~clarity 
+## geom_point: na.rm = FALSE
+## stat_identity: na.rm = FALSE
+## position_identity</code></pre>
+</div>
+</div>
+<div id="data-and-aesthetic-mapping" class="slide section level2">
+<h1>Data and aesthetic mapping</h1>
+<p>Data: self evident. For ggplot the data needs to be formatted as a tibble or a data.frame.</p>
+<p>Aesthetic mapping:</p>
+<ul class="incremental">
+<li><p>Describes how variables in the dataset are mapping to “aesthetic” attributes of the plot.</p></li>
+<li><p>“Aesthetic” here means perceivable: something you can observe on the plot.</p></li>
+<li><p>Examples of aesthetic attributes/perceivable attributes: position along the <span class="math inline">\(x\)</span>-axis, color, shape, position along the <span class="math inline">\(y\)</span>-axis, opacity, linetype</p></li>
+</ul>
+<p>Data and aesthetic mapping go together because they are not at all independent of each other: the aesthetic mapping takes variables in your data and maps them to aesthetics/perceivable parts of the plot and is therefore specific to a dataset.</p>
+</div>
+<div id="statistical-transformation" class="slide section level2">
+<h1>Statistical transformation</h1>
+<p>A statistical transformation is some transformation of the data.</p>
+<p><img src="ggplot_stat_table.png" /></p>
+<p>There’s some overlap between these and position adjustments: often there is more than one way to create the same plot.</p>
+</div>
+<div id="geometric-object" class="slide section level2">
+<h1>Geometric object</h1>
+<p>Geometric objects (<code>geom_*</code>) control the type of plot you create. Examples are</p>
+<ul class="incremental">
+<li><p>Points, text (zero-dimensional geometric objects)</p></li>
+<li><p>Line, path (one-dimensional geometric objects)</p></li>
+<li><p>Polygon, interval (two-dimensional geometric objects)</p></li>
+<li><p>More complicated: boxplot</p></li>
+</ul>
+</div>
+<div id="relationship-between-stats-and-geoms" class="slide section level2">
+<h1>Relationship between stats and geoms</h1>
+<p>Every statistic has a default geometric object, and every geometric object has a default statistic.</p>
+<p>Stats and geoms are not completely orthogonal: not every combination is valid (although many are).</p>
+<p>For example:</p>
+<ul class="incremental">
+<li><p><code>stat_bin</code> and <code>geom_bar</code> is valid and standard for a histogram.</p></li>
+<li><p><code>stat_bin</code> and <code>geom_point</code> or <code>stat_bin</code> + <code>geom_line</code> are valid but non-standard combinations. They give a plot that is similar to a histogram and that is interpretable in the same way.</p></li>
+<li><p><code>stat_identity</code> and <code>geom_boxplot</code> is invalid, because boxplot needs certain computed quantities from the data.</p></li>
+</ul>
+</div>
+<div id="position-adjustment" class="slide section level2">
+<h1>Position adjustment</h1>
+<p>Used to avoid “collisions” in the plot objects:</p>
+<ul class="incremental">
+<li><p>In bar plots where one of the aesthetics is height, the bars would often be plotted over each other. In this case we use the “dodge” or “stack” position adjustments.</p></li>
+<li><p>If we have issues with overplotting (multiple points in exactly the same place), we can use the “jitter” position adjustment to randomly move the points a small amount.</p></li>
+</ul>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a>p =<span class="st"> </span><span class="kw">ggplot</span>(diamonds) <span class="op">+</span><span class="st"> </span><span class="kw">geom_boxplot</span>(<span class="kw">aes</span>(<span class="dt">x =</span> color, <span class="dt">y =</span> price))</span>
+<span id="cb9-2"><a href="#cb9-2"></a>p</span></code></pre></div>
+<p><img src="lecture-6-fig/unnamed-chunk-4-1.png" /></p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a>p<span class="op">$</span>layers</span></code></pre></div>
+<pre><code>## [[1]]
+## mapping: x = ~color, y = ~price 
+## geom_boxplot: outlier.colour = NULL, outlier.fill = NULL, outlier.shape = 19, outlier.size = 1.5, outlier.stroke = 0.5, outlier.alpha = NULL, notch = FALSE, notchwidth = 0.5, varwidth = FALSE, na.rm = FALSE, orientation = NA, flipped_aes = FALSE
+## stat_boxplot: na.rm = FALSE, orientation = NA
+## position_dodge2</code></pre>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a><span class="kw">ggplot</span>(diamonds) <span class="op">+</span><span class="st"> </span><span class="kw">geom_boxplot</span>(<span class="kw">aes</span>(<span class="dt">x =</span> color, <span class="dt">y =</span> price, <span class="dt">color =</span> clarity), <span class="dt">position =</span> <span class="st">&quot;identity&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-6-fig/unnamed-chunk-5-1.png" /></p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a><span class="kw">ggplot</span>(diamonds) <span class="op">+</span><span class="st"> </span><span class="kw">geom_boxplot</span>(<span class="kw">aes</span>(<span class="dt">x =</span> color, <span class="dt">y =</span> price, <span class="dt">color =</span> clarity), <span class="dt">position =</span> <span class="st">&quot;dodge&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-6-fig/unnamed-chunk-6-1.png" /></p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a><span class="kw">ggplot</span>(diamonds) <span class="op">+</span><span class="st"> </span><span class="kw">geom_boxplot</span>(<span class="kw">aes</span>(<span class="dt">x =</span> color, <span class="dt">y =</span> price, <span class="dt">color =</span> clarity), <span class="dt">position =</span> <span class="kw">position_dodge</span>(<span class="dt">width =</span> <span class="dv">1</span>))</span></code></pre></div>
+<p><img src="lecture-6-fig/unnamed-chunk-6-2.png" /></p>
+<p><code>position = "dodge"</code> is the default for boxplots, so you don’t need to specify it.</p>
+</div>
+<div id="scales" class="slide section level2">
+<h1>Scales</h1>
+<p>So far, we’ve defined aesthetic mappings that specify which perceivable aspects of the plot correspond to which variables.</p>
+<p>However, there any many ways to map variables to perceivable aspects of the plot.</p>
+<p>For example, if we have a categorical variable that takes values “A” and “B” to the color aesthetic, that means that color is going to represent whether variable took value “A” or “B”. But we could do that in a practically infinite number of ways, e.g.</p>
+<ul class="incremental">
+<li><p>A maps to “red”, B maps to “black”</p></li>
+<li><p>A maps to “green”, B maps to “blue”</p></li>
+<li><p>A maps to “purple”, B maps to “gold”</p></li>
+<li><p>… You probably get the picture</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>ggplot has good default mappings from values into aesthetic space*, but you will sometimes want to set them by hand.</p>
+<p>To do so, you use the <code>scale_*</code> functions.</p>
+<p>*This is true now: the old version of ggplot had poor mappings from continuous values to colors, and the <a href="https://cran.r-project.org/web/packages/viridis/index.html">viridis</a> color scheme was much better. The most recent version of ggplot uses viridis by default for both continuous values and ordered factors.</p>
+</div>
+<div id="coordinate-system" class="slide section level2">
+<h1>Coordinate system</h1>
+<p>Another aspect of the plot that can be specified independently of everything else is the coordinate system.</p>
+<ul class="incremental">
+<li><p><code>coord_cartesian</code> is the default, and is almost always what you want.</p></li>
+<li><p><code>coord_flip</code> is sometimes useful: for example, boxplots require the explanatory variable to be mapped to x, so if you want a horizontal boxplot you need to use <code>coord_flip</code>.</p></li>
+<li><p><code>coord_polar</code> will often make your plots look cooler and more difficult to read. Not usually recommended.</p></li>
+</ul>
+</div>
+<div id="faceting" class="slide section level2">
+<h1>Faceting</h1>
+<p>Allows you to make small multiples of plots.</p>
+<p>Other grammars/plotting systems think of this as just a fancy coordinate system, but it turns out that it’s easier to use if you think about it separately.</p>
+<p>Each facet plots a subset of the data, and it takes as input what variable(s) to use to make the subsets and how to lay out the subsets.</p>
+<p>The two options are:</p>
+<ul class="incremental">
+<li><p><code>facet_wrap</code>: Lays out the plots for each subset sequentially.</p></li>
+<li><p><code>facet_grid</code>: Subsets the data according to two separate variables. The facet position along the <span class="math inline">\(x\)</span>-axis represents levels of one variable, and the facet position along the <span class="math inline">\(y\)</span>-axis represents levels of the other variable.</p></li>
+</ul>
+</div>
+<div id="how-this-all-works-the-long-way" class="slide section level2">
+<h1>How this all works: the long way</h1>
+<p>One way to specify a ggplot is to specify all of the components we’ve seen.</p>
+<p>If you understand all the parts, this is probably the least confusing way to specify a ggplot.</p>
+<p>The problem is that it’s very verbose. Suppose we want to make a plot with points and a smoother from the diamonds dataset. We can specify data, mapping, geom, stat, and positions for each layer, along with scales and the coordinate system as follows:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1"></a><span class="kw">ggplot</span>() <span class="op">+</span></span>
+<span id="cb15-2"><a href="#cb15-2"></a><span class="st">    </span><span class="kw">layer</span>(</span>
+<span id="cb15-3"><a href="#cb15-3"></a>        <span class="dt">data =</span> diamonds, <span class="dt">mapping =</span> <span class="kw">aes</span>(<span class="dt">x =</span> carat, <span class="dt">y =</span> price),</span>
+<span id="cb15-4"><a href="#cb15-4"></a>        <span class="dt">geom =</span> <span class="st">&quot;point&quot;</span>, <span class="dt">stat =</span> <span class="st">&quot;identity&quot;</span>, <span class="dt">position =</span> <span class="st">&quot;identity&quot;</span>) <span class="op">+</span></span>
+<span id="cb15-5"><a href="#cb15-5"></a><span class="st">    </span><span class="kw">layer</span>(</span>
+<span id="cb15-6"><a href="#cb15-6"></a>        <span class="dt">data =</span> diamonds, <span class="dt">mapping =</span> <span class="kw">aes</span>(<span class="dt">x =</span> carat, <span class="dt">y =</span> price),</span>
+<span id="cb15-7"><a href="#cb15-7"></a>        <span class="dt">geom =</span> <span class="st">&quot;smooth&quot;</span>, <span class="dt">position =</span> <span class="st">&quot;identity&quot;</span>, <span class="dt">stat =</span> <span class="st">&quot;smooth&quot;</span>, <span class="dt">params =</span> <span class="kw">list</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>)) <span class="op">+</span></span>
+<span id="cb15-8"><a href="#cb15-8"></a><span class="st">    </span><span class="kw">scale_x_log10</span>() <span class="op">+</span><span class="st"> </span><span class="kw">scale_y_log10</span>() <span class="op">+</span><span class="st"> </span><span class="kw">coord_cartesian</span>()</span></code></pre></div>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="lecture-6-fig/unnamed-chunk-7-1.png" /></p>
+</div>
+<div id="defaults-make-the-code-shorter" class="slide section level2">
+<h1>Defaults make the code shorter</h1>
+<p>The more standard way of writing the same plot would be:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1"></a>p =<span class="st"> </span><span class="kw">ggplot</span>(<span class="dt">data =</span> diamonds, <span class="kw">aes</span>(<span class="dt">x =</span> carat, <span class="dt">y =</span> price)) <span class="op">+</span></span>
+<span id="cb17-2"><a href="#cb17-2"></a><span class="st">    </span><span class="kw">geom_point</span>() <span class="op">+</span></span>
+<span id="cb17-3"><a href="#cb17-3"></a><span class="st">    </span><span class="kw">stat_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>) <span class="op">+</span></span>
+<span id="cb17-4"><a href="#cb17-4"></a><span class="st">    </span><span class="kw">scale_x_log10</span>() <span class="op">+</span></span>
+<span id="cb17-5"><a href="#cb17-5"></a><span class="st">    </span><span class="kw">scale_y_log10</span>()</span></code></pre></div>
+<p>This is still fairly long, but we don’t have to specify</p>
+<ul class="incremental">
+<li><p>position: Default for both <code>geom_point</code> and <code>stat_smooth</code> is <code>position = "identity"</code>.</p></li>
+<li><p>stat, for <code>geom_point</code>: The default stat for <code>geom_point</code> is <code>stat = "identity"</code>.</p></li>
+<li><p>geom, for <code>stat_smooth</code>: The default geom for <code>stat_smooth</code> is <code>geom_smooth</code>.</p></li>
+<li><p>coordinate system: <code>coord_cartesian</code> is always the default.</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>You can check what stat, geom, and position is used for each of the layers:</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a><span class="kw">names</span>(p)</span></code></pre></div>
+<pre><code>## [1] &quot;data&quot;        &quot;layers&quot;      &quot;scales&quot;      &quot;mapping&quot;     &quot;theme&quot;      
+## [6] &quot;coordinates&quot; &quot;facet&quot;       &quot;plot_env&quot;    &quot;labels&quot;</code></pre>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a>p<span class="op">$</span>layers</span></code></pre></div>
+<pre><code>## [[1]]
+## geom_point: na.rm = FALSE
+## stat_identity: na.rm = FALSE
+## position_identity 
+## 
+## [[2]]
+## geom_smooth: se = TRUE, na.rm = FALSE, orientation = NA
+## stat_smooth: method = lm, formula = NULL, se = TRUE, n = 80, fullrange = FALSE, level = 0.95, na.rm = FALSE, orientation = NA, method.args = list(), span = 0.75
+## position_identity</code></pre>
+</div>
+<div id="example-minard-on-napoleons-invasion-of-russia" class="slide section level2">
+<h1>Example: Minard on Napoleon’s invasion of Russia</h1>
+<p>One of <a href="https://en.wikipedia.org/wiki/Charles_Joseph_Minard">the most famous statistical graphics, created by Charles Minard</a> depicts Napoleon’s 1812 invasion of and retreat from Russia.</p>
+<p><img src="Minard.png" /></p>
+</div>
+<div class="slide section level2">
+
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1"></a>minard =<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&quot;../../datasets/minard.csv&quot;</span>)</span></code></pre></div>
+<pre><code>## Parsed with column specification:
+## cols(
+##   long = col_double(),
+##   lat = col_double(),
+##   surviv = col_double(),
+##   direction = col_character(),
+##   division = col_double()
+## )</code></pre>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1"></a>minard_cities =<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&quot;../../datasets/minard-cities.csv&quot;</span>)</span></code></pre></div>
+<pre><code>## Parsed with column specification:
+## cols(
+##   long = col_double(),
+##   lat = col_double(),
+##   city = col_character()
+## )</code></pre>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1"></a>plot_troops =<span class="st"> </span><span class="kw">ggplot</span>(minard) <span class="op">+</span></span>
+<span id="cb26-2"><a href="#cb26-2"></a><span class="st">    </span><span class="kw">geom_path</span>(<span class="kw">aes</span>(<span class="dt">x =</span> long, <span class="dt">y =</span> lat, <span class="dt">color =</span> direction, <span class="dt">size =</span> surviv, <span class="dt">group =</span> division))</span>
+<span id="cb26-3"><a href="#cb26-3"></a>plot_troops</span></code></pre></div>
+<p><img src="lecture-6-fig/unnamed-chunk-10-1.png" /></p>
+</div>
+<div class="slide section level2">
+
+<p>Let’s add another layer for the cities:</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1"></a>plot_both =<span class="st"> </span>plot_troops <span class="op">+</span></span>
+<span id="cb27-2"><a href="#cb27-2"></a><span class="st">    </span><span class="kw">geom_text</span>(<span class="kw">aes</span>(<span class="dt">x =</span> long, <span class="dt">y =</span> lat, <span class="dt">label =</span> city), <span class="dt">data =</span> minard_cities)</span>
+<span id="cb27-3"><a href="#cb27-3"></a></span>
+<span id="cb27-4"><a href="#cb27-4"></a>plot_both</span></code></pre></div>
+<p><img src="lecture-6-fig/unnamed-chunk-11-1.png" /></p>
+<p>Notice: we have a new dataset for this layer.</p>
+<div class="incremental">
+<p>Some things that we still don’t like about this plot:</p>
+<ul class="incremental">
+<li><p>We would like the colors for advance and retreat to be grey and red.</p></li>
+<li><p>We want the line widths to be proportional to the number of survivors.</p></li>
+<li><p>We would like the line ends to be round instead of square.</p></li>
+</ul>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>A “final” version of the plot, with better scales:</p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1"></a><span class="kw">ggplot</span>(minard) <span class="op">+</span></span>
+<span id="cb28-2"><a href="#cb28-2"></a><span class="st">    </span><span class="kw">geom_path</span>(<span class="kw">aes</span>(<span class="dt">x =</span> long, <span class="dt">y =</span> lat, <span class="dt">color =</span> direction, <span class="dt">size =</span> surviv<span class="op">^</span><span class="dv">2</span>, <span class="dt">group =</span> division), <span class="dt">lineend =</span> <span class="st">&quot;round&quot;</span>) <span class="op">+</span></span>
+<span id="cb28-3"><a href="#cb28-3"></a><span class="st">    </span><span class="kw">geom_text</span>(<span class="kw">aes</span>(<span class="dt">x =</span> long, <span class="dt">y =</span> lat, <span class="dt">label =</span> city), <span class="dt">data =</span> minard_cities, <span class="dt">size =</span> <span class="dv">3</span>) <span class="op">+</span><span class="st"> </span></span>
+<span id="cb28-4"><a href="#cb28-4"></a><span class="st">    </span><span class="kw">scale_size</span>(<span class="dt">range =</span> <span class="kw">c</span>(.<span class="dv">18</span>, <span class="dv">15</span>), <span class="dt">breaks =</span> (<span class="dv">1</span><span class="op">:</span><span class="dv">3</span> <span class="op">*</span><span class="st"> </span><span class="dv">10</span><span class="op">^</span><span class="dv">5</span>)<span class="op">^</span><span class="dv">2</span>, <span class="dt">labels =</span> scales<span class="op">::</span><span class="kw">comma</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">3</span> <span class="op">*</span><span class="st"> </span><span class="dv">10</span><span class="op">^</span><span class="dv">5</span>), <span class="st">&quot;Survivors&quot;</span>) <span class="op">+</span></span>
+<span id="cb28-5"><a href="#cb28-5"></a><span class="st">    </span><span class="kw">scale_color_manual</span>(<span class="dt">values =</span> <span class="kw">c</span>(<span class="st">&quot;grey50&quot;</span>,<span class="st">&quot;red&quot;</span>), <span class="dt">breaks =</span> <span class="kw">c</span>(<span class="st">&quot;A&quot;</span>, <span class="st">&quot;R&quot;</span>), <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&quot;Advance&quot;</span>, <span class="st">&quot;Retreat&quot;</span>), <span class="st">&quot;&quot;</span>) <span class="op">+</span></span>
+<span id="cb28-6"><a href="#cb28-6"></a><span class="st">    </span><span class="kw">xlab</span>(<span class="ot">NULL</span>) <span class="op">+</span><span class="st"> </span><span class="kw">ylab</span>(<span class="ot">NULL</span>) <span class="op">+</span><span class="st"> </span><span class="kw">theme</span>(<span class="dt">axis.text =</span> <span class="kw">element_blank</span>(), <span class="dt">axis.ticks =</span> <span class="kw">element_blank</span>(), <span class="dt">panel.grid =</span> <span class="kw">element_blank</span>())</span></code></pre></div>
+<p><img src="lecture-6-fig/unnamed-chunk-12-1.png" /></p>
+</div>
+<div id="exercises" class="slide section level2">
+<h1>Exercises</h1>
+<ul class="incremental">
+<li>Try creating a histogram on the diamonds dataset, for example with</li>
+</ul>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1"></a>p =<span class="st"> </span><span class="kw">ggplot</span>() <span class="op">+</span><span class="st"> </span><span class="kw">geom_histogram</span>(<span class="kw">aes</span>(<span class="dt">x =</span> carat), <span class="dt">data =</span> diamonds)</span></code></pre></div>
+<p>Re-write this using the <code>layer</code> function. Hint: if you don’t know what the default values for some of the aspects of the plot, examine <code>p$layers</code></p>
+<ul class="incremental">
+<li><p>Remember that a histogram is a plot with <code>stat_bin</code> and <code>geom_bar</code>. Modify your histogram code so that it uses a different geom, for example <code>geom_line</code> or <code>geom_point</code>. This should be simple once you have the <code>layer</code> specification of a histogram.</p></li>
+<li><p>In your histogram, add an aesthetic mapping from one of the factor variables (maybe color or clarity) to the color aesthetic.</p></li>
+<li><p>What is the default position adjustment for a histogram? Try changing the position adjustment to something different (hint: try <code>position_dodge</code>).</p></li>
+<li><p>Very difficult: Recreate the Minard map more precisely. Add text for the number of troops surviving on each segment, and add the time and temperature data to the bottom of the plot.</p></li>
+</ul>
+</div>
+<div id="ggplot-and-eda" class="slide section level2">
+<h1>ggplot and EDA</h1>
+<p>Remember our passage from Tukey:</p>
+<blockquote>
+<p><em>Exploratory data analysis is detective work</em>… As all detective stories remind us, many of the circumstances surrounding a crime are accidental or misleading. Equally, many of the indications to be discerned in bodies of data are accidental or misleading. To accept all appearances as conclusive would be destructively foolish, either in crime detection or in data analysis. <em>To fail to collect all appearances because some – or even most – are only accidents would, however, be gross misfeasance deserving (and often receiving) appropriate punishment.</em></p>
+</blockquote>
+<div class="incremental">
+<p>The flexibility in the grammar of graphics allows us to collect many more “appearances” in the data than we would be able to if we just have access to a handful of named plots.</p>
+<p>Many of the plots that we can make with ggplot are not useful, but the point is to try visualizing the data in many different ways. ggplot opens up a very large space of statistical graphics to us for not very much effort.</p>
+</div>
+</div>
+</body>
+</html>
