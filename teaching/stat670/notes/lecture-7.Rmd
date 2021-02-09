@@ -1,0 +1,304 @@
+% Stat 470/670 Lecture 7: Bivariate data
+% Julia Fukuyama
+% February 9, 2021
+
+```{r setup, echo = FALSE}
+library(knitr)
+opts_chunk$set(fig.cap="", fig.width = 4, fig.height = 2.5, dpi=200, fig.path="lecture-7-fig/")
+```
+
+## Today: Bivariate data
+
+Optional reading: Tukey, Exploratory Data Analysis, Chapter 5, introduction and sections D-H, and Chapter 6 (posted on the website).
+
+Read Chapter 5 more for the philosophy than for the implementation details.
+
+In particular, Tukey fits lines by eye (sections A-C in Chapter 5), which we will never do.
+
+## Motivation/What questions do we want to answer?
+
+Recall the EDA philosophy: We want to notice as many things as possible about the data, collect all appearances.
+
+For univariate data, collecting all the appearances meant looking at the distributions of the numbers: their center, spread, skewness, outliers, whether they seem to come from standard distributions.
+
+For bivariate data, we will want to know about the relationship between the variables.
+Because this is EDA, we want to explain the relationship between the variables, and we want the explanation to be as simple as possible (but no simpler).
+
+The simplest explanation for the relationship between two variables is linear, so today we will look at
+
+- How to fit a linear relation
+
+- How to transform  variables so as to create a linear relation
+
+- How to critique the linear relation once we have it
+
+
+
+## Scatterplots
+
+A first example: US Census data, 1800-1950
+
+The dataset provided has census data from 1790 to 2010.
+We want to reproduce Tukey's analysis, so we will just use 1800-1950.
+```{r}
+library(tidyverse)
+census_full = read_csv("../../datasets/census.csv")
+census = subset(census_full, Year >= 1800 & Year <= 1950)
+## How would you write this with a pipe instead?
+```
+
+
+-----
+
+Let's start off with a scatterplot:
+```{r}
+ggplot(census) + geom_point(aes(x = Year, y = Population))
+```
+
+What do we learn about the census numbers from the scatterplot?
+
+-----
+
+We can check on the multiplicative hypothesis by plotting on a log
+scale:
+
+```{r}
+ggplot(census) + geom_point(aes(x = Year, y = Population)) +
+    scale_y_log10()
+```
+
+The trend in the first half does look quite linear on the log scale.
+
+## What next?
+
+The scatterplot gives us a rough idea or a first hypothesis about the form the data come in.
+
+We're not done though: We want to check how well the linear hypotheses fit, and we want to "go one level deeper" and examine the deviations from the line.
+
+To do this, we need to find a best fitting line and examine the deviations from that line.
+
+## Linear models/Best fitting line
+
+
+You remember from your linear models class the statistical interpretation of least squares: it is a maximum likelihood estimate in the model $y_i = \beta_0 + x_i\beta + \varepsilon_i$, $\varepsilon_i \sim \mathcal N(0, \sigma^2)$.
+
+"Least squares" reminds us that there is another interpretation of the same line: it minimizes the sum of squared residuals.
+
+## Checking the linearity of our relationship
+
+Let's check on the appearance of linearity in the latter half of the data.
+To do this, we first get the least squares fit on the second half of the data using `lm` in R.
+
+To fit on just half the points, we can use sample weights in the `lm` function.
+Below, these weights are created with `mutate`.
+Note that `as.numeric` on a boolean vector changes `FALSE` to 0 and `TRUE` to 1.
+
+```{r}
+(midpoint = median(census$Year))
+census = census %>% mutate(late = as.numeric(Year >= midpoint))
+fit_late = lm(Population ~ Year, data = census, weights = late)
+```
+
+-----
+
+Side note: if you've ever tried to programmatically get information out of the lm object, you'll remember what a pain it is.
+The `broom` package ("broom: Let's tidy up a bit") has three functions that give you coefficients, fits and residuals, and model fit information as tibbles.
+No more `summary(fit)$r.squared` calls!
+```{r}
+library(broom)
+tidy(fit_late)
+augment(fit_late)
+glance(fit_late)
+```
+
+
+----
+
+Back to plots: we want to plot two layers, one with the linear smoother and one with the best fitting line.
+
+```{r}
+ggplot(census) + geom_point(aes(x = Year, y = Population)) +
+    geom_abline(aes(intercept = estimate[1], slope = estimate[2]), data = tidy(fit_late))
+```
+
+We see that the line does a good job of explaining the later population numbers, although it is not perfect. We want to look at these more closely.
+
+## Residuals: Critiquing the line
+
+We can see the residuals as the deviations from the best fitting line on the plot, but they are much clearer when the line is subtracted out and the residuals are plotted by year.
+
+The `augment` function adds fits, residuals, and several other measures to the data we fed in to `lm`.
+We can use it to plot residuals:
+
+```{r}
+ggplot(augment(fit_late)) + geom_point(aes(x = Year, y = .resid))
+```
+
+```{r}
+ggplot(augment(fit_late)) + geom_point(aes(x = Year, y = .resid)) +
+    scale_y_continuous(limits = c(-5 * 10^6, 5 * 10^6))
+```
+
+## Linearity of log-population
+
+Let's also check up on the linearity on the log scale of the early population numbers.
+We can proceed the same way as with the late numbers:
+
+```{r}
+## I'll make the weight variable without the pipe this time
+census = mutate(census, early = as.numeric(Year <= midpoint))
+fit_early = lm(log10(Population) ~ Year, data = census, weights = early)
+tidy(fit_early)
+glance(fit_early)
+```
+
+-----
+
+Then we can look at the fitted line and the residuals after we've subtracted out the fitted line:
+
+```{r}
+ggplot(census) + geom_point(aes(x = Year, y = log10(Population))) +
+    geom_abline(aes(intercept = estimate[1], slope = estimate[2]), data = tidy(fit_early))
+```
+
+```{r}
+ggplot(augment(fit_early)) + geom_point(aes(x = Year, y = .resid))
+```
+
+```{r}
+ggplot(augment(fit_early)) +
+    geom_point(aes(x = Year, y = .resid)) +
+    scale_y_continuous(limits = c(-.025, .025))
+```
+
+## Transformations to straighten out relationships
+
+Reading: Tukey, Chapter 6
+
+For the population data, our prior knowledge about population growth suggested a log transformation.
+
+What if we don't know anything in particular about the problem? How do we know what transformations to use?
+
+## Curvature in our plots
+
+Defining curvature:
+
+- _Hollow upward_ means that if we take three points on the curve, the middle point is below the line joining the other two (more standard: [convex or concave up](https://en.wikipedia.org/wiki/Convex_function)).
+
+- _Hollow downward_ is the opposite: if we take three points on the curve, the middle point is above the line joining the other two (more standard: [concave or concave down](https://en.wikipedia.org/wiki/Concave_function)).
+
+If the relationship between our variables is hollow upward or hollow downward, there is some general advice about power transformations to use to straighten out the relationship.
+
+## Transformations to straighten out relationships
+
+Recall Box-Cox transformations: $f_\tau(y) = \frac{y^\tau - 1}{\tau}$ for $\tau \ne 0$, $f_\tau(y) = \log(y)$ for $\tau = 0$.
+
+We can think of these as a ladder of transformations: for example, for $\tau = 3, 2, 1, 1/2, 0, -1/2, -1, -2, -3$, we have:
+
+$$\begin{matrix} \frac{y^3 - 1}{3}\\ \frac{y^2 - 1}{2}\\ y\\ \frac{\sqrt y - 1}{1/2}\\ \log y\\ - \frac{y^{-1/2} - 1}{1/2}\\ -y^{-1} - 1\\ -\frac{y^{-2} - 1}{2} \\ -\frac{y^3 - 1}{3}\end{matrix}$$
+
+
+------
+
+If we are looking at the relationship between $y$ and $x$, the set of Box-Cox transformations has the following nice property:
+
+If the relationship between one transformation of $y$ and $x$ is straight, the relationship of the transformations below with $x$ are hollow downward, and the relationship of the transformations above with $x$ are hollow upward.
+
+. . .
+
+Therefore, the following advice:
+
+- If our plot is hollow upward, we look down the ladder (more negative values of $\tau$ in the Box-Cox transformations) for straightness.
+
+- If our plot is hollow downward, we look up the ladder (more positive values of $\tau$ in the Box-Cox transformations) for straightness.
+
+-----
+
+We saw this with the population data: the raw early numbers ($\tau = 1$) are hollow up, and a transformation down the ladder ($\log (y)$, $\tau = 0$) straightened out the relationship.
+
+Compare: 
+```{r}
+ggplot(subset(census, Year <= midpoint), aes(x = Year, y = Population)) +
+    geom_point() +
+    stat_smooth(method = "lm", se = FALSE)
+ggplot(subset(census, Year <= midpoint), aes(x = Year, y = log10(Population))) +
+    geom_point() +
+    stat_smooth(method = "lm", se = FALSE)
+```
+
+## Re-expressing $x$ instead of $y$
+
+What if we want to transform $x$ instead of $y$?
+
+Notice that a straight relation of $y$ vs. $x$ is exactly the same as a straight relation of $x$ vs. $y$.
+So if we want to straighten a curved relation by transforming $x$, just plot $x$ on the vertical axis, $y$ on the horizontal axis, and follow the same procedure we used to transform $y$.
+
+------
+
+Let's see how this works on the census data again.
+
+```{r}
+ggplot(subset(census, Year <= midpoint), aes(x = Population, y = Year)) +
+    geom_point()
+```
+
+Is this hollow up or hollow down? Which way should we go on the ladder of transformations?
+
+-----
+
+Year is actually not a good candidate for transformation because the values differ only by a couple of percentage points from each other.
+
+To mitigate this, we transform a linear function of year, looking at centuries since 1600 instead of the raw value of year.
+
+```{r}
+census = census %>% mutate(CentSince1600 = (Year - 1600) / 100)
+box_cox = function(y, tau) {
+    return((y^tau - 1) / tau)
+}
+ggplot(subset(census, Year <= midpoint)) + geom_point(aes(x = Population, y = CentSince1600))
+ggplot(subset(census, Year <= midpoint)) +
+    geom_point(aes(x = Population, y = box_cox(CentSince1600, 3))) +
+    xlab("Power = 3")
+ggplot(subset(census, Year <= midpoint)) +
+    geom_point(aes(x = Population, y = box_cox(CentSince1600, 5))) +
+    xlab("Power = 5")
+ggplot(subset(census, Year <= midpoint)) +
+    geom_point(aes(x = Population, y = box_cox(CentSince1600, 7))) +
+    xlab("Power = 7")
+ggplot(subset(census, Year <= midpoint)) +
+    geom_point(aes(x = Population, y = box_cox(CentSince1600, 9))) +
+    xlab("Power = 9")
+```
+
+We get a really straight relationship with the re-expressed x, but the interpretation isn't as nice as the log transformation.
+
+For communicating our findings to other people, and for understanding them ourselves, it's important to have balance the simple, linear explanation that you can get with transformed data against the interpretability of the transformation itself.
+
+
+## What have we gained?
+
+Data = fit + residual
+
+- From the fits, we have gained a simple explanation of the broad trends in the US population.
+
+- If we were really interested in the US population or in the census, the residuals need to be explained and would give us our next task.
+
+- This would require more data than we have available to us, for example, the details of the census process in the years where the deviations were particularly large.
+
+- We have advice on how to transform either response or predictor values to straighten out the relationship between them, but we need to make sure that we don't take this as a natural law.
+
+Note that this is a more data analytic than statistical look at the numbers.
+
+If we were thinking like statisticians, we might draw Q-normal plots of the residuals.
+
+## What progress have we made?
+
+- We have seen how transforming one or more of the variables can help with interpretability by straightening out the relationship between the variables. This is a new use of transformations: in the univariate section, we used transformations to correct skewness and make distributions closer to normal.
+
+- We have seen how to fit the relationship between variables with a straight line.
+
+- We have seen how breaking down the data into a fit plus residuals can allow us to inspect the residuals more closely and make better progress in understanding the data.
+
+## Next time
+
+Smoothers and robust fits, for when even transformations don't save us.

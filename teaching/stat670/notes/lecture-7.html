@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <meta name="author" content="Julia Fukuyama" />
+  <meta name="date" content="2021-02-09" />
+  <title>Stat 470/670 Lecture 7: Bivariate data</title>
+  <style type="text/css">
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <style type="text/css">
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="https://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-AMS_CHTML-full" type="text/javascript"></script>
+  <script src="https://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div class="slide titlepage">
+  <h1 class="title">Stat 470/670 Lecture 7: Bivariate data</h1>
+  <p class="author">
+Julia Fukuyama
+  </p>
+  <p class="date">February 9, 2021</p>
+</div>
+<div id="today-bivariate-data" class="slide section level2">
+<h1>Today: Bivariate data</h1>
+<p>Optional reading: Tukey, Exploratory Data Analysis, Chapter 5, introduction and sections D-H, and Chapter 6 (posted on the website).</p>
+<p>Read Chapter 5 more for the philosophy than for the implementation details.</p>
+<p>In particular, Tukey fits lines by eye (sections A-C in Chapter 5), which we will never do.</p>
+</div>
+<div id="motivationwhat-questions-do-we-want-to-answer" class="slide section level2">
+<h1>Motivation/What questions do we want to answer?</h1>
+<p>Recall the EDA philosophy: We want to notice as many things as possible about the data, collect all appearances.</p>
+<p>For univariate data, collecting all the appearances meant looking at the distributions of the numbers: their center, spread, skewness, outliers, whether they seem to come from standard distributions.</p>
+<p>For bivariate data, we will want to know about the relationship between the variables. Because this is EDA, we want to explain the relationship between the variables, and we want the explanation to be as simple as possible (but no simpler).</p>
+<p>The simplest explanation for the relationship between two variables is linear, so today we will look at</p>
+<ul class="incremental">
+<li><p>How to fit a linear relation</p></li>
+<li><p>How to transform variables so as to create a linear relation</p></li>
+<li><p>How to critique the linear relation once we have it</p></li>
+</ul>
+</div>
+<div id="scatterplots" class="slide section level2">
+<h1>Scatterplots</h1>
+<p>A first example: US Census data, 1800-1950</p>
+<p>The dataset provided has census data from 1790 to 2010. We want to reproduce Tukey’s analysis, so we will just use 1800-1950.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">library</span>(tidyverse)</span></code></pre></div>
+<pre><code>## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.0 ──</code></pre>
+<pre><code>## ✔ tibble  3.0.1     ✔ dplyr   1.0.2
+## ✔ tidyr   1.1.0     ✔ stringr 1.4.0
+## ✔ readr   1.3.1     ✔ forcats 0.5.0
+## ✔ purrr   0.3.4</code></pre>
+<pre><code>## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+## ✖ dplyr::filter() masks stats::filter()
+## ✖ dplyr::lag()    masks stats::lag()</code></pre>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>census_full =<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&quot;../../datasets/census.csv&quot;</span>)</span></code></pre></div>
+<pre><code>## Parsed with column specification:
+## cols(
+##   Year = col_double(),
+##   Population = col_double()
+## )</code></pre>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a>census =<span class="st"> </span><span class="kw">subset</span>(census_full, Year <span class="op">&gt;=</span><span class="st"> </span><span class="dv">1800</span> <span class="op">&amp;</span><span class="st"> </span>Year <span class="op">&lt;=</span><span class="st"> </span><span class="dv">1950</span>)</span>
+<span id="cb7-2"><a href="#cb7-2"></a><span class="co">## How would you write this with a pipe instead?</span></span></code></pre></div>
+</div>
+<div class="slide section level2">
+
+<p>Let’s start off with a scatterplot:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a><span class="kw">ggplot</span>(census) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> Year, <span class="dt">y =</span> Population))</span></code></pre></div>
+<p><img src="lecture-7-fig/unnamed-chunk-2-1.png" /></p>
+<p>What do we learn about the census numbers from the scatterplot?</p>
+</div>
+<div class="slide section level2">
+
+<p>We can check on the multiplicative hypothesis by plotting on a log scale:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a><span class="kw">ggplot</span>(census) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> Year, <span class="dt">y =</span> Population)) <span class="op">+</span></span>
+<span id="cb9-2"><a href="#cb9-2"></a><span class="st">    </span><span class="kw">scale_y_log10</span>()</span></code></pre></div>
+<p><img src="lecture-7-fig/unnamed-chunk-3-1.png" /></p>
+<p>The trend in the first half does look quite linear on the log scale.</p>
+</div>
+<div id="what-next" class="slide section level2">
+<h1>What next?</h1>
+<p>The scatterplot gives us a rough idea or a first hypothesis about the form the data come in.</p>
+<p>We’re not done though: We want to check how well the linear hypotheses fit, and we want to “go one level deeper” and examine the deviations from the line.</p>
+<p>To do this, we need to find a best fitting line and examine the deviations from that line.</p>
+</div>
+<div id="linear-modelsbest-fitting-line" class="slide section level2">
+<h1>Linear models/Best fitting line</h1>
+<p>You remember from your linear models class the statistical interpretation of least squares: it is a maximum likelihood estimate in the model <span class="math inline">\(y_i = \beta_0 + x_i\beta + \varepsilon_i\)</span>, <span class="math inline">\(\varepsilon_i \sim \mathcal N(0, \sigma^2)\)</span>.</p>
+<p>“Least squares” reminds us that there is another interpretation of the same line: it minimizes the sum of squared residuals.</p>
+</div>
+<div id="checking-the-linearity-of-our-relationship" class="slide section level2">
+<h1>Checking the linearity of our relationship</h1>
+<p>Let’s check on the appearance of linearity in the latter half of the data. To do this, we first get the least squares fit on the second half of the data using <code>lm</code> in R.</p>
+<p>To fit on just half the points, we can use sample weights in the <code>lm</code> function. Below, these weights are created with <code>mutate</code>. Note that <code>as.numeric</code> on a boolean vector changes <code>FALSE</code> to 0 and <code>TRUE</code> to 1.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a>(<span class="dt">midpoint =</span> <span class="kw">median</span>(census<span class="op">$</span>Year))</span></code></pre></div>
+<pre><code>## [1] 1875</code></pre>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a>census =<span class="st"> </span>census <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">mutate</span>(<span class="dt">late =</span> <span class="kw">as.numeric</span>(Year <span class="op">&gt;=</span><span class="st"> </span>midpoint))</span>
+<span id="cb12-2"><a href="#cb12-2"></a>fit_late =<span class="st"> </span><span class="kw">lm</span>(Population <span class="op">~</span><span class="st"> </span>Year, <span class="dt">data =</span> census, <span class="dt">weights =</span> late)</span></code></pre></div>
+</div>
+<div class="slide section level2">
+
+<p>Side note: if you’ve ever tried to programmatically get information out of the lm object, you’ll remember what a pain it is. The <code>broom</code> package (“broom: Let’s tidy up a bit”) has three functions that give you coefficients, fits and residuals, and model fit information as tibbles. No more <code>summary(fit)$r.squared</code> calls!</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a><span class="kw">library</span>(broom)</span>
+<span id="cb13-2"><a href="#cb13-2"></a><span class="kw">tidy</span>(fit_late)</span></code></pre></div>
+<pre><code>## # A tibble: 2 x 5
+##   term            estimate std.error statistic       p.value
+##   &lt;chr&gt;              &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;         &lt;dbl&gt;
+## 1 (Intercept) -2643679502. 51422012.     -51.4 0.00000000363
+## 2 Year            1432289.    26850.      53.3 0.00000000291</code></pre>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1"></a><span class="kw">augment</span>(fit_late)</span></code></pre></div>
+<pre><code>## # A tibble: 16 x 10
+##    Population  Year X.weights. .fitted .se.fit  .resid  .hat .sigma .cooksd
+##         &lt;dbl&gt; &lt;dbl&gt;      &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;
+##  1    5308483  1800          0 -6.56e7  3.15e6  7.09e7 0.417 1.78e6 0.274  
+##  2    7239881  1810          0 -5.12e7  2.89e6  5.85e7 0.274 1.89e6 0.0137 
+##  3    9638453  1820          0 -3.69e7  2.62e6  4.66e7 0.179 1.77e6 0.0929 
+##  4   12866020  1830          0 -2.26e7  2.36e6  3.55e7 0.131 1.90e6 0.00159
+##  5   17069453  1840          0 -8.27e6  2.11e6  2.53e7 0.131 1.90e6 0.00248
+##  6   23191876  1850          0  6.06e6  1.85e6  1.71e7 0.179 1.59e6 0.199  
+##  7   31443321  1860          0  2.04e7  1.60e6  1.11e7 0.274 1.22e6 0.671  
+##  8   39818449  1870          0  3.47e7  1.36e6  5.12e6 0.417 1.72e6 0.404  
+##  9   50189209  1880          1  4.90e7  1.12e6  1.16e6 0.417 1.78e6 0.274  
+## 10   62947714  1890          1  6.33e7  9.11e5 -4.00e5 0.274 1.89e6 0.0137 
+## 11   76212168  1900          1  7.77e7  7.35e5 -1.46e6 0.179 1.77e6 0.0929 
+## 12   92228496  1910          1  9.20e7  6.30e5  2.35e5 0.131 1.90e6 0.00159
+## 13  106021537  1920          1  1.06e8  6.30e5 -2.94e5 0.131 1.90e6 0.00248
+## 14  122775046  1930          1  1.21e8  7.35e5  2.14e6 0.179 1.59e6 0.199  
+## 15  132164569  1940          1  1.35e8  9.11e5 -2.80e6 0.274 1.22e6 0.671  
+## 16  150697361  1950          1  1.49e8  1.12e6  1.41e6 0.417 1.72e6 0.404  
+## # … with 1 more variable: .std.resid &lt;dbl&gt;</code></pre>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1"></a><span class="kw">glance</span>(fit_late)</span></code></pre></div>
+<pre><code>## # A tibble: 1 x 11
+##   r.squared adj.r.squared  sigma statistic p.value    df logLik   AIC   BIC
+##       &lt;dbl&gt;         &lt;dbl&gt;  &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt; &lt;int&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1     0.998         0.998 1.74e6     2846. 2.91e-9     2  -125.  256.  257.
+## # … with 2 more variables: deviance &lt;dbl&gt;, df.residual &lt;int&gt;</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>Back to plots: we want to plot two layers, one with the linear smoother and one with the best fitting line.</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1"></a><span class="kw">ggplot</span>(census) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> Year, <span class="dt">y =</span> Population)) <span class="op">+</span></span>
+<span id="cb19-2"><a href="#cb19-2"></a><span class="st">    </span><span class="kw">geom_abline</span>(<span class="kw">aes</span>(<span class="dt">intercept =</span> estimate[<span class="dv">1</span>], <span class="dt">slope =</span> estimate[<span class="dv">2</span>]), <span class="dt">data =</span> <span class="kw">tidy</span>(fit_late))</span></code></pre></div>
+<p><img src="lecture-7-fig/unnamed-chunk-6-1.png" /></p>
+<p>We see that the line does a good job of explaining the later population numbers, although it is not perfect. We want to look at these more closely.</p>
+</div>
+<div id="residuals-critiquing-the-line" class="slide section level2">
+<h1>Residuals: Critiquing the line</h1>
+<p>We can see the residuals as the deviations from the best fitting line on the plot, but they are much clearer when the line is subtracted out and the residuals are plotted by year.</p>
+<p>The <code>augment</code> function adds fits, residuals, and several other measures to the data we fed in to <code>lm</code>. We can use it to plot residuals:</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a><span class="kw">ggplot</span>(<span class="kw">augment</span>(fit_late)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> Year, <span class="dt">y =</span> .resid))</span></code></pre></div>
+<p><img src="lecture-7-fig/unnamed-chunk-7-1.png" /></p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a><span class="kw">ggplot</span>(<span class="kw">augment</span>(fit_late)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> Year, <span class="dt">y =</span> .resid)) <span class="op">+</span></span>
+<span id="cb21-2"><a href="#cb21-2"></a><span class="st">    </span><span class="kw">scale_y_continuous</span>(<span class="dt">limits =</span> <span class="kw">c</span>(<span class="op">-</span><span class="dv">5</span> <span class="op">*</span><span class="st"> </span><span class="dv">10</span><span class="op">^</span><span class="dv">6</span>, <span class="dv">5</span> <span class="op">*</span><span class="st"> </span><span class="dv">10</span><span class="op">^</span><span class="dv">6</span>))</span></code></pre></div>
+<pre><code>## Warning: Removed 8 rows containing missing values (geom_point).</code></pre>
+<p><img src="lecture-7-fig/unnamed-chunk-8-1.png" /></p>
+</div>
+<div id="linearity-of-log-population" class="slide section level2">
+<h1>Linearity of log-population</h1>
+<p>Let’s also check up on the linearity on the log scale of the early population numbers. We can proceed the same way as with the late numbers:</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1"></a><span class="co">## I&#39;ll make the weight variable without the pipe this time</span></span>
+<span id="cb23-2"><a href="#cb23-2"></a>census =<span class="st"> </span><span class="kw">mutate</span>(census, <span class="dt">early =</span> <span class="kw">as.numeric</span>(Year <span class="op">&lt;=</span><span class="st"> </span>midpoint))</span>
+<span id="cb23-3"><a href="#cb23-3"></a>fit_early =<span class="st"> </span><span class="kw">lm</span>(<span class="kw">log10</span>(Population) <span class="op">~</span><span class="st"> </span>Year, <span class="dt">data =</span> census, <span class="dt">weights =</span> early)</span>
+<span id="cb23-4"><a href="#cb23-4"></a><span class="kw">tidy</span>(fit_early)</span></code></pre></div>
+<pre><code>## # A tibble: 2 x 5
+##   term        estimate std.error statistic  p.value
+##   &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+## 1 (Intercept) -15.9     0.216        -73.9 4.13e-10
+## 2 Year          0.0126  0.000118     107.  4.45e-11</code></pre>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1"></a><span class="kw">glance</span>(fit_early)</span></code></pre></div>
+<pre><code>## # A tibble: 1 x 11
+##   r.squared adj.r.squared   sigma statistic  p.value    df logLik   AIC   BIC
+##       &lt;dbl&gt;         &lt;dbl&gt;   &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt; &lt;int&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1     0.999         0.999 0.00762    11482. 4.45e-11     2   28.8 -51.6 -51.4
+## # … with 2 more variables: deviance &lt;dbl&gt;, df.residual &lt;int&gt;</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>Then we can look at the fitted line and the residuals after we’ve subtracted out the fitted line:</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1"></a><span class="kw">ggplot</span>(census) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> Year, <span class="dt">y =</span> <span class="kw">log10</span>(Population))) <span class="op">+</span></span>
+<span id="cb27-2"><a href="#cb27-2"></a><span class="st">    </span><span class="kw">geom_abline</span>(<span class="kw">aes</span>(<span class="dt">intercept =</span> estimate[<span class="dv">1</span>], <span class="dt">slope =</span> estimate[<span class="dv">2</span>]), <span class="dt">data =</span> <span class="kw">tidy</span>(fit_early))</span></code></pre></div>
+<p><img src="lecture-7-fig/unnamed-chunk-10-1.png" /></p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1"></a><span class="kw">ggplot</span>(<span class="kw">augment</span>(fit_early)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> Year, <span class="dt">y =</span> .resid))</span></code></pre></div>
+<p><img src="lecture-7-fig/unnamed-chunk-11-1.png" /></p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1"></a><span class="kw">ggplot</span>(<span class="kw">augment</span>(fit_early)) <span class="op">+</span></span>
+<span id="cb29-2"><a href="#cb29-2"></a><span class="st">    </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> Year, <span class="dt">y =</span> .resid)) <span class="op">+</span></span>
+<span id="cb29-3"><a href="#cb29-3"></a><span class="st">    </span><span class="kw">scale_y_continuous</span>(<span class="dt">limits =</span> <span class="kw">c</span>(<span class="op">-</span>.<span class="dv">025</span>, <span class="fl">.025</span>))</span></code></pre></div>
+<pre><code>## Warning: Removed 8 rows containing missing values (geom_point).</code></pre>
+<p><img src="lecture-7-fig/unnamed-chunk-12-1.png" /></p>
+</div>
+<div id="transformations-to-straighten-out-relationships" class="slide section level2">
+<h1>Transformations to straighten out relationships</h1>
+<p>Reading: Tukey, Chapter 6</p>
+<p>For the population data, our prior knowledge about population growth suggested a log transformation.</p>
+<p>What if we don’t know anything in particular about the problem? How do we know what transformations to use?</p>
+</div>
+<div id="curvature-in-our-plots" class="slide section level2">
+<h1>Curvature in our plots</h1>
+<p>Defining curvature:</p>
+<ul class="incremental">
+<li><p><em>Hollow upward</em> means that if we take three points on the curve, the middle point is below the line joining the other two (more standard: <a href="https://en.wikipedia.org/wiki/Convex_function">convex or concave up</a>).</p></li>
+<li><p><em>Hollow downward</em> is the opposite: if we take three points on the curve, the middle point is above the line joining the other two (more standard: <a href="https://en.wikipedia.org/wiki/Concave_function">concave or concave down</a>).</p></li>
+</ul>
+<p>If the relationship between our variables is hollow upward or hollow downward, there is some general advice about power transformations to use to straighten out the relationship.</p>
+</div>
+<div id="transformations-to-straighten-out-relationships-1" class="slide section level2">
+<h1>Transformations to straighten out relationships</h1>
+<p>Recall Box-Cox transformations: <span class="math inline">\(f_\tau(y) = \frac{y^\tau - 1}{\tau}\)</span> for <span class="math inline">\(\tau \ne 0\)</span>, <span class="math inline">\(f_\tau(y) = \log(y)\)</span> for <span class="math inline">\(\tau = 0\)</span>.</p>
+<p>We can think of these as a ladder of transformations: for example, for <span class="math inline">\(\tau = 3, 2, 1, 1/2, 0, -1/2, -1, -2, -3\)</span>, we have:</p>
+<p><span class="math display">\[\begin{matrix} \frac{y^3 - 1}{3}\\ \frac{y^2 - 1}{2}\\ y\\ \frac{\sqrt y - 1}{1/2}\\ \log y\\ - \frac{y^{-1/2} - 1}{1/2}\\ -y^{-1} - 1\\ -\frac{y^{-2} - 1}{2} \\ -\frac{y^3 - 1}{3}\end{matrix}\]</span></p>
+</div>
+<div class="slide section level2">
+
+<p>If we are looking at the relationship between <span class="math inline">\(y\)</span> and <span class="math inline">\(x\)</span>, the set of Box-Cox transformations has the following nice property:</p>
+<p>If the relationship between one transformation of <span class="math inline">\(y\)</span> and <span class="math inline">\(x\)</span> is straight, the relationship of the transformations below with <span class="math inline">\(x\)</span> are hollow downward, and the relationship of the transformations above with <span class="math inline">\(x\)</span> are hollow upward.</p>
+<div class="incremental">
+<p>Therefore, the following advice:</p>
+<ul class="incremental">
+<li><p>If our plot is hollow upward, we look down the ladder (more negative values of <span class="math inline">\(\tau\)</span> in the Box-Cox transformations) for straightness.</p></li>
+<li><p>If our plot is hollow downward, we look up the ladder (more positive values of <span class="math inline">\(\tau\)</span> in the Box-Cox transformations) for straightness.</p></li>
+</ul>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>We saw this with the population data: the raw early numbers (<span class="math inline">\(\tau = 1\)</span>) are hollow up, and a transformation down the ladder (<span class="math inline">\(\log (y)\)</span>, <span class="math inline">\(\tau = 0\)</span>) straightened out the relationship.</p>
+<p>Compare:</p>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1"></a><span class="kw">ggplot</span>(<span class="kw">subset</span>(census, Year <span class="op">&lt;=</span><span class="st"> </span>midpoint), <span class="kw">aes</span>(<span class="dt">x =</span> Year, <span class="dt">y =</span> Population)) <span class="op">+</span></span>
+<span id="cb31-2"><a href="#cb31-2"></a><span class="st">    </span><span class="kw">geom_point</span>() <span class="op">+</span></span>
+<span id="cb31-3"><a href="#cb31-3"></a><span class="st">    </span><span class="kw">stat_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>)</span></code></pre></div>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="lecture-7-fig/unnamed-chunk-13-1.png" /></p>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1"></a><span class="kw">ggplot</span>(<span class="kw">subset</span>(census, Year <span class="op">&lt;=</span><span class="st"> </span>midpoint), <span class="kw">aes</span>(<span class="dt">x =</span> Year, <span class="dt">y =</span> <span class="kw">log10</span>(Population))) <span class="op">+</span></span>
+<span id="cb33-2"><a href="#cb33-2"></a><span class="st">    </span><span class="kw">geom_point</span>() <span class="op">+</span></span>
+<span id="cb33-3"><a href="#cb33-3"></a><span class="st">    </span><span class="kw">stat_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>)</span></code></pre></div>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="lecture-7-fig/unnamed-chunk-13-2.png" /></p>
+</div>
+<div id="re-expressing-x-instead-of-y" class="slide section level2">
+<h1>Re-expressing <span class="math inline">\(x\)</span> instead of <span class="math inline">\(y\)</span></h1>
+<p>What if we want to transform <span class="math inline">\(x\)</span> instead of <span class="math inline">\(y\)</span>?</p>
+<p>Notice that a straight relation of <span class="math inline">\(y\)</span> vs. <span class="math inline">\(x\)</span> is exactly the same as a straight relation of <span class="math inline">\(x\)</span> vs. <span class="math inline">\(y\)</span>. So if we want to straighten a curved relation by transforming <span class="math inline">\(x\)</span>, just plot <span class="math inline">\(x\)</span> on the vertical axis, <span class="math inline">\(y\)</span> on the horizontal axis, and follow the same procedure we used to transform <span class="math inline">\(y\)</span>.</p>
+</div>
+<div class="slide section level2">
+
+<p>Let’s see how this works on the census data again.</p>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1"></a><span class="kw">ggplot</span>(<span class="kw">subset</span>(census, Year <span class="op">&lt;=</span><span class="st"> </span>midpoint), <span class="kw">aes</span>(<span class="dt">x =</span> Population, <span class="dt">y =</span> Year)) <span class="op">+</span></span>
+<span id="cb35-2"><a href="#cb35-2"></a><span class="st">    </span><span class="kw">geom_point</span>()</span></code></pre></div>
+<p><img src="lecture-7-fig/unnamed-chunk-14-1.png" /></p>
+<p>Is this hollow up or hollow down? Which way should we go on the ladder of transformations?</p>
+</div>
+<div class="slide section level2">
+
+<p>Year is actually not a good candidate for transformation because the values differ only by a couple of percentage points from each other.</p>
+<p>To mitigate this, we transform a linear function of year, looking at centuries since 1600 instead of the raw value of year.</p>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1"></a>census =<span class="st"> </span>census <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">mutate</span>(<span class="dt">CentSince1600 =</span> (Year <span class="op">-</span><span class="st"> </span><span class="dv">1600</span>) <span class="op">/</span><span class="st"> </span><span class="dv">100</span>)</span>
+<span id="cb36-2"><a href="#cb36-2"></a>box_cox =<span class="st"> </span><span class="cf">function</span>(y, tau) {</span>
+<span id="cb36-3"><a href="#cb36-3"></a>    <span class="kw">return</span>((y<span class="op">^</span>tau <span class="op">-</span><span class="st"> </span><span class="dv">1</span>) <span class="op">/</span><span class="st"> </span>tau)</span>
+<span id="cb36-4"><a href="#cb36-4"></a>}</span>
+<span id="cb36-5"><a href="#cb36-5"></a><span class="kw">ggplot</span>(<span class="kw">subset</span>(census, Year <span class="op">&lt;=</span><span class="st"> </span>midpoint)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> Population, <span class="dt">y =</span> CentSince1600))</span></code></pre></div>
+<p><img src="lecture-7-fig/unnamed-chunk-15-1.png" /></p>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1"></a><span class="kw">ggplot</span>(<span class="kw">subset</span>(census, Year <span class="op">&lt;=</span><span class="st"> </span>midpoint)) <span class="op">+</span></span>
+<span id="cb37-2"><a href="#cb37-2"></a><span class="st">    </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> Population, <span class="dt">y =</span> <span class="kw">box_cox</span>(CentSince1600, <span class="dv">3</span>))) <span class="op">+</span></span>
+<span id="cb37-3"><a href="#cb37-3"></a><span class="st">    </span><span class="kw">xlab</span>(<span class="st">&quot;Power = 3&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-7-fig/unnamed-chunk-15-2.png" /></p>
+<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1"></a><span class="kw">ggplot</span>(<span class="kw">subset</span>(census, Year <span class="op">&lt;=</span><span class="st"> </span>midpoint)) <span class="op">+</span></span>
+<span id="cb38-2"><a href="#cb38-2"></a><span class="st">    </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> Population, <span class="dt">y =</span> <span class="kw">box_cox</span>(CentSince1600, <span class="dv">5</span>))) <span class="op">+</span></span>
+<span id="cb38-3"><a href="#cb38-3"></a><span class="st">    </span><span class="kw">xlab</span>(<span class="st">&quot;Power = 5&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-7-fig/unnamed-chunk-15-3.png" /></p>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1"></a><span class="kw">ggplot</span>(<span class="kw">subset</span>(census, Year <span class="op">&lt;=</span><span class="st"> </span>midpoint)) <span class="op">+</span></span>
+<span id="cb39-2"><a href="#cb39-2"></a><span class="st">    </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> Population, <span class="dt">y =</span> <span class="kw">box_cox</span>(CentSince1600, <span class="dv">7</span>))) <span class="op">+</span></span>
+<span id="cb39-3"><a href="#cb39-3"></a><span class="st">    </span><span class="kw">xlab</span>(<span class="st">&quot;Power = 7&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-7-fig/unnamed-chunk-15-4.png" /></p>
+<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1"></a><span class="kw">ggplot</span>(<span class="kw">subset</span>(census, Year <span class="op">&lt;=</span><span class="st"> </span>midpoint)) <span class="op">+</span></span>
+<span id="cb40-2"><a href="#cb40-2"></a><span class="st">    </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> Population, <span class="dt">y =</span> <span class="kw">box_cox</span>(CentSince1600, <span class="dv">9</span>))) <span class="op">+</span></span>
+<span id="cb40-3"><a href="#cb40-3"></a><span class="st">    </span><span class="kw">xlab</span>(<span class="st">&quot;Power = 9&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-7-fig/unnamed-chunk-15-5.png" /></p>
+<p>We get a really straight relationship with the re-expressed x, but the interpretation isn’t as nice as the log transformation.</p>
+<p>For communicating our findings to other people, and for understanding them ourselves, it’s important to have balance the simple, linear explanation that you can get with transformed data against the interpretability of the transformation itself.</p>
+</div>
+<div id="what-have-we-gained" class="slide section level2">
+<h1>What have we gained?</h1>
+<p>Data = fit + residual</p>
+<ul class="incremental">
+<li><p>From the fits, we have gained a simple explanation of the broad trends in the US population.</p></li>
+<li><p>If we were really interested in the US population or in the census, the residuals need to be explained and would give us our next task.</p></li>
+<li><p>This would require more data than we have available to us, for example, the details of the census process in the years where the deviations were particularly large.</p></li>
+<li><p>We have advice on how to transform either response or predictor values to straighten out the relationship between them, but we need to make sure that we don’t take this as a natural law.</p></li>
+</ul>
+<p>Note that this is a more data analytic than statistical look at the numbers.</p>
+<p>If we were thinking like statisticians, we might draw Q-normal plots of the residuals.</p>
+</div>
+<div id="what-progress-have-we-made" class="slide section level2">
+<h1>What progress have we made?</h1>
+<ul class="incremental">
+<li><p>We have seen how transforming one or more of the variables can help with interpretability by straightening out the relationship between the variables. This is a new use of transformations: in the univariate section, we used transformations to correct skewness and make distributions closer to normal.</p></li>
+<li><p>We have seen how to fit the relationship between variables with a straight line.</p></li>
+<li><p>We have seen how breaking down the data into a fit plus residuals can allow us to inspect the residuals more closely and make better progress in understanding the data.</p></li>
+</ul>
+</div>
+<div id="next-time" class="slide section level2">
+<h1>Next time</h1>
+<p>Smoothers and robust fits, for when even transformations don’t save us.</p>
+</div>
+</body>
+</html>
