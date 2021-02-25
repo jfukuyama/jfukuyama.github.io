@@ -1,0 +1,386 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <meta name="author" content="Julia Fukuyama" />
+  <meta name="date" content="2021-02-25" />
+  <title>Stat 470/670 Lecture 11: Interactions and coplots for trivariate data</title>
+  <style type="text/css">
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <style type="text/css">
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="https://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-AMS_CHTML-full" type="text/javascript"></script>
+  <script src="https://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div class="slide titlepage">
+  <h1 class="title">Stat 470/670 Lecture 11: Interactions and coplots for trivariate data</h1>
+  <p class="author">
+Julia Fukuyama
+  </p>
+  <p class="date">February 25, 2021</p>
+</div>
+<div id="trivariate-data" class="slide section level2">
+<h1>Trivariate data</h1>
+<p>Reading: Cleveland pp. 184-190, 194-199, 204-205 (LOESS with more than one predictor variable)</p>
+<p>Today: Trivariate data; coplots and interactions</p>
+<p>Questions we will want to answer:</p>
+<ul class="incremental">
+<li><p>How can we describe the dependence of a response variable on two predictors?</p></li>
+<li><p>How can we identify interactions between the predictors?</p></li>
+<li><p>How can we model interactions between the predictors?</p></li>
+</ul>
+</div>
+<div id="recall-interactions-in-a-linear-model" class="slide section level2">
+<h1>Recall interactions in a linear model</h1>
+<p>Suppose we have a response variable, <span class="math inline">\(y\)</span>, and two predictor variables, <span class="math inline">\(u\)</span> and <span class="math inline">\(v\)</span>.</p>
+<p>The interaction model is <span class="math display">\[
+y = \beta_0 + \beta_1 u + \beta_2 v + \beta_3 uv + \varepsilon
+\]</span> with <span class="math display">\[
+\varepsilon \sim N(0, \sigma^2)
+\]</span></p>
+<p>What does this mean when one of the variables is binary? If both are continuous?</p>
+</div>
+<div id="coplots" class="slide section level2">
+<h1>Coplots</h1>
+<p>Coplots help us answer the question “How does the relationship between two variables change given the value of a third variable?”</p>
+<p>A coplot is defined by three variables:</p>
+<ul class="incremental">
+<li><p>response: The variable plotted along the <span class="math inline">\(y\)</span>-axis.</p></li>
+<li><p>predictor: The variable plotted along the <span class="math inline">\(x\)</span>-axis.</p></li>
+<li><p>given: The variable used for faceting. If the “given” variable is categorical, we facet in the usual way, with one facet for each value of the given variable. Otherwise, we break the observations into groups that have similar values of the given variable and facet on those groups.</p></li>
+</ul>
+</div>
+<div id="coplots-with-categorical-variables" class="slide section level2">
+<h1>Coplots with categorical variables</h1>
+<p>We’ve seen coplots for categorical variables before. Remember our diamonds example from last time, where we were interested in the three variables:</p>
+<ul class="incremental">
+<li><p><code>price</code>: How much the diamond sold for.</p></li>
+<li><p><code>carat</code>: How big the diamond is.</p></li>
+<li><p><code>clarity</code>: How clear it is. This is a factor or categorical variable, higher clarities tend to be more rare and expensive.</p></li>
+</ul>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">ggplot</span>(diamonds, <span class="kw">aes</span>(<span class="dt">x =</span> carat, <span class="dt">y =</span> <span class="kw">sqrt</span>(price))) <span class="op">+</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="st">    </span><span class="kw">geom_point</span>() <span class="op">+</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a><span class="st">    </span><span class="kw">stat_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>) <span class="op">+</span></span>
+<span id="cb1-4"><a href="#cb1-4"></a><span class="st">    </span><span class="kw">facet_wrap</span>(<span class="op">~</span><span class="st"> </span>clarity)</span></code></pre></div>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="lecture-11-fig/unnamed-chunk-1-1.png" /></p>
+<p>This allows us to answer the question: “How does the relationship between carat and price change with clarity?”</p>
+</div>
+<div id="coplots-with-continuous-variables" class="slide section level2">
+<h1>Coplots with continuous variables</h1>
+<p>We saw this example last time, in the <code>ethanol</code> dataset. We had the variables</p>
+<ul class="incremental">
+<li><p><code>NOx</code>: Concentration of NO plus NO2 (NOx), divided by the amount of work the engine did.</p></li>
+<li><p><code>E</code>: The equivalence ratio at which the engine was run, measuring the richness of the mixture of air and fuel (morue fuel = higher E).</p></li>
+<li><p><code>C</code>: The compression ratio to which the engine was set, that is, the maximum volume inside the cylinder (volume with piston retracted) divided by the minimum volume inside the cylinder (volume with piston at maximal penetration).</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">library</span>(GGally)</span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="kw">ggpairs</span>(ethanol)</span></code></pre></div>
+<p><img src="lecture-11-fig/unnamed-chunk-2-1.png" /></p>
+</div>
+<div class="slide section level2">
+
+<p>Here we could condition easily on <code>C</code> because although it is technically continuous, it only took five distinct values.</p>
+<p>We made this plot:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a>ethanol =<span class="st"> </span>ethanol <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">mutate</span>(<span class="dt">Cfac =</span> <span class="kw">factor</span>(C, <span class="dt">levels =</span> <span class="kw">sort</span>(<span class="kw">unique</span>(C)), <span class="dt">ordered =</span> <span class="ot">TRUE</span>))</span>
+<span id="cb4-2"><a href="#cb4-2"></a><span class="kw">ggplot</span>(ethanol, <span class="kw">aes</span>(<span class="dt">x =</span> E, <span class="dt">y =</span> NOx, <span class="dt">color =</span> Cfac)) <span class="op">+</span></span>
+<span id="cb4-3"><a href="#cb4-3"></a><span class="st">    </span><span class="kw">geom_point</span>() <span class="op">+</span><span class="st"> </span><span class="kw">facet_wrap</span>(<span class="op">~</span><span class="st"> </span>Cfac) <span class="op">+</span></span>
+<span id="cb4-4"><a href="#cb4-4"></a><span class="st">    </span><span class="kw">stat_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>)</span></code></pre></div>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="lecture-11-fig/unnamed-chunk-3-1.png" /></p>
+<p>in an attempt to answer the question of how the relationship between <code>NOx</code> and <code>E</code> changes given <code>C</code>.</p>
+</div>
+<div id="coplots-with-truly-continuous-variables" class="slide section level2">
+<h1>Coplots with truly continuous variables</h1>
+<p>With continuous variables, instead of taking each facet to represent all the points with a single value of the given variable, we take each facet to represent all the points for which the value of the given variable lies in a certain interval.</p>
+<p>Concretely:</p>
+<ul class="incremental">
+<li><p>Define <span class="math inline">\(I\)</span> intervals <span class="math inline">\([a_1, b_1], [a_2, b_2], \ldots, [a_I, b_I]\)</span>.</p></li>
+<li><p>Facet <span class="math inline">\(i\)</span> of the coplot contains all the points for which the value of the given variable falls in the <span class="math inline">\(i\)</span>th interval <span class="math inline">\([a_i, b_i]\)</span>.</p></li>
+<li><p>Interpretation: facet <span class="math inline">\(i\)</span> represents the conditional dependence of the response on the predictor when the value of the given variable is approximately <span class="math inline">\((a_i + b_i) / 2\)</span>.</p></li>
+</ul>
+<p>How to define the intervals is up to you; there are defaults in R, or you can choose yourself.</p>
+<div class="incremental">
+<p>Notes:</p>
+<ul class="incremental">
+<li><p>The intervals are allowed to overlap.</p></li>
+<li><p>Wider intervals have the advantage that you have more points per facet, allowing you to see patterns more clearly.</p></li>
+<li><p>Wider intervals have the disadvantage that they have lower resolution: if the nature of the dependence changes over the range of given values in the interval, it might be distorted or masked.</p></li>
+</ul>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>ggplot2 doesn’t have coplots built in, but we can make them if we work hard enough.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a>make_coplot_df =<span class="st"> </span><span class="cf">function</span>(data_frame, faceting_variable, <span class="dt">number_bins =</span> <span class="dv">6</span>) {</span>
+<span id="cb6-2"><a href="#cb6-2"></a>    <span class="co">## co.intervals gets the limits used for the conditioning intervals</span></span>
+<span id="cb6-3"><a href="#cb6-3"></a>    intervals =<span class="st"> </span><span class="kw">co.intervals</span>(data_frame[[faceting_variable]], <span class="dt">number =</span> number_bins)</span>
+<span id="cb6-4"><a href="#cb6-4"></a>    <span class="co">## indices is a list, with the ith element containing the indices of the</span></span>
+<span id="cb6-5"><a href="#cb6-5"></a>    <span class="co">## observations falling into the ith interval</span></span>
+<span id="cb6-6"><a href="#cb6-6"></a>    indices =<span class="st"> </span><span class="kw">apply</span>(intervals, <span class="dv">1</span>, <span class="cf">function</span>(x)</span>
+<span id="cb6-7"><a href="#cb6-7"></a>        <span class="kw">which</span>(data_frame[[faceting_variable]] <span class="op">&lt;=</span><span class="st"> </span>x[<span class="dv">2</span>] <span class="op">&amp;</span><span class="st"> </span>data_frame[[faceting_variable]] <span class="op">&gt;=</span><span class="st"> </span>x[<span class="dv">1</span>]))</span>
+<span id="cb6-8"><a href="#cb6-8"></a>    <span class="co">## interval_descriptions is formatted like indices, but has interval</span></span>
+<span id="cb6-9"><a href="#cb6-9"></a>    <span class="co">## names instead of indices of the samples falling in the index</span></span>
+<span id="cb6-10"><a href="#cb6-10"></a>    interval_descriptions =<span class="st"> </span><span class="kw">apply</span>(intervals, <span class="dv">1</span>, <span class="cf">function</span>(x) {</span>
+<span id="cb6-11"><a href="#cb6-11"></a>        num_in_interval =<span class="st"> </span><span class="kw">sum</span>(data_frame[[faceting_variable]] <span class="op">&lt;=</span><span class="st"> </span>x[<span class="dv">2</span>] <span class="op">&amp;</span><span class="st"> </span>data_frame[[faceting_variable]] <span class="op">&gt;=</span><span class="st"> </span>x[<span class="dv">1</span>])</span>
+<span id="cb6-12"><a href="#cb6-12"></a>        interval_description =<span class="st"> </span><span class="kw">sprintf</span>(<span class="st">&quot;(%.2f, %.2f)&quot;</span>, x[<span class="dv">1</span>], x[<span class="dv">2</span>])</span>
+<span id="cb6-13"><a href="#cb6-13"></a>        <span class="kw">return</span>(<span class="kw">rep</span>(interval_description, num_in_interval))</span>
+<span id="cb6-14"><a href="#cb6-14"></a>    })</span>
+<span id="cb6-15"><a href="#cb6-15"></a>    <span class="co">## df_expanded has all the points we need for each interval, and the</span></span>
+<span id="cb6-16"><a href="#cb6-16"></a>    <span class="co">## &#39;interval&#39; column tells us which part of the coplot the point should</span></span>
+<span id="cb6-17"><a href="#cb6-17"></a>    <span class="co">## be plotted in</span></span>
+<span id="cb6-18"><a href="#cb6-18"></a>    df_expanded =<span class="st"> </span>data_frame[<span class="kw">unlist</span>(indices),]</span>
+<span id="cb6-19"><a href="#cb6-19"></a>    df_expanded<span class="op">$</span>interval =<span class="st"> </span><span class="kw">factor</span>(<span class="kw">unlist</span>(interval_descriptions),</span>
+<span id="cb6-20"><a href="#cb6-20"></a>        <span class="dt">levels =</span> <span class="kw">unique</span>(<span class="kw">unlist</span>(interval_descriptions)), <span class="dt">ordered =</span> <span class="ot">TRUE</span>)</span>
+<span id="cb6-21"><a href="#cb6-21"></a>    <span class="kw">return</span>(df_expanded)</span>
+<span id="cb6-22"><a href="#cb6-22"></a>}</span></code></pre></div>
+</div>
+<div class="slide section level2">
+
+<p>Once we have defined the function to make the expanded data frame, the coplot is simply a faceted plot where we facet by <code>interval</code>.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a>ethanol_expanded =<span class="st"> </span><span class="kw">make_coplot_df</span>(ethanol, <span class="st">&quot;E&quot;</span>, <span class="dv">10</span>)</span>
+<span id="cb7-2"><a href="#cb7-2"></a><span class="kw">ggplot</span>(ethanol_expanded, <span class="kw">aes</span>(<span class="dt">y =</span> NOx, <span class="dt">x =</span> C)) <span class="op">+</span></span>
+<span id="cb7-3"><a href="#cb7-3"></a><span class="st">    </span><span class="kw">geom_point</span>() <span class="op">+</span></span>
+<span id="cb7-4"><a href="#cb7-4"></a><span class="st">    </span><span class="kw">facet_wrap</span>(<span class="op">~</span><span class="st"> </span>interval, <span class="dt">ncol =</span> <span class="dv">6</span>) <span class="op">+</span></span>
+<span id="cb7-5"><a href="#cb7-5"></a><span class="st">    </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>, <span class="dt">span =</span> <span class="dv">1</span>, <span class="dt">method.args =</span> <span class="kw">list</span>(<span class="dt">degree =</span> <span class="dv">1</span>)) <span class="op">+</span></span>
+<span id="cb7-6"><a href="#cb7-6"></a><span class="st">    </span><span class="kw">scale_x_continuous</span>(<span class="dt">breaks =</span> <span class="kw">seq</span>(<span class="dv">7</span>, <span class="dv">19</span>, <span class="dt">by=</span><span class="dv">3</span>)) <span class="op">+</span></span>
+<span id="cb7-7"><a href="#cb7-7"></a><span class="st">    </span><span class="kw">ggtitle</span>(<span class="st">&quot;Coplot of NOx ~ C given E&quot;</span>)</span></code></pre></div>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="lecture-11-fig/unnamed-chunk-5-1.png" /></p>
+</div>
+<div class="slide section level2">
+
+<p>Alternately, with the <code>coplot</code> function:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a><span class="kw">coplot</span>(NOx <span class="op">~</span><span class="st"> </span>C <span class="op">|</span><span class="st"> </span>E, <span class="dt">data =</span> ethanol, <span class="dt">number =</span> <span class="dv">10</span>)</span></code></pre></div>
+<p><img src="lecture-11-fig/unnamed-chunk-6-1.png" /></p>
+</div>
+<div id="building-a-model" class="slide section level2">
+<h1>Building a model</h1>
+<p>Now suppose we want to build a model that describes NOx as a function of E and C.</p>
+<p>Our coplots have told us a couple things about the relationship:</p>
+<ul class="incremental">
+<li><p>There is an interaction between E and C.</p></li>
+<li><p>Conditionally on E, the relationship between NOx and C looks roughly linear.</p></li>
+<li><p>Conditionally on C, the relationship between NOx and E is non-linear, and doesn’t look like it belongs to a parametric family at all.</p></li>
+</ul>
+</div>
+<div id="recall-loess-with-one-predictor-variable" class="slide section level2">
+<h1>Recall: LOESS with one predictor variable</h1>
+<p>We have a response variable <span class="math inline">\(y\)</span>, a predictor variable <span class="math inline">\(x\)</span>, and <span class="math inline">\(n\)</span> samples.</p>
+<p>To find the value of the LOESS smoother with <span class="math inline">\(\lambda = 1\)</span> (locally linear fit) at a point <span class="math inline">\(x_0\)</span>, we solve for the coefficients in the weighted regression problem <span class="math display">\[
+\sum_{i=1}^n w_i(x_0) (y_i - (\beta_0 + \beta_1 x_i))^2,
+\]</span></p>
+<p>To find the value of the LOESS smoother with <span class="math inline">\(\lambda = 2\)</span> (locally quadratic fit) at a point <span class="math inline">\(x_0\)</span>, we solve for the coefficients in the weighted regression problem <span class="math display">\[
+\sum_{i=1}^n w_i(x_0) (y_i - (\beta_0 + \beta_1 x_i + \beta_2 x_i^2))^2
+\]</span></p>
+<p>The weights are: <span class="math display">\[
+w_i(x_0) = T(\Delta_i(x_0) / \Delta_{(q)}(x_0))
+\]</span> where <span class="math inline">\(\Delta_i(x_0) = |x_i - x_0|\)</span>, <span class="math inline">\(\Delta_{(i)}(x_0)\)</span> are the ordered values of <span class="math inline">\(\Delta_{i}(x_0)\)</span>, and <span class="math inline">\(q = \alpha n\)</span>, rounded to the nearest integer.</p>
+<p><span class="math inline">\(T\)</span> is the tricube weight function: <span class="math display">\[
+T(u) = \begin{cases}
+(1 - |u|^3)^3 &amp; |u| \le 1 \\
+0 &amp; |u| &gt; 1
+\end{cases}
+\]</span></p>
+<p>The value of the LOESS smoother at <span class="math inline">\(x_0\)</span> is the fitted value of the weighted regression defined above evaluated at <span class="math inline">\(x_0\)</span>.</p>
+</div>
+<div id="modifying-loess-for-two-predictor-variables" class="slide section level2">
+<h1>Modifying LOESS for two predictor variables</h1>
+<p>Now we have a response variable <span class="math inline">\(y\)</span>, a predictor variable <span class="math inline">\(x = (u, v)\)</span>, and <span class="math inline">\(n\)</span> samples.</p>
+<p>The parameters are still:</p>
+<ul class="incremental">
+<li><p><span class="math inline">\(\alpha\)</span>: The span, controls the fraction of points that contribute to the local fit.</p></li>
+<li><p><span class="math inline">\(\lambda\)</span>: The degree of the local fit, usually <span class="math inline">\(1\)</span>, corresponding to a locally linear fit, or <span class="math inline">\(2\)</span>, corresponding to a local quadratic fit.</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>Suppose <span class="math inline">\(\lambda = 1\)</span></p>
+<p>To find the value of the LOESS smoother at a point <span class="math inline">\(x_0 = (u_0, v_0)\)</span>, we solve for the coefficients in the weighted regression problem <span class="math display">\[
+\sum_{i=1}^n w_i(x_0) (y_i - (\beta_0 + \beta_1 u_i + \beta_2 v_i ))^2,
+\]</span></p>
+<p>The value of the LOESS smoother at <span class="math inline">\(x_0\)</span> is then <span class="math inline">\(\hat \beta_0 + \hat \beta_1 u_0 + \hat \beta_2 v_0\)</span>.</p>
+</div>
+<div class="slide section level2">
+
+<p>If <span class="math inline">\(\lambda = 2\)</span>, to find the value of the LOESS smoother at a point <span class="math inline">\(x_0 = (u_0, v_0)\)</span>, we solve for the coefficients in the weighted regression problem <span class="math display">\[
+\sum_{i=1}^n w_i(x_0) (y_i - (\beta_0 + \beta_1 u_i + \beta_2 v_i + \beta_3 u_i v_i + \beta_4 u_i^2 + \beta_5 v_i^2))^2,
+\]</span></p>
+<p>The value of the LOESS smoother at <span class="math inline">\(x_0\)</span> is then <span class="math inline">\(\hat \beta_0 + \hat \beta_1 u_0 + \hat \beta_2 v_i + \hat \beta_3 u_0 v_0 + \hat \beta_4 u_0^2 + \hat \beta_5 v_0^2\)</span>.</p>
+</div>
+<div id="weights-for-loess-with-two-predictors" class="slide section level2">
+<h1>Weights for LOESS with two predictors</h1>
+<p>The weights are: <span class="math display">\[
+w_i(x_0) = T(\Delta_i(x_0) / \Delta_{(q)}(x_0))
+\]</span> with</p>
+<ul class="incremental">
+<li><p><span class="math inline">\(\Delta_i(x_0) = \sqrt{(u_i - u_0)^2 + (v_i - v_0)^2}\)</span></p></li>
+<li><p><span class="math inline">\(\Delta_{(i)}(x_0)\)</span> are the ordered values of <span class="math inline">\(\Delta_{i}(x_0)\)</span></p></li>
+<li><p><span class="math inline">\(q = \alpha n\)</span>, rounded to the nearest integer.</p></li>
+</ul>
+<div class="incremental">
+<p>Since the two predictor variables are potentially on different scales, they are usually normalized using a robust estimate of the spread before the distances are computed. Some options</p>
+<ul class="incremental">
+<li><p>Median absolute deviation.</p></li>
+<li><p>Trimmed standard deviation.</p></li>
+</ul>
+<p>Cleveland suggests using a 10% trimmed standard deviation as the measure of spread for normalization.</p>
+</div>
+</div>
+<div id="a-useful-modification-of-loess" class="slide section level2">
+<h1>A useful modification of LOESS</h1>
+<p>What if we think some of the conditional relations are from a parametric family? For example, the dependence of NOx on C seems to always be linear, no matter what value of E we look at.</p>
+<p>We can modify LOESS so that it fits some of the conditional relations globally instead of locally.</p>
+<div class="incremental">
+<p>Let <span class="math inline">\(\hat g(u,v)\)</span> be our fitted LOESS surface, and suppose we want <span class="math inline">\(\hat g(u, v)\)</span>, seen as a function of <span class="math inline">\(u\)</span>, to be from a parametric family (e.g. linear or quadratic).</p>
+<p>To do this, we simply drop the <span class="math inline">\(u_i\)</span>’s from our distances when computing the weights.</p>
+<p>Suppose we want to modify locally linear LOESS so in this way. To find the value of the LOESS smoother at a point <span class="math inline">\(x_0\)</span>, we find <span class="math inline">\(\beta_0, \beta_1, \beta_2, \beta_3\)</span> to minimize <span class="math display">\[
+\sum_{i=1}^n w_i(x_0) (y_i - (\beta_0 + \beta_1 u_i + \beta_2 v_i + \beta_3 u_i v_i))^2
+\]</span></p>
+<p>The fitted value of the LOESS smoother at <span class="math inline">\(x_0\)</span>, <span class="math inline">\(\hat g(x_0) = \hat g(u_0, v_0)\)</span>, is then equal to <span class="math inline">\(\hat \beta_0 + \hat \beta_1 u_0 + \hat \beta_2 v_0 + \hat \beta_3 u_0 v_0\)</span>.</p>
+<p>This leads to a fit that is locally linear in <span class="math inline">\(v\)</span> and globally linear in <span class="math inline">\(u\)</span>, with different slopes in <span class="math inline">\(u\)</span> conditional on different values of <span class="math inline">\(v\)</span>.</p>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Locally quadratic fit in <span class="math inline">\(v\)</span> with a globally quadratic fit in <span class="math inline">\(u\)</span>:</p>
+<p>To find the value of the LOESS smoother at a point <span class="math inline">\(x_0\)</span>, we find <span class="math inline">\(\beta_0, \ldots, \beta_5\)</span> to minimize <span class="math display">\[
+\sum_{i=1}^n w_i(x_0) (y_i - (\beta_0 + \beta_1 u_i + \beta_2 v_i + \beta_3 u_i v_i + \beta_4 u_i^2 + \beta_5 v_i^2))^2
+\]</span></p>
+<p>The fitted value of the LOESS smoother at <span class="math inline">\(x_0\)</span>, <span class="math inline">\(\hat g(x_0) = \hat g(u_0, v_0)\)</span>, is then equal to <span class="math inline">\(\hat \beta_0 + \hat \beta_1 u_0 + \hat \beta_2 v_0 + \hat \beta_3 u_0 v_0 + \hat \beta_4 u_i^2 + \hat \beta_5 v_i^2\)</span>.</p>
+</div>
+<div class="slide section level2">
+
+<p>Locally quadratic fit in <span class="math inline">\(v\)</span> with a globally linear fit in <span class="math inline">\(u\)</span>:</p>
+<p>To find the value of the LOESS smoother at a point <span class="math inline">\(x_0\)</span>, we find <span class="math inline">\(\beta_0, \ldots, \beta_4\)</span> to minimize <span class="math display">\[
+\sum_{i=1}^n w_i(x_0) (y_i - (\beta_0 + \beta_1 u_i + \beta_2 v_i + \beta_3 u_i v_i + \beta_4 v_i^2))^2
+\]</span></p>
+<p>The fitted value of the LOESS smoother at <span class="math inline">\(x_0\)</span>, <span class="math inline">\(\hat g(x_0) = \hat g(u_0, v_0)\)</span>, is then equal to <span class="math inline">\(\hat \beta_0 + \hat \beta_1 u_0 + \hat \beta_2 v_0 + \hat \beta_3 u_0 v_0+ \hat \beta_4 v_i^2\)</span>.</p>
+</div>
+<div id="loess-function-in-r" class="slide section level2">
+<h1>LOESS function in R</h1>
+<p>Now we know what the following arguments in the LOESS function do:</p>
+<ul class="incremental">
+<li><p><code>parametric</code>: Default is <code>FALSE</code>. You can give the function names of variables that you want LOESS to fit globally instead of locall.</p></li>
+<li><p><code>drop.square</code>: Default is <code>FALSE</code>. If you have a variable you’re fitting globally instead of locally <em>and</em> you want the fit to be linear instead of quadratic, you can specify <code>drop.square = TRUE</code>.</p></li>
+<li><p><code>normalize</code>: Default is <code>TRUE</code>. Should the predictor variables be normalized to have the same spread before computing distances?</p></li>
+</ul>
+</div>
+<div id="loess-on-ethanol-data" class="slide section level2">
+<h1>LOESS on ethanol data</h1>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a>ethanol_lo =<span class="st"> </span><span class="kw">loess</span>(NOx <span class="op">~</span><span class="st"> </span>C <span class="op">*</span><span class="st"> </span>E, <span class="dt">data =</span> ethanol, <span class="dt">span =</span> <span class="dv">1</span><span class="op">/</span><span class="dv">3</span>, <span class="dt">parametric =</span> <span class="st">&quot;C&quot;</span>, </span>
+<span id="cb10-2"><a href="#cb10-2"></a>    <span class="dt">drop.square =</span> <span class="st">&quot;C&quot;</span>, <span class="dt">family =</span> <span class="st">&quot;symmetric&quot;</span>)</span></code></pre></div>
+<p>What do the parameters mean here?</p>
+<ul class="incremental">
+<li><p><code>C * E</code> means we want interactions between <code>C</code> and <code>E</code>.</p></li>
+<li><p><code>parametric = "C"</code> means that conditional on <code>E</code>, we want the fitted function to be linear.</p></li>
+<li><p><code>drop.square = "C"</code> means that we don’t want a squared term in our conditional model of <code>NOx</code> given <code>C</code>.</p></li>
+<li><p><code>family = "symmetric"</code> means we are using a robust fit.</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>What do the fitted values look like? First let’s make a coplot of the fitted value given <code>E</code>.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a>prediction_grid =<span class="st"> </span><span class="kw">data.frame</span>(<span class="kw">expand.grid</span>(<span class="dt">C =</span> <span class="kw">c</span>(<span class="fl">7.5</span>, <span class="dv">9</span>, <span class="dv">12</span>, <span class="dv">15</span>, <span class="dv">18</span>), <span class="dt">E =</span> <span class="kw">seq</span>(<span class="fl">0.6</span>, <span class="fl">1.2</span>, <span class="dt">by =</span> <span class="fl">.05</span>)))</span>
+<span id="cb11-2"><a href="#cb11-2"></a>ethanol_preds =<span class="st"> </span><span class="kw">augment</span>(ethanol_lo, <span class="dt">newdata =</span> prediction_grid)</span>
+<span id="cb11-3"><a href="#cb11-3"></a><span class="kw">ggplot</span>(ethanol_preds) <span class="op">+</span></span>
+<span id="cb11-4"><a href="#cb11-4"></a><span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">x =</span> C, <span class="dt">y =</span> .fitted)) <span class="op">+</span></span>
+<span id="cb11-5"><a href="#cb11-5"></a><span class="st">    </span><span class="kw">facet_wrap</span>(<span class="op">~</span><span class="st"> </span>E, <span class="dt">ncol =</span> <span class="dv">7</span>)</span></code></pre></div>
+<p><img src="lecture-11-fig/unnamed-chunk-8-1.png" /></p>
+</div>
+<div class="slide section level2">
+
+<p>Then a coplot of the fitted values given <code>C</code>.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a><span class="kw">ggplot</span>(ethanol_preds) <span class="op">+</span></span>
+<span id="cb12-2"><a href="#cb12-2"></a><span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">x =</span> E, <span class="dt">y =</span> .fitted)) <span class="op">+</span></span>
+<span id="cb12-3"><a href="#cb12-3"></a><span class="st">    </span><span class="kw">facet_wrap</span>(<span class="op">~</span><span class="st"> </span>C, <span class="dt">ncol =</span> <span class="dv">3</span>)</span></code></pre></div>
+<p><img src="lecture-11-fig/unnamed-chunk-9-1.png" /></p>
+</div>
+<div class="slide section level2">
+
+<p>More useful without the faceting:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a><span class="kw">ggplot</span>(ethanol_preds) <span class="op">+</span></span>
+<span id="cb13-2"><a href="#cb13-2"></a><span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">x =</span> E, <span class="dt">y =</span> .fitted, <span class="dt">color =</span> <span class="kw">factor</span>(C, <span class="dt">levels =</span> <span class="kw">unique</span>(C), <span class="dt">ordered =</span> <span class="ot">TRUE</span>))) <span class="op">+</span></span>
+<span id="cb13-3"><a href="#cb13-3"></a><span class="st">        </span><span class="kw">guides</span>(<span class="dt">color =</span> <span class="kw">guide_legend</span>(<span class="dt">title =</span> <span class="st">&quot;C&quot;</span>))</span></code></pre></div>
+<p><img src="lecture-11-fig/unnamed-chunk-10-1.png" /></p>
+</div>
+</body>
+</html>
