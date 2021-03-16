@@ -1,0 +1,259 @@
+% Stat 470/670 Lecture 16: Principal Components
+% Julia Fukuyama
+% March 16, 2021
+
+```{r setup, echo = FALSE}
+library(knitr)
+opts_chunk$set(fig.cap="", fig.width = 5, fig.height = 3, dpi=175, fig.path="lecture-16-fig/", warning = FALSE)
+library(ggplot2)
+library(ggrepel)
+set.seed(0)
+```
+
+## Today
+
+Today: PCA
+
+- Intuition
+
+- Math
+
+- Examples
+
+## A contrived example
+
+Suppose we have a 3-dimensional object that we want to investigate.
+
+Due to some strange set of constraints, we are only allowed to see its shadow.
+
+Without knowing anything about the object, what sort of a shadow would you expect to be most useful?
+
+-----
+
+![](camel1.png)
+
+-----
+
+![](camel2.png)
+
+-----
+
+It seems like the most useful shadow is the biggest one: If we were only allowed one view, we would ask for the one that took up the most space.
+
+It's easy to come up with examples where this isn't the most useful, but it's a good place to start if you don't know anything about the data.
+
+The same will be true of PCA.
+
+## PCA as variance maximization
+
+In PCA, we have a data matrix $\mathbf X \in \mathbb R^{n \times p}$ with centered columns.
+
+We think of the rows of $\mathbf X$ as points in $p$-dimensional space, and we want to project the points down into a lower-dimensional space so we can visualize them.
+
+There are a lot of different ways we could do this, but in PCA we want to find the projection that maximizes the variance of the projected points.
+
+## The PCA optimization problem
+
+First consider projecting the points onto a line.
+
+The PCA problem is to find
+$$
+\mathbf w_{(1)} = \text{arg max}_{\mathbf w : \|\mathbf w \| = 1} \sum_{i=1}^n (\mathbf x_i \cdot \mathbf w)^2
+$$
+where $\mathbf x_i$ is the $i$th row of $\mathbf X$.
+
+$\mathbf w_{(1)}$ is then the first principal component.
+
+-----
+
+If we want projections into higher-dimensional spaces, we take more principal components.
+
+We find the $k$th principal component as
+$$
+\mathbf w_{(k)} = \text{arg max}_{\mathbf w :\| \mathbf w \| = 1, \mathbf w^T \mathbf w_{(j)} = 0, j = 1, \ldots, k-1} \sum_{i=1}^n (\mathbf x_i \cdot \mathbf w)^2
+$$
+
+The constraint that $\mathbf w^T \mathbf w_{(k)} = 0, j = 1,\ldots, k-1$ means that the $k$th principal component is orthogonal to all the previous principal components, and is needed to ensure a unique solution to the problem.
+
+## Solution to the PCA problem
+
+The solution to the PCA is given by the SVD.
+
+If $\mathbf X$ has centered columns and $\mathbf X = \mathbf U \mathbf D \mathbf V^T$ is the SVD of $\mathbf X$, then
+
+- The $k$th principal component is the $k$th column of $\mathbf V$.
+
+- The projections of the points onto the $k$th principal component are given by the $k$th column of $\mathbf U \mathbf D$.
+
+
+## Example
+
+```{r, eval = FALSE}
+library(devtools)
+install_github("vqv/ggbiplot")
+```
+```{r}
+library(ade4)
+library(ggbiplot)
+library(viridis)
+```
+
+-----
+
+Olympic dataset
+
+```{r}
+data(olympic)
+summary(olympic$tab)
+```
+
+-----
+
+```{r}
+oly_noscale = prcomp(olympic$tab, scale. = FALSE)
+oly_noscale$rotation[,1:2]
+```
+
+
+## PCA Biplots
+
+Two types of biplots, _form_ and _covariance_. Let's start off with the _form_ biplot.
+
+- For each sample we plot a point with the sample scores along the principal axes.
+
+- For each variable, we make an arrow with the variable weights along the principal axes.
+
+This allows us to read off the sample scores along the principal axes and the variable weights along the principal axes.
+
+. . .
+
+However, there's another way to interpret the PCA biplot:
+
+- Since the PCA solution is given by the SVD, the biplot is the same as the reduced-rank biplot (up to choices of how to scale the biplot points and biplot axes).
+
+- In particular, the form biplot is a reduced-rank biplot where we use $\mathbf U_{(2)} \mathbf D_{(2)}$ to plot the biplot points, and $\mathbf V_{(2)}$ to plot the biplot axes.
+
+- Therefore, we can read the PCA biplot as giving us an approximation to the centered data matrix $\mathbf X$
+
+
+## PCA biplot for the olympic data
+
+```{r}
+## scale = 0 means form biplot
+ggbiplot(oly_noscale, scale = 0) + ylim(c(-17, 10))
+```
+
+
+## Covariance biplot
+
+The _covariance_ biplot is very subtly different from the form biplot, the difference being how the singular values are allocated.
+
+In the covariance biplot, we use
+
+- $\mathbf U_{(2)}$ for the biplot points
+
+- $\mathbf V_{(2)} \mathbf D_{(2)}$ for the biplot axes.
+
+In this form of the biplot, angles between biplot axes give us approximations of the covariances.
+
+Why is this?
+
+------
+
+Following up on what we talked about regarding correlations between variables, note the following two relationships:
+
+- If $\mathbf X$ has centered columns, then $\mathbf X \mathbf X^T$ is the sample covariance matrix.
+
+- If $\mathbf X = \mathbf U \mathbf D \mathbf V^T$, then $\mathbf X \mathbf X^T = \mathbf V \mathbf D^2 \mathbf V^T$.
+
+Therefore, the columns of $\mathbf V \mathbf D$ can be seen as giving us both biplot points and biplot axes for approximating the _covariance_ matrix, and projections of one biplot axis onto another biplot axis tells us about the covariance between the two variables.
+
+## Covariance biplot
+
+```{r}
+## scale = 1 means covariance biplot
+ggbiplot(oly_noscale, scale = 1)
+```
+
+
+
+## Correlation-based PCA
+
+The example above suggests that doing PCA when the variables are on different scales isn't always that useful.
+
+When the variables are on different scales and measure different things, we often standardize the columns of $\mathbf X$ (divide each column by its standard deviation) before performing PCA.
+
+This is sometimes referred to as correlation-based PCA, as opposed to covariance-based PCA.
+
+## Correlation-based PCA biplot
+
+Analogous to the covariance-based PCA biplot:
+
+- Sample points represent the scores on the principal axes.
+
+- Variable points represent variable weights on the principal axes.
+
+Interpretation as a reduced-rank biplot:
+
+- Correlation-based PCA biplot is just a reduced-rank biplot approximating a centered and scaled data matrix.
+
+- We still have biplot points and axes, and they describe the elements of the centered and scaled data matrix.
+
+Relationships between the variables:
+
+- Projections of biplot axes onto each other now describe correlations between variables instead of covariances.
+
+-----
+
+Covariance PCA biplot based on correlations, with some extra information:
+
+```{r}
+oly_scale = prcomp(olympic$tab, scale. = TRUE)
+## scale = 1 means covariance biplot
+ggbiplot(oly_scale, scale = 1)
+```
+
+How would you interpret the first principal component?
+
+------
+
+Covariance PCA biplot based on correlations, with some extra information:
+
+```{r}
+## scale = 1 means covariance biplot
+ggbiplot(oly_scale, scale = 1) +
+    geom_point(aes(color = olympic$score)) +
+    scale_color_viridis("Score")
+```
+
+## Wine example
+
+
+Wine dataset
+
+```{r}
+library(ggbiplot)
+data(wine)
+nrow(wine)
+summary(wine)
+```
+
+-----
+
+```{r}
+wine.pca = prcomp(wine, scale. = TRUE)
+wine.pca$rotation[, 1:2]
+wine.pca$x[1:10, 1:2]
+```
+
+-----
+
+```{r}
+ggbiplot(wine.pca, scale = 1, var.axes = FALSE, groups = wine.class)
+```
+
+-----
+
+```{r}
+ggbiplot(wine.pca, scale = 1, var.axes = TRUE, groups = wine.class) + xlim(c(-2.5, 3))
+```
