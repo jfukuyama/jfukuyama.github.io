@@ -1,0 +1,343 @@
+% Stat 470/670 Lecture 17: Multi-Dimensional Scaling
+% Julia Fukuyama
+% March 18, 2021
+
+```{r setup, echo = FALSE}
+library(knitr)
+opts_chunk$set(fig.cap="", fig.width = 5, fig.height = 3, dpi=175, fig.path="lecture-17-fig/", warning = FALSE)
+library(ggplot2)
+library(ggrepel)
+library(vegan)
+library(photobiology)
+library(magrittr)
+library(tidyverse)
+set.seed(0)
+```
+
+## Setup for multi-dimensional scaling
+
+Instead of measurements on variables, like in PCA, we have distances between the samples.
+
+The distances can be what was measured initially, or the distance could be constructed by the analyst from other variables that were measured directly.
+
+In multi-dimensional scaling, the goal is to make a map of the samples in a low-dimensional space (probably 2-dimensional space) so that the distances in that map match the distances between the samples as closely as possible.
+
+## Some examples of inputs for multi-dimensional scaling
+
+- Subjective ratings of dissimilarities between objects
+
+- Distances between politicians based on voting records
+
+- Travel times between cities
+
+## Fake Data 1
+
+```{r}
+D = matrix(c(0, 1, sqrt(2),
+             1, 0, 1,
+             sqrt(2), 1, 0),
+    nrow = 3, byrow = TRUE)
+round(D, digits = 2)
+```
+
+Here `D` is a distance matrix, and the $(i,j)$ element of `D` tells us the distance between sample $i$ and sample $j$.
+
+How would you position these samples in space so that the distances between them matched the distances in `D`?
+
+
+## Embedding into Euclidean space
+
+In multi-dimensional scaling, we want to find an _embedding_ of the samples into Euclidean space so that the distances between the embedded points match the distances between the samples as closely as possible.
+
+This sounds fancy, but all it means is that we create a set of coordinates and assign each sample a value along each coordinate so that the distances between the samples match the input distances.
+
+
+-----
+
+How does this work on our fake data?
+
+```{r}
+cmdscale(D)
+mds_points = cmdscale(D)
+ggplot(data.frame(mds_points)) +
+    geom_text(aes(x = X1, y = X2, label = 1:3)) + coord_fixed()
+```
+
+-----
+
+We can check that the distances match:
+```{r}
+## The dist function computes distances (Euclidean
+## by default) between the rows of a data frame
+dist(mds_points)
+## compare with D, the input distances
+D
+```
+
+## Classical Multi-Dimensional Scaling
+
+One solution to the multi-dimensional scaling problem is given by classical multi-dimensional scaling.
+
+Let $\mathbf D \in \mathbb R^{n \times n}$ be a matrix where $\mathbf D_{ij}$ contains the square of the distance between sample $i$ and sample $j$.
+
+Let $\mathbf H \in \mathbb R^{n \times n}$ be the centering matrix, $\mathbf H = \mathbf I - \frac{1}{n} \mathbf 1 \mathbf 1^T$.
+
+Create the doubly-centered distance matrix $\mathbf B = -\frac{1}{2} \mathbf H \mathbf D \mathbf H$, and let $\mathbf U \mathbf \Lambda \mathbf U^T$ be the singular value decomposition of $\mathbf B$.
+
+Then the $k$-dimensional solution to the multi-dimensional scaling problem is obtained by taking $\mathbf U_{(k)} \mathbf \Lambda_{(k)}^{1/2}$.
+
+-----
+
+Idea behind this solution:
+
+Suppose the distance really did come from a matrix $\mathbf X \in \mathbb R^{n \times k}$, where we computed the Euclidean distances between the rows of $\mathbf X$. For definiteness, assume that the columns of $\mathbf X$ are centered.
+
+Then it turns out (linear algebra exercise: verify this) that $(\mathbf H \mathbf X) (\mathbf H \mathbf X)^T = \mathbf B$.
+
+The top $k$ left singular vectors of $\mathbf X$ (which is the same as $\mathbf H \mathbf X$ because $\mathbf X$ already has centered columns) will therefore give the optimal representation of the true embedded points that we got the distances from.
+
+The singular vectors of $\mathbf H \mathbf X$ are the same as the singular vectors of $\mathbf B$, so if we start off with $\mathbf B$ instead of $\mathbf X$, we can still get the optimal low-dimensional embedding by taking the top singular vectors of $\mathbf B$.
+
+
+## Checking the quality of the MDS solution
+
+Just as in PCA and with the SVD, we have a measure of the quality of the approximation.
+
+In classical multi-dimensional scaling, these are given by the eigenvalues of $\mathbf B$, and plotting the eigenvalues tells us how how much of the "variance" is explained by the multi-dimensional scaling axes.
+
+If we can represent the distances perfectly with an embedding into $k$-dimensional space, the top $k$ eigenvalues will be non-zero and the remainder will be zero.
+
+We can check this on our fake data, where we constructed the distances so that they could be exactly represented in two-dimensional space.
+
+```{r}
+cmdscale(D, eig = TRUE)$eig
+```
+
+-----
+
+In general, you won't be able to get an exact representation in a number of dimensions that's easy to visualize, but you will want to know how well you're doing with the number of dimensions you take.
+
+We use the eigenvalues to make a scree plot, analogous to the PCA scree plot, to measure the quality of the embedding
+
+Major difference between MDS and PCA:.
+
+- The eigenvalues can be negative.
+
+- Negative eigenvalues mean that there is no embedding of the points so that the Euclidean distances between them exactly match the input distances, and the size of the negative eigenvalues indicate how severe the problem is.
+
+- Not that important, but the terminology is that if you see negative eigenvalues, it means that your distances are _non-Euclidean_.
+
+
+## Example of non-embeddable set of points
+
+```{r fig.height=2, fig.width=6, dpi=175}
+D = matrix(c(0, 1, 1, .1,
+             1, 0, 1, 5,
+             1, 1, 0, 5,
+             .1, 5, 5, 0),
+    nrow = 4, byrow = TRUE)
+D
+mds_points = data.frame(cmdscale(D))
+dist(mds_points)
+ggplot(mds_points) +
+    geom_text(aes(x = X1, y = X2, label = 1:4)) + coord_fixed()
+```
+
+-----
+
+As promised, this shows up in negative eigenvalues:
+
+```{r}
+mds_eig = data.frame(eig = cmdscale(D, eig = TRUE)$eig, index = 1:4)
+mds_eig
+ggplot(mds_eig) + geom_point(aes(x = index, y = eig)) + geom_hline(yintercept = 0)
+```
+
+## Contrived Example 1: State locations
+
+R contains data on state locations, including one called `state.center` that gives the latitude and longitude between
+
+What happens if we compute distances between the centers of the states and run multi-dimensional scaling on those distances?
+
+```{r}
+state_locations = data.frame(state.center)
+state_distances = dist(state_locations, method = "euclidean")
+state_mds = cmdscale(state_distances, eig = TRUE, k = 2)
+```
+
+-----
+
+Before we get to the MDS plot, let's look at the scree plot to see the quality of the MDS solution.
+
+```{r}
+ggplot(data.frame(eig = state_mds$eig, index = 1:50)) +
+    geom_point(aes(x = index, y = eig)) +
+    ggtitle("Scree plot for MDS on distances between states")
+```
+
+Why do we only get non-zero eigenvalues for the first two MDS axes?
+
+------
+
+```{r, fig.height=5, fig.width=9, dpi=100}
+ggplot(data.frame(state_mds$points), aes(x = X1, y = X2, label = state.name)) +
+    geom_text_repel() + geom_point() + coord_fixed()
+```
+
+When we plot the MDS solution, we get a map!
+
+The states all have the correct relative locations, but the north-south axis is going the wrong way.
+
+This is just due to an indeterminacy in the solution: the singular value decomposition is only determined up to a sign change for the singular vectors.
+
+More heuristically, since we only provide MDS with distances, we can only expect it to give us good approximations to the distances between the samples, we can't expect it to know about north and south.
+
+
+## Non-metric MDS
+
+Non-metric MDS is a robust alternative to classical MDS, and it is used when we want a map that preserves relative distances instead of absolute distances.
+
+The idea is that we want to find a an embedding of the points into a lower-dimensional space so that the ranks of the distances are preserved as well as possible (the points that are the farthest from each other in the embedded space have the largest input distance, the points that are closest to each other in the embedded space have the smallest input distance, etc.).
+
+To do this, we find an embedding of the points into a lower-dimensional space _and_ a monotonic transformation of the embedded distances  so that the transformed distances recapitulate the input distances as well as possible. The monotone transformation is essentially a trick that allows us to match ranks of distances instead of absolute distances.
+
+-----
+
+Notes:
+
+- NMDS is more resistant to outliers than classical MDS: if one point has a very large distance from all the others, the first classical MDS axis will tend to separate that point from the others and not be informative about the remaining distances.
+
+- Unlike classical MDS, NMDS does not give nested solutions: if we do NMDS with 2 axes, the first axis will not be equal to the NMDS solution with 1 axis. 
+
+- There is no notion of percentage of variation explained by individual axes as in classical MDS.
+
+## Implementation of NMDS
+
+Let $d_i$ contain the input distances, and let $f$ a monotone increasing function.
+
+Note that since $f$ is monotone, $d_i < d_j$ implies that $f(d_i) < f(d_j)$, and so the _relative_ distances between the points are preserved under $f$.
+
+In NMDS, we want to minimize the stress function, defined as
+$$
+\text{STRESS}^2 = \frac{\sum_i (f(\tilde d_i) - d_i)^2}{\sum_j d_j^2}
+$$
+where $d$ represents the input distances, and $\tilde d$ represent the distances between the embedded points.
+
+The NMDS algorithm is as follows:
+
+- Find a random embedding of the samples, e. g. by sampling from a normal distribution.
+
+- Calculate the distances $\tilde d$ between the embedded sample points.
+
+- Find the optimal monotonic transformation of the distances $f$ so that $f(\tilde d)$ matches $d$ as closely as possible.
+
+- Find the embedding of the samples such that the distances between the embedded points matches $f(d)$ as closely as possible.
+
+- Compare the stress to some criterion. If the change in stress is small enough then exit the algorithm, otherwise return to to step 2.
+
+## Example on colors
+
+In a psychology study (Ekman, Gosta. 1954. "Dimensions of Color Vision." The Journal of Psychology 38 (2). Taylor & Francis: 467–74.), the investigator asked subjects to rate similarities between colors.
+
+These were combined to give overall measure of similarities between colors, and the results are in `ekman.txt`.
+
+```{r}
+ekm = read.table("../../datasets/ekman.txt", header=TRUE)
+rownames(ekm) = colnames(ekm)
+## the elements in ekm are similarities, but we
+## need dissimilarities instead. We can create
+## dissimilarities by taking the complement of
+## the similarities and setting the diagonal to zero.
+ekm_dist = 1 - ekm - diag(1, ncol(ekm))
+ekm_dist[1:5, 1:5]
+```
+
+-----
+
+Let's try classical MDS first:
+
+```{r}
+ekm_mds = cmdscale(ekm_dist, eig = TRUE)
+## we can make a scree plot giving
+## the fraction of variance explained
+ggplot(data.frame(eig = ekm_mds$eig,
+                  index = 1:length(ekm_mds$eig))) +
+                      geom_point(aes(x = index, y = eig))
+
+```
+
+Note that the negative eigenvalues at the end indicate that the dissimilarities cannot be exactly represented in Euclidean space, but the values are not that large and so we aren't too concerned.
+
+The top two eigenvalues are quite large, indicating that a two-dimensional MDS solution does a reasonable job at recapitulating the dissimilarities between the samples.
+
+-----
+
+And finally the plot:
+
+```{r}
+## Here we're changing variable names and
+## adding some additional information to
+## the data frame we will use to plot the
+## MDS solution
+ekm_points = ekm_mds$points[,1:2] %>%
+    as_tibble %>%
+    setNames(paste0("MDS", 1:2)) %>%
+    mutate(
+        name = rownames(ekm),
+        rgb = photobiology::w_length2rgb(as.numeric(sub("w", "", name))))
+ggplot(ekm_points, aes(x = MDS1, y = MDS2)) +
+  geom_point(col = ekm_points$rgb, size = 2) + 
+  geom_text_repel(aes(label = name)) + coord_fixed()
+```
+
+## Color data with NMDS
+
+Remember that NMDS is a randomized algorithm, so each run can in principle give a different solution.
+
+The `metaMDS` function (in the package `vegan`) repeats the NMDS algorithm many times (20 by default) and looks for the best solution among the results.
+
+The output here tells us that for each run of the algorithm, the stresses are about the same, suggesting that the corresponding solutions are the same.
+
+The part of the output that says `Procrustes: rmse 1.060348e-06  max resid 1.960065e-06 ` is checking for similarity between the solutions directly: `rmse` and `max resid` describe the discrepancies between the solution and the previous best solution.
+
+Here we see that the algorithm converges ot the same solution every time.
+
+```{r}
+ekm_nmds = metaMDS(ekm_dist, k = 2, autotransform = FALSE)
+```
+
+-----
+
+We would like an analog of the scree plot so that we can evaluate how many dimensions to use.
+
+One way to do this is to compute the stress function for each number of dimensions and plot that.
+
+```{r}
+## since the algorithm is random, it would be
+## better to do this many times for each value
+## of k and take the average
+stresses = sapply(1:5, function(k) metaMDS(ekm_dist, k = k, autotransform = FALSE)$stress)
+## note about above, autotransform is a parameter
+## that is specific to ecology data, we want to
+## set it to FALSE
+ggplot(data.frame(stresses, k = 1:5)) + geom_point(aes(x = k, y = stresses))
+```
+
+Here we see that the stress drops substantially going from 1 to 2 dimensions, and then doesn't go down that much once we increase the number of dimensions further.
+
+This indicates to us that the two-dimensional solution is likely to be pretty good, just as it was with classical MDS.
+
+-----
+
+And the plot:
+
+```{r}
+nmds_points = ekm_nmds$points[,1:2] %>%
+    as_tibble %>%
+    setNames(paste0("NMDS", 1:2)) %>%
+    bind_cols(select(ekm_points, rgb, name))
+ggplot(nmds_points, aes(x = NMDS1, y = NMDS2)) +
+  geom_point(col = ekm_points$rgb, size = 2) + 
+  geom_text_repel(aes(label = name)) + coord_fixed()
+```
+
