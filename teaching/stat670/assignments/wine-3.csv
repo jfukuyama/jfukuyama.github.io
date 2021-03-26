@@ -1,0 +1,20 @@
+﻿wine,soil type,water-holding capacity,early/late maturing,soil gravel type
+652,deep sands,>200mm,early,deep soils without gravel
+205,deep sands,>200mm,late,deep soils without gravel
+789,deep sands,>200mm,late,deep soils without gravel
+235,loess,>200mm,late,deep soils without gravel
+562,old terrace without gravel,>200mm,late,deep soils without gravel
+638,sands on marl,100-140mm,late,deep soils without gravel
+840,sands on sandstone,100-140mm,late,deep soils without gravel
+867,gravelly soils on marl,>200mm,late,gravelly soils
+736,gravelly soils on marl,>200mm,early,gravelly soils
+383,old Villafranchien or Mindelian terrace,90-120mm,early,gravelly soils
+162,old Villafranchien or Mindelian terrace,90-120mm,early,gravelly soils
+941,gravelly colluviums,90-120mm,late,gravelly soils
+422,gravelly colluviums,90-120mm,late,gravelly soils
+456,gravelly colluviums,90-120mm,late,gravelly soils
+412,old Riss terrace on sandy gravel,50-80mm,late,gravelly soils
+103,old Riss terrace on sandy gravel,50-80mm,late,gravelly soils
+597,old Riss terrace on sandy gravel,50-80mm,early,gravelly soils
+318,old Riss terrace on sandy gravel,50-80mm,early,gravelly soils
+986,gravelly soils on calcareous rock,<50mm,early,gravelly soils
