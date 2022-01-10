@@ -1,0 +1,20 @@
+<pre><code>g_legend&lt;-function(a.gplot){
+  tmp &lt;- ggplot_gtable(ggplot_build(a.gplot))
+  leg &lt;- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
+  legend &lt;- tmp$grobs[[leg]]
+  return(legend)}
+
+p1 = ggplot(data.frame(out.ff$locations[[i]], sample_data(AntibioticPhyloseq))) +
+    geom_point(aes(x = Axis1, y = Axis2, color = ind)) + 
+    xlab("") + ylab("") + no.axis.ticks + 
+	labs(color = "Subject") + ggtitle("Sample Scores")
+p2 = ggplot(data.frame(out.ff$species[[i]], Phylum = PhylumNames)) +
+    geom_point(aes(x = Axis1, y = Axis2, color = Phylum)) + no.axis.ticks + 
+    xlab("") + ylab("") + theme(legend.position = "left") + ggtitle("Species Loadings")
+grid.arrange(
+    p1 + theme(legend.position = "none"),
+    p2 + theme(legend.position = "none"),
+	g_legend(p1), 
+    g_legend(p2),
+    ncol= 2, heights = c(1, .1)))
+</code></pre>
