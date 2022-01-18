@@ -1,0 +1,340 @@
+% Stat 470/670 Lecture 3
+% Julia Fukuyama
+
+```{r setup, echo = FALSE}
+library(knitr)
+opts_chunk$set(fig.cap="", fig.width = 4, fig.height = 2.5, dpi=200, fig.path="lecture-3-fig/")
+```
+
+## Last time: Visualizing and comparing univariate distributions
+
+- Empirical CDF/quantile plots
+
+- Histograms
+
+- Density estimates
+
+- Q-Q plot for comparing samples to each other
+
+- Q-Normal plot for comparing samples to a reference distribution
+
+## This time
+
+- Tidy data/reshaping
+
+- Measures of center and spread
+
+- Boxplots
+
+## Computational Interlude: Tidy Data
+
+Reading: [http://r4ds.had.co.nz/tidy-data.html](http://r4ds.had.co.nz/tidy-data.html)
+
+Tidy data means:
+
+- Every column is a variable.
+
+- Every row is an observation.
+
+- Every element is a value.
+
+```{r tidy-data}
+library(tidyverse)
+table1
+table2
+table3
+table4a
+table4b
+```
+
+
+## Pivot longer
+
+```{r gather}
+table4a %>% 
+  pivot_longer(c(`1999`, `2000`), names_to = "year", values_to = "cases")
+
+```
+
+## Pivot wider
+```{r spread}
+table2 %>%
+    pivot_wider(names_from = type, values_from = count)
+```
+
+## A new dataset
+
+With [Cytometry by Time of Flight](https://en.wikipedia.org/wiki/Mass_cytometry), we can look at cells individually and quantify how many molecules of each of about 40 markers are on the cell.
+
+[data](https://jfukuyama.github.io/teaching/stat670/notes/cytof_one_experiment.csv)
+
+## Exercises
+
+Load the CyTOF dataset.
+
+We will want to make ecdf plots, histograms, and density plots for all of the markers. To do this with ggplot2, we need to have one variable describing the marker, analogous to voice.part in the singer data. How would you get the CyTOF data into the right form?
+
+
+Make ecdf plots, histograms, and density plots for all of the markers. Which do you like best?
+
+Take two of the variables and construct a Q-Q plot. What is the relationship between the variables?
+
+
+# Measures of center and spread
+
+## Mean and Standard Deviation
+
+Our observations are $x_1, \ldots, x_n$
+
+Sample mean:
+$$
+\text{mean}(x_1,\ldots, x_n) = \frac{1}{n} \sum_{i=1}^n x_i
+$$
+
+Standard deviation:
+$$
+\text{sd}(x_1, \ldots, x_n) = \sqrt{\frac{1}{n-1} \sum_{i=1}^n (x_i - \text{mean}(x_1,\ldots, x_n))^2}
+$$
+
+## Some drawbacks
+
+- Mean and standard deviation are good if you have normal data (how would we check this?)
+
+- What if our data are not normal?
+
+- What if they are highly skewed? (e.g. income data, house price data)
+
+- What if some fraction of the values are corrupted? (e.g. someone coded missing values as 999)
+
+## Breakdown point
+
+
+
+Let $x_1, \ldots, x_n$ be a sample of size $n$.
+
+Suppose we add $y_1, \ldots, y_m$ "bad" samples to $x_1, \ldots, x_n$, to get a corrupted dataset $x_1, \ldots, x_n, y_1, \ldots, y_m$.
+
+We are interested in the value of a function $f$ (e.g. the mean, $f((x_1, \ldots, x_n)) = \sum_{i=1}^n x_i / n$).
+
+. . .
+
+The _breakdown point_ of the function $f$ is $\frac{m}{m+n}$ for the smallest value of $m$ required to make $f((x_1, \ldots, x_n, y_1, \ldots, y_m))$ arbitrarily different from $f(x_1, \ldots, x_n)$.
+
+. . .
+
+Functions with high breakdown points are _robust_, insensitive to corruption and outliers.
+
+## Robust measures of center
+
+Suppose our sorted observations are $x_{(1)}, \ldots, x_{(n)}$
+
+- Median: If $n$ is odd,
+$$\text{med}(x_{(1)}, \ldots, x_{(n)}) = x_{((n+1)/2)}$$
+If $n$ is even, we can use
+$$\text{med}(x_{(1)}, \ldots, x_{(n)}) = \frac{1}{2}x_{(n/2)} + \frac{1}{2}x_{(n/2 + 1)}$$
+
+. . .
+
+- $\alpha$-trimmed mean: Drop the $\alpha n$ lowest and highest observations, take the mean of the remainder.
+
+. . .
+
+- $\alpha$-winsorized mean: Assuming $\alpha n$ is a whole number: Replace the $\alpha n$ lowest and highest observations with $x_{(\alpha n + 1)}$ and $x_{((1 - \alpha) n - 1)}$, respectively. Take the mean of the modified values.
+
+. . .
+
+- What are their breakdown points?
+
+## Robust measures of spread
+
+- Median absolute deviation:
+$$
+\text{mad}(x_1, \ldots, x_n) = \text{med} (|x_1 - \text{med}(x_1, \ldots, x_n)|, \ldots, |x_n - \text{med}(x_1, \ldots, x_n)|)
+$$
+
+- Interquartile range: If $.25n$ and $.75n$ are whole numbers, then
+$$
+\text{iqr}(x_1,\ldots, x_n) = x_{(.75n)} - x_{(.25n)}
+$$
+
+- What are their breakdown points? Can you think of other robust measures of spread?
+
+
+## Tradeoffs
+
+Why would we want to use a less robust estimator?
+
+- Tradeoff between efficiency and robustness
+
+- Robust version might not estimate what you want, or could be biased for the quantity you want
+
+
+## Computational Interlude: Aggregation
+
+dplyr makes it easy to compute data summaries.
+
+The summarise function will compute a summary statistic of one of the variables in the data table.
+
+If you call group\_by before summarise, summarise will compute the statistic for each value of the grouped variable.
+
+. . .
+
+```{r summarise}
+library(dplyr)
+## for the data
+library(lattice)
+singer %>% summarise(median(height))
+singer %>% group_by(voice.part) %>% summarise(median(height))
+```
+
+## Exercises
+
+Try computing some measures of center and spread for each of the markers in the CyTOF dataset. Which ones do you like best? Can you think of other measures that would be more informative?
+
+
+
+# Boxplots
+
+## Goal
+
+- More parsimonious representation of the distribution.
+
+- Why do we want this? Shouldn't we always try to keep all the data?
+
+## Boxplot Statistics
+Suppose our data is $x_1, \ldots, x_n$. We compute five statistics of the data:
+
+- $q_x(.5)$, the median.
+
+- $q_x(.25)$, the .25 quantile of $x_1, \ldots, x_n$ aka the lower quartile
+
+- $q_x(.75)$, the .75 quantile of $x_1, \ldots, x_n$ aka the upper quartile
+
+- Upper adjacent value (UAV), lower adjacent value (LAV)
+
+
+  $$r =q_x(.75) - q_x(.25)$$
+
+  $$\text{UAV} = \text{max} \{ x_i : x_i \le q_{.75} + 1.5r \}$$
+
+  $$\text{LAV} = \text{min} \{ x_i : x_i \ge q_{.25} - 1.5r \}$$
+  
+. . .
+
+Note that these are all robust statistics
+
+## Reading a Boxplot
+
+- Bar in the middle represents the median.
+
+- Edges of box represent $q_x(.25)$ and $q_x(.75)$.
+
+- Whiskers represent the UAV and LAV.
+
+- Any values outside of the range $[\text{LAV}, \text{UAV}]$ are referred to as _outside values_ and are plotted individually.
+
+
+## Boxplot Demonstration
+
+We can make a boxplot of just one variable, but only by hacking the syntax a bit (because the primary purpose of a boxplot is to compare multiple distributions).
+
+. . .
+
+```{r boxplot-one, fig.width = 2}
+library(ggplot2)
+## lattice is for the singer data
+library(lattice)
+ggplot(singer, aes(x = "Height", y = height)) +
+    geom_boxplot()
+```
+
+-----
+
+
+More useful is to compare boxplots of the different voice parts.
+
+```{r boxplot-two}
+ggplot(singer, aes(x = voice.part, y = height)) +
+    geom_boxplot() +
+    coord_flip() +
+    ggtitle("Boxplot of singer height by voice part") +
+    ylab("Height") + xlab("Voice part")
+```
+
+## Training our intuition
+
+How should we think about upper and lower adjacent values?
+
+We can compute them for normally distributed data:
+
+```{r iqr}
+(iqr = qnorm(.75) - qnorm(.25))
+```
+. . .
+```{r uav-lav}
+(uav = qnorm(.75) + 1.5 * iqr)
+(lav = qnorm(.25) - 1.5 * iqr)
+```
+
+-----
+
+We can also ask what the probability any single point is an outside point for normally distributed data:
+```{r prob-outside-value-one-sample}
+(prob_outside = pnorm(uav, lower.tail = FALSE) + pnorm(lav, lower.tail = TRUE))
+```
+. . .
+
+Or the probability of at least one outside point if we have 30 observations:
+```{r prob-outside-value-many-samples}
+n = 30
+1 - (1 - prob_outside)^n
+```
+
+. . .
+
+Or the probability of at least one outside point if we have 3000 observations
+```{r prob-outside-value-many-more-samples}
+n = 3000
+1 - (1 - prob_outside)^n
+```
+
+
+. . .
+
+
+Note: These are approximations, we're computing the probability that we get a point outside of the range of the large-sample upper- and lower-adjacent values, which is slightly different than the probability of an outside point. If you want a good math problem you might have fun working out the true probabilities, but otherwise the approximation is good enough for training our intuition.
+
+------
+
+## What do boxplots look like with normal data?
+
+We saw that if we have 30 observations, we don't expect many outside values from normally distributed data:
+
+```{r boxplot-simulation}
+set.seed(0)
+df = data.frame(y = rnorm(30), x = "")
+ggplot(df) +
+    geom_boxplot(aes(x = x, y = y)) +
+    coord_flip() + xlab("") + ggtitle("Boxplot of 30 normal samples")
+```
+
+------
+
+
+But if we have 3000 observations, we expect to get a lot:
+
+```{r boxplot-simulation-larger}
+set.seed(0)
+df = data.frame(y = rnorm(3000), x = "")
+ggplot(df) +
+    geom_boxplot(aes(x = x, y = y)) +
+    coord_flip() + xlab("") + ggtitle("Boxplot of 3000 normal samples")
+```
+
+## Exercises
+
+Try out boxplots on different distributions, and with different numbers of points.
+
+Is plotting the outside values always useful? Is it more useful when you have a lot of points or just a few?
+
+Make boxplots out of the CyTOF data. Do you like boxplots for this application?
