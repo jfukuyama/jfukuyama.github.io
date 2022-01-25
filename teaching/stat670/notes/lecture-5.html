@@ -1,0 +1,471 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <meta name="author" content="Julia Fukuyama" />
+  <title>Stat 470/670 Lecture 5: Building Simple Models</title>
+  <style type="text/css">
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <style type="text/css">
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="https://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-AMS_CHTML-full" type="text/javascript"></script>
+  <script src="https://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div class="slide titlepage">
+  <h1 class="title">Stat 470/670 Lecture 5: Building Simple Models</h1>
+  <p class="author">
+Julia Fukuyama
+  </p>
+</div>
+<div id="today" class="slide section level2">
+<h1>Today</h1>
+<ul class="incremental">
+<li><p>Build and critique simple models</p></li>
+<li><p>We’ve presented a lot of visualization methods for univariate data simply as visualization methods, but they can also be thought of as model validation techniques. e.g. a QQ plot is for checking normality of a distribution.</p></li>
+<li><p>From other statistics classes, you know how to infer parameter values and test hypotheses. Those parameter estimates and the corresponding tests are valid given certain assumptions about the data. Today we’re going to talk about how to check whether those assumptions hold, how to try to make the data to fit those assumptions if they don’t hold, and what to do if even the transformations don’t work.</p></li>
+</ul>
+</div>
+<div id="linear-models" class="slide section level2">
+<h1>Linear models</h1>
+<p>From your earlier statistics courses, you remember linear models.</p>
+<p>Recall the assumptions for a linear model:</p>
+<ul class="incremental">
+<li><p>Normality of the errors</p></li>
+<li><p>Same variance of errors within each group (homoscedasticity)</p></li>
+</ul>
+</div>
+<div id="singer-example" class="slide section level2">
+<h1>Singer example</h1>
+<p>Reading: Cleveland pp. 34-41.</p>
+<p>Load our standard libraries:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">library</span>(lattice)</span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="kw">library</span>(ggplot2)</span>
+<span id="cb1-3"><a href="#cb1-3"></a><span class="kw">library</span>(tidyverse)</span></code></pre></div>
+<p>Singer height = Average height for their voice part + some error</p>
+<p>If you’ve taken S431/631 or a similar regression course, you might recognize this as a special case of a linear model. If you haven’t, well, it doesn’t really matter much except we can use the <code>lm()</code> function to fit the model. The advantage of this is that <code>lm()</code> easily splits the data into <strong>fitted values</strong> and <strong>residuals</strong>:</p>
+<p>Observed value = Fitted value + residual</p>
+</div>
+<div class="slide section level2">
+
+<p>Let’s get the fitted values and residuals for each voice part:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>singer_lm =<span class="st"> </span><span class="kw">lm</span>(height <span class="op">~</span><span class="st"> </span><span class="dv">0</span> <span class="op">+</span><span class="st"> </span>voice.part, <span class="dt">data=</span>singer)</span></code></pre></div>
+<p>We can extract the fitted values using <code>fitted.values(singer.lm)</code> and the residuals with <code>residuals(singer.lm)</code> or <code>singer.lm$residuals</code>. For convenience, we create a data frame with two columns: the voice parts and the residuals.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>singer_res =<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">voice_part =</span> singer<span class="op">$</span>voice.part, <span class="dt">residual =</span> <span class="kw">residuals</span>(singer_lm))</span></code></pre></div>
+<p>We can also do this with <code>group_by</code> and <code>mutate</code>:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a>fits =<span class="st"> </span>singer <span class="op">%&gt;%</span></span>
+<span id="cb4-2"><a href="#cb4-2"></a><span class="st">    </span><span class="kw">group_by</span>(voice.part) <span class="op">%&gt;%</span></span>
+<span id="cb4-3"><a href="#cb4-3"></a><span class="st">    </span><span class="kw">mutate</span>(<span class="dt">fit =</span> <span class="kw">mean</span>(height),</span>
+<span id="cb4-4"><a href="#cb4-4"></a>           <span class="dt">residual =</span> height <span class="op">-</span><span class="st"> </span><span class="kw">mean</span>(height))</span></code></pre></div>
+</div>
+<div id="does-the-linear-model-fit" class="slide section level2">
+<h1>Does the linear model fit?</h1>
+<p>To asssess whether the linear model is a good fit to the data, we need to know whether the errors look like they come from normal distributions with the same variance.</p>
+<p>The residuals are our estimates of the errors, and so we need to check both normality and homoscedasticity.</p>
+</div>
+<div id="homoscedasticity" class="slide section level2">
+<h1>Homoscedasticity</h1>
+<p>There are a few ways we can look at the residuals. Side-by-side boxplots give a broad overview:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="kw">ggplot</span>(singer_res, <span class="kw">aes</span>(<span class="dt">x =</span> voice_part, <span class="dt">y =</span> residual)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_boxplot</span>()</span></code></pre></div>
+<p><img src="lecture-5-fig/unnamed-chunk-5-1.png" /></p>
+<div class="incremental">
+<p>We can also look at the ecdfs of the residuals for each voice part.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a><span class="kw">ggplot</span>(singer_res, <span class="kw">aes</span>(<span class="dt">x =</span> residual, <span class="dt">color =</span> voice_part)) <span class="op">+</span><span class="st"> </span><span class="kw">stat_ecdf</span>()</span></code></pre></div>
+<p><img src="lecture-5-fig/unnamed-chunk-6-1.png" /></p>
+</div>
+<div class="incremental">
+<p>From these plots, it seems like the residuals in each group have approximately the same variance.</p>
+</div>
+</div>
+<div id="normality" class="slide section level2">
+<h1>Normality</h1>
+<p>We also want to examine normality of the residuals, broken up by voice part. We can do this by faceting:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="kw">ggplot</span>(singer_res, <span class="kw">aes</span>(<span class="dt">sample =</span> residual)) <span class="op">+</span></span>
+<span id="cb7-2"><a href="#cb7-2"></a><span class="st">  </span><span class="kw">stat_qq</span>() <span class="op">+</span><span class="st"> </span><span class="kw">facet_wrap</span>(<span class="op">~</span><span class="st"> </span>voice_part, <span class="dt">ncol=</span><span class="dv">4</span>) </span></code></pre></div>
+<p><img src="lecture-5-fig/unnamed-chunk-7-1.png" /></p>
+<p>Not only do the lines look reasonably straight, the scales look similar for all eight voice parts. This suggests a model where all of the errors are normal with the <em>same</em> standard deviation. This is convenient because it is the form of a standard linear model:</p>
+<p>Singer height = Average height for their voice part + Normal(<span class="math inline">\(0, \sigma^2\)</span>) error.</p>
+</div>
+<div id="normality-of-pooled-residuals" class="slide section level2">
+<h1>Normality of pooled residuals</h1>
+<p>If the linear model holds, then all the residuals come from the same normal distribution.</p>
+<p>We’ve already checked for normality of the residuals within each voice part, but to get a little more power to see divergence from normality, we can pool the residuals and make a normal QQ plot of all the residuals together.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a><span class="kw">ggplot</span>(singer_res, <span class="kw">aes</span>(<span class="dt">sample =</span> residual)) <span class="op">+</span></span>
+<span id="cb8-2"><a href="#cb8-2"></a><span class="st">  </span><span class="kw">stat_qq</span>()</span></code></pre></div>
+<p><img src="lecture-5-fig/unnamed-chunk-8-1.png" /></p>
+</div>
+<div class="slide section level2">
+
+<p>It’s easier to check normality if we plot the line that the points should fall on: if we think the points come from a <span class="math inline">\(N(\mu, \sigma^2)\)</span> distribution, they should lie on a line with intercept <span class="math inline">\(\mu\)</span> and slope <span class="math inline">\(\sigma\)</span> (the standard deviation).</p>
+<p>In the linear model, we assume that the mean of the error terms is zero. We don’t know what their variance should be, but we can estimate it using the variance of the residuals.</p>
+<p>Therefore, we add a line with the mean of the residuals (which should be zero) as the intercept, and the SD of the residuals as the slope. This is:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a><span class="kw">ggplot</span>(singer_res, <span class="kw">aes</span>(<span class="dt">sample =</span> residual)) <span class="op">+</span></span>
+<span id="cb9-2"><a href="#cb9-2"></a><span class="st">    </span><span class="kw">stat_qq</span>() <span class="op">+</span></span>
+<span id="cb9-3"><a href="#cb9-3"></a><span class="st">    </span><span class="kw">geom_abline</span>(<span class="dt">intercept =</span> <span class="dv">0</span>, <span class="dt">slope =</span> <span class="kw">sd</span>(singer_res<span class="op">$</span>residual))</span></code></pre></div>
+<p><img src="lecture-5-fig/unnamed-chunk-9-1.png" /></p>
+</div>
+<div id="the-actually-correct-way" class="slide section level2">
+<h1>The actually correct way</h1>
+<p>Pedantic note: We should use an <span class="math inline">\(n-8\)</span> denominator instead of <span class="math inline">\(n-1\)</span> in the SD calculation for degrees of freedom reasons. We can get this directly from the linear model:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a><span class="kw">sd</span>(singer_res<span class="op">$</span>residual)</span></code></pre></div>
+<pre><code>## [1] 2.465049</code></pre>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a><span class="kw">round</span>(<span class="kw">summary</span>(singer_lm)<span class="op">$</span>sigma, <span class="dv">3</span>)</span></code></pre></div>
+<pre><code>## [1] 2.503</code></pre>
+<p>However, the difference between this and the SD above is negligible.</p>
+<p>Add the line:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a><span class="kw">ggplot</span>(singer_res, <span class="kw">aes</span>(<span class="dt">sample =</span> residual)) <span class="op">+</span></span>
+<span id="cb14-2"><a href="#cb14-2"></a><span class="st">  </span><span class="kw">stat_qq</span>() <span class="op">+</span><span class="st"> </span><span class="kw">geom_abline</span>(<span class="dt">intercept =</span> <span class="kw">mean</span>(singer_res<span class="op">$</span>residual), <span class="dt">slope=</span><span class="kw">summary</span>(singer_lm)<span class="op">$</span>sigma)</span></code></pre></div>
+<p><img src="lecture-5-fig/unnamed-chunk-11-1.png" /></p>
+<p>The straight line isn’t absolutely perfect, but it’s doing a pretty good job.</p>
+</div>
+<div id="our-final-model" class="slide section level2">
+<h1>Our final model</h1>
+<p>Since the errors seem to be pretty normal, our final model is:</p>
+<p>Singer height = Average height for their voice part + Normal(<span class="math inline">\(0, 2.5^2\)</span>) error.</p>
+<p>Note: While normality (or lack thereof) can be important for probabilistic prediction or (sometimes) for inferential data analysis, it’s relatively unimportant for EDA. If your residuals are about normal that’s nice, but as long as they’re not horribly skewed they’re probably not a problem.</p>
+</div>
+<div id="what-have-we-learned" class="slide section level2">
+<h1>What have we learned?</h1>
+<p>About singers:</p>
+<ul class="incremental">
+<li><p>We’ve seen that average height increases as the voice part range decreases.</p></li>
+<li><p>Within each voice part, the residuals look like they come from a normal distribution with the same variance for each voice part. This suggests that there’s nothing further we need to do to explain singer heights: we have an average for each voice part, and there is no suggestion of systematic differences beyond that due to voice part.</p></li>
+</ul>
+<div class="incremental">
+<p>About data analysis:</p>
+<ul class="incremental">
+<li><p>We can use some of our univariate visualization tools, particularly boxplots and ecdfs, to look for evidence of heteroscedasticity.</p></li>
+<li><p>We can use normal QQ plots on both pooled and un-pooled residuals to look for evidence of non-normality.</p></li>
+<li><p>If we wanted to do formal tests or parameter estimation for singer heights, we would feel pretty secure using results based on normal theory.</p></li>
+</ul>
+</div>
+</div>
+<div id="example-2-bin-packing" class="slide section level2">
+<h1>Example 2: Bin Packing</h1>
+<p>Reading: Cleveland pp. 68-79.</p>
+<p>A <a href="https://en.wikipedia.org/wiki/Bin_packing_problem">classic problem in computer science</a> involves how to most efficiently pack objects of different volumes into containers so as to minimize the number of containers used.</p>
+<p>The bin packing problem is NP hard, but some heuristic algorithms perform well.</p>
+<p>One such algorithm is the first fit descending algorithm, where the objects are considered in decreasing order of size, and each object is put into the first container in which it fits.</p>
+</div>
+<div id="our-dataset" class="slide section level2">
+<h1>Our dataset</h1>
+<p>Some investigators were interested in the performance of this algorithm, and in particular how much excess volume is available when this algorithm is run on different numbers of objects. To this end, they ran a simulation experiment in which simulated <span class="math inline">\(n\)</span> objects with volumes drawn from a uniform distribution on <span class="math inline">\([0, .8]\)</span>, ran the first fit descending algorithm to pack those objects into containers of volume 1, and computed how much empty volume remained in the containers after the algorithm had completed. They repeated the simulation 25 times for <span class="math inline">\(n = 125, 250, 500, 1000, \ldots, 128000\)</span>.</p>
+<p>The results of the experiment are in <code>lattice.RData</code>, in a data frame <code>bin.packing</code>.</p>
+<p>The data frame contains two variables:</p>
+<ul class="incremental">
+<li><p><code>empty.space</code>: The amount of empty space.</p></li>
+<li><p><code>number.runs</code>: The number of randomly generated objects (this is poorly named).</p></li>
+</ul>
+<p>We are interested in how empty space depends on the number of randomly generated objects (<code>number.runs</code>).</p>
+</div>
+<div id="bin-packing" class="slide section level2">
+<h1>Bin packing</h1>
+<p>Let’s start off by loading and looking at the data.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1"></a><span class="kw">load</span>(<span class="st">&quot;lattice.RData&quot;</span>)</span>
+<span id="cb15-2"><a href="#cb15-2"></a><span class="kw">head</span>(bin.packing)</span></code></pre></div>
+<pre><code>##   empty.space number.runs
+## 1    1.577127         125
+## 2    1.242906         125
+## 3    1.389246         125
+## 4    0.636317         125
+## 5    0.443350         125
+## 6    1.522842         125</code></pre>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1"></a><span class="kw">table</span>(bin.packing<span class="op">$</span>number.runs)</span></code></pre></div>
+<pre><code>## 
+##    125    250    500   1000   2000   4000   8000  16000  32000  64000 128000 
+##     25     25     25     25     25     25     25     25     25     25     25</code></pre>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1"></a><span class="kw">summary</span>(bin.packing<span class="op">$</span>empty.space)</span></code></pre></div>
+<pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##  0.4019  1.2206  1.7590  1.9959  2.4994  6.7839</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>We can look at the distributions of empty space for every value of <code>number.runs</code>:</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a><span class="kw">ggplot</span>(bin.packing, <span class="kw">aes</span>(<span class="dt">x =</span> empty.space)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_histogram</span>(<span class="dt">bins =</span> <span class="dv">20</span>) <span class="op">+</span></span>
+<span id="cb21-2"><a href="#cb21-2"></a><span class="st">    </span><span class="kw">facet_wrap</span>(<span class="op">~</span><span class="st"> </span><span class="kw">factor</span>(number.runs))</span></code></pre></div>
+<p><img src="lecture-5-fig/unnamed-chunk-13-1.png" /></p>
+<p>From the histograms we notice a couple of outliers for small values of <code>number.runs</code></p>
+</div>
+<div class="slide section level2">
+
+<p>ecdfs:</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1"></a><span class="kw">ggplot</span>(bin.packing, <span class="kw">aes</span>(<span class="dt">x =</span> empty.space, <span class="dt">color =</span> <span class="kw">factor</span>(number.runs))) <span class="op">+</span><span class="st"> </span><span class="kw">stat_ecdf</span>()</span></code></pre></div>
+<p><img src="lecture-5-fig/unnamed-chunk-14-1.png" /></p>
+<p>From the ecdfs, it seems that the bulk of the distributions are pretty similar, but off set from each other by an additive shift.</p>
+<p>We can tell this because the curves are mostly just shifted along the <span class="math inline">\(x\)</span>-axis from one another, and the overall shape is the same for each value of <code>number.runs</code></p>
+</div>
+<div class="slide section level2">
+
+<p>Finally, let’s draw boxplots, split by <code>number.runs</code>:</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1"></a><span class="kw">ggplot</span>(bin.packing, <span class="kw">aes</span>(<span class="kw">factor</span>(number.runs), empty.space)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_boxplot</span>()</span></code></pre></div>
+<p><img src="lecture-5-fig/unnamed-chunk-15-1.png" /></p>
+<p>The boxplots also show us that aside from some outliers for the small values of <code>number.runs</code>, the distributions at least have similar variances.</p>
+</div>
+<div id="transformation" class="slide section level2">
+<h1>Transformation</h1>
+<p>We might consider log transforming these data for a couple of reasons:</p>
+<ul class="incremental">
+<li><p>The distributions are skewed.</p></li>
+<li><p>The data are positive.</p></li>
+<li><p>Computer scientists like logs.</p></li>
+</ul>
+<p>Let’s see what happens if we do so.</p>
+</div>
+<div class="slide section level2">
+
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1"></a><span class="kw">ggplot</span>(bin.packing, <span class="kw">aes</span>(<span class="dt">x =</span> <span class="kw">log2</span>(empty.space))) <span class="op">+</span><span class="st"> </span><span class="kw">geom_histogram</span>(<span class="dt">bins =</span> <span class="dv">20</span>) <span class="op">+</span></span>
+<span id="cb24-2"><a href="#cb24-2"></a><span class="st">    </span><span class="kw">facet_wrap</span>(<span class="op">~</span><span class="st"> </span><span class="kw">factor</span>(number.runs))</span></code></pre></div>
+<p><img src="lecture-5-fig/unnamed-chunk-16-1.png" /></p>
+<p>Now we have outliers on both sides for 125 runs, and we have retained the outliers for 250, 500, and 1000 runs.</p>
+</div>
+<div class="slide section level2">
+
+<p>ecdfs:</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1"></a><span class="kw">ggplot</span>(bin.packing, <span class="kw">aes</span>(<span class="dt">x =</span> <span class="kw">log2</span>(empty.space), <span class="dt">color =</span> <span class="kw">factor</span>(number.runs))) <span class="op">+</span><span class="st"> </span><span class="kw">stat_ecdf</span>()</span></code></pre></div>
+<p><img src="lecture-5-fig/unnamed-chunk-17-1.png" /></p>
+<p>It’s harder to get anything out of the ecdf plots on the transformed data: we see that the variances are not the same (the slopes increase with increasing <code>number.runs</code>) and that there is a location shift, but the picture is less simple than for the raw data.</p>
+</div>
+<div class="slide section level2">
+
+<p>Boxplots:</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1"></a><span class="kw">ggplot</span>(bin.packing, <span class="kw">aes</span>(<span class="kw">factor</span>(number.runs), <span class="kw">log2</span>(empty.space))) <span class="op">+</span><span class="st"> </span><span class="kw">geom_boxplot</span>()</span></code></pre></div>
+<p><img src="lecture-5-fig/unnamed-chunk-18-1.png" /></p>
+<p>The boxplots tell essentially the same story as the histograms and the ecdfs: the variance of the transformed data decreases with <code>number.runs</code>, and we still have some outliers.</p>
+</div>
+<div class="slide section level2">
+
+<p>It seems that the transformation isn’t helping us at all: it’s complicated the story about empty space and number.runs by introducing heteroscedasticity, it hasn’t gotten rid of skewness or outliers, and it has made the distributions more difficult to compare.</p>
+<p>The moral here is that you should try things out that might not work, and if you check and they don’t seem like they’re helping you should feel free to abandon them.</p>
+<p>We’ll do the remaining analysis on the raw values.</p>
+</div>
+<div class="slide section level2">
+
+<p>The next question is about the shape of the distributions: we know there are outliers, but do the observations in the bulk of the data look approximately normal?</p>
+<p>We use normal QQ plots to investigate:</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1"></a><span class="kw">ggplot</span>(bin.packing, <span class="kw">aes</span>(<span class="dt">sample =</span> empty.space)) <span class="op">+</span></span>
+<span id="cb27-2"><a href="#cb27-2"></a><span class="st">  </span><span class="kw">stat_qq</span>() <span class="op">+</span><span class="st"> </span><span class="kw">facet_wrap</span>(<span class="op">~</span><span class="st"> </span>number.runs)</span></code></pre></div>
+<p><img src="lecture-5-fig/unnamed-chunk-19-1.png" /></p>
+<p>The plot above shows very clearly the non-normality in log(empty space) for smaller numbers of runs, but since the standard deviation (slope in the QQ plot) is much smaller for the large number of runs it’s hard to assess how straight the lines are.</p>
+</div>
+<div class="slide section level2">
+
+<p>We can fix this by using the argument <code>scales = "free_y"</code> in the faceting function: this gives every facet its own scale on the y-axis, spreading out the points so that we can look for linearity or lack thereof.</p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1"></a><span class="kw">ggplot</span>(bin.packing, <span class="kw">aes</span>(<span class="dt">sample=</span>empty.space)) <span class="op">+</span></span>
+<span id="cb28-2"><a href="#cb28-2"></a><span class="st">  </span><span class="kw">stat_qq</span>() <span class="op">+</span><span class="st"> </span><span class="kw">facet_wrap</span>(<span class="op">~</span>number.runs, <span class="dt">scales =</span> <span class="st">&quot;free_y&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-5-fig/unnamed-chunk-20-1.png" /></p>
+<p>Question: Why just use “free_y” and not “free” (every facet gets its own scale on both the x- and y-axis)?</p>
+<p>For large numbers of runs, the QQ plots are well-fitted by straight lines. However for smallest numbers of runs there are difficulties – especially for less than 1000 runs, where there are major outliers.</p>
+</div>
+<div class="slide section level2">
+
+<p>Because of the outliers, we might prefer to both build our model and explore our residuals in a more robust way. The median is more outlier-resistant than the mean, so we’ll use those as our fitted values.</p>
+<p>In Cleveland’s notation: Let <span class="math inline">\(b_{in}\)</span> be the <span class="math inline">\(i\)</span>th log empty space measurement for the bin packing run with <span class="math inline">\(n\)</span> weights. Let <span class="math inline">\(l_n\)</span> be the medians. The fitted values are</p>
+<p><span class="math display">\[
+\hat{b}_{in} = l_n
+\]</span></p>
+<p>and the residuals are</p>
+<p><span class="math display">\[
+\hat{\varepsilon}_{in} = b_{in} - \hat{b}_{in}
+\]</span></p>
+<p>Let <span class="math inline">\(s_n\)</span> be the median absolute deviations or MADs: that is, for each <span class="math inline">\(n\)</span>, the median of the absolute value of the residuals.</p>
+<p>The <code>mad()</code> function in R gives the median absolute deviations (multiplied by a constant <code>1/qnorm(3/4)=</code>1.483 to put the estimate on the same scale as the standard deviation.)</p>
+</div>
+<div class="slide section level2">
+
+<p>Let’s compute the medians and MADs:</p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1"></a>bin_packing_summaries =<span class="st"> </span></span>
+<span id="cb29-2"><a href="#cb29-2"></a><span class="st">    </span>bin.packing <span class="op">%&gt;%</span></span>
+<span id="cb29-3"><a href="#cb29-3"></a><span class="st">    </span><span class="kw">group_by</span>(number.runs) <span class="op">%&gt;%</span></span>
+<span id="cb29-4"><a href="#cb29-4"></a><span class="st">    </span><span class="kw">summarise</span>(<span class="dt">med =</span> <span class="kw">median</span>(empty.space),</span>
+<span id="cb29-5"><a href="#cb29-5"></a>              <span class="dt">mad =</span> <span class="kw">mad</span>(empty.space))</span></code></pre></div>
+</div>
+<div id="dependence-of-empty-space-on-number-of-runs" class="slide section level2">
+<h1>Dependence of empty space on number of runs</h1>
+<p>Theory apparently suggests that on a log-log scale, then as the number of runs gets large, empty space approaches a linear function of number of runs with slope <span class="math inline">\(1/3\)</span>. We plot the median log empty space for each number of runs, plus a line with slope 1/3 going through the last point:</p>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1"></a><span class="co">## Set up the line going through the last point</span></span>
+<span id="cb30-2"><a href="#cb30-2"></a>slope =<span class="st"> </span><span class="dv">1</span><span class="op">/</span><span class="dv">3</span></span>
+<span id="cb30-3"><a href="#cb30-3"></a>intercept =<span class="st"> </span><span class="kw">max</span>(<span class="kw">log2</span>(bin_packing_summaries<span class="op">$</span>med)) <span class="op">-</span></span>
+<span id="cb30-4"><a href="#cb30-4"></a><span class="st">    </span><span class="kw">max</span>(<span class="kw">log2</span>(bin_packing_summaries<span class="op">$</span>number.runs)) <span class="op">*</span><span class="st"> </span>slope</span>
+<span id="cb30-5"><a href="#cb30-5"></a><span class="co">## Plot the medians plus our line</span></span>
+<span id="cb30-6"><a href="#cb30-6"></a><span class="kw">ggplot</span>(bin_packing_summaries) <span class="op">+</span></span>
+<span id="cb30-7"><a href="#cb30-7"></a><span class="st">    </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> <span class="kw">log2</span>(number.runs), <span class="dt">y =</span> <span class="kw">log2</span>(med))) <span class="op">+</span></span>
+<span id="cb30-8"><a href="#cb30-8"></a><span class="st">    </span><span class="kw">geom_abline</span>(<span class="kw">aes</span>(<span class="dt">intercept =</span> intercept, <span class="dt">slope =</span> slope))</span></code></pre></div>
+<p><img src="lecture-5-fig/unnamed-chunk-22-1.png" /></p>
+<p>The line does eventually provide a good fit, which is consistent (in a very weak way) with the assertion that the line should fit when the number of runs gets very large.</p>
+</div>
+<div id="dependence-of-the-spread-of-empty-space-on-number-of-runs" class="slide section level2">
+<h1>Dependence of the spread of empty space on number of runs</h1>
+<p>We can also investigate the dependence of the spreads on the number of runs using MADs:</p>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1"></a><span class="kw">ggplot</span>(bin_packing_summaries) <span class="op">+</span></span>
+<span id="cb31-2"><a href="#cb31-2"></a><span class="st">    </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> <span class="kw">log2</span>(number.runs), <span class="dt">y =</span> mad))</span></code></pre></div>
+<p><img src="lecture-5-fig/unnamed-chunk-23-1.png" /></p>
+<p>Based on this plot, it doesn’t look like there’s a systematic dependence of the spread, as measured by MAD, on number of runs.</p>
+</div>
+<div class="slide section level2">
+
+<p>Interpretational point: Both the MAD and the SD are legitimate measures of spread here. The MAD measures the spread of the “bulk” of the data, while the SD measures the spread of everything, including the outlying points.</p>
+<p>Here the SD decreases with <code>number.runs</code> (you can try plotting it yourself) because of the outliers for small values of <code>number.runs</code>. Since this is data from a simulation, these “outliers” are real, good data points. They are not corrupt or bad, and they need to be accounted for.</p>
+<p>Both points, that the bulk of the data have the same spread across different numbers of runs, and that there seem to be outliers only for small numbers of runs, are important features of this dataset.</p>
+</div>
+<div id="examining-the-residuals" class="slide section level2">
+<h1>Examining the residuals</h1>
+<p>First let’s compute the residuals. Remember that since we’re using a robust fit (the median as a measure of center), the residuals will be the observed values minus the median values.</p>
+<p>The easiest way is to use <code>mutate</code> on a grouped dataframe:</p>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1"></a>bin_packing_residuals =<span class="st"> </span>bin.packing <span class="op">%&gt;%</span></span>
+<span id="cb32-2"><a href="#cb32-2"></a><span class="st">    </span><span class="kw">group_by</span>(number.runs) <span class="op">%&gt;%</span></span>
+<span id="cb32-3"><a href="#cb32-3"></a><span class="st">    </span><span class="kw">mutate</span>(<span class="dt">residuals =</span> empty.space <span class="op">-</span><span class="st"> </span><span class="kw">median</span>(empty.space))</span></code></pre></div>
+</div>
+<div id="qq-plots-of-the-residuals" class="slide section level2">
+<h1>QQ plots of the residuals</h1>
+<p>Then we can plot both the pooled residuals and the residuals for each group:</p>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1"></a><span class="kw">ggplot</span>(bin_packing_residuals) <span class="op">+</span><span class="st"> </span><span class="kw">stat_qq</span>(<span class="kw">aes</span>(<span class="dt">sample =</span> residuals)) <span class="op">+</span><span class="st"> </span><span class="kw">facet_wrap</span>(<span class="op">~</span><span class="st"> </span>number.runs)</span></code></pre></div>
+<p><img src="lecture-5-fig/unnamed-chunk-25-1.png" /></p>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1"></a><span class="kw">ggplot</span>(bin_packing_residuals) <span class="op">+</span><span class="st"> </span><span class="kw">stat_qq</span>(<span class="kw">aes</span>(<span class="dt">sample =</span> residuals)) <span class="op">+</span><span class="st"> </span><span class="kw">facet_wrap</span>(<span class="op">~</span><span class="st"> </span>number.runs) <span class="op">+</span><span class="st"> </span><span class="kw">ylim</span>(<span class="kw">c</span>(<span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>))</span></code></pre></div>
+<pre><code>## Warning: Removed 8 rows containing missing values (geom_point).</code></pre>
+<p><img src="lecture-5-fig/unnamed-chunk-25-2.png" /></p>
+</div>
+<div id="qq-plots-of-pooled-residuals" class="slide section level2">
+<h1>QQ plots of pooled residuals</h1>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1"></a><span class="kw">ggplot</span>(bin_packing_residuals) <span class="op">+</span><span class="st"> </span><span class="kw">stat_qq</span>(<span class="kw">aes</span>(<span class="dt">sample =</span> residuals))</span></code></pre></div>
+<p><img src="lecture-5-fig/unnamed-chunk-26-1.png" /></p>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1"></a><span class="kw">ggplot</span>(bin_packing_residuals) <span class="op">+</span></span>
+<span id="cb37-2"><a href="#cb37-2"></a><span class="st">    </span><span class="kw">stat_qq</span>(<span class="kw">aes</span>(<span class="dt">sample =</span> residuals)) <span class="op">+</span></span>
+<span id="cb37-3"><a href="#cb37-3"></a><span class="st">    </span><span class="kw">geom_abline</span>(<span class="kw">aes</span>(<span class="dt">intercept =</span> <span class="dv">0</span>, <span class="dt">slope =</span> <span class="kw">mad</span>(residuals))) <span class="op">+</span><span class="st"> </span></span>
+<span id="cb37-4"><a href="#cb37-4"></a><span class="st">    </span><span class="kw">ylim</span>(<span class="kw">c</span>(<span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>))</span></code></pre></div>
+<pre><code>## Warning: Removed 8 rows containing missing values (geom_point).</code></pre>
+<p><img src="lecture-5-fig/unnamed-chunk-26-2.png" /></p>
+<p>We of course have the outliers, and we see that the bulk of the residuals are slightly leptokurtic compared to a normal distribution.</p>
+</div>
+<div id="dangers-of-rote-transformation" class="slide section level2">
+<h1>Dangers of rote transformation</h1>
+<p>Cleveland uses this data to illustrate the dangers of transforming positive numbers by default.</p>
+<p>You can either read in the text or do it on your own, but if you do the analysis with log-transformed empty space, you get a heteroskedasticity problem: the variance in empty space decreases with the number of objects.</p>
+<p>Remember our boxplots showed that the variance of <code>log2(empty.space)</code> gets smaller as <code>number.runs</code> increases:</p>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1"></a><span class="kw">ggplot</span>(bin.packing) <span class="op">+</span></span>
+<span id="cb39-2"><a href="#cb39-2"></a><span class="st">    </span><span class="kw">geom_boxplot</span>(<span class="kw">aes</span>(<span class="dt">x =</span> <span class="kw">as.factor</span>(number.runs), <span class="dt">y =</span> <span class="kw">log2</span>(empty.space))) <span class="op">+</span></span>
+<span id="cb39-3"><a href="#cb39-3"></a><span class="st">        </span><span class="kw">xlab</span>(<span class="st">&quot;Number of Objects&quot;</span>) <span class="op">+</span><span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;log2 Empty Space&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-5-fig/unnamed-chunk-27-1.png" /></p>
+</div>
+<div class="slide section level2">
+
+<p>We can see this more systematically by computing MADs and plotting them against empty space:</p>
+<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1"></a>bin_packing_summaries_log2 =<span class="st"> </span></span>
+<span id="cb40-2"><a href="#cb40-2"></a><span class="st">    </span>bin.packing <span class="op">%&gt;%</span></span>
+<span id="cb40-3"><a href="#cb40-3"></a><span class="st">    </span><span class="kw">group_by</span>(number.runs) <span class="op">%&gt;%</span></span>
+<span id="cb40-4"><a href="#cb40-4"></a><span class="st">    </span><span class="kw">summarise</span>(<span class="dt">med =</span> <span class="kw">median</span>(<span class="kw">log2</span>(empty.space)),</span>
+<span id="cb40-5"><a href="#cb40-5"></a>              <span class="dt">mad =</span> <span class="kw">mad</span>(<span class="kw">log2</span>(empty.space)))</span>
+<span id="cb40-6"><a href="#cb40-6"></a><span class="kw">ggplot</span>(bin_packing_summaries_log2) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> <span class="kw">log2</span>(number.runs), <span class="dt">y =</span> mad))</span></code></pre></div>
+<p><img src="lecture-5-fig/unnamed-chunk-28-1.png" /></p>
+<p>From this plot, we see that the mads decrease pretty much linearly with <code>number.runs</code>.</p>
+<p>Because we started out by looking at the un-transformed data, we know that this heteroscedasticity entirely due to the log transformation. If we had gone through the analysis only with the log-transformed data, we might have thought this was interesting and tried to explain why the variance gets smaller when <code>number.runs</code> gets larger.</p>
+<p>This would probably lead us down the wrong path though, and it is more informative to think about the simulations as having the same spread in the raw amount of empty space across all values of <code>number.runs</code>.</p>
+</div>
+<div id="our-model" class="slide section level2">
+<h1>Our model</h1>
+<p>Based on the work we’ve done so far, a model for the “bulk” of the bin packing data (the data excluding the outliers) is</p>
+<p><span class="math display">\[
+b_{in} = l_n + \varepsilon_{in}
+\]</span> where</p>
+<ul class="incremental">
+<li><p><span class="math inline">\(b_{in}\)</span> is the value of empty space for the <span class="math inline">\(i\)</span>th simulation with <span class="math inline">\(n\)</span> runs.</p></li>
+<li><p><span class="math inline">\(l_n\)</span> is the median value of empty space for the simulations with <span class="math inline">\(n\)</span> runs.</p></li>
+<li><p>The <span class="math inline">\(\varepsilon_{in}\)</span> values are independent and identically distributed.</p></li>
+</ul>
+<p>If we were interested in testing or inference, we might feel that the residuals look close enough to normal that we would be happy with normal theory, or we might feel that the deviations from normal are enough to warrant nonparametric tests.</p>
+<p>However, the biggest issue here is the outliers: we aren’t really going to be happy with our model until we find an explanation for them.</p>
+</div>
+<div id="what-have-we-learned-1" class="slide section level2">
+<h1>What have we learned?</h1>
+<p>About the bin packing algorithm:</p>
+<ul class="incremental">
+<li><p>This suggests that there are two regimes for the bin-packing algorithm: one where the empty space is within a couple of MADs of the median, and another where we have a lot more empty space than normal.</p></li>
+<li><p>The second regime only seems to happen with small values of <code>number.runs</code>, and if we were the people running the simulation we would probably want to go back and look at the “outlier” points that had much more empty space than the bulk.</p></li>
+<li><p>The variance in the first regime (for the bulk of the data) doesn’t seem to change with number of runs.</p></li>
+</ul>
+<div class="incremental">
+<p>About data analysis:</p>
+<ul class="incremental">
+<li><p>Transformations don’t always work: you need to check if they’re helping and abandon them if they’re not.</p></li>
+<li><p>The different measures of center and spread tell us qualitatively different things about the data. In this case, both MADs and SDs are valid summaries, telling us different things about the spread of the data.</p></li>
+</ul>
+</div>
+<div class="incremental">
+<p>If we were the people performing the simulations, our next step would be to figure out what’s happening with the outlying points and explain why the variance is the same across the different values of <code>number.runs</code>. The former requires more information about the simulations. The latter you might be able to guess at, but it’s not really the focus here.</p>
+</div>
+</div>
+</body>
+</html>
