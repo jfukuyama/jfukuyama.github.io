@@ -516,9 +516,8 @@ hardness.</p>
 <li><p>Refit a linear model that predicts <code>abrasion.loss</code>
 using an interaction between our non-linear transformation of
 <code>tensile.strength</code> and <code>hardness</code> (i.e., change
-<code>abrasion.loss ~ ts.low(tensile.strengh) + hardness</code> to
-<code>abrasion.loss ~ ts.low(tensile.strength) *
-hardness</code>).</p></li>
+<code>abrasion.loss ~ ts.low + hardness</code> to <code>abrasion.loss ~
+ts.low * hardness</code>).</p></li>
 <li><p>Plot the fitted values from the interaction model on the same
 grid of predictor variables we used in the no-interaction model. How
 does the form of the fits change when you add the interaction? Why is
