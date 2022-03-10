@@ -115,18 +115,18 @@ accessible outside of the function.</p></li>
 <div class="slide section level2">
 
 <p>For example, try this in your R session:</p>
-<pre><code>norm = function(x1, x2) {
+<pre><code>euclidean_norm = function(x1, x2) {
     y = x1^2 + x2^2
     return(y)
 }
 x1 = 0
 y = 0
-norm(x1 = 1, x2 = 1)
+euclidean_norm(x1 = 1, x2 = 1)
 x1
 y</code></pre>
-<p>What does <code>norm(x1 = 1, x2 = 1)</code> return?</p>
+<p>What does <code>euclidean_norm(x1 = 1, x2 = 1)</code> return?</p>
 <p>What happens to the values of <code>x1</code> and <code>y</code>
-after you call the <code>norm</code> function?</p>
+after you call the <code>euclidean_norm</code> function?</p>
 </div>
 <div id="return-values" class="slide section level2">
 <h1>Return values</h1>
