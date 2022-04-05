@@ -108,7 +108,7 @@ href="http://www.stat.columbia.edu/~gelman/arm/examples/police/frisk_with_noise.
 <li><p><code>precinct</code>: 75 total</p></li>
 <li><p><code>eth</code>: Ethnicity of the person stopped, three
 possibilities (1 = Black, 2 = Hispanic, 3 = white), and</p></li>
-<li><p><code>crime</code>: The type of crie, four possibilities (1 =
+<li><p><code>crime</code>: The type of crime, four possibilities (1 =
 violent, 2 = weapons, 3 = property, and 4 = drug)</p></li>
 </ul>
 <p>This gives a total of <span class="math inline">\(75 \times 3 \times
@@ -264,10 +264,14 @@ of a Poisson random variable.</p>
 use <code>summary()</code> on a GLM. Let’s use Gelman et al.’s
 <code>display()</code> function in package <code>arm</code> instead.</p>
 <div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># install.packages(&quot;arm&quot;)</span></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(arm)</span></code></pre></div>
-<pre><code>## Error in library(arm): there is no package called &#39;arm&#39;</code></pre>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">display</span>(constant.glm)</span></code></pre></div>
-<pre><code>## Error in display(constant.glm): could not find function &quot;display&quot;</code></pre>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(arm)</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="fu">display</span>(constant.glm)</span></code></pre></div>
+<pre><code>## glm(formula = stops ~ 1, family = poisson, data = frisk.sum)
+##             coef.est coef.se
+## (Intercept) 6.37     0.00   
+## ---
+##   n = 225, k = 1
+##   residual deviance = 123332.5, null deviance = 123332.5 (difference = 0.0)</code></pre>
 <p>This pares away most of the low value information. We see the
 coefficent estimate (on the log scale) is 6.37, which gives <span
 class="math inline">\(e^{6.37} = 584\)</span> on the original scale.
@@ -291,9 +295,15 @@ that the number of stops for an ethnic group in a precinct should be
 proportional to the number of arrests for that ethnicity-precinct
 (though this is controversial.) In a GLM, we can model this using an
 <em>offset</em>:</p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>offset.glm <span class="ot">=</span> <span class="fu">glm</span>(stops <span class="sc">~</span> <span class="dv">1</span>, <span class="at">family =</span> poisson, <span class="at">offset =</span> <span class="fu">log</span>(past.arrests), <span class="at">data =</span> frisk.sum)</span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="fu">display</span>(offset.glm)</span></code></pre></div>
-<pre><code>## Error in display(offset.glm): could not find function &quot;display&quot;</code></pre>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>offset.glm <span class="ot">=</span> <span class="fu">glm</span>(stops <span class="sc">~</span> <span class="dv">1</span>, <span class="at">family =</span> poisson, <span class="at">offset =</span> <span class="fu">log</span>(past.arrests), <span class="at">data =</span> frisk.sum)</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="fu">display</span>(offset.glm)</span></code></pre></div>
+<pre><code>## glm(formula = stops ~ 1, family = poisson, data = frisk.sum, 
+##     offset = log(past.arrests))
+##             coef.est coef.se
+## (Intercept) -0.59     0.00  
+## ---
+##   n = 225, k = 1
+##   residual deviance = 46120.3, null deviance = 46120.3 (difference = 0.0)</code></pre>
 <p>Since the linear predictor is on the log scale, the offset also has
 to be logged. This gives the following model for each precinct/race
 combination:</p>
@@ -311,9 +321,9 @@ arrests})} = 0.56 \times \textrm{past arrests}
 <p>To check this, we look at the predicted number of stops for
 precinct/race combinations with 10, 100, and 1000 past arrests
 respectively:</p>
-<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">augment</span>(offset.glm,</span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>        <span class="at">newdata =</span> <span class="fu">data.frame</span>(<span class="at">past.arrests =</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">100</span>, <span class="dv">1000</span>)),</span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>        <span class="at">type.predict =</span> <span class="st">&quot;response&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">augment</span>(offset.glm,</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>        <span class="at">newdata =</span> <span class="fu">data.frame</span>(<span class="at">past.arrests =</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">100</span>, <span class="dv">1000</span>)),</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>        <span class="at">type.predict =</span> <span class="st">&quot;response&quot;</span>)</span></code></pre></div>
 <pre><code>## # A tibble: 3 × 2
 ##   past.arrests .fitted
 ##          &lt;dbl&gt;   &lt;dbl&gt;
@@ -327,9 +337,17 @@ improved the fit by a lot.</p>
 
 <p>Now we want to see what happens if we add ethnic group as a
 predictor. Ethnic group is categorical, so we use it as a factor.</p>
-<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>eth.glm <span class="ot">=</span> <span class="fu">glm</span>(stops <span class="sc">~</span> eth, <span class="at">family =</span> poisson, <span class="at">offset =</span> <span class="fu">log</span>(past.arrests), <span class="at">data =</span> frisk.sum)</span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="fu">display</span>(eth.glm)</span></code></pre></div>
-<pre><code>## Error in display(eth.glm): could not find function &quot;display&quot;</code></pre>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>eth.glm <span class="ot">=</span> <span class="fu">glm</span>(stops <span class="sc">~</span> eth, <span class="at">family =</span> poisson, <span class="at">offset =</span> <span class="fu">log</span>(past.arrests), <span class="at">data =</span> frisk.sum)</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="fu">display</span>(eth.glm)</span></code></pre></div>
+<pre><code>## glm(formula = stops ~ eth, family = poisson, data = frisk.sum, 
+##     offset = log(past.arrests))
+##             coef.est coef.se
+## (Intercept) -0.59     0.00  
+## ethHispanic  0.07     0.01  
+## ethwhite    -0.16     0.01  
+## ---
+##   n = 225, k = 3
+##   residual deviance = 45437.4, null deviance = 46120.3 (difference = 682.9)</code></pre>
 <p>Note that “past arrests” doesn’t have a coefficient: the model
 assumes that expected stops are proportional to past arrests (where the
 constant of proportionality may depend on other stuff.) The deviance has
@@ -349,23 +367,23 @@ arrests}
 \end{align*}
 \]</span></p>
 <p>where the multipliers are</p>
-<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>eth.co <span class="ot">=</span> <span class="fu">coefficients</span>(eth.glm)</span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>multipliers <span class="ot">=</span> <span class="fu">exp</span>(<span class="fu">c</span>(eth.co[<span class="dv">1</span>], eth.co[<span class="dv">1</span>] <span class="sc">+</span> eth.co[<span class="dv">2</span>], eth.co[<span class="dv">1</span>] <span class="sc">+</span> eth.co[<span class="dv">3</span>]))</span>
-<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(multipliers)</span></code></pre></div>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>eth.co <span class="ot">=</span> <span class="fu">coefficients</span>(eth.glm)</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>multipliers <span class="ot">=</span> <span class="fu">exp</span>(<span class="fu">c</span>(eth.co[<span class="dv">1</span>], eth.co[<span class="dv">1</span>] <span class="sc">+</span> eth.co[<span class="dv">2</span>], eth.co[<span class="dv">1</span>] <span class="sc">+</span> eth.co[<span class="dv">3</span>]))</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(multipliers)</span></code></pre></div>
 <pre><code>## (Intercept) (Intercept) (Intercept) 
 ##   0.5553894   0.5957836   0.4725238</code></pre>
-<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>eth.coef <span class="ot">=</span> <span class="fu">tidy</span>(eth.glm)<span class="sc">$</span>estimate</span>
-<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>multipliers <span class="ot">=</span> <span class="fu">exp</span>(<span class="fu">c</span>(eth.coef[<span class="dv">1</span>],</span>
-<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>    eth.coef[<span class="dv">1</span>] <span class="sc">+</span> eth.coef[<span class="dv">2</span>],</span>
-<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>    eth.coef[<span class="dv">1</span>] <span class="sc">+</span> eth.coef[<span class="dv">3</span>]))</span>
-<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>multipliers</span></code></pre></div>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>eth.coef <span class="ot">=</span> <span class="fu">tidy</span>(eth.glm)<span class="sc">$</span>estimate</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>multipliers <span class="ot">=</span> <span class="fu">exp</span>(<span class="fu">c</span>(eth.coef[<span class="dv">1</span>],</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>    eth.coef[<span class="dv">1</span>] <span class="sc">+</span> eth.coef[<span class="dv">2</span>],</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>    eth.coef[<span class="dv">1</span>] <span class="sc">+</span> eth.coef[<span class="dv">3</span>]))</span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>multipliers</span></code></pre></div>
 <pre><code>## [1] 0.5553894 0.5957836 0.4725238</code></pre>
 <p>for Black, Hispanic, and white respectively. We can check this using
 <code>augment()</code>:</p>
-<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">augment</span>(eth.glm,</span>
-<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>        <span class="at">newdata =</span> <span class="fu">data.frame</span>(<span class="at">past.arrests =</span> <span class="dv">1000</span>, <span class="at">eth =</span> <span class="fu">c</span>(<span class="st">&quot;Black&quot;</span>, <span class="st">&quot;Hispanic&quot;</span>, <span class="st">&quot;white&quot;</span>)),</span>
-<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>        <span class="at">type.predict =</span> <span class="st">&quot;response&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">augment</span>(eth.glm,</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>        <span class="at">newdata =</span> <span class="fu">data.frame</span>(<span class="at">past.arrests =</span> <span class="dv">1000</span>, <span class="at">eth =</span> <span class="fu">c</span>(<span class="st">&quot;Black&quot;</span>, <span class="st">&quot;Hispanic&quot;</span>, <span class="st">&quot;white&quot;</span>)),</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>        <span class="at">type.predict =</span> <span class="st">&quot;response&quot;</span>)</span></code></pre></div>
 <pre><code>## # A tibble: 3 × 3
 ##   past.arrests eth      .fitted
 ##          &lt;dbl&gt; &lt;chr&gt;      &lt;dbl&gt;
@@ -387,20 +405,20 @@ cause-and-effect, but we’ll see whether we can simply explain the
 results by including a precinct variable. If we can, then the NYPD might
 argue that minorities are only stopped more often because they, perhaps
 coincidentally, tend to live in precincts with high stop rates.</p>
-<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>precinct.glm <span class="ot">=</span> <span class="fu">glm</span>(stops <span class="sc">~</span> eth <span class="sc">+</span> <span class="fu">factor</span>(precinct), <span class="at">family =</span> poisson, <span class="at">offset =</span> <span class="fu">log</span>(past.arrests), <span class="at">data =</span> frisk.sum)</span></code></pre></div>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>precinct.glm <span class="ot">=</span> <span class="fu">glm</span>(stops <span class="sc">~</span> eth <span class="sc">+</span> <span class="fu">factor</span>(precinct), <span class="at">family =</span> poisson, <span class="at">offset =</span> <span class="fu">log</span>(past.arrests), <span class="at">data =</span> frisk.sum)</span></code></pre></div>
 <p>We won’t print out the full results because we now have a coefficient
 for each precinct. Let’s just first check the deviance has gone down
 significantly:</p>
-<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">deviance</span>(eth.glm)</span></code></pre></div>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">deviance</span>(eth.glm)</span></code></pre></div>
 <pre><code>## [1] 45437.35</code></pre>
-<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">deviance</span>(precinct.glm)</span></code></pre></div>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">deviance</span>(precinct.glm)</span></code></pre></div>
 <pre><code>## [1] 3427.14</code></pre>
 </div>
 <div class="slide section level1">
 
 <p>Now look at the first few coefficients (and their standard
 errors):</p>
-<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tidy</span>(precinct.glm)</span></code></pre></div>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tidy</span>(precinct.glm)</span></code></pre></div>
 <pre><code>## # A tibble: 77 × 5
 ##    term              estimate std.error statistic   p.value
 ##    &lt;chr&gt;                &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;
@@ -422,8 +440,8 @@ minority coefficients becomes even bigger.</p>
 <h1>Checking the model</h1>
 <p>As usual, our first plot for checking the model is to plot the
 residuals against the fitted values and see what happens.</p>
-<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>precinct.glm.df <span class="ot">=</span> <span class="fu">augment</span>(precinct.glm, <span class="at">type.predict =</span> <span class="st">&quot;response&quot;</span>, <span class="at">type.residuals =</span> <span class="st">&quot;pearson&quot;</span>)</span>
-<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(precinct.glm.df, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">log</span>(.fitted), <span class="at">y =</span> .resid)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="at">span =</span> <span class="dv">1</span>, <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">degree =</span> <span class="dv">1</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>precinct.glm.df <span class="ot">=</span> <span class="fu">augment</span>(precinct.glm, <span class="at">type.predict =</span> <span class="st">&quot;response&quot;</span>, <span class="at">type.residuals =</span> <span class="st">&quot;pearson&quot;</span>)</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(precinct.glm.df, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">log</span>(.fitted), <span class="at">y =</span> .resid)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="at">span =</span> <span class="dv">1</span>, <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">degree =</span> <span class="dv">1</span>))</span></code></pre></div>
 <pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
 <p><img src="lecture-23-fig/unnamed-chunk-18-1.png" /></p>
 <p>There’s some nonlinearity in the smoother, though the amount is
@@ -444,8 +462,8 @@ overdispersion, but instead, let’s calculate the typical size of the
 squared residuals. (When we “average”, we divide the sum by the residual
 degrees of freedom.) If the Poisson model is correct, this should be
 close to 1. If it’s much more than 1, we need a better model.</p>
-<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>overdispersion <span class="ot">=</span> <span class="fu">sum</span>(precinct.glm.df<span class="sc">$</span>.resid<span class="sc">^</span><span class="dv">2</span>) <span class="sc">/</span> <span class="fu">df.residual</span>(precinct.glm)</span>
-<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>overdispersion</span></code></pre></div>
+<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>overdispersion <span class="ot">=</span> <span class="fu">sum</span>(precinct.glm.df<span class="sc">$</span>.resid<span class="sc">^</span><span class="dv">2</span>) <span class="sc">/</span> <span class="fu">df.residual</span>(precinct.glm)</span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>overdispersion</span></code></pre></div>
 <pre><code>## [1] 21.88505</code></pre>
 <p>This is much more than 1. In fact, this happens a lot with counts –
 the data is often more dispersed than the Poisson model.</p>
@@ -461,18 +479,18 @@ each observation is a realization of a Poisson random variable, whose
 parameter is given by the fitted value. Then we can use
 <code>rpois()</code> to do simulation and do numerical summaries and
 plots.</p>
-<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>precinct.fits <span class="ot">=</span> <span class="fu">augment</span>(precinct.glm, <span class="at">type.predict =</span> <span class="st">&quot;response&quot;</span>)<span class="sc">$</span>.fitted</span>
-<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>sim1 <span class="ot">=</span> <span class="fu">rpois</span>(<span class="fu">nrow</span>(frisk.sum), <span class="at">lambda =</span> precinct.fits)</span>
-<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(frisk.sum<span class="sc">$</span>stops)</span></code></pre></div>
+<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>precinct.fits <span class="ot">=</span> <span class="fu">augment</span>(precinct.glm, <span class="at">type.predict =</span> <span class="st">&quot;response&quot;</span>)<span class="sc">$</span>.fitted</span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>sim1 <span class="ot">=</span> <span class="fu">rpois</span>(<span class="fu">nrow</span>(frisk.sum), <span class="at">lambda =</span> precinct.fits)</span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(frisk.sum<span class="sc">$</span>stops)</span></code></pre></div>
 <pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
 ##     7.0   133.0   385.0   584.1   824.0  2771.0</code></pre>
-<div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(sim1)</span></code></pre></div>
+<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(sim1)</span></code></pre></div>
 <pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
 ##     9.0   158.0   379.0   583.6   817.0  2728.0</code></pre>
-<div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>sim.df <span class="ot">=</span> <span class="fu">data.frame</span>(frisk.sum, sim1)</span>
-<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
-<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>sim.long <span class="ot">=</span> sim.df <span class="sc">%&gt;%</span> <span class="fu">gather</span>(type, number, <span class="fu">c</span>(<span class="st">&quot;stops&quot;</span>, <span class="st">&quot;sim1&quot;</span>))</span>
-<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(sim.long, <span class="fu">aes</span>(<span class="at">x =</span> number)) <span class="sc">+</span> <span class="fu">geom_histogram</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">2800</span>, <span class="dv">50</span>)) <span class="sc">+</span> <span class="fu">facet_wrap</span>(<span class="sc">~</span>type, <span class="at">ncol =</span> <span class="dv">1</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>sim.df <span class="ot">=</span> <span class="fu">data.frame</span>(frisk.sum, sim1)</span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>sim.long <span class="ot">=</span> sim.df <span class="sc">%&gt;%</span> <span class="fu">gather</span>(type, number, <span class="fu">c</span>(<span class="st">&quot;stops&quot;</span>, <span class="st">&quot;sim1&quot;</span>))</span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(sim.long, <span class="fu">aes</span>(<span class="at">x =</span> number)) <span class="sc">+</span> <span class="fu">geom_histogram</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">2800</span>, <span class="dv">50</span>)) <span class="sc">+</span> <span class="fu">facet_wrap</span>(<span class="sc">~</span>type, <span class="at">ncol =</span> <span class="dv">1</span>)</span></code></pre></div>
 <p><img src="lecture-23-fig/unnamed-chunk-20-1.png" /></p>
 </div>
 <div class="slide section level1">
@@ -481,14 +499,14 @@ plots.</p>
 difference. But what happens if we fit a model to the simulated data and
 look at its residuals? We’ll find these and do a two-sample QQ plot of
 them against the original residuals.</p>
-<div class="sourceCode" id="cb50"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>precinct.sim <span class="ot">=</span> <span class="fu">glm</span>(sim1 <span class="sc">~</span> eth <span class="sc">+</span> <span class="fu">factor</span>(precinct), <span class="at">family =</span> poisson, <span class="at">offset =</span> <span class="fu">log</span>(past.arrests), <span class="at">data =</span> sim.df)</span>
-<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>resid.df <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="at">real.resid =</span> <span class="fu">augment</span>(precinct.glm, <span class="at">type.predict =</span> <span class="st">&quot;response&quot;</span>)<span class="sc">$</span>.resid,</span>
-<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>                      <span class="at">sim.resid =</span> <span class="fu">augment</span>(precinct.sim, <span class="at">type.predict =</span> <span class="st">&quot;response&quot;</span>)<span class="sc">$</span>.resid)</span>
-<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(resid.df) <span class="sc">+</span></span>
-<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stat_qq</span>(<span class="fu">aes</span>(<span class="at">sample =</span> sim.resid),</span>
-<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">distribution =</span> <span class="cf">function</span>(p) <span class="fu">quantile</span>(resid.df<span class="sc">$</span>real.resid, <span class="at">probs =</span> p)) <span class="sc">+</span></span>
-<span id="cb50-7"><a href="#cb50-7" aria-hidden="true" tabindex="-1"></a>        <span class="fu">geom_abline</span>(<span class="at">intercept =</span> <span class="dv">0</span>, <span class="at">slope =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
-<span id="cb50-8"><a href="#cb50-8" aria-hidden="true" tabindex="-1"></a>        <span class="fu">xlab</span>(<span class="st">&quot;real residual quantiles&quot;</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">&quot;simulation residual quantiles&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb48"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>precinct.sim <span class="ot">=</span> <span class="fu">glm</span>(sim1 <span class="sc">~</span> eth <span class="sc">+</span> <span class="fu">factor</span>(precinct), <span class="at">family =</span> poisson, <span class="at">offset =</span> <span class="fu">log</span>(past.arrests), <span class="at">data =</span> sim.df)</span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>resid.df <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="at">real.resid =</span> <span class="fu">augment</span>(precinct.glm, <span class="at">type.predict =</span> <span class="st">&quot;response&quot;</span>)<span class="sc">$</span>.resid,</span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>                      <span class="at">sim.resid =</span> <span class="fu">augment</span>(precinct.sim, <span class="at">type.predict =</span> <span class="st">&quot;response&quot;</span>)<span class="sc">$</span>.resid)</span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(resid.df) <span class="sc">+</span></span>
+<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stat_qq</span>(<span class="fu">aes</span>(<span class="at">sample =</span> sim.resid),</span>
+<span id="cb48-6"><a href="#cb48-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">distribution =</span> <span class="cf">function</span>(p) <span class="fu">quantile</span>(resid.df<span class="sc">$</span>real.resid, <span class="at">probs =</span> p)) <span class="sc">+</span></span>
+<span id="cb48-7"><a href="#cb48-7" aria-hidden="true" tabindex="-1"></a>        <span class="fu">geom_abline</span>(<span class="at">intercept =</span> <span class="dv">0</span>, <span class="at">slope =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb48-8"><a href="#cb48-8" aria-hidden="true" tabindex="-1"></a>        <span class="fu">xlab</span>(<span class="st">&quot;real residual quantiles&quot;</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">&quot;simulation residual quantiles&quot;</span>)</span></code></pre></div>
 <p><img src="lecture-23-fig/unnamed-chunk-21-1.png" /></p>
 <p>If the model were correct, this QQ plot should be close to a line
 through the origin with slope 1, and this is not. The real residuals are
@@ -503,8 +521,8 @@ simulation is as a sanity check.</p>
 <h1>Fixing overdispersion</h1>
 <p>The quickest fix is to use the quasipoisson family instead of the
 Poisson.</p>
-<div class="sourceCode" id="cb51"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>precinct.quasi <span class="ot">=</span> <span class="fu">glm</span>(stops <span class="sc">~</span> eth <span class="sc">+</span> <span class="fu">factor</span>(precinct), <span class="at">family =</span> quasipoisson, <span class="at">offset =</span> <span class="fu">log</span>(past.arrests), <span class="at">data =</span> frisk.sum)</span>
-<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a><span class="fu">tidy</span>(precinct.quasi)</span></code></pre></div>
+<div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>precinct.quasi <span class="ot">=</span> <span class="fu">glm</span>(stops <span class="sc">~</span> eth <span class="sc">+</span> <span class="fu">factor</span>(precinct), <span class="at">family =</span> quasipoisson, <span class="at">offset =</span> <span class="fu">log</span>(past.arrests), <span class="at">data =</span> frisk.sum)</span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a><span class="fu">tidy</span>(precinct.quasi)</span></code></pre></div>
 <pre><code>## # A tibble: 77 × 5
 ##    term              estimate std.error statistic  p.value
 ##    &lt;chr&gt;                &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
@@ -523,9 +541,9 @@ Poisson.</p>
 Poisson case. However, their standard errors have been inflated by the
 square root of their overdispersion. We can confirm that the fitted
 values haven’t changed:</p>
-<div class="sourceCode" id="cb53"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>precinct.fitted <span class="ot">=</span> <span class="fu">augment</span>(precinct.glm, <span class="at">type.predict =</span> <span class="st">&quot;response&quot;</span>)<span class="sc">$</span>.fitted</span>
-<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>quasi.fitted <span class="ot">=</span> <span class="fu">augment</span>(precinct.quasi, <span class="at">type.predict =</span> <span class="st">&quot;response&quot;</span>)<span class="sc">$</span>.fitted</span>
-<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(quasi.fitted <span class="sc">-</span> precinct.fitted)</span></code></pre></div>
+<div class="sourceCode" id="cb51"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>precinct.fitted <span class="ot">=</span> <span class="fu">augment</span>(precinct.glm, <span class="at">type.predict =</span> <span class="st">&quot;response&quot;</span>)<span class="sc">$</span>.fitted</span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>quasi.fitted <span class="ot">=</span> <span class="fu">augment</span>(precinct.quasi, <span class="at">type.predict =</span> <span class="st">&quot;response&quot;</span>)<span class="sc">$</span>.fitted</span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(quasi.fitted <span class="sc">-</span> precinct.fitted)</span></code></pre></div>
 <pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
 ##       0       0       0       0       0       0</code></pre>
 <p>So the quasipoission doesn’t change the fit, only the variance and
@@ -535,11 +553,11 @@ the standard errors.</p>
 
 <p>For interpretation, it may be useful to refit the model changing the
 order of levels in <code>eth</code> to use whites as a baseline.</p>
-<div class="sourceCode" id="cb55"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>frisk.sum.relev <span class="ot">=</span> frisk.sum <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">eth.releveled =</span> <span class="fu">factor</span>(eth, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">&quot;white&quot;</span>, <span class="st">&quot;Black&quot;</span>, <span class="st">&quot;Hispanic&quot;</span>)))</span>
-<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>precinct.quasi2 <span class="ot">=</span> <span class="fu">glm</span>(stops <span class="sc">~</span> eth.releveled <span class="sc">+</span> <span class="fu">factor</span>(precinct),</span>
-<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">family =</span> quasipoisson, <span class="at">offset =</span> <span class="fu">log</span>(past.arrests),</span>
-<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> frisk.sum.relev)</span>
-<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a><span class="fu">tidy</span>(precinct.quasi2)</span></code></pre></div>
+<div class="sourceCode" id="cb53"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>frisk.sum.relev <span class="ot">=</span> frisk.sum <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">eth.releveled =</span> <span class="fu">factor</span>(eth, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">&quot;white&quot;</span>, <span class="st">&quot;Black&quot;</span>, <span class="st">&quot;Hispanic&quot;</span>)))</span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>precinct.quasi2 <span class="ot">=</span> <span class="fu">glm</span>(stops <span class="sc">~</span> eth.releveled <span class="sc">+</span> <span class="fu">factor</span>(precinct),</span>
+<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">family =</span> quasipoisson, <span class="at">offset =</span> <span class="fu">log</span>(past.arrests),</span>
+<span id="cb53-4"><a href="#cb53-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> frisk.sum.relev)</span>
+<span id="cb53-5"><a href="#cb53-5" aria-hidden="true" tabindex="-1"></a><span class="fu">tidy</span>(precinct.quasi2)</span></code></pre></div>
 <pre><code>## # A tibble: 77 × 5
 ##    term                  estimate std.error statistic  p.value
 ##    &lt;chr&gt;                    &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
@@ -560,20 +578,20 @@ order of levels in <code>eth</code> to use whites as a baseline.</p>
 <p>We now back-transform to get intervals for the stop rates of Blacks
 and Hispanics relative to whites, after adjusting for arrest rates and
 precinct.</p>
-<div class="sourceCode" id="cb57"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="do">## 2 and 3 are the rows corresponding to the Black and hispanic coefficients</span></span>
-<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a>eth.co <span class="ot">=</span> <span class="fu">tidy</span>(precinct.quasi2)[<span class="dv">2</span><span class="sc">:</span><span class="dv">3</span>,]</span>
-<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a>eth.co<span class="sc">$</span>ethnicity <span class="ot">=</span> <span class="fu">c</span>(<span class="st">&quot;Black&quot;</span>, <span class="st">&quot;Hispanic&quot;</span>)</span>
-<span id="cb57-4"><a href="#cb57-4" aria-hidden="true" tabindex="-1"></a>eth.co.plotting <span class="ot">=</span> eth.co <span class="sc">%&gt;%</span></span>
-<span id="cb57-5"><a href="#cb57-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">estimate_rescaled =</span> <span class="fu">exp</span>(estimate),</span>
-<span id="cb57-6"><a href="#cb57-6" aria-hidden="true" tabindex="-1"></a>           <span class="at">lower =</span> <span class="fu">exp</span>(estimate <span class="sc">-</span> <span class="dv">2</span> <span class="sc">*</span> std.error),</span>
-<span id="cb57-7"><a href="#cb57-7" aria-hidden="true" tabindex="-1"></a>           <span class="at">upper =</span> <span class="fu">exp</span>(estimate <span class="sc">+</span> <span class="dv">2</span> <span class="sc">*</span> std.error))</span>
-<span id="cb57-8"><a href="#cb57-8" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(eth.co.plotting) <span class="sc">+</span></span>
-<span id="cb57-9"><a href="#cb57-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_pointrange</span>(<span class="fu">aes</span>(<span class="at">x =</span> ethnicity, <span class="at">y =</span> estimate_rescaled, <span class="at">ymin =</span> lower, <span class="at">ymax =</span> upper)) <span class="sc">+</span></span>
-<span id="cb57-10"><a href="#cb57-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylim</span>(<span class="dv">1</span>,<span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb57-11"><a href="#cb57-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_abline</span>(<span class="at">intercept =</span> <span class="dv">1</span>, <span class="at">slope =</span> <span class="dv">0</span>, <span class="at">color =</span> <span class="st">&quot;red&quot;</span>)<span class="sc">+</span></span>
-<span id="cb57-12"><a href="#cb57-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">&quot;Ratio of stop rate to that of whites,</span><span class="sc">\n</span><span class="st">adjusted for past arrests and precinct&quot;</span>) <span class="sc">+</span></span>
-<span id="cb57-13"><a href="#cb57-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggtitle</span>(<span class="st">&quot;Approximate 95% confidence intervals</span><span class="sc">\n</span><span class="st">for NYPD stop rates of minorities&quot;</span>) <span class="sc">+</span></span>
-<span id="cb57-14"><a href="#cb57-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">coord_flip</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb55"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="do">## 2 and 3 are the rows corresponding to the Black and hispanic coefficients</span></span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>eth.co <span class="ot">=</span> <span class="fu">tidy</span>(precinct.quasi2)[<span class="dv">2</span><span class="sc">:</span><span class="dv">3</span>,]</span>
+<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a>eth.co<span class="sc">$</span>ethnicity <span class="ot">=</span> <span class="fu">c</span>(<span class="st">&quot;Black&quot;</span>, <span class="st">&quot;Hispanic&quot;</span>)</span>
+<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a>eth.co.plotting <span class="ot">=</span> eth.co <span class="sc">%&gt;%</span></span>
+<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">estimate_rescaled =</span> <span class="fu">exp</span>(estimate),</span>
+<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a>           <span class="at">lower =</span> <span class="fu">exp</span>(estimate <span class="sc">-</span> <span class="dv">2</span> <span class="sc">*</span> std.error),</span>
+<span id="cb55-7"><a href="#cb55-7" aria-hidden="true" tabindex="-1"></a>           <span class="at">upper =</span> <span class="fu">exp</span>(estimate <span class="sc">+</span> <span class="dv">2</span> <span class="sc">*</span> std.error))</span>
+<span id="cb55-8"><a href="#cb55-8" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(eth.co.plotting) <span class="sc">+</span></span>
+<span id="cb55-9"><a href="#cb55-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_pointrange</span>(<span class="fu">aes</span>(<span class="at">x =</span> ethnicity, <span class="at">y =</span> estimate_rescaled, <span class="at">ymin =</span> lower, <span class="at">ymax =</span> upper)) <span class="sc">+</span></span>
+<span id="cb55-10"><a href="#cb55-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylim</span>(<span class="dv">1</span>,<span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb55-11"><a href="#cb55-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_abline</span>(<span class="at">intercept =</span> <span class="dv">1</span>, <span class="at">slope =</span> <span class="dv">0</span>, <span class="at">color =</span> <span class="st">&quot;red&quot;</span>)<span class="sc">+</span></span>
+<span id="cb55-12"><a href="#cb55-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">&quot;Ratio of stop rate to that of whites,</span><span class="sc">\n</span><span class="st">adjusted for past arrests and precinct&quot;</span>) <span class="sc">+</span></span>
+<span id="cb55-13"><a href="#cb55-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggtitle</span>(<span class="st">&quot;Approximate 95% confidence intervals</span><span class="sc">\n</span><span class="st">for NYPD stop rates of minorities&quot;</span>) <span class="sc">+</span></span>
+<span id="cb55-14"><a href="#cb55-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">coord_flip</span>()</span></code></pre></div>
 <p><img src="lecture-23-fig/unnamed-chunk-25-1.png" /></p>
 <p>The confidence intervals don’t include 1. This would be consistent
 with a hypothesis of bias against minorities, though we should think
