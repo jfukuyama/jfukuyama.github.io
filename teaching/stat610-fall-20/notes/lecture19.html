@@ -1,0 +1,485 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title>lecture19</title>
+  <style type="text/css">
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <style type="text/css">
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="https://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-AMS_CHTML-full" type="text/javascript"></script>
+  <script src="https://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div id="more-optimization" class="slide section level2">
+<h1>More optimization…</h1>
+<p>So far</p>
+<ul class="incremental">
+<li><p>Newton’s method</p></li>
+<li><p>Things that reduce to Newton’s method</p></li>
+</ul>
+<p>Today: modifications of Newton’s method</p>
+<ul class="incremental">
+<li><p>Fisher scoring (if you want to make sure the Hessian term is negative definite)</p></li>
+<li><p>Hessian approximations (if it takes too long to re-compute/re-invert the Hessian)</p></li>
+<li><p>Gradient descent (if you don’t want to ever compute or invert the Hessian)</p></li>
+</ul>
+<p>Reading:</p>
+<ul class="incremental">
+<li>Boyd and Vandenberghe, Chapter 9.1-9.4</li>
+</ul>
+</div>
+<div id="fisher-scoring" class="slide section level2">
+<h1>Fisher Scoring</h1>
+<p>Idea: Use the expected information, <span class="math inline">\(I(\theta)= E[-d^2 \ell(\theta)]\)</span> instead of the observed information, <span class="math inline">\(d^2 \ell(\theta)\)</span>.</p>
+<p>Algorithm:</p>
+<ul class="incremental">
+<li><p>Pick a starting parameter estimate <span class="math inline">\(\theta_0\)</span></p></li>
+<li><p>Set <span class="math inline">\(\theta_{n+1} = \theta_n + I(\theta)^{-1} d\ell(\theta_n)\)</span></p></li>
+</ul>
+<div class="incremental">
+<p><span class="math inline">\(I(\theta)\)</span> often coincides with <span class="math inline">\(-d^2 \ell(\theta)\)</span>, in which case Fisher Scoring is exactly the same as Newton’s method.</p>
+<p>Sometimes <span class="math inline">\(I(\theta)\)</span> is easier to compute than <span class="math inline">\(-d^2 \ell(\theta)\)</span>.</p>
+</div>
+</div>
+<div id="example-non-linear-least-squares" class="slide section level2">
+<h1>Example: Non-linear least squares</h1>
+<p>Inputs:</p>
+<ul class="incremental">
+<li><p>Data <span class="math inline">\(y_1,\ldots, y_n\)</span>.</p></li>
+<li><p>Covariates <span class="math inline">\(x_1,\ldots, x_n\)</span>.</p></li>
+<li><p>Parameter vector <span class="math inline">\(\theta\)</span></p></li>
+<li><p>Non-linear function <span class="math inline">\(\mu\)</span>, with <span class="math inline">\(\mu(x, \theta_1, \theta_2, \theta_3) = \frac{\theta_3}{1 + e^{-\theta_1 - \theta_2 x}}\)</span></p></li>
+<li><p>For notational purposes, let <span class="math inline">\(\mu_i (\theta) = \mu(x_i, \theta_1,\theta_2,\theta_3)\)</span>.</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>Model: <span class="math display">\[
+y_i \sim N(\mu_i(\theta), \sigma^2)
+\]</span></p>
+<p>Log likelihood: <span class="math display">\[
+\ell(\theta) = - \frac{1}{2} \sum_{i=1}^n (y_i - \mu_i(\theta))^2 + C
+\]</span></p>
+<p>Gradient/score: <span class="math display">\[
+\begin{align*}
+d\ell(\theta) &amp;= \sum_{i=1}^n (y_i - \mu_i(\theta)) d\mu_i(\theta)\\
+d\mu_i(\theta) &amp;= \begin{pmatrix}
+\frac{\theta_3 e^{-\theta_1 - \theta_2 x}}{(1 + e^{-\theta_1 - \theta_2 x})^2} \\
+\frac{x\theta_3 e^{-\theta_1 - \theta_2 x}}{(1 + e^{-\theta_1 - \theta_2 x})^2} \\
+\frac{1}{(1 + e^{-\theta_1 - \theta_2 x})^2}
+\end{pmatrix}
+\end{align*}
+\]</span></p>
+<p>Hessian: <span class="math display">\[
+d^2 \ell(\theta) = -\sum_{i=1}^n d \mu_i(\theta) d \mu_i(\theta)^T + \sum_{i=1}^n (y_i - \mu_i(\theta))d^2 \mu_i(\theta)
+\]</span></p>
+<p>Information: <span class="math display">\[
+I(\theta) = E[-d^2 \ell(\theta)] = \sum_{i=1}^n d\mu_i(\theta) d\mu_i(\theta)^T
+\]</span></p>
+</div>
+<div class="slide section level2">
+
+<p>Example</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>fisher_scoring_iterate =<span class="st"> </span><span class="cf">function</span>(x, y, theta_current) {</span>
+<span id="cb1-2"><a href="#cb1-2"></a>    score =<span class="st"> </span><span class="kw">compute_score</span>(x, y, theta_current)</span>
+<span id="cb1-3"><a href="#cb1-3"></a>    information =<span class="st"> </span><span class="kw">compute_information</span>(x, theta_current)</span>
+<span id="cb1-4"><a href="#cb1-4"></a>    theta_new =<span class="st"> </span>theta_current <span class="op">+</span><span class="st"> </span><span class="kw">solve</span>(information) <span class="op">%*%</span><span class="st"> </span>score</span>
+<span id="cb1-5"><a href="#cb1-5"></a>}</span>
+<span id="cb1-6"><a href="#cb1-6"></a>compute_score =<span class="st"> </span><span class="cf">function</span>(x, y, theta) {</span>
+<span id="cb1-7"><a href="#cb1-7"></a>    fitted =<span class="st"> </span><span class="kw">nonlin_function</span>(x, theta)</span>
+<span id="cb1-8"><a href="#cb1-8"></a>    grad_mu =<span class="st"> </span><span class="kw">compute_grad_mu</span>(x, theta)</span>
+<span id="cb1-9"><a href="#cb1-9"></a>    <span class="kw">rowSums</span>(<span class="kw">sweep</span>(grad_mu, <span class="dv">2</span>, <span class="dt">STATS =</span> y <span class="op">-</span><span class="st"> </span>fitted, <span class="dt">FUN =</span> <span class="st">&quot;*&quot;</span>))</span>
+<span id="cb1-10"><a href="#cb1-10"></a>}</span>
+<span id="cb1-11"><a href="#cb1-11"></a>compute_information =<span class="st"> </span><span class="cf">function</span>(x, theta) {</span>
+<span id="cb1-12"><a href="#cb1-12"></a>    <span class="co">## a 3 x n matrix</span></span>
+<span id="cb1-13"><a href="#cb1-13"></a>    grad_mu =<span class="st"> </span><span class="kw">compute_grad_mu</span>(x, theta)</span>
+<span id="cb1-14"><a href="#cb1-14"></a>    grad_mu <span class="op">%*%</span><span class="st"> </span><span class="kw">t</span>(grad_mu)</span>
+<span id="cb1-15"><a href="#cb1-15"></a>}</span>
+<span id="cb1-16"><a href="#cb1-16"></a>compute_grad_mu =<span class="st"> </span><span class="cf">function</span>(x, theta) {</span>
+<span id="cb1-17"><a href="#cb1-17"></a>    denom =<span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="kw">exp</span>(<span class="op">-</span>theta[<span class="dv">1</span>] <span class="op">-</span><span class="st"> </span>theta[<span class="dv">2</span>] <span class="op">*</span><span class="st"> </span>x)</span>
+<span id="cb1-18"><a href="#cb1-18"></a>    g1 =<span class="st"> </span>theta[<span class="dv">3</span>] <span class="op">*</span><span class="st"> </span><span class="kw">exp</span>(<span class="op">-</span>theta[<span class="dv">1</span>] <span class="op">-</span><span class="st"> </span>theta[<span class="dv">2</span>] <span class="op">*</span><span class="st"> </span>x) <span class="op">/</span><span class="st"> </span>denom<span class="op">^</span><span class="dv">2</span></span>
+<span id="cb1-19"><a href="#cb1-19"></a>    g2 =<span class="st"> </span>x <span class="op">*</span><span class="st"> </span>theta[<span class="dv">3</span>] <span class="op">*</span><span class="st"> </span><span class="kw">exp</span>(<span class="op">-</span>theta[<span class="dv">1</span>] <span class="op">-</span><span class="st"> </span>theta[<span class="dv">2</span>] <span class="op">*</span><span class="st"> </span>x) <span class="op">/</span><span class="st"> </span>denom<span class="op">^</span><span class="dv">2</span></span>
+<span id="cb1-20"><a href="#cb1-20"></a>    g3 =<span class="st"> </span><span class="dv">1</span> <span class="op">/</span><span class="st"> </span>denom</span>
+<span id="cb1-21"><a href="#cb1-21"></a>    <span class="kw">return</span>(<span class="kw">rbind</span>(g1, g2, g3))</span>
+<span id="cb1-22"><a href="#cb1-22"></a>}</span>
+<span id="cb1-23"><a href="#cb1-23"></a>nonlin_function =<span class="st"> </span><span class="cf">function</span>(x, theta) {</span>
+<span id="cb1-24"><a href="#cb1-24"></a>    theta[<span class="dv">3</span>] <span class="op">/</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="kw">exp</span>(<span class="op">-</span>theta[<span class="dv">1</span>] <span class="op">-</span><span class="st"> </span>theta[<span class="dv">2</span>] <span class="op">*</span><span class="st"> </span>x))</span>
+<span id="cb1-25"><a href="#cb1-25"></a>}</span></code></pre></div>
+</div>
+<div class="slide section level2">
+
+<p>At the starting values:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">library</span>(NISTnls)</span>
+<span id="cb2-2"><a href="#cb2-2"></a><span class="kw">data</span>(Ratkowsky3)</span>
+<span id="cb2-3"><a href="#cb2-3"></a>x =<span class="st"> </span>Ratkowsky3<span class="op">$</span>x</span>
+<span id="cb2-4"><a href="#cb2-4"></a>y =<span class="st"> </span>Ratkowsky3<span class="op">$</span>y</span>
+<span id="cb2-5"><a href="#cb2-5"></a>theta =<span class="st"> </span><span class="kw">c</span>(<span class="op">-</span><span class="dv">5</span>, <span class="dv">1</span>, <span class="dv">700</span>)</span>
+<span id="cb2-6"><a href="#cb2-6"></a>xgrid =<span class="st"> </span><span class="kw">seq</span>(<span class="dv">0</span>, <span class="dv">15</span>, <span class="dt">length.out =</span> <span class="dv">1000</span>)</span>
+<span id="cb2-7"><a href="#cb2-7"></a>fitted =<span class="st"> </span><span class="kw">nonlin_function</span>(xgrid, theta)</span>
+<span id="cb2-8"><a href="#cb2-8"></a><span class="kw">plot</span>(fitted <span class="op">~</span><span class="st"> </span>xgrid, <span class="dt">type =</span> <span class="st">&#39;l&#39;</span>)</span>
+<span id="cb2-9"><a href="#cb2-9"></a><span class="kw">points</span>(y <span class="op">~</span><span class="st"> </span>x)</span></code></pre></div>
+<p><img src="lecture-19-fig/unnamed-chunk-2-1.png" /></p>
+</div>
+<div class="slide section level2">
+
+<p>After one iteration:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>(<span class="dt">theta =</span> <span class="kw">fisher_scoring_iterate</span>(x, y, theta))</span></code></pre></div>
+<pre><code>##           [,1]
+## g1  -3.3298463
+## g2   0.4649027
+## g3 677.8340519</code></pre>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>fitted =<span class="st"> </span><span class="kw">nonlin_function</span>(xgrid, theta)</span>
+<span id="cb5-2"><a href="#cb5-2"></a><span class="kw">plot</span>(fitted <span class="op">~</span><span class="st"> </span>xgrid, <span class="dt">type =</span> <span class="st">&#39;l&#39;</span>)</span>
+<span id="cb5-3"><a href="#cb5-3"></a><span class="kw">points</span>(y <span class="op">~</span><span class="st"> </span>x)</span></code></pre></div>
+<p><img src="lecture-19-fig/unnamed-chunk-3-1.png" /></p>
+</div>
+<div class="slide section level2">
+
+<p>After two iterations:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a>(<span class="dt">theta =</span> <span class="kw">fisher_scoring_iterate</span>(x, y, theta))</span></code></pre></div>
+<pre><code>##           [,1]
+## g1  -4.2780124
+## g2   0.6775608
+## g3 664.2494602</code></pre>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a>fitted =<span class="st"> </span><span class="kw">nonlin_function</span>(xgrid, theta)</span>
+<span id="cb8-2"><a href="#cb8-2"></a><span class="kw">plot</span>(fitted <span class="op">~</span><span class="st"> </span>xgrid, <span class="dt">type =</span> <span class="st">&#39;l&#39;</span>)</span>
+<span id="cb8-3"><a href="#cb8-3"></a><span class="kw">points</span>(y <span class="op">~</span><span class="st"> </span>x)</span></code></pre></div>
+<p><img src="lecture-19-fig/unnamed-chunk-4-1.png" /></p>
+</div>
+<div class="slide section level2">
+
+<p>After several more iterations</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="dv">5</span>) {</span>
+<span id="cb9-2"><a href="#cb9-2"></a>    theta =<span class="st"> </span><span class="kw">fisher_scoring_iterate</span>(x, y, theta)</span>
+<span id="cb9-3"><a href="#cb9-3"></a>    <span class="kw">print</span>(theta)</span>
+<span id="cb9-4"><a href="#cb9-4"></a>}</span></code></pre></div>
+<pre><code>##          [,1]
+## g1  -4.438590
+## g2   0.687286
+## g3 702.939738
+##           [,1]
+## g1  -4.4435690
+## g2   0.6887401
+## g3 702.8457366
+##           [,1]
+## g1  -4.4424684
+## g2   0.6885486
+## g3 702.8741477
+##           [,1]
+## g1  -4.4425736
+## g2   0.6885677
+## g3 702.8711538
+##           [,1]
+## g1  -4.4425628
+## g2   0.6885657
+## g3 702.8714589</code></pre>
+</div>
+<div class="slide section level2">
+
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a>fitted =<span class="st"> </span><span class="kw">nonlin_function</span>(xgrid, theta)</span>
+<span id="cb11-2"><a href="#cb11-2"></a><span class="kw">plot</span>(fitted <span class="op">~</span><span class="st"> </span>xgrid, <span class="dt">type =</span> <span class="st">&#39;l&#39;</span>)</span>
+<span id="cb11-3"><a href="#cb11-3"></a><span class="kw">points</span>(y <span class="op">~</span><span class="st"> </span>x)</span></code></pre></div>
+<p><img src="lecture-19-fig/unnamed-chunk-6-1.png" /></p>
+</div>
+<div class="slide section level2">
+
+<p>Compare with</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a><span class="kw">nls</span>(y <span class="op">~</span><span class="st"> </span>b3 <span class="op">/</span><span class="st"> </span>((<span class="dv">1</span><span class="op">+</span><span class="kw">exp</span>(<span class="op">-</span>b1<span class="op">-</span>b2<span class="op">*</span>x))), <span class="dt">data =</span> Ratkowsky3,</span>
+<span id="cb12-2"><a href="#cb12-2"></a>    <span class="dt">start =</span> <span class="kw">c</span>(<span class="dt">b1 =</span> <span class="dv">-5</span>, <span class="dt">b2 =</span> <span class="fl">0.75</span>, <span class="dt">b3 =</span> <span class="dv">700</span>),</span>
+<span id="cb12-3"><a href="#cb12-3"></a>    <span class="dt">trace =</span> <span class="ot">TRUE</span>)</span></code></pre></div>
+<pre><code>## 12935.59 :   -5.00   0.75 700.00
+## 8971.367 :   -4.3638666   0.6765795 703.9695386
+## 8930.131 :   -4.4470558   0.6894499 702.6779778
+## 8929.885 :   -4.4420175   0.6884684 702.8858827
+## 8929.883 :   -4.4426184   0.6885758 702.8698817
+## 8929.883 :   -4.4425582   0.6885649 702.8715881</code></pre>
+<pre><code>## Nonlinear regression model
+##   model: y ~ b3/((1 + exp(-b1 - b2 * x)))
+##    data: Ratkowsky3
+##       b1       b2       b3 
+##  -4.4426   0.6886 702.8716 
+##  residual sum-of-squares: 8930
+## 
+## Number of iterations to convergence: 5 
+## Achieved convergence tolerance: 5.737e-06</code></pre>
+</div>
+<div id="quasi-newton-methods" class="slide section level2">
+<h1>Quasi-Newton Methods</h1>
+<p>Idea: If you don’t move very far in one step, the Hessian shouldn’t change that much either.</p>
+<p>Instead of recomputing the Hessian at each step, compute an approximate update.</p>
+<ul class="incremental">
+<li><p>Start with an initial guess at a parameter <span class="math inline">\(\theta^{(0)}\)</span>.</p></li>
+<li><p>Let <span class="math inline">\(A^{(0)} = d^2 \ell(\theta)\)</span>.</p></li>
+<li><p>Set <span class="math inline">\(\theta^{(n+1)} = \theta^{(n)} - (A^{(n)})^{-1} d \ell(\theta^{(n)})\)</span></p></li>
+<li><p>Set <span class="math inline">\(A^{(n+1)} = A^{(n)} - c^{(n)} v^{(n)} (v^{(n)})^T\)</span></p></li>
+</ul>
+<p><span class="math inline">\(A^{(n)}\)</span> are approximations to the Hessian.</p>
+</div>
+<div class="slide section level2">
+
+<p>Idea behind Hessian update: Taylor series again:</p>
+<p><span class="math display">\[
+d\ell(\theta^{(n)}) \approx d\ell(\theta^{(n+1)}) + d^2 \ell(\theta^{(n+1)})(\theta^{(n)} - \theta^{(n+1)})
+\]</span></p>
+<div class="incremental">
+<p>Rearranging: <span class="math display">\[
+d\ell(\theta^{(n)}) - d\ell(\theta^{(n+1)})\approx d^2 \ell(\theta^{(n+1)})(\theta^{(n)} - \theta^{(n+1)})
+\]</span></p>
+</div>
+<div class="incremental">
+<p>Finding an approximation <span class="math inline">\(A^{(n+1)}\)</span> of <span class="math inline">\(-d^2\ell(\theta^{(n+1)})\)</span> that satisfies the equation above is called the <em>secant condition</em>.</p>
+<p>Several different ways to make the approximation:</p>
+<ul class="incremental">
+<li><p>Symmetric rank-1 update is Davidson’s method, described in Lange.</p></li>
+<li><p>Symmetric rank-2 update is BFGS (Broyden–Fletcher–Goldfarb–Shanno).</p></li>
+</ul>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>For notation, let <span class="math display">\[
+\begin{align*}
+g^{(n)} &amp;= d\ell(\theta^{(n)}) - d \ell(\theta^{(n+1)}) \\
+s^{(n)} &amp;= \theta^{(n)} - \theta^{(n+1)}
+\end{align*}
+\]</span></p>
+<p>We can rewrite the secant condition <span class="math display">\[
+d\ell(\theta^{(n)}) - d\ell(\theta^{(n+1)})\approx d^2 \ell(\theta^{(n+1)})(\theta^{(n)} - \theta^{(n+1)})
+\]</span> as <span class="math display">\[
+-A^{(n+1)} s^{(n)} = g^{(n)}
+\]</span></p>
+<p>Davidson’s method is a symmetric rank-1 update.</p>
+<p><span class="math display">\[
+A^{(n+1)} = A^{(n)} - c^{(n)} v^{(n)} (v^{(n)})^T
+\]</span></p>
+<p>where <span class="math display">\[
+c^{(n)} = \frac{1}{(g^{(n)} + A^{(n)} s^{(n)})^T s^{(n)}} \\
+v^{(n)} = g^{(n)} + A^{(n)} s^{(n)}
+\]</span></p>
+<p>(verify on your own that this satisfies the secant condition)</p>
+</div>
+<div class="slide section level2">
+
+<p>BFGS is a symmetric rank-2 update.</p>
+<p><span class="math display">\[
+A^{(n+1)} = A^{(n)} + \alpha u u^T + \beta v v^T
+\]</span></p>
+<p><span class="math inline">\(u = y^{(k)}\)</span>, <span class="math inline">\(v = A^{(n)} s^{(n)}\)</span>, <span class="math inline">\(\alpha = -1 / (g^{(k)})^T s^{(k)}\)</span>, <span class="math inline">\(\beta = - 1 / (s^{(k)})^T B^{(k)} s^{(k)}\)</span></p>
+<div class="incremental">
+<ul class="incremental">
+<li><p>BFGS is in R’s <code>optim</code>.</p></li>
+<li><p>The rank-1 updating method doesn’t ensure that the approximate Hessian remains positive definite, while the rank-2 updating method (BFGS) does.</p></li>
+</ul>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Why are these useful?</p>
+<ul class="incremental">
+<li><p>This makes it easy to compute an approximation of <span class="math inline">\(-d^2 \ell(\theta)\)</span>, but we still need to invert it to take an approximate Newton step</p></li>
+<li><p><a href="https://en.wikipedia.org/wiki/Woodbury_matrix_identity">Woodbury matrix identity</a> allows us to compute the inverse of a low-rank update quickly</p></li>
+</ul>
+<p><span class="math display">\[
+(A + UCV)^{-1}= A^{-1} - A^{-1} U(C^{-1} + VA^{-1} U)^{-1} V A^{-1}
+\]</span></p>
+</div>
+<div id="gradient-descent" class="slide section level2">
+<h1>Gradient descent</h1>
+<p>Our problem:</p>
+<p><span class="math display">\[
+\text{minimize}_x \quad f(x)
+\]</span></p>
+<p>Note that we’re doing minimization instead of maximization now so that the notation matches the reading, but any minimization problem can be recast as a maximization and vice versa.</p>
+</div>
+<div id="descent-methods" class="slide section level2">
+<h1>Descent Methods</h1>
+<p>General algorithm:</p>
+<p>Start with a point <span class="math inline">\(x\)</span></p>
+<p>Repeat</p>
+<ul class="incremental">
+<li><p>Choose a descent direction <span class="math inline">\(\Delta x\)</span></p></li>
+<li><p>Choose step size <span class="math inline">\(t\)</span>.</p></li>
+<li><p>Update: <span class="math inline">\(x \leftarrow x + t \Delta x\)</span></p></li>
+</ul>
+<p>Until the stopping criterion is satisfied, usually <span class="math inline">\(\|\nabla f(x)\|_2 \le \epsilon\)</span>.</p>
+</div>
+<div id="line-search-types-exact-line-search" class="slide section level2">
+<h1>Line search types: Exact line search</h1>
+<p>Step size <span class="math inline">\(t\)</span> found as <span class="math display">\[
+t = \text{argmin}_{t &gt; 0}f(x + t \Delta x)
+\]</span></p>
+<p>This can be useful if there is an analytic or otherwise quick method of finding the minimum of the function restricted to a ray.</p>
+</div>
+<div id="line-search-types-backtracking-line-search" class="slide section level2">
+<h1>Line search types: Backtracking line search</h1>
+<ul class="incremental">
+<li><p>Step size <span class="math inline">\(t\)</span> found with an iterative method.</p></li>
+<li><p>Parameters <span class="math inline">\(\alpha \in (0, 1/2)\)</span>, <span class="math inline">\(\beta \in (0,1)\)</span> that you specify.</p></li>
+<li><p>Algorithm: Start at <span class="math inline">\(t = 1\)</span>, repeat <span class="math inline">\(t \leftarrow \beta t\)</span> until <span class="math display">\[
+f(x + t \Delta x) &lt; f(x) + \alpha t \nabla f(x)^T \Delta x
+\]</span></p></li>
+</ul>
+<p><img src="backtracking-image.png" /></p>
+</div>
+<div id="gradient-descent-1" class="slide section level2">
+<h1>Gradient descent</h1>
+<p>In gradient descent, we take <span class="math inline">\(\Delta x = - \nabla f(x)\)</span>.</p>
+<p>Overall algorithm:</p>
+<p>Start with a point <span class="math inline">\(x\)</span></p>
+<p>Repeat</p>
+<ul class="incremental">
+<li><p><span class="math inline">\(\Delta x \leftarrow - \nabla f(x)\)</span>.</p></li>
+<li><p>Line search: Choose step size <span class="math inline">\(t\)</span> by either backtracking line search or exact line search.</p></li>
+<li><p>Update: <span class="math inline">\(x \leftarrow x + t \Delta x\)</span></p></li>
+</ul>
+<p>Until the stopping criterion is satisfied, usually <span class="math inline">\(\|\nabla f(x)\|_2 \le \epsilon\)</span>.</p>
+</div>
+<div id="gradient-descent-example-in-pictures" class="slide section level2">
+<h1>Gradient descent example in pictures</h1>
+<p><img src="gradient-descent-backtracking.png" /></p>
+<p>Iterates of gradient descent with backtracking line search, for minimizing <span class="math inline">\(f(x_1, x_2) = \exp(x_1 + 3 x_2 - .1) + \exp(x_1 - 3 x_2 - .1) + \exp(-x_1 - .1)\)</span></p>
+<p>Contours represent the boundaries of the <em>sublevel sets</em> of the function: <span class="math inline">\(\{x : f(x) \le a\}\)</span>.</p>
+</div>
+<div id="gradient-descent-example-for-normal-mean" class="slide section level2">
+<h1>Gradient descent example for normal mean</h1>
+<p>Suppose <span class="math inline">\(x_1, \ldots, x_n \sim N(\theta, 1)\)</span>.</p>
+<p>We want to know <span class="math inline">\(\theta\)</span>, and we will get <span class="math inline">\(\hat \theta\)</span> by minimizing the negative log likelihood: <span class="math display">\[
+-\ell(\theta) = C + \frac{1}{2} \sum_{i=1}^n (x_i - \theta)^2
+\]</span></p>
+<p>A descent direction for the negative log likelihood is the negative derivative of the negative log likelihood: <span class="math display">\[
+-d(-\ell(\theta)) = \sum_{i=1}^n (x_i - \theta)
+\]</span></p>
+</div>
+<div class="slide section level2">
+
+<p>Functions for backtrakcing gradient descent:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1"></a>backtrack_desc =<span class="st"> </span><span class="cf">function</span>(our_fn, our_grad, start, alpha, beta, data) {</span>
+<span id="cb15-2"><a href="#cb15-2"></a>  theta =<span class="st"> </span>start</span>
+<span id="cb15-3"><a href="#cb15-3"></a>  step_size =<span class="st"> </span><span class="kw">backtracking</span>(our_fn, our_grad, theta, alpha, beta, data)</span>
+<span id="cb15-4"><a href="#cb15-4"></a>  new_theta =<span class="st"> </span>theta <span class="op">+</span><span class="st"> </span>step_size <span class="op">*</span><span class="st"> </span><span class="kw">our_grad</span>(theta, data)</span>
+<span id="cb15-5"><a href="#cb15-5"></a>  <span class="kw">return</span>(new_theta)</span>
+<span id="cb15-6"><a href="#cb15-6"></a>}</span>
+<span id="cb15-7"><a href="#cb15-7"></a></span>
+<span id="cb15-8"><a href="#cb15-8"></a>backtracking =<span class="st"> </span><span class="cf">function</span>(our_fn, our_grad, theta, alpha, beta, data) {</span>
+<span id="cb15-9"><a href="#cb15-9"></a>    t =<span class="st"> </span><span class="dv">1</span></span>
+<span id="cb15-10"><a href="#cb15-10"></a>    fn_current =<span class="st"> </span><span class="kw">our_fn</span>(theta, data)</span>
+<span id="cb15-11"><a href="#cb15-11"></a>    grad_current =<span class="st"> </span><span class="kw">our_grad</span>(theta, data)</span>
+<span id="cb15-12"><a href="#cb15-12"></a>  <span class="cf">while</span>(<span class="kw">our_fn</span>(theta <span class="op">+</span><span class="st"> </span>t <span class="op">*</span><span class="st"> </span>grad_current, data) <span class="op">&gt;</span><span class="st"> </span>(fn_current <span class="op">+</span><span class="st"> </span>alpha <span class="op">*</span><span class="st"> </span>t <span class="op">*</span><span class="st"> </span><span class="kw">t</span>(grad_current) <span class="op">%*%</span><span class="st"> </span>grad_current)) {</span>
+<span id="cb15-13"><a href="#cb15-13"></a>    t =<span class="st"> </span>beta <span class="op">*</span><span class="st"> </span>t</span>
+<span id="cb15-14"><a href="#cb15-14"></a>  }</span>
+<span id="cb15-15"><a href="#cb15-15"></a>  <span class="kw">return</span>(t)</span>
+<span id="cb15-16"><a href="#cb15-16"></a>}</span></code></pre></div>
+</div>
+<div class="slide section level2">
+
+<p>Functions for the log likelihood:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a>neg_log_lik =<span class="st"> </span><span class="cf">function</span>(theta, x) {</span>
+<span id="cb16-2"><a href="#cb16-2"></a>    <span class="kw">return</span>(.<span class="dv">5</span> <span class="op">*</span><span class="st"> </span><span class="kw">sum</span>((x <span class="op">-</span><span class="st"> </span>theta)<span class="op">^</span><span class="dv">2</span>))</span>
+<span id="cb16-3"><a href="#cb16-3"></a>}</span>
+<span id="cb16-4"><a href="#cb16-4"></a>neg_deriv =<span class="st"> </span><span class="cf">function</span>(theta, x) {</span>
+<span id="cb16-5"><a href="#cb16-5"></a>    <span class="kw">return</span>(<span class="kw">sum</span>(x <span class="op">-</span><span class="st"> </span>theta))</span>
+<span id="cb16-6"><a href="#cb16-6"></a>}</span>
+<span id="cb16-7"><a href="#cb16-7"></a><span class="kw">set.seed</span>(<span class="dv">0</span>)</span>
+<span id="cb16-8"><a href="#cb16-8"></a>x =<span class="st"> </span><span class="kw">rnorm</span>(<span class="dt">n =</span> <span class="dv">20</span>, <span class="dt">mean =</span> <span class="dv">5</span>, <span class="dt">sd =</span> <span class="dv">1</span>)</span>
+<span id="cb16-9"><a href="#cb16-9"></a><span class="kw">mean</span>(x)</span></code></pre></div>
+<pre><code>## [1] 4.998221</code></pre>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a>theta =<span class="st"> </span><span class="dv">0</span></span>
+<span id="cb18-2"><a href="#cb18-2"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="dv">10</span>) {</span>
+<span id="cb18-3"><a href="#cb18-3"></a>    theta =<span class="st"> </span><span class="kw">backtrack_desc</span>(neg_log_lik, neg_deriv, <span class="dt">start =</span> theta, <span class="dt">alpha =</span> <span class="fl">.1</span>, <span class="dt">beta =</span> <span class="fl">.2</span>, <span class="dt">data =</span> x)</span>
+<span id="cb18-4"><a href="#cb18-4"></a>    <span class="kw">cat</span>(<span class="kw">sprintf</span>(<span class="st">&quot;Value of theta at iteration %i: %.2f</span><span class="ch">\n</span><span class="st">&quot;</span>, i, theta))</span>
+<span id="cb18-5"><a href="#cb18-5"></a>}</span></code></pre></div>
+<pre><code>## Value of theta at iteration 1: 4.00
+## Value of theta at iteration 2: 4.80
+## Value of theta at iteration 3: 4.96
+## Value of theta at iteration 4: 4.99
+## Value of theta at iteration 5: 5.00
+## Value of theta at iteration 6: 5.00
+## Value of theta at iteration 7: 5.00
+## Value of theta at iteration 8: 5.00
+## Value of theta at iteration 9: 5.00
+## Value of theta at iteration 10: 5.00</code></pre>
+</div>
+<div id="summing-up" class="slide section level2">
+<h1>Summing up</h1>
+<ul class="incremental">
+<li><p>Everything we’ve seen has an interpretation as Newton’s method with some approximation of the Hessian standing in for the real thing</p></li>
+<li><p>You need to trade off between using the analytic information you have about the problem and computational complexity.</p></li>
+</ul>
+</div>
+</body>
+</html>

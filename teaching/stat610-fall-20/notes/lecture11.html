@@ -1,0 +1,495 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title>lecture11</title>
+  <style type="text/css">
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <style type="text/css">
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="https://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-AMS_CHTML-full" type="text/javascript"></script>
+  <script src="https://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div id="testing-and-debugging" class="slide section level2">
+<h1>Testing and debugging</h1>
+<p>Logistics</p>
+<ul class="incremental">
+<li><p>Lab this week.</p></li>
+<li><p>Homework due Friday.</p></li>
+<li><p>The next homework (on debugging) is on the website now.</p></li>
+</ul>
+<p>Today:</p>
+<ul class="incremental">
+<li>Testing, test-based design</li>
+</ul>
+<p>Reading</p>
+<ul class="incremental">
+<li><a href="https://journal.r-project.org/archive/2011/RJ-2011-002/RJ-2011-002.pdf">Wickham, “testthat: Get Started with Testing”</a>. The details are slightly out of date compared with the current version of the package, but the philosophy is the same.</li>
+</ul>
+</div>
+<div id="informal-testing" class="slide section level2">
+<h1>Informal testing</h1>
+<ul class="incremental">
+<li><p>We’ve done informal testing when debugging, and you’ve probably done it on your own.</p></li>
+<li><p>Check whether the output is what we expect, either by inspection or using <code>==</code> or <code>identical</code> or something similar.</p></li>
+</ul>
+</div>
+<div id="simple-cases" class="slide section level2">
+<h1>Simple cases</h1>
+<p>Idea: make sure your function works on cases where you know what the answer should be.</p>
+<p>You’re checking that the core behavior is correct.</p>
+</div>
+<div class="slide section level2">
+
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="co">## returns the minimum value of d[i,j], i != j, and</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="co">## the row/col attaining that minimum, for square</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a><span class="co">## symmetric matrix d; no special policy on ties;</span></span>
+<span id="cb1-4"><a href="#cb1-4"></a><span class="co">## motivated by distance matrices</span></span>
+<span id="cb1-5"><a href="#cb1-5"></a>mind =<span class="st"> </span><span class="cf">function</span>(d) {</span>
+<span id="cb1-6"><a href="#cb1-6"></a>    n =<span class="st"> </span><span class="kw">nrow</span>(d)</span>
+<span id="cb1-7"><a href="#cb1-7"></a>    <span class="co">## add a column to identify row number for apply()</span></span>
+<span id="cb1-8"><a href="#cb1-8"></a>    dd =<span class="st"> </span><span class="kw">cbind</span>(d, <span class="dv">1</span><span class="op">:</span>n)</span>
+<span id="cb1-9"><a href="#cb1-9"></a>    wmins =<span class="st"> </span><span class="kw">apply</span>(dd[<span class="op">-</span>n, ], <span class="dv">1</span>, imin)</span>
+<span id="cb1-10"><a href="#cb1-10"></a>    <span class="co">## wmins will be 2xn, 1st row being indices and 2nd being values</span></span>
+<span id="cb1-11"><a href="#cb1-11"></a>    i =<span class="st"> </span><span class="kw">which.min</span>(wmins[<span class="dv">1</span>, ])</span>
+<span id="cb1-12"><a href="#cb1-12"></a>    j =<span class="st"> </span>wmins[<span class="dv">2</span>, i]</span>
+<span id="cb1-13"><a href="#cb1-13"></a>    <span class="kw">return</span>(<span class="kw">c</span>(d[i, j], i, j))</span>
+<span id="cb1-14"><a href="#cb1-14"></a>}</span>
+<span id="cb1-15"><a href="#cb1-15"></a></span>
+<span id="cb1-16"><a href="#cb1-16"></a><span class="co">## finds the location, value of the minimum in a row x</span></span>
+<span id="cb1-17"><a href="#cb1-17"></a>imin =<span class="st"> </span><span class="cf">function</span>(x) {</span>
+<span id="cb1-18"><a href="#cb1-18"></a>    n =<span class="st"> </span><span class="kw">length</span>(x)</span>
+<span id="cb1-19"><a href="#cb1-19"></a>    i =<span class="st"> </span>x[n]</span>
+<span id="cb1-20"><a href="#cb1-20"></a>    j =<span class="st"> </span><span class="kw">which.min</span>(x[(i <span class="op">+</span><span class="st"> </span><span class="dv">1</span>)<span class="op">:</span>(n <span class="op">-</span><span class="st"> </span><span class="dv">1</span>)])</span>
+<span id="cb1-21"><a href="#cb1-21"></a>    <span class="kw">return</span>(<span class="kw">c</span>(j, x[j]))</span>
+<span id="cb1-22"><a href="#cb1-22"></a>}</span>
+<span id="cb1-23"><a href="#cb1-23"></a></span>
+<span id="cb1-24"><a href="#cb1-24"></a>m =<span class="st"> </span><span class="kw">rbind</span>(<span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">12</span>, <span class="dv">5</span>), <span class="kw">c</span>(<span class="dv">12</span>, <span class="dv">0</span>, <span class="dv">8</span>), <span class="kw">c</span>(<span class="dv">5</span>, <span class="dv">8</span>, <span class="dv">0</span>))</span></code></pre></div>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<p>Let’s write some tests for <code>imin</code>.</p>
+<p>The comment says that it finds the location and value of the minimum in a row x, so let’s see if it does.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="co">## location of the minimum</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a>x =<span class="st"> </span><span class="dv">1</span><span class="op">:</span><span class="dv">5</span></span>
+<span id="cb2-3"><a href="#cb2-3"></a>index_and_value =<span class="st"> </span><span class="kw">imin</span>(x)</span>
+<span id="cb2-4"><a href="#cb2-4"></a><span class="co">## should be 1, per the comment</span></span>
+<span id="cb2-5"><a href="#cb2-5"></a>index_and_value[<span class="dv">1</span>]</span></code></pre></div>
+<pre><code>## [1] 3</code></pre>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="co">## should be 1, per the comment</span></span>
+<span id="cb4-2"><a href="#cb4-2"></a>index_and_value[<span class="dv">2</span>]</span></code></pre></div>
+<pre><code>## [1] 3</code></pre>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>The comment was misleading: what the function is supposed to do is to take a vector x whose last element indicates the row the vector was taken from, and finds the minimum index among locations corresponding to the upper triangle of the initial matrix.</p>
+<p>This is very confusing, and it’s why there was a bug in the function to begin with.</p>
+<p>We might be tempted to change the function in the following way:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a>imin =<span class="st"> </span><span class="cf">function</span>(x) {</span>
+<span id="cb6-2"><a href="#cb6-2"></a>    n =<span class="st"> </span><span class="kw">length</span>(x)</span>
+<span id="cb6-3"><a href="#cb6-3"></a>    row =<span class="st"> </span>x[n]</span>
+<span id="cb6-4"><a href="#cb6-4"></a>    upper_tri_idx =<span class="st"> </span>(row <span class="op">+</span><span class="st"> </span><span class="dv">1</span>)<span class="op">:</span>(n <span class="op">-</span><span class="st"> </span><span class="dv">1</span>)</span>
+<span id="cb6-5"><a href="#cb6-5"></a>    min_idx_in_upper_tri =<span class="st"> </span><span class="kw">which.min</span>(x[upper_tri_idx])</span>
+<span id="cb6-6"><a href="#cb6-6"></a>    idx =<span class="st"> </span>upper_tri_idx[min_idx_in_upper_tri]</span>
+<span id="cb6-7"><a href="#cb6-7"></a>    value =<span class="st"> </span>x[idx]</span>
+<span id="cb6-8"><a href="#cb6-8"></a>    <span class="kw">return</span>(<span class="kw">c</span>(idx, value))</span>
+<span id="cb6-9"><a href="#cb6-9"></a>}</span></code></pre></div>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<p>And then we can test:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a>row =<span class="st"> </span><span class="dv">1</span></span>
+<span id="cb7-2"><a href="#cb7-2"></a>x =<span class="st"> </span><span class="kw">c</span>(<span class="dv">5</span><span class="op">:</span><span class="dv">1</span>, row)</span>
+<span id="cb7-3"><a href="#cb7-3"></a>index_and_value =<span class="st"> </span><span class="kw">imin</span>(x)</span>
+<span id="cb7-4"><a href="#cb7-4"></a><span class="co">## index of the minimum should be 5</span></span>
+<span id="cb7-5"><a href="#cb7-5"></a>index_and_value[<span class="dv">1</span>] <span class="op">==</span><span class="st"> </span><span class="dv">5</span></span></code></pre></div>
+<pre><code>## [1] TRUE</code></pre>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a><span class="co">## value of the minimum should be 1</span></span>
+<span id="cb9-2"><a href="#cb9-2"></a>index_and_value[<span class="dv">2</span>] <span class="op">==</span><span class="st"> </span><span class="dv">1</span></span></code></pre></div>
+<pre><code>## [1] TRUE</code></pre>
+</div>
+</div>
+<div id="edge-cases" class="slide section level2">
+<h1>Edge cases</h1>
+<p>Idea: If the input to the function isn’t exactly what you expect, what happens?</p>
+<ul class="incremental">
+<li><p>You’re checking that if something funny happens (bad input from a user or another function), your function will (best case) still work correctly or (at minimum) fail informatively.</p></li>
+<li><p>Very important to make sure that the function doesn’t fail silently: it looks like it’s producing good results, but they’re actually wrong.</p></li>
+<li><p>Most important if you are not directly providing the input to the function.</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<p>Let’s try testing the <code>imin</code> function again with an edge case:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a>row =<span class="st"> </span><span class="dv">5</span></span>
+<span id="cb11-2"><a href="#cb11-2"></a>x =<span class="st"> </span><span class="kw">c</span>(<span class="dv">5</span><span class="op">:</span><span class="dv">1</span>, row)</span>
+<span id="cb11-3"><a href="#cb11-3"></a>index_and_value =<span class="st"> </span><span class="kw">imin</span>(x)</span>
+<span id="cb11-4"><a href="#cb11-4"></a><span class="co">## there aren&#39;t any elements in the upper triangle in row 5, so these should be some sort of NA</span></span>
+<span id="cb11-5"><a href="#cb11-5"></a>index_and_value</span></code></pre></div>
+<pre><code>## [1] 5 1</code></pre>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Based on our test, we might modify our function to look like this:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a>imin =<span class="st"> </span><span class="cf">function</span>(x) {</span>
+<span id="cb13-2"><a href="#cb13-2"></a>    n =<span class="st"> </span><span class="kw">length</span>(x)</span>
+<span id="cb13-3"><a href="#cb13-3"></a>    row =<span class="st"> </span>x[n]</span>
+<span id="cb13-4"><a href="#cb13-4"></a>    <span class="cf">if</span>(row <span class="op">&gt;=</span><span class="st"> </span>(<span class="kw">length</span>(x) <span class="op">-</span><span class="st"> </span><span class="dv">1</span>)) {</span>
+<span id="cb13-5"><a href="#cb13-5"></a>        upper_tri_idx =<span class="st"> </span><span class="kw">c</span>()</span>
+<span id="cb13-6"><a href="#cb13-6"></a>    } <span class="cf">else</span> {</span>
+<span id="cb13-7"><a href="#cb13-7"></a>        upper_tri_idx =<span class="st"> </span>(row <span class="op">+</span><span class="st"> </span><span class="dv">1</span>)<span class="op">:</span>(n <span class="op">-</span><span class="st"> </span><span class="dv">1</span>)</span>
+<span id="cb13-8"><a href="#cb13-8"></a>    }</span>
+<span id="cb13-9"><a href="#cb13-9"></a>    idx_in_upper_tri =<span class="st"> </span><span class="kw">which.min</span>(x[upper_tri_idx])</span>
+<span id="cb13-10"><a href="#cb13-10"></a>    idx =<span class="st"> </span>upper_tri_idx[idx_in_upper_tri]</span>
+<span id="cb13-11"><a href="#cb13-11"></a>    value =<span class="st"> </span>x[idx]</span>
+<span id="cb13-12"><a href="#cb13-12"></a>    <span class="kw">return</span>(<span class="kw">c</span>(idx, value))</span>
+<span id="cb13-13"><a href="#cb13-13"></a>}</span></code></pre></div>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<p>And try testing again:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a>row =<span class="st"> </span><span class="dv">5</span></span>
+<span id="cb14-2"><a href="#cb14-2"></a>x =<span class="st"> </span><span class="kw">c</span>(<span class="dv">5</span><span class="op">:</span><span class="dv">1</span>, row)</span>
+<span id="cb14-3"><a href="#cb14-3"></a>index_and_value =<span class="st"> </span><span class="kw">imin</span>(x)</span>
+<span id="cb14-4"><a href="#cb14-4"></a><span class="co">## there aren&#39;t any elements in the upper triangle in row 5, so these should be some sort of NA</span></span>
+<span id="cb14-5"><a href="#cb14-5"></a>index_and_value</span></code></pre></div>
+<pre><code>## numeric(0)</code></pre>
+</div>
+</div>
+<div id="the-real-moral-of-the-story" class="slide section level2">
+<h1>The real moral of the story</h1>
+<p>This is a bad way to write functions to compute the minimum, we should throw it all out and start over.</p>
+</div>
+<div id="test-based-design" class="slide section level2">
+<h1>Test-based design</h1>
+<ul class="incremental">
+<li><p>Decide what you want your function(s) to do</p></li>
+<li><p>Write tests for those behaviors</p></li>
+<li><p>Write the functions, check whether they pass the tests</p></li>
+<li><p>If they pass, you’re done! Otherwise, cycle through changing the functions and testing.</p></li>
+</ul>
+</div>
+<div id="example" class="slide section level2">
+<h1>Example</h1>
+<p>I want to make a program that performs gradient descent for functions where I don’t have the derivative in closed form.</p>
+<p>I need to:</p>
+<ul class="incremental">
+<li><p>Decide on the form the function should take.</p></li>
+<li><p>Write tests for the function.</p></li>
+<li><p>Write the function.</p></li>
+<li><p>Run the tests.</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>Form the function should take:</p>
+<ul class="incremental">
+<li><p>The first argument is the function I want the derivative of</p></li>
+<li><p>The second argument is the value at which to compute the derivative.</p></li>
+</ul>
+<div class="incremental">
+<p>Then I write tests:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a><span class="co">## derivative of x^2, evaluated at x = 1</span></span>
+<span id="cb16-2"><a href="#cb16-2"></a><span class="kw">deriv</span>(<span class="cf">function</span>(x) x<span class="op">^</span><span class="dv">2</span>, <span class="dv">1</span>) <span class="op">==</span><span class="st"> </span><span class="dv">2</span></span>
+<span id="cb16-3"><a href="#cb16-3"></a><span class="co">## derivative of 2 * x, evaluated at x = -5</span></span>
+<span id="cb16-4"><a href="#cb16-4"></a><span class="kw">deriv</span>(<span class="cf">function</span>(x) <span class="dv">2</span> <span class="op">*</span><span class="st"> </span>x, <span class="dv">-5</span>) <span class="op">==</span><span class="st"> </span><span class="dv">2</span></span>
+<span id="cb16-5"><a href="#cb16-5"></a><span class="co">## derivative of x^2, evaluated at x = 0</span></span>
+<span id="cb16-6"><a href="#cb16-6"></a><span class="kw">deriv</span>(<span class="cf">function</span>(x) x<span class="op">^</span><span class="dv">2</span>, <span class="dv">0</span>) <span class="op">==</span><span class="st"> </span><span class="dv">0</span></span>
+<span id="cb16-7"><a href="#cb16-7"></a><span class="co">## derivative of e^x, evaluated at x = 0</span></span>
+<span id="cb16-8"><a href="#cb16-8"></a><span class="kw">deriv</span>(<span class="cf">function</span>(x) <span class="kw">exp</span>(x), <span class="dv">0</span>) <span class="op">==</span><span class="st"> </span><span class="kw">exp</span>(<span class="dv">0</span>)</span></code></pre></div>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Then I write the following function, based on advice from <a href="https://en.wikipedia.org/wiki/Numerical_differentiation">wikipedia</a>:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1"></a>deriv =<span class="st"> </span><span class="cf">function</span>(fn, x) {</span>
+<span id="cb17-2"><a href="#cb17-2"></a>    eps =<span class="st"> </span>.Machine<span class="op">$</span>double.eps</span>
+<span id="cb17-3"><a href="#cb17-3"></a>    h =<span class="st"> </span><span class="kw">sqrt</span>(eps) <span class="op">*</span><span class="st"> </span>x</span>
+<span id="cb17-4"><a href="#cb17-4"></a>    deriv =<span class="st"> </span>(<span class="kw">fn</span>(x <span class="op">+</span><span class="st"> </span>h) <span class="op">-</span><span class="st"> </span><span class="kw">fn</span>(x <span class="op">-</span><span class="st"> </span>h)) <span class="op">/</span><span class="st"> </span>(<span class="dv">2</span> <span class="op">*</span><span class="st"> </span>h)</span>
+<span id="cb17-5"><a href="#cb17-5"></a>    <span class="kw">return</span>(deriv)</span>
+<span id="cb17-6"><a href="#cb17-6"></a>}</span></code></pre></div>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<p>And run through my tests:</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a><span class="co">## derivative of x^2, evaluated at x = 1</span></span>
+<span id="cb18-2"><a href="#cb18-2"></a><span class="kw">deriv</span>(<span class="cf">function</span>(x) x<span class="op">^</span><span class="dv">2</span>, <span class="dv">1</span>) <span class="op">==</span><span class="st"> </span><span class="dv">2</span></span></code></pre></div>
+<pre><code>## [1] TRUE</code></pre>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a><span class="co">## derivative of 2 * x, evaluated at x = -5</span></span>
+<span id="cb20-2"><a href="#cb20-2"></a><span class="kw">deriv</span>(<span class="cf">function</span>(x) <span class="dv">2</span> <span class="op">*</span><span class="st"> </span>x, <span class="dv">-5</span>) <span class="op">==</span><span class="st"> </span><span class="dv">2</span></span></code></pre></div>
+<pre><code>## [1] TRUE</code></pre>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1"></a><span class="co">## derivative of x^2, evaluated at x = 0</span></span>
+<span id="cb22-2"><a href="#cb22-2"></a><span class="kw">deriv</span>(<span class="cf">function</span>(x) x<span class="op">^</span><span class="dv">2</span>, <span class="dv">0</span>) <span class="op">==</span><span class="st"> </span><span class="dv">0</span></span></code></pre></div>
+<pre><code>## [1] NA</code></pre>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1"></a><span class="co">## derivative of 2 * x, evaluated at x = 0</span></span>
+<span id="cb24-2"><a href="#cb24-2"></a><span class="kw">deriv</span>(<span class="cf">function</span>(x) <span class="dv">2</span> <span class="op">*</span><span class="st"> </span>x, <span class="dv">0</span>) <span class="op">==</span><span class="st"> </span><span class="dv">2</span></span></code></pre></div>
+<pre><code>## [1] NA</code></pre>
+<p>The third and fourth tests failed, and not just because of precision. Why?</p>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Then we can modify the function to evaluate derivatives at <span class="math inline">\(x = 0\)</span></p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1"></a>deriv =<span class="st"> </span><span class="cf">function</span>(fn, x) {</span>
+<span id="cb26-2"><a href="#cb26-2"></a>    eps =<span class="st"> </span>.Machine<span class="op">$</span>double.eps</span>
+<span id="cb26-3"><a href="#cb26-3"></a>    <span class="cf">if</span>(x <span class="op">==</span><span class="st"> </span><span class="dv">0</span>) {</span>
+<span id="cb26-4"><a href="#cb26-4"></a>        h =<span class="st"> </span><span class="dv">2</span> <span class="op">*</span><span class="st"> </span>eps</span>
+<span id="cb26-5"><a href="#cb26-5"></a>    } <span class="cf">else</span> {</span>
+<span id="cb26-6"><a href="#cb26-6"></a>        h =<span class="st"> </span><span class="kw">sqrt</span>(eps) <span class="op">*</span><span class="st"> </span>x</span>
+<span id="cb26-7"><a href="#cb26-7"></a>    }</span>
+<span id="cb26-8"><a href="#cb26-8"></a>    deriv =<span class="st"> </span>(<span class="kw">fn</span>(x <span class="op">+</span><span class="st"> </span>h) <span class="op">-</span><span class="st"> </span><span class="kw">fn</span>(x <span class="op">-</span><span class="st"> </span>h)) <span class="op">/</span><span class="st"> </span>(<span class="dv">2</span> <span class="op">*</span><span class="st"> </span>h)</span>
+<span id="cb26-9"><a href="#cb26-9"></a>    <span class="kw">return</span>(deriv)</span>
+<span id="cb26-10"><a href="#cb26-10"></a>}</span></code></pre></div>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<p>Run through the tests again:</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1"></a><span class="co">## derivative of x^2, evaluated at x = 1</span></span>
+<span id="cb27-2"><a href="#cb27-2"></a><span class="kw">deriv</span>(<span class="cf">function</span>(x) x<span class="op">^</span><span class="dv">2</span>, <span class="dv">1</span>) <span class="op">==</span><span class="st"> </span><span class="dv">2</span></span></code></pre></div>
+<pre><code>## [1] TRUE</code></pre>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1"></a><span class="co">## derivative of 2 * x, evaluated at x = -5</span></span>
+<span id="cb29-2"><a href="#cb29-2"></a><span class="kw">deriv</span>(<span class="cf">function</span>(x) <span class="dv">2</span> <span class="op">*</span><span class="st"> </span>x, <span class="dv">-5</span>) <span class="op">==</span><span class="st"> </span><span class="dv">2</span></span></code></pre></div>
+<pre><code>## [1] TRUE</code></pre>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1"></a><span class="co">## derivative of x^2, evaluated at x = 0</span></span>
+<span id="cb31-2"><a href="#cb31-2"></a><span class="kw">deriv</span>(<span class="cf">function</span>(x) x<span class="op">^</span><span class="dv">2</span>, <span class="dv">0</span>) <span class="op">==</span><span class="st"> </span><span class="dv">0</span></span></code></pre></div>
+<pre><code>## [1] TRUE</code></pre>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1"></a><span class="co">## derivative of 2 * x, evaluated at x = 0</span></span>
+<span id="cb33-2"><a href="#cb33-2"></a><span class="kw">deriv</span>(<span class="cf">function</span>(x) <span class="dv">2</span> <span class="op">*</span><span class="st"> </span>x, <span class="dv">0</span>) <span class="op">==</span><span class="st"> </span><span class="dv">2</span></span></code></pre></div>
+<pre><code>## [1] TRUE</code></pre>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1"></a><span class="co">## derivative of e^x, evaluated at x = 0</span></span>
+<span id="cb35-2"><a href="#cb35-2"></a><span class="kw">deriv</span>(<span class="cf">function</span>(x) <span class="kw">exp</span>(x), <span class="dv">0</span>) <span class="op">==</span><span class="st"> </span><span class="kw">exp</span>(<span class="dv">0</span>)</span></code></pre></div>
+<pre><code>## [1] TRUE</code></pre>
+</div>
+</div>
+<div id="more-formal-ways-of-integrating-tests" class="slide section level2">
+<h1>More formal ways of integrating tests</h1>
+<ul class="incremental">
+<li><p>R package called <code>testthat</code></p></li>
+<li><p>Aimed more at package developers</p></li>
+<li><p>Allows for tests to be stored and run automatically.</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>Suppose we have <code>testthat_example.R</code> and <code>numerical_deriv.R</code>, with contents that look like this:</p>
+<p><code>testthat_example.R</code>:</p>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1"></a><span class="kw">context</span>(<span class="st">&quot;Check numerical derivative&quot;</span>)</span>
+<span id="cb37-2"><a href="#cb37-2"></a><span class="kw">source</span>(<span class="st">&quot;numerical_deriv.R&quot;</span>)</span>
+<span id="cb37-3"><a href="#cb37-3"></a></span>
+<span id="cb37-4"><a href="#cb37-4"></a><span class="kw">test_that</span>(<span class="st">&quot;derivatives match on simple functions&quot;</span>, {</span>
+<span id="cb37-5"><a href="#cb37-5"></a>    <span class="kw">expect_equal</span>(<span class="kw">deriv</span>(<span class="cf">function</span>(x) x<span class="op">^</span><span class="dv">2</span>, <span class="dv">1</span>), <span class="dv">2</span>)</span>
+<span id="cb37-6"><a href="#cb37-6"></a>    <span class="kw">expect_equal</span>(<span class="kw">deriv</span>(<span class="cf">function</span>(x) <span class="dv">2</span> <span class="op">*</span><span class="st"> </span>x, <span class="dv">-5</span>), <span class="dv">2</span>)</span>
+<span id="cb37-7"><a href="#cb37-7"></a>    <span class="kw">expect_equal</span>(<span class="kw">deriv</span>(<span class="cf">function</span>(x) x<span class="op">^</span><span class="dv">2</span>, <span class="dv">0</span>), <span class="dv">0</span>)</span>
+<span id="cb37-8"><a href="#cb37-8"></a>    <span class="kw">expect_equal</span>(<span class="kw">deriv</span>(<span class="cf">function</span>(x) <span class="dv">2</span> <span class="op">*</span><span class="st"> </span>x, <span class="dv">0</span>), <span class="dv">2</span>)</span>
+<span id="cb37-9"><a href="#cb37-9"></a>    <span class="kw">expect_equal</span>(<span class="kw">deriv</span>(<span class="cf">function</span>(x) <span class="kw">exp</span>(x), <span class="dv">0</span>), <span class="kw">exp</span>(<span class="dv">0</span>))</span>
+<span id="cb37-10"><a href="#cb37-10"></a>})</span>
+<span id="cb37-11"><a href="#cb37-11"></a></span>
+<span id="cb37-12"><a href="#cb37-12"></a><span class="kw">test_that</span>(<span class="st">&quot;error thrown when derivative doesn&#39;t exist&quot;</span>, {</span>
+<span id="cb37-13"><a href="#cb37-13"></a>    <span class="kw">expect_error</span>(<span class="kw">deriv</span>(<span class="cf">function</span>(x) <span class="kw">log</span>(x), <span class="dv">0</span>))</span>
+<span id="cb37-14"><a href="#cb37-14"></a>}) </span></code></pre></div>
+<p><code>numerical_deriv.R</code>:</p>
+<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1"></a>deriv =<span class="st"> </span><span class="cf">function</span>(fn, x) {</span>
+<span id="cb38-2"><a href="#cb38-2"></a>    eps =<span class="st"> </span>.Machine<span class="op">$</span>double.eps</span>
+<span id="cb38-3"><a href="#cb38-3"></a>    <span class="cf">if</span>(x <span class="op">==</span><span class="st"> </span><span class="dv">0</span>) {</span>
+<span id="cb38-4"><a href="#cb38-4"></a>        h =<span class="st"> </span><span class="dv">2</span> <span class="op">*</span><span class="st"> </span>eps</span>
+<span id="cb38-5"><a href="#cb38-5"></a>    } <span class="cf">else</span> {</span>
+<span id="cb38-6"><a href="#cb38-6"></a>        h =<span class="st"> </span><span class="kw">sqrt</span>(eps) <span class="op">*</span><span class="st"> </span>x</span>
+<span id="cb38-7"><a href="#cb38-7"></a>    }</span>
+<span id="cb38-8"><a href="#cb38-8"></a>    deriv =<span class="st"> </span>(<span class="kw">fn</span>(x <span class="op">+</span><span class="st"> </span>h) <span class="op">-</span><span class="st"> </span><span class="kw">fn</span>(x <span class="op">-</span><span class="st"> </span>h)) <span class="op">/</span><span class="st"> </span>(<span class="dv">2</span> <span class="op">*</span><span class="st"> </span>h)</span>
+<span id="cb38-9"><a href="#cb38-9"></a>    <span class="kw">return</span>(deriv)</span>
+<span id="cb38-10"><a href="#cb38-10"></a>}</span></code></pre></div>
+</div>
+<div class="slide section level2">
+
+<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1"></a><span class="kw">library</span>(testthat)</span>
+<span id="cb39-2"><a href="#cb39-2"></a><span class="kw">test_dir</span>(<span class="st">&quot;.&quot;</span>)</span></code></pre></div>
+<pre><code>## ✔ |  OK F W S | Context
+## ⠏ |   0       | Check numerical derivative✖ |   5 1 1   | Check numerical derivative
+## ────────────────────────────────────────────────────────────────────────────────
+## testthat_example.R:13: warning: error thrown when derivative doesn&#39;t exist
+## NaNs produced
+## 
+## testthat_example.R:13: failure: error thrown when derivative doesn&#39;t exist
+## `deriv(function(x) log(x), 0)` did not throw an error.
+## ────────────────────────────────────────────────────────────────────────────────
+## 
+## ══ Results ═════════════════════════════════════════════════════════════════════
+## OK:       5
+## Failed:   1
+## Warnings: 1
+## Skipped:  0</code></pre>
+</div>
+<div id="idea-behind-testthat" class="slide section level2">
+<h1>Idea behind testthat</h1>
+<ul class="incremental">
+<li><p>Expectations: Finest unit of testing, checks one aspect of a function’s output.</p></li>
+<li><p>Tests: Groups of related expectations.</p></li>
+<li><p>Contexts/files: Each context or file can contain a group of tests. Primarily useful for having the test output formatted nicely. Perhaps also useful if you have some tests that require a lot of setup and you don’t want to run them every time.</p></li>
+</ul>
+</div>
+<div id="expectations" class="slide section level2">
+<h1>Expectations</h1>
+<p>An expectation is the finest unit of testing, tests whether a call to a function does what you expect.</p>
+<ul class="incremental">
+<li><p>All start with <code>expect_</code></p></li>
+<li><p>All have two arguments: the actual result, and what you expect</p></li>
+<li><p><code>testthat</code> will throw an error if the two don’t match</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<p>Some of the most useful expectations</p>
+<ul class="incremental">
+<li><code>expect_equivalent</code>/<code>expect_equal</code>/<code>expect_identical</code>: Check for equality within numerical precision or exact equivalence (<code>expect_identical</code> built on <code>identical</code> function, which also checks for type)</li>
+</ul>
+<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1"></a>a_int =<span class="st"> </span><span class="dv">1</span><span class="op">:</span><span class="dv">2</span></span>
+<span id="cb41-2"><a href="#cb41-2"></a>a_double =<span class="st"> </span><span class="kw">as.double</span>(a_int)</span>
+<span id="cb41-3"><a href="#cb41-3"></a>a_named =<span class="st"> </span>a_int</span>
+<span id="cb41-4"><a href="#cb41-4"></a><span class="kw">names</span>(a_named) =<span class="st"> </span>letters[<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>]</span>
+<span id="cb41-5"><a href="#cb41-5"></a>a_int</span></code></pre></div>
+<pre><code>## [1] 1 2</code></pre>
+<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1"></a>a_double</span></code></pre></div>
+<pre><code>## [1] 1 2</code></pre>
+<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1"></a>a_named</span></code></pre></div>
+<pre><code>## a b 
+## 1 2</code></pre>
+<div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1"></a><span class="kw">expect_identical</span>(a_int, a_double)</span></code></pre></div>
+<pre><code>## Error: `a_int` not identical to `a_double`.
+## Objects equal but not identical</code></pre>
+<div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1"></a><span class="kw">expect_equal</span>(a_int, a_double)</span></code></pre></div>
+<div class="sourceCode" id="cb50"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1"></a><span class="kw">expect_equal</span>(a_int, a_named)</span></code></pre></div>
+<pre><code>## Error: `a_int` not equal to `a_named`.
+## names for current but not for target</code></pre>
+<div class="sourceCode" id="cb52"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1"></a><span class="kw">expect_equivalent</span>(a_double, a_named)</span></code></pre></div>
+</div>
+</div>
+<div class="slide section level2">
+
+<ul class="incremental">
+<li><p><code>expect_match</code>: Checks whether a string matches a regular expression</p></li>
+<li><p><code>expect_output</code>: Checks the output of a function the same way <code>expect_match</code> would</p></li>
+</ul>
+<div class="sourceCode" id="cb53"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1"></a>a =<span class="st"> </span><span class="kw">list</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>, letters)</span>
+<span id="cb53-2"><a href="#cb53-2"></a><span class="kw">str</span>(a)</span></code></pre></div>
+<pre><code>## List of 2
+##  $ : int [1:10] 1 2 3 4 5 6 7 8 9 10
+##  $ : chr [1:26] &quot;a&quot; &quot;b&quot; &quot;c&quot; &quot;d&quot; ...</code></pre>
+<div class="sourceCode" id="cb55"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1"></a><span class="kw">expect_output</span>(<span class="kw">str</span>(a), <span class="st">&quot;List of 2&quot;</span>)</span>
+<span id="cb55-2"><a href="#cb55-2"></a><span class="kw">expect_output</span>(<span class="kw">str</span>(a), <span class="st">&quot;int [1:10]&quot;</span>, <span class="dt">fixed =</span> <span class="ot">TRUE</span>)</span></code></pre></div>
+<ul class="incremental">
+<li><code>expect_warning</code>/<code>expect_error</code>: Checks whether the function gives an error or a warning.</li>
+</ul>
+<div class="incremental">
+<ul class="incremental">
+<li><code>expect_is</code>: Checks whether the function gives a result of the correct class (we’ll talk more about classes in a couple weeks).</li>
+</ul>
+</div>
+<div class="incremental">
+<ul class="incremental">
+<li><code>expect_true</code>/<code>expect_false</code>: Catch-alls for cases the other expectations don’t cover.</li>
+</ul>
+</div>
+</div>
+<div id="tests" class="slide section level2">
+<h1>Tests</h1>
+<ul class="incremental">
+<li><p>For <code>testthat</code>, a test is just a group of expectations.</p></li>
+<li><p>You can group them however you like, but usually you think of them as covering one unit of functionality. Often this means one test per function.</p></li>
+<li><p>Group expectations into tests so that when a test fails, it’s easy to figure out what part of the code caused the error.</p></li>
+</ul>
+</div>
+<div id="advice-on-writing-tests" class="slide section level2">
+<h1>Advice on writing tests</h1>
+<ul class="incremental">
+<li><p>When you add a new function/functionality, add a new test.</p></li>
+<li><p>Write a test when you discover a bug.</p></li>
+<li><p>Most important to test code that is delicate: has complicated dependencies on other functions many edge cases, doing something complicated that you’re not sure about. (In that case you might want to re-think your function design though.)</p></li>
+<li><p>If tests are grouped according to the desired behavior of a function, they are easier to update later if you want to change the behavior of the function.</p></li>
+</ul>
+</div>
+</body>
+</html>

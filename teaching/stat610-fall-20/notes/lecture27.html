@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title>lecture27</title>
+  <style type="text/css">
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="https://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-AMS_CHTML-full" type="text/javascript"></script>
+  <script src="https://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div id="neural-netsdeep-learning" class="slide section level2">
+<h1>Neural nets/Deep learning</h1>
+<ul>
+<li>Today: What are neural nets, how are they fit</li>
+</ul>
+<ul>
+<li>Thursday: Cross validation, some examples, show you how to use R interfaces to net fitting software</li>
+</ul>
+<p>Reading: Elements of Statistical Learning, Chapter 11.3-11.8</p>
+</div>
+<div id="review-the-brain" class="slide section level2">
+<h1>Review: The brain</h1>
+<ul>
+<li>Made up of neurons.</li>
+</ul>
+<ul>
+<li>Neurons connected to each other.</li>
+</ul>
+<ul>
+<li>Neuron takes input from some of its neighbors, when there is enough input it is “activated” and the neuron fires.</li>
+</ul>
+<ul>
+<li>When the neuron fires, it sends the signal to its downstream neighbors, potentially causing them to activate and fire as well.</li>
+</ul>
+<p><a href="https://en.wikipedia.org/wiki/Neuron#/media/File:Chemical_synapse_schema_cropped.jpg">wikipedia’s illustration</a></p>
+</div>
+<div class="slide section level2">
+
+<p>Idea:</p>
+<ul>
+<li>The brain somehow takes inputs and produces outputs (e.g. patterns of light on the retina to a classification of the objects in your field of vision, sensations in the periphery to a measure of temperature, etc.).</li>
+</ul>
+<ul>
+<li>If we make a computational structure that mimics the brain, we can train it to make predictions from arbitrary sets of inputs.</li>
+</ul>
+<ul>
+<li>This is just a fancy version of the regression or classification problem.</li>
+</ul>
+</div>
+<div id="neural-networks" class="slide section level2">
+<h1>Neural networks</h1>
+<p>Neural networks are made up of units that are supposed to mimic neurons in the brain:</p>
+<p><img src="net-unit.png" /></p>
+<ul class="incremental">
+<li><p>Input links: can be from other units or from the input data</p></li>
+<li><p>Aggregation function: Linear combination of the inputs</p></li>
+<li><p>Activation function: <span class="math inline">\(g\)</span>, often the sigmoid function</p></li>
+<li><p>Output: <span class="math inline">\(a = g(\sum_i z_i \alpha_i)\)</span>, i.e., the activation function applied to the aggregated inputs.</p></li>
+<li><p>Output links: Output <span class="math inline">\(a\)</span> is sent to other units.</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>Activation functions:</p>
+<div class="incremental">
+<ul class="incremental">
+<li>Initially: a step function</li>
+</ul>
+<p><img src="lecture-27-fig/unnamed-chunk-1-1.png" /></p>
+</div>
+<div class="incremental">
+<ul class="incremental">
+<li>sigmoid, <span class="math inline">\(\sigma(x) = \frac{1}{1 + \exp(-x)}\)</span></li>
+</ul>
+<p><img src="lecture-27-fig/unnamed-chunk-2-1.png" /></p>
+</div>
+<div class="incremental">
+<ul class="incremental">
+<li>tanh: <span class="math inline">\(\text{tanh}(x) = \frac{e^x - e^{-x}}{e^x + e^{-x}}\)</span></li>
+</ul>
+<p><img src="lecture-27-fig/unnamed-chunk-3-1.png" /></p>
+</div>
+<div class="incremental">
+<ul class="incremental">
+<li>relu: <span class="math inline">\(\text{relu}(x) = \text{max}(0, x)\)</span> probably most common now.</li>
+</ul>
+<p><img src="lecture-27-fig/unnamed-chunk-4-1.png" /></p>
+<p>Any non-linear activation function allows the net to go beyond linear functions of the input</p>
+<p>Activation functions should be smooth for fitting purposes (gradient descent)</p>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Neural net structures: putting the units together</p>
+<p><img src="nnet-schematic.png" /></p>
+<ul>
+<li>Input layer</li>
+</ul>
+<ul>
+<li>Hidden layer(s)</li>
+</ul>
+<ul>
+<li>Output layer</li>
+</ul>
+<div class="incremental">
+<p>Multiple hidden layers vs. one hidden layer</p>
+<p>Special cases:</p>
+<ul>
+<li>One hidden layer, one unit in that layer, sigmoid activation = logistic regression</li>
+</ul>
+<ul>
+<li>Linear activation function = standard regression, parameterized in a strange way</li>
+</ul>
+</div>
+</div>
+<div id="neural-nets-for-regression" class="slide section level2">
+<h1>Neural nets for regression</h1>
+<p>Notice that the net is just a fancy function of the inputs, parameterized by the weights. Therefore, we can choose the weights so that the net predicts a response, just like in standard linear regression.</p>
+<ul class="incremental">
+<li><p>Function we want to optimize: <span class="math display">\[
+R(\theta) = \sum_{i=1}^N R_i = \sum_{i=1}^N (y_i - f(x_i; \theta))^2
+\]</span></p></li>
+<li><p><span class="math inline">\(\theta\)</span> is the parameter vector we want to optimize over, containing the weights. We want to find <span class="math inline">\(\theta\)</span> that minimizes <span class="math inline">\(R(\theta)\)</span>.</p></li>
+<li><p><span class="math inline">\(f(x_i; \theta)\)</span> is the value computed by the net on an input point <span class="math inline">\(x_i\)</span> with parameters <span class="math inline">\(\theta\)</span></p></li>
+<li><p>Fitting is by “backpropagation”, which means gradient descent with the computations organized in a particularly convenient way.</p></li>
+</ul>
+</div>
+<div id="backpropagation-derivation" class="slide section level2">
+<h1>Backpropagation derivation</h1>
+<p>Simple case:</p>
+<ul class="incremental">
+<li><p>One hidden layer with <span class="math inline">\(M\)</span> hidden units</p></li>
+<li><p>Input variables <span class="math inline">\(x_i \in \mathbb R^p\)</span>, <span class="math inline">\(i = 1,\ldots, N\)</span></p></li>
+<li><p>Values of the hidden unit <span class="math inline">\(m\)</span> for observation <span class="math inline">\(i\)</span> is <span class="math inline">\(z_{mi} = \sigma(\alpha_{0m} + \alpha_m^T x_i)\)</span>. The vector containing the values for all the hidden units for sample <span class="math inline">\(i\)</span> is <span class="math inline">\(z_i = (z_{1i}, z_{2i}, \ldots, z_{Mi})\)</span>.</p></li>
+<li><p>Value at the final layer is for observation <span class="math inline">\(i\)</span> is <span class="math inline">\(f(x_i) = g(\beta_0 + \beta^T z_i)\)</span>.</p></li>
+<li><p><span class="math inline">\(\theta\)</span> is the set of weights <span class="math inline">\(\alpha_{0m}, \alpha_m, \beta_0, \beta\)</span>.</p></li>
+<li><p>We want to find <span class="math inline">\(\theta\)</span> to minimize <span class="math display">\[
+R(\theta) = \sum_{i=1}^N R_i = \sum_{i=1}^N (y_i - f(x_i; \theta))^2
+\]</span></p></li>
+<li><p>We fit by gradient descent, so we need dereivatives of this function</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>Derivative for the weights connecting the hidden layer to the output layer for <span class="math inline">\(m = 1,\ldots, M\)</span>: <span class="math display">\[
+\frac{\partial R_i}{\partial \beta_{m}} = -2(y_i - f(x_i)) g&#39;(\beta_0 + \beta^T z_i) z_{mi}
+\]</span></p>
+<div class="incremental">
+<p>For the case <span class="math inline">\(m = 0\)</span>: <span class="math display">\[
+\frac{\partial R_i}{\partial \beta_{m}} = -2(y_i - f(x_i)) g&#39;(\beta_0 + \beta^T z_i)
+\]</span></p>
+</div>
+<div class="incremental">
+<p>Derivative for the weights connecting the input layer to the hidden layer: <span class="math display">\[
+\frac{\partial R_i}{\partial \alpha_{ml}} = -2(y_i - f(x_i)) g&#39;(\beta_0 + \beta^T z_i) \beta_m\sigma&#39;(\alpha_m^T x_i) x_{il}
+\]</span></p>
+</div>
+<div class="incremental">
+<p>Gradient descent update is then: <span class="math display">\[
+\begin{align*}
+\beta_m^{(r+1)} = \beta_{m}^{(r)} - \gamma_r \sum_{i=1}^N \frac{\partial R_i}{\partial \beta_{m}^{(r)}}\\
+\alpha_{lm}^{(r+1)} = \alpha_{ml}^{(r)} - \gamma_r \sum_{i=1}^N \frac{\partial R_i}{\partial \alpha_{ml}^{(r)}}
+\end{align*}
+\]</span></p>
+<p><span class="math inline">\(\gamma_r\)</span> is referred to as the “learning rate”, we’ve seen it as the step size before.</p>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Back-propagation equations, aka “what order do we do the computations in”?</p>
+<div class="incremental">
+<p>Write <span class="math display">\[
+\begin{align*}
+\frac{\partial R_i}{\partial \beta_{m}} &amp;= \delta_{i} z_{mi} \\
+\frac{\partial R_i}{\partial \alpha_{ml}} &amp;= s_{mi} x_{il}
+\end{align*}
+\]</span> so <span class="math display">\[
+\begin{align*}
+\delta_i &amp;= -2(y_i - f(x_i))g&#39;(\beta_0 + \beta^T z_i) \\
+s_{mi} &amp;= -2(y_i - f(x_i)) g&#39;(\beta_0 + \beta^T z_i) \beta_m \sigma&#39;(\alpha_m^T x_i)
+\end{align*}
+\]</span> and <span class="math display">\[
+s_{mi} = \sigma&#39;(\alpha_m^T x_i) \beta_m \delta_i
+\]</span></p>
+<p>Interpretation: <span class="math inline">\(\delta_i\)</span> and <span class="math inline">\(s_{mi}\)</span> are the “errors” from the current model on the output layer and the hidden layers, respectively.</p>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Finally, backpropagation algorithm to compute the gradients:</p>
+<p>Forward pass:</p>
+<ul>
+<li>Fix a set of weights <span class="math inline">\(\theta\)</span></li>
+</ul>
+<ul>
+<li>Compute <span class="math inline">\(z_i\)</span>, <span class="math inline">\(f(x_i)\)</span> given the weights</li>
+</ul>
+<div class="incremental">
+<p>Backward pass:</p>
+<ul>
+<li>Compute <span class="math inline">\(\delta_i\)</span> and <span class="math inline">\(\frac{\partial R_i}{\partial \beta_m}\)</span> from the residuals</li>
+</ul>
+<ul>
+<li>Compute <span class="math inline">\(s_{mi}\)</span> and <span class="math inline">\(\frac{\partial R_i}{\partial \alpha_{ml}}\)</span> from <span class="math inline">\(\delta_i\)</span>, <span class="math inline">\(\theta\)</span>, input values</li>
+</ul>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Notes:</p>
+<ul>
+<li>Backpropagation equations just rely on the chain rule</li>
+</ul>
+<ul>
+<li>Can use any smooth activation function</li>
+</ul>
+<ul>
+<li>Can use any architecture (more hidden layers, different kinds of connections between the layers, more than one output layer, etc.)</li>
+</ul>
+<ul>
+<li>Applies to classification problems as well as regression problems</li>
+</ul>
+<div class="incremental">
+<p>Issues with fitting:</p>
+<ul>
+<li>Model is over-parameterized</li>
+</ul>
+<ul>
+<li>Non-convex, many local optima, gradient descent will converge to just one</li>
+</ul>
+<ul>
+<li>Many different strategies to deal with this. Often don’t actually want even an exact local optimum, many different “regularization” methods are used.</li>
+</ul>
+</div>
+</div>
+<div id="example-zip-code-data" class="slide section level2">
+<h1>Example: zip code data</h1>
+<p><img src="zip-code-data.png" /></p>
+<p>Goal: Given images representing digits, classify them correctly.</p>
+<p>Input data, <span class="math inline">\(x_i\)</span>, are <span class="math inline">\(16 \times 16\)</span> grayscale images, represented as vectors in <span class="math inline">\(\mathbb R^{256}\)</span></p>
+<p>Responses <span class="math inline">\(y_i\)</span> give the digit in the image.</p>
+<p>Encode this as a classification problem, use neural nets with different architectures to fit</p>
+</div>
+<div id="some-net-architectures" class="slide section level2">
+<h1>Some net architectures</h1>
+<p><img src="zip-code-architectures.png" /></p>
+<p>All cases: 10 output units, corresponding to the 10 possible digits. In all cases the output unit is sigmoidal.</p>
+<ul class="incremental">
+<li><p>Net 1: No hidden layer, equivalent to multinomial logistic regression</p></li>
+<li><p>Net 2: One hidden layer, 12 hidden units. Each of the hidden units is connected to each of the 256 input variables and to each of the 10 output variables.</p></li>
+<li><p>Net 3: Two hidden layers</p>
+<ul class="incremental">
+<li><p>First hidden layer: 64 hidden units arranged in an 8 x 8 grid. Each hidden unit is connected to a 3x3 patch of the input variables.</p></li>
+<li><p>Secand hidden layer: 16 hidden units arranged in a 4 x 4 grid. Each hidden unit is connected to a 5 x 5 patch in the first hidden layer.</p></li>
+</ul></li>
+<li><p>Net 4: Two hidden layers with weight sharing in the first layer.</p>
+<ul class="incremental">
+<li><p>First hidden layer: 128 hidden units, conceptualized as two 8 x 8 grids, each connected to a 3x3 patch of the input variables, similar to Net 3. Additional constraint that each of the units within the 8 x 8 feature map have the same set of 9 weights.</p></li>
+<li><p>Second hidden layer: 16 hidden units arranged in a 4 x 4 grid, each connected to a 5 x 5 patch in each of the two 8 x 8 grids in the first hidden layer (so each hidden unit connected to 50 units in the first hidden layer).</p></li>
+</ul></li>
+<li><p>Net 5: Two hidden layers with weight sharing in both layers:</p>
+<ul class="incremental">
+<li><p>First hidden layer: Same is in Net 4.</p></li>
+<li><p>Second hidden layer: 64 hidden units arranged as four 4 x 4 grids. Each unit connected to a 5 x 5 patch of the fisrt hidden layer, and within each 4 x 4 grid, the weights connecting that unit to the previous input unit are the same.</p></li>
+</ul></li>
+</ul>
+<p>Idea behind weight constraints: Each unit computes the same functional of the previous layer, so they are extracting the same features from different parts of the image. A net with this sort of weight sharing is referred to as a <em>convolutional</em> network.</p>
+</div>
+<div class="slide section level2">
+
+<p><img src="zip-code-training.png" /></p>
+</div>
+<div id="summing-up" class="slide section level2">
+<h1>Summing up</h1>
+<ul>
+<li>Deep learning = neural nets with more than one hidden layer. In practice, these work better than the single-hidden-layer networks.</li>
+</ul>
+<ul>
+<li>Think of as predictors that can fit complex functions of the input variables</li>
+</ul>
+<ul>
+<li>Also able to handle other kinds of output, e.g. sequences (natural language processing, machine translation)</li>
+</ul>
+<ul>
+<li>Good when you have a lot of data, are interested solely in prediction</li>
+</ul>
+<ul>
+<li>Not as good when you don’t have so much data or need an interpretation of the relationship between the predictors and response.</li>
+</ul>
+</div>
+</body>
+</html>

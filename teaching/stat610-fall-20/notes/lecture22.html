@@ -1,0 +1,537 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title>lecture22</title>
+  <style type="text/css">
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <style type="text/css">
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="https://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-AMS_CHTML-full" type="text/javascript"></script>
+  <script src="https://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div id="monte-carlo-methods-integration-and-cross-validation" class="slide section level2">
+<h1>Monte Carlo methods: integration and cross validation</h1>
+<p>Agenda today: Simulation-based methods of computing expectations</p>
+<ul class="incremental">
+<li><p>Monte Carlo integration</p></li>
+<li><p>Maybe cross validation</p></li>
+</ul>
+<p>Reading: Lange 21.1, 21.2, 21.6</p>
+</div>
+<div id="monte-carlo-integration" class="slide section level2">
+<h1>Monte Carlo Integration</h1>
+<p>We have:</p>
+<ul class="incremental">
+<li><p>A function <span class="math inline">\(f\)</span></p></li>
+<li><p>A random variable with pdf <span class="math inline">\(g\)</span>.</p></li>
+</ul>
+<p>We would like to approximate <span class="math display">\[
+E[f(X)] = \int f(x) g(x) \, dx
+\]</span></p>
+<div class="incremental">
+<p>Why not numerical integration?</p>
+<ul class="incremental">
+<li><p>Works well for low-dimensional problems.</p></li>
+<li><p>Fails in high dimensions, the “curse of dimensionality”</p></li>
+</ul>
+</div>
+</div>
+<div id="monte-carlo-integration-1" class="slide section level2">
+<h1>Monte Carlo Integration</h1>
+<p>To estimate/approximate <span class="math display">\[
+E[f(X)] = \int f(x) g(x) \, dx
+\]</span></p>
+<ul class="incremental">
+<li><p>Draw <span class="math inline">\(X_1, \ldots, X_n\)</span> iid from <span class="math inline">\(g\)</span></p></li>
+<li><p>Use <span class="math inline">\(\hat \mu = \frac{1}{n} \sum_{i=1}^n f(X_i)\)</span> as the estimator of <span class="math inline">\(E[f(X)]\)</span>.</p></li>
+</ul>
+<div class="incremental">
+<p>Why is this reasonable?</p>
+<ul class="incremental">
+<li>By the law of large numbers, the estimates converge to <span class="math inline">\(E[f(X)]\)</span> as <span class="math inline">\(n \to \infty\)</span></li>
+</ul>
+</div>
+</div>
+<div id="monte-carlo-integration-accuracy" class="slide section level2">
+<h1>Monte Carlo Integration: Accuracy</h1>
+<p>If <span class="math inline">\(f\)</span> is square integrable, we can apply the central limit theorem, which tells us that the estimator is approximately distributed <span class="math display">\[
+\mathcal N \left( E[f(X)], \sqrt{\frac{\text{Var}[f(X)]}{n}} \right)
+\]</span></p>
+<div class="incremental">
+<p>We don’t know <span class="math inline">\(\text{Var}[f(X)]\)</span>, but we can estimate it the usual way:</p>
+<p><span class="math display">\[
+\hat v = \frac{1}{n-1} \sum_{i=1}^n [f(X_i) - \hat \mu)^2]
+\]</span></p>
+</div>
+<div class="incremental">
+<ul class="incremental">
+<li><p>Good thing: accuracy doesn’t depend on the dimensionality of the problem</p></li>
+<li><p>Bad thing: Error declines at the <span class="math inline">\(n^{-1/2}\)</span> rate vs. <span class="math inline">\(n^{-k}\)</span>, <span class="math inline">\(k \ge 2\)</span> for the numerical integration methods.</p></li>
+<li><p>What to do? Try to decrease <span class="math inline">\(\text{Var}[f(X)]\)</span>.</p></li>
+</ul>
+</div>
+</div>
+<div id="example-estimating-a-probability" class="slide section level2">
+<h1>Example: Estimating a probability</h1>
+<p>Suppose we have a random variable <span class="math inline">\(X\)</span>, and we want <span class="math inline">\(P(X \le x)\)</span>.</p>
+<p>If we take <span class="math display">\[
+f(X) = \begin{cases} 1 &amp; X \le x \\
+0 &amp; X &gt; x
+\end{cases},
+\]</span> then we have <span class="math inline">\(E[f(X)] = P(X \le x)\)</span>.</p>
+</div>
+<div class="slide section level2">
+
+<p>Last time, we looked at how to generate exponentially distributed random variables:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">set.seed</span>(<span class="dv">0</span>)</span>
+<span id="cb1-2"><a href="#cb1-2"></a>generate_exponential =<span class="st"> </span><span class="cf">function</span>() {</span>
+<span id="cb1-3"><a href="#cb1-3"></a>    U =<span class="st"> </span><span class="kw">runif</span>(<span class="dv">1</span>)</span>
+<span id="cb1-4"><a href="#cb1-4"></a>    X =<span class="st"> </span><span class="op">-</span><span class="kw">log</span>(<span class="dv">1</span> <span class="op">-</span><span class="st"> </span>U)</span>
+<span id="cb1-5"><a href="#cb1-5"></a>    <span class="kw">return</span>(X)</span>
+<span id="cb1-6"><a href="#cb1-6"></a>}</span>
+<span id="cb1-7"><a href="#cb1-7"></a>n_reps =<span class="st"> </span><span class="dv">10000</span></span>
+<span id="cb1-8"><a href="#cb1-8"></a>random_exponentials =<span class="st"> </span><span class="kw">replicate</span>(<span class="dt">n =</span> n_reps, <span class="kw">generate_exponential</span>())</span></code></pre></div>
+<div class="incremental">
+<p>We compared an estimate of the probability that our randomly generated exponentials were less than a value <span class="math inline">\(x\)</span> to the theoretical probability:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>x =<span class="st"> </span><span class="dv">1</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a><span class="kw">mean</span>(random_exponentials <span class="op">&lt;=</span><span class="st"> </span>x)</span></code></pre></div>
+<pre><code>## [1] 0.632</code></pre>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="kw">pexp</span>(x)</span></code></pre></div>
+<pre><code>## [1] 0.6321206</code></pre>
+<p>The line <code>mean(random_exponentials &lt;= x)</code> is exactly the same as the procedure we described above.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a>f =<span class="st"> </span><span class="cf">function</span>(X, x) {</span>
+<span id="cb6-2"><a href="#cb6-2"></a>    <span class="kw">ifelse</span>(X <span class="op">&lt;=</span><span class="st"> </span>x, <span class="dv">1</span>, <span class="dv">0</span>)</span>
+<span id="cb6-3"><a href="#cb6-3"></a>}</span>
+<span id="cb6-4"><a href="#cb6-4"></a><span class="kw">head</span>(<span class="kw">f</span>(random_exponentials, x))</span></code></pre></div>
+<pre><code>## [1] 0 1 1 1 0 1</code></pre>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a><span class="kw">head</span>(random_exponentials <span class="op">&lt;=</span><span class="st"> </span>x)</span></code></pre></div>
+<pre><code>## [1] FALSE  TRUE  TRUE  TRUE FALSE  TRUE</code></pre>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a><span class="kw">mean</span>(<span class="kw">f</span>(random_exponentials, x))</span></code></pre></div>
+<pre><code>## [1] 0.632</code></pre>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a><span class="kw">mean</span>(random_exponentials <span class="op">&lt;=</span><span class="st"> </span>x)</span></code></pre></div>
+<pre><code>## [1] 0.632</code></pre>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>We can check that the accuracy of this estimate:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a>vhat =<span class="st"> </span><span class="kw">var</span>(random_exponentials) <span class="op">/</span><span class="st"> </span>n_reps</span>
+<span id="cb14-2"><a href="#cb14-2"></a><span class="kw">sqrt</span>(vhat)</span></code></pre></div>
+<pre><code>## [1] 0.01003839</code></pre>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a><span class="kw">mean</span>(<span class="kw">f</span>(random_exponentials, x)) <span class="op">-</span><span class="st"> </span><span class="kw">pexp</span>(x)</span></code></pre></div>
+<pre><code>## [1] -0.0001205588</code></pre>
+</div>
+<div id="rao-blackwellization" class="slide section level2">
+<h1>Rao-Blackwellization</h1>
+<p>Let <span class="math inline">\(\tau(U, X)\)</span> be an estimator of some function, and consider a modified estimator <span class="math inline">\(\tau&#39;(U, X) = E[\tau(U, X) \mid X]\)</span>.</p>
+<ul class="incremental">
+<li><p>If <span class="math inline">\(\tau\)</span> is unbiased, so is <span class="math inline">\(\tau&#39;\)</span> because <span class="math display">\[
+E[\tau&#39;(U, X)] = E[E[\tau(U, X) \mid X]] = E[\tau(U, X)]
+\]</span></p></li>
+<li><p>Let <span class="math inline">\(\mu = E[\tau(U,X)] = E[\tau&#39;(U,X)]\)</span>. <span class="math inline">\(\tau&#39;\)</span> has a smaller variance than <span class="math inline">\(\tau\)</span> because <span class="math display">\[
+\begin{align*}
+\text{var}(\tau&#39;(U, X)) &amp;= E[(E(\tau(U, X) \mid X) - \mu)^2] \\
+&amp;= E[E(\tau(U, X) - \mu \mid X)^2] \\
+&amp;\le E[E[(\tau(U, X) - \theta)^2 \mid X]] \\
+&amp;= \text{var}(\tau(U, X))
+\end{align*}
+\]</span></p></li>
+</ul>
+</div>
+<div id="rao-blackwellization-for-monte-carlo-integration-using-the-acceptreject-algorithm" class="slide section level2">
+<h1>“Rao-Blackwellization” for Monte Carlo Integration using the Accept/Reject algorithm</h1>
+<p>Setup:</p>
+<ul class="incremental">
+<li><p><span class="math inline">\(X\)</span> is a random variable with pdf <span class="math inline">\(g\)</span>.</p></li>
+<li><p>We want to estimate <span class="math inline">\(E[f(X)] = \int f(x) g(x) \, dx\)</span></p></li>
+<li><p>We have some <span class="math inline">\(h\)</span>, <span class="math inline">\(c\)</span> such that <span class="math inline">\(g(x) \le ch(x)\)</span></p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>We estimate using the accept/reject algorithm:</p>
+<ul class="incremental">
+<li><p>We generate <span class="math inline">\(N\)</span> points <span class="math inline">\(X_1,\ldots, X_N\)</span> from <span class="math inline">\(h(x)\)</span>.</p></li>
+<li><p>We generate <span class="math inline">\(N\)</span> points <span class="math inline">\(U_1,\ldots, U_N\)</span> from a standard uniform.</p></li>
+<li><p>We accept <span class="math inline">\(X_i\)</span> if <span class="math inline">\(U_i \le W_i = g(X_i) / [ch(X_i)]\)</span>.</p></li>
+<li><p><span class="math inline">\(N\)</span> is a random number so that we have <span class="math inline">\(m\)</span> acceptances.</p></li>
+</ul>
+<p>We can rewrite this estimator as <span class="math display">\[
+\hat{E[f(X)]} =  \frac{1}{m} \sum_{i=1}^N \mathbf 1_{\{U_i \le W_i\}} f(X_i)
+\]</span></p>
+</div>
+<div class="slide section level2">
+
+<p>Can we condition?</p>
+<p><span class="math display">\[
+\begin{align*}
+\frac{1}{m} E&amp;\left[ \sum_{i=1}^N \mathbf 1_{\{U_i \le W_i\}} f(X_i) | N, X_1,\ldots, X_N \right] \\
+&amp;= \frac{1}{m}\sum_{i=1}^N E\left[ \mathbf 1_{\{U_i \le W_i\}}  | N, W_1,\ldots, W_N\right] f(X_i)
+\end{align*}
+\]</span></p>
+<p><span class="math inline">\(E \left[ \mathbf 1_{\{U_i \le W_i\}} | N, W_1,\ldots, W_N \right]\)</span> is the probability that we accept <span class="math inline">\(X_i\)</span> given that we sample <span class="math inline">\(N\)</span> deviates and accept <span class="math inline">\(m\)</span> of them</p>
+<p>If <span class="math inline">\(m\)</span>, <span class="math inline">\(N\)</span> are large, we will have</p>
+<p><span class="math display">\[
+E \left[ \mathbf 1_{\{U_i \le W_i\}} | N, W_1,\ldots, W_N \right] \approx W_i
+\]</span></p>
+</div>
+<div id="example-mean-of-folded-normal" class="slide section level2">
+<h1>Example: Mean of folded normal</h1>
+<p>We would like to estimate <span class="math inline">\(E[X]\)</span>, where <span class="math inline">\(X\)</span> has density <span class="math display">\[
+g_X(x) = \frac{2}{\sqrt{2\pi}} e^{-x^2 / 2}, \quad x \ge 0
+\]</span></p>
+<p>We can use accept/reject and Monte Carlo integration to approximate this quantity.</p>
+<p>In the notation from the previous slide, we have</p>
+<ul class="incremental">
+<li><p><span class="math inline">\(g = g_X\)</span></p></li>
+<li><p><span class="math inline">\(f(x) = x\)</span></p></li>
+<li><p><span class="math inline">\(h(x) = e^{-x}\)</span>, <span class="math inline">\(x \ge 0\)</span> (exponential with rate 1)</p></li>
+<li><p><span class="math inline">\(c = \sqrt {2e / \pi} \approx 1.32\)</span> (obtained by finding the maximum of <span class="math inline">\(g_X(x) / h(x)\)</span>)</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a>half_normal_rb_sample =<span class="st"> </span><span class="cf">function</span>() {</span>
+<span id="cb18-2"><a href="#cb18-2"></a>    f =<span class="st"> </span><span class="cf">function</span>(x) x</span>
+<span id="cb18-3"><a href="#cb18-3"></a>    g =<span class="st"> </span><span class="cf">function</span>(x) <span class="dv">2</span> <span class="op">/</span><span class="st"> </span><span class="kw">sqrt</span>(<span class="dv">2</span> <span class="op">*</span><span class="st"> </span>pi) <span class="op">*</span><span class="st"> </span><span class="kw">exp</span>(<span class="op">-</span>x<span class="op">^</span><span class="dv">2</span> <span class="op">/</span><span class="st"> </span><span class="dv">2</span>)</span>
+<span id="cb18-4"><a href="#cb18-4"></a>    h =<span class="st"> </span><span class="cf">function</span>(x) <span class="kw">exp</span>(<span class="op">-</span>x)</span>
+<span id="cb18-5"><a href="#cb18-5"></a>    c =<span class="st"> </span><span class="kw">sqrt</span>(<span class="dv">2</span> <span class="op">*</span><span class="st"> </span><span class="kw">exp</span>(<span class="dv">1</span>) <span class="op">/</span><span class="st"> </span>pi)</span>
+<span id="cb18-6"><a href="#cb18-6"></a>    U =<span class="st"> </span><span class="kw">runif</span>(<span class="dv">1</span>)</span>
+<span id="cb18-7"><a href="#cb18-7"></a>    X =<span class="st"> </span><span class="kw">rexp</span>(<span class="dv">1</span>, <span class="dt">rate =</span> <span class="dv">1</span>)</span>
+<span id="cb18-8"><a href="#cb18-8"></a>    W =<span class="st">  </span><span class="kw">g</span>(X) <span class="op">/</span><span class="st"> </span>(c <span class="op">*</span><span class="st"> </span><span class="kw">h</span>(X))</span>
+<span id="cb18-9"><a href="#cb18-9"></a>    <span class="kw">return</span>(<span class="kw">c</span>(<span class="dt">accepted =</span> (U <span class="op">&lt;=</span><span class="st"> </span>W), <span class="dt">fX =</span> <span class="kw">f</span>(X), <span class="dt">weight =</span> W))</span>
+<span id="cb18-10"><a href="#cb18-10"></a>}</span>
+<span id="cb18-11"><a href="#cb18-11"></a>samples =<span class="st"> </span><span class="kw">replicate</span>(<span class="dt">n =</span> <span class="dv">200</span>, <span class="kw">half_normal_rb_sample</span>())</span>
+<span id="cb18-12"><a href="#cb18-12"></a>accepted =<span class="st"> </span><span class="kw">which</span>(samples[<span class="st">&quot;accepted&quot;</span>,] <span class="op">==</span><span class="st"> </span><span class="dv">1</span>)</span>
+<span id="cb18-13"><a href="#cb18-13"></a>m =<span class="st"> </span><span class="kw">length</span>(accepted)</span>
+<span id="cb18-14"><a href="#cb18-14"></a>fX =<span class="st"> </span>samples[<span class="st">&quot;fX&quot;</span>,]</span>
+<span id="cb18-15"><a href="#cb18-15"></a>weights =<span class="st"> </span>samples[<span class="st">&quot;weight&quot;</span>,]</span>
+<span id="cb18-16"><a href="#cb18-16"></a><span class="co">## theoretical mean of folded normal</span></span>
+<span id="cb18-17"><a href="#cb18-17"></a><span class="kw">sqrt</span>(<span class="dv">2</span>) <span class="op">/</span><span class="st"> </span><span class="kw">sqrt</span>(pi)</span></code></pre></div>
+<pre><code>## [1] 0.7978846</code></pre>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a><span class="co">## Rao-Blackwellized version of accept/reject</span></span>
+<span id="cb20-2"><a href="#cb20-2"></a><span class="kw">sum</span>(fX <span class="op">*</span><span class="st"> </span>weights) <span class="op">/</span><span class="st"> </span>m</span></code></pre></div>
+<pre><code>## [1] 0.7994142</code></pre>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1"></a><span class="co">## Non-Rao-Blackwellized version of accept/reject</span></span>
+<span id="cb22-2"><a href="#cb22-2"></a><span class="kw">mean</span>(fX[accepted])</span></code></pre></div>
+<pre><code>## [1] 0.7579669</code></pre>
+</div>
+</div>
+<div id="overall-idea" class="slide section level2">
+<h1>Overall Idea</h1>
+<ul class="incremental">
+<li><p>Conditioning is keeping more of the information.</p></li>
+<li><p>Using that information appropriately decreases the variance of the estimator.</p></li>
+</ul>
+</div>
+<div id="importance-sampling" class="slide section level2">
+<h1>Importance Sampling</h1>
+<p>Importance sampling is based on the following equality: <span class="math display">\[
+\int f(x) g(x)\, dx = \int \frac{f(x) g(x)}{h(x)} h(x) \,dx
+\]</span> where</p>
+<ul class="incremental">
+<li><p><span class="math inline">\(f\)</span> is the function for which we would like to compute the expectation</p></li>
+<li><p><span class="math inline">\(g\)</span> is the density of our target probability distribution</p></li>
+<li><p><span class="math inline">\(h\)</span> is the density of some other probability distribution</p></li>
+</ul>
+</div>
+<div id="importance-sampling-procedure" class="slide section level2">
+<h1>Importance sampling: Procedure</h1>
+<p>Draw <span class="math inline">\(Y_1, \ldots, Y_n\)</span> iid from a distribution <span class="math inline">\(h\)</span>. Then <span class="math display">\[
+\frac{1}{n}\sum_{i=1}^n \frac{f(Y_i) g(Y_i)}{h(Y_i)}
+\]</span> is an estimate of <span class="math inline">\(\int f(x) g(x) \, dx\)</span>.</p>
+</div>
+<div id="when-is-this-useful" class="slide section level2">
+<h1>When is this useful?</h1>
+<p>The importance sampling estimator has a smaller variance than the naive estimator iff: <span class="math display">\[
+\int \left[ \frac{f(x) g(x)}{h(x)} \right]^2 h(x) dx \le \int f(x)^2 g(x) dx
+\]</span></p>
+<div class="incremental">
+<ul class="incremental">
+<li>If we choose <span class="math inline">\(h(x) = |f(x)| g(x) / \int |f(z)| g(z) dz\)</span>, then an application of Cauchy Schwarz tells us that the condition above is satisfied and the importance sampling estimator will have smaller variance.</li>
+</ul>
+</div>
+<div class="incremental">
+<ul class="incremental">
+<li>If <span class="math inline">\(f\)</span> is nonnegative and <span class="math inline">\(h\)</span> is chosen as above, the variance of the importance sampling estimator is 0.</li>
+</ul>
+</div>
+<div class="incremental">
+<ul class="incremental">
+<li>We aren’t able to choose <span class="math inline">\(h\)</span> according to the recipe above, but it implies that the variance will be reduced if <span class="math inline">\(h(x)\)</span> looks like <span class="math inline">\(|f(x)| g(x)\)</span>.</li>
+</ul>
+</div>
+</div>
+<div id="a-contrived-example" class="slide section level2">
+<h1>A contrived example</h1>
+<p>We are playing a terrible game:</p>
+<ul class="incremental">
+<li><p>I draw from a uniform distribution on <span class="math inline">\([0,1]\)</span>.</p></li>
+<li><p>If the draw comes up less than <span class="math inline">\(.01\)</span>, you have to pay me $100.</p></li>
+<li><p>Otherwise nothing happens.</p></li>
+</ul>
+<p>What is your expected return to playing this game?</p>
+</div>
+<div class="slide section level2">
+
+<p>Naive Monte Carlo estimate:</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1"></a><span class="kw">set.seed</span>(<span class="dv">1</span>)</span>
+<span id="cb24-2"><a href="#cb24-2"></a>f =<span class="st"> </span><span class="cf">function</span>(x) {</span>
+<span id="cb24-3"><a href="#cb24-3"></a>    <span class="cf">if</span>(x <span class="op">&lt;</span><span class="st"> </span><span class="fl">.01</span>)</span>
+<span id="cb24-4"><a href="#cb24-4"></a>        <span class="kw">return</span>(<span class="op">-</span><span class="dv">100</span>)</span>
+<span id="cb24-5"><a href="#cb24-5"></a>    <span class="kw">return</span>(<span class="dv">0</span>)</span>
+<span id="cb24-6"><a href="#cb24-6"></a>}</span>
+<span id="cb24-7"><a href="#cb24-7"></a>mc_samples =<span class="st"> </span><span class="kw">runif</span>(<span class="dv">1000</span>)</span>
+<span id="cb24-8"><a href="#cb24-8"></a><span class="kw">mean</span>(<span class="kw">sapply</span>(mc_samples, f))</span></code></pre></div>
+<pre><code>## [1] -0.7</code></pre>
+<ul class="incremental">
+<li><p>Not very good!</p></li>
+<li><p>Problem is that we don’t have very many samples where <span class="math inline">\(x &lt; .01\)</span></p></li>
+<li><p>Try importance sampling from a distribution that is more likely to give <span class="math inline">\(x &lt; .01\)</span></p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>Recall Beta distributions: Supported on the interval <span class="math inline">\([0,1]\)</span>, can tune so that they put more weight in the middle or at the edges.</p>
+<p>Beta(1,10) has density:</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1"></a>x =<span class="st"> </span><span class="kw">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dt">length.out =</span> <span class="dv">200</span>)</span>
+<span id="cb26-2"><a href="#cb26-2"></a>beta_density =<span class="st"> </span><span class="kw">dbeta</span>(x, <span class="dt">shape1 =</span> <span class="dv">1</span>, <span class="dt">shape2 =</span> <span class="dv">10</span>)</span>
+<span id="cb26-3"><a href="#cb26-3"></a><span class="kw">plot</span>(beta_density <span class="op">~</span><span class="st"> </span>x, <span class="dt">type =</span> <span class="st">&#39;l&#39;</span>)</span></code></pre></div>
+<div class="figure">
+<img src="figure/unnamed-chunk-7-1.png" alt="" />
+<p class="caption">plot of chunk unnamed-chunk-7</p>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Importance sampling from Beta(1,10):</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1"></a>mc_importance_samples =<span class="st"> </span><span class="kw">rbeta</span>(<span class="dv">1000</span>, <span class="dt">shape1 =</span> <span class="dv">1</span>, <span class="dt">shape2 =</span> <span class="dv">10</span>)</span>
+<span id="cb27-2"><a href="#cb27-2"></a>importance_function =<span class="st"> </span><span class="cf">function</span>(x) {</span>
+<span id="cb27-3"><a href="#cb27-3"></a>    <span class="kw">return</span>(<span class="kw">f</span>(x) <span class="op">/</span><span class="st"> </span><span class="kw">dbeta</span>(x, <span class="dt">shape1 =</span> <span class="dv">1</span>, <span class="dt">shape2 =</span> <span class="dv">10</span>))</span>
+<span id="cb27-4"><a href="#cb27-4"></a>}</span>
+<span id="cb27-5"><a href="#cb27-5"></a><span class="kw">mean</span>(<span class="kw">sapply</span>(mc_importance_samples, importance_function))</span></code></pre></div>
+<pre><code>## [1] -1.044691</code></pre>
+</div>
+<div id="more-realistic-examples" class="slide section level2">
+<h1>More realistic examples</h1>
+<ul class="incremental">
+<li><p>Intuition from the game holds: if you have extreme returns from rare events, importance sampling by sampling more from regions with extreme returns helps</p></li>
+<li><p>Insurance</p></li>
+<li><p>Quantitative finance</p></li>
+</ul>
+</div>
+<div id="part-2-cross-validation" class="slide section level2">
+<h1>Part 2: Cross validation</h1>
+<div class="incremental">
+<p>We have:</p>
+<ul class="incremental">
+<li><p>Data <span class="math inline">\(X_1, \ldots, X_n\)</span>.</p></li>
+<li><p>A tuning parameter <span class="math inline">\(\theta\)</span>. Each value of <span class="math inline">\(\theta\)</span> corresponds to a different set of models.</p></li>
+<li><p>A function <span class="math inline">\(L\)</span> that takes a fitted model and a data point and returns a measure of model quality.</p></li>
+</ul>
+<p>We would like to choose one model from the set of candidate models indexed by <span class="math inline">\(\theta\)</span>.</p>
+</div>
+</div>
+<div id="example-regression" class="slide section level2">
+<h1>Example: Regression</h1>
+<ul class="incremental">
+<li><p>Data: Pairs of predictors and response variables, <span class="math inline">\((y_i, X_i)\)</span>, <span class="math inline">\(i = 1,\ldots, n\)</span>, <span class="math inline">\(y_i \in \mathbb R\)</span>, <span class="math inline">\(X_i \in \mathbb R^p\)</span></p></li>
+<li><p>Models: <span class="math inline">\(y_i = X \beta + \epsilon\)</span>, <span class="math inline">\(\beta_j = 0, j \in S_\theta\)</span>, where <span class="math inline">\(S_\theta \subseteq \{1,\ldots, p\}\)</span>.</p></li>
+<li><p>Model quality: Squared-error loss. If <span class="math inline">\(\hat \beta_\theta\)</span> are our estimates of the regression coefficients in model <span class="math inline">\(\theta\)</span>, model quality is measured by <span class="math display">\[
+L(\hat \beta_\theta, (y_i, X_i)) = (y_i - X_i^T \hat \beta_\theta)^2
+\]</span></p></li>
+</ul>
+<p>We want to choose a subset of the predictors that do the best job of explaining the response.</p>
+<div class="incremental">
+<p>Naive solution: Find the model that has the lowest value for the squared-error loss.</p>
+<p>Why doesn’t this work?</p>
+</div>
+</div>
+<div id="example-mixture-models" class="slide section level2">
+<h1>Example: Mixture models</h1>
+<ul class="incremental">
+<li><p>Data: <span class="math inline">\(x_1,\ldots, x_n\)</span>, <span class="math inline">\(x_i \in \mathbb R\)</span></p></li>
+<li><p>Models: Gaussian mixture models with <span class="math inline">\(\theta\)</span> mixture components.</p></li>
+<li><p>Model quality: Negative log likelihood of the data. If <span class="math inline">\(\hat p_\theta\)</span> is the density of the fitted model with <span class="math inline">\(\theta\)</span> components, model quality is measured by <span class="math inline">\(L(\hat p_\theta, x_i) = -\log \hat p_\theta(x_i)\)</span>.</p></li>
+</ul>
+<p>We want to choose the number of mixture components that best explains the data.</p>
+<div class="incremental">
+<p>Naive solution: Choose the number of mixture components that minimizes the negative log likelihood of the data.</p>
+</div>
+</div>
+<div id="better-solution-cross-validation" class="slide section level2">
+<h1>Better Solution: Cross validation</h1>
+<p>Idea: Instead of measuring model quality on the same data we used to fit the model, we estimate model quality on new data.</p>
+<p>If we knew the true distribution of the data, we could simulate new data and use a Monte Carlo estimate based on the simulations.</p>
+<p>We can’t actually get new data, and so we hold some back when we fit the model and then pretend that the held back data is new data.</p>
+</div>
+<div class="slide section level2">
+
+<p>Procedure:</p>
+<ul class="incremental">
+<li><p>Divide the data into <span class="math inline">\(K\)</span> folds</p></li>
+<li><p>Let <span class="math inline">\(X^{(k)}\)</span> denote the data in fold <span class="math inline">\(k\)</span>, and let <span class="math inline">\(X^{(-k)}\)</span> denote the data in all the folds except for <span class="math inline">\(k\)</span>.</p></li>
+<li><p>For each fold and each value of the tuning parameter <span class="math inline">\(\theta\)</span>, fit the model on <span class="math inline">\(X^{(-k)}\)</span> to get <span class="math inline">\(\hat f_\theta^{(k)}\)</span></p></li>
+<li><p>Compute <span class="math display">\[
+\text{CV}(\theta) = \frac{1}{n} \sum_{k=1}^K \sum_{x \in X^{(k)}} L(\hat f_\theta^{(k)}, x)
+\]</span></p></li>
+<li><p>Choose <span class="math inline">\(\hat \theta = \text{argmin}_{\theta} \text{CV}(\theta)\)</span></p></li>
+</ul>
+</div>
+<div id="example" class="slide section level2">
+<h1>Example</h1>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1"></a>n =<span class="st"> </span><span class="dv">100</span></span>
+<span id="cb29-2"><a href="#cb29-2"></a>p =<span class="st"> </span><span class="dv">20</span></span>
+<span id="cb29-3"><a href="#cb29-3"></a>X =<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">rnorm</span>(n <span class="op">*</span><span class="st"> </span>p), <span class="dt">nrow =</span> n)</span>
+<span id="cb29-4"><a href="#cb29-4"></a>y =<span class="st"> </span><span class="kw">rnorm</span>(n)</span>
+<span id="cb29-5"><a href="#cb29-5"></a>get_rss_submodels =<span class="st"> </span><span class="cf">function</span>(n_predictors, y, X) {</span>
+<span id="cb29-6"><a href="#cb29-6"></a>    <span class="cf">if</span>(n_predictors <span class="op">==</span><span class="st"> </span><span class="dv">0</span>) {</span>
+<span id="cb29-7"><a href="#cb29-7"></a>        lm_submodel =<span class="st"> </span><span class="kw">lm</span>(y <span class="op">~</span><span class="st"> </span><span class="dv">0</span>)</span>
+<span id="cb29-8"><a href="#cb29-8"></a>    } <span class="cf">else</span> {</span>
+<span id="cb29-9"><a href="#cb29-9"></a>        lm_submodel =<span class="st"> </span><span class="kw">lm</span>(y <span class="op">~</span><span class="st"> </span><span class="dv">0</span> <span class="op">+</span><span class="st"> </span>X[,<span class="dv">1</span><span class="op">:</span>n_predictors, <span class="dt">drop =</span> <span class="ot">FALSE</span>])</span>
+<span id="cb29-10"><a href="#cb29-10"></a>    }</span>
+<span id="cb29-11"><a href="#cb29-11"></a>    <span class="kw">return</span>(<span class="kw">sum</span>(<span class="kw">residuals</span>(lm_submodel)<span class="op">^</span><span class="dv">2</span>))</span>
+<span id="cb29-12"><a href="#cb29-12"></a>}</span>
+<span id="cb29-13"><a href="#cb29-13"></a>p_vec =<span class="st"> </span><span class="dv">0</span><span class="op">:</span>p</span>
+<span id="cb29-14"><a href="#cb29-14"></a>rss =<span class="st"> </span><span class="kw">sapply</span>(p_vec, get_rss_submodels, y, X)</span>
+<span id="cb29-15"><a href="#cb29-15"></a><span class="kw">plot</span>(rss <span class="op">~</span><span class="st"> </span>p_vec)</span></code></pre></div>
+<div class="figure">
+<img src="figure/unnamed-chunk-9-1.png" alt="" />
+<p class="caption">plot of chunk unnamed-chunk-9</p>
+</div>
+</div>
+<div class="slide section level2">
+
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1"></a>get_cv_error =<span class="st"> </span><span class="cf">function</span>(n_predictors, y, X, folds) {</span>
+<span id="cb30-2"><a href="#cb30-2"></a>    cv_vec =<span class="st"> </span><span class="kw">numeric</span>(<span class="kw">length</span>(<span class="kw">unique</span>(folds)))</span>
+<span id="cb30-3"><a href="#cb30-3"></a>    <span class="cf">for</span>(f <span class="cf">in</span> <span class="kw">unique</span>(folds)) {</span>
+<span id="cb30-4"><a href="#cb30-4"></a>        cv_vec[f] =<span class="st"> </span><span class="kw">rss_on_held_out</span>(</span>
+<span id="cb30-5"><a href="#cb30-5"></a>                  n_predictors,</span>
+<span id="cb30-6"><a href="#cb30-6"></a>                  <span class="dt">y_train =</span> y[folds <span class="op">!=</span><span class="st"> </span>f],</span>
+<span id="cb30-7"><a href="#cb30-7"></a>                  <span class="dt">X_train =</span> X[folds <span class="op">!=</span><span class="st"> </span>f,],</span>
+<span id="cb30-8"><a href="#cb30-8"></a>                  <span class="dt">y_test =</span> y[folds <span class="op">==</span><span class="st"> </span>f],</span>
+<span id="cb30-9"><a href="#cb30-9"></a>                  <span class="dt">X_test =</span> X[folds <span class="op">==</span><span class="st"> </span>f,])</span>
+<span id="cb30-10"><a href="#cb30-10"></a>    }</span>
+<span id="cb30-11"><a href="#cb30-11"></a>    <span class="kw">return</span>(<span class="kw">mean</span>(cv_vec))</span>
+<span id="cb30-12"><a href="#cb30-12"></a>}</span>
+<span id="cb30-13"><a href="#cb30-13"></a></span>
+<span id="cb30-14"><a href="#cb30-14"></a>rss_on_held_out =<span class="st"> </span><span class="cf">function</span>(n_predictors, y_train, X_train, y_test, X_test) {</span>
+<span id="cb30-15"><a href="#cb30-15"></a>    <span class="cf">if</span>(n_predictors <span class="op">==</span><span class="st"> </span><span class="dv">0</span>) {</span>
+<span id="cb30-16"><a href="#cb30-16"></a>        lm_submodel =<span class="st"> </span><span class="kw">lm</span>(y_train <span class="op">~</span><span class="st"> </span><span class="dv">0</span>)</span>
+<span id="cb30-17"><a href="#cb30-17"></a>        preds_on_test =<span class="st"> </span><span class="kw">rep</span>(<span class="dv">0</span>, <span class="kw">length</span>(y_test))</span>
+<span id="cb30-18"><a href="#cb30-18"></a>    } <span class="cf">else</span> {</span>
+<span id="cb30-19"><a href="#cb30-19"></a>        lm_submodel =<span class="st"> </span><span class="kw">lm</span>(y_train <span class="op">~</span><span class="st"> </span><span class="dv">0</span> <span class="op">+</span><span class="st"> </span>X_train[,<span class="dv">1</span><span class="op">:</span>n_predictors, <span class="dt">drop =</span> <span class="ot">FALSE</span>])</span>
+<span id="cb30-20"><a href="#cb30-20"></a>        preds_on_test =<span class="st"> </span>X_test[,<span class="dv">1</span><span class="op">:</span>n_predictors, drop=<span class="st"> </span><span class="ot">FALSE</span>] <span class="op">%*%</span><span class="st"> </span><span class="kw">coef</span>(lm_submodel)</span>
+<span id="cb30-21"><a href="#cb30-21"></a>    }</span>
+<span id="cb30-22"><a href="#cb30-22"></a></span>
+<span id="cb30-23"><a href="#cb30-23"></a>    <span class="kw">return</span>(<span class="kw">sum</span>((y_test <span class="op">-</span><span class="st"> </span>preds_on_test)<span class="op">^</span><span class="dv">2</span>))</span>
+<span id="cb30-24"><a href="#cb30-24"></a>}</span>
+<span id="cb30-25"><a href="#cb30-25"></a>K =<span class="st"> </span><span class="dv">5</span></span>
+<span id="cb30-26"><a href="#cb30-26"></a><span class="co">## normally you would do this at random</span></span>
+<span id="cb30-27"><a href="#cb30-27"></a>folds =<span class="st"> </span><span class="kw">rep</span>(<span class="dv">1</span><span class="op">:</span>K, <span class="dt">each =</span> n <span class="op">/</span><span class="st"> </span>K)</span>
+<span id="cb30-28"><a href="#cb30-28"></a>p_vec =<span class="st"> </span><span class="dv">0</span><span class="op">:</span>p</span>
+<span id="cb30-29"><a href="#cb30-29"></a>cv_errors =<span class="st"> </span><span class="kw">sapply</span>(p_vec, get_cv_error, y, X, folds)</span>
+<span id="cb30-30"><a href="#cb30-30"></a><span class="kw">plot</span>(cv_errors <span class="op">~</span><span class="st"> </span>p_vec)</span></code></pre></div>
+<div class="figure">
+<img src="figure/unnamed-chunk-10-1.png" alt="" />
+<p class="caption">plot of chunk unnamed-chunk-10</p>
+</div>
+</div>
+<div id="choice-of-k" class="slide section level2">
+<h1>Choice of <span class="math inline">\(K\)</span></h1>
+<p>Considerations:</p>
+<ul class="incremental">
+<li><p>Larger <span class="math inline">\(K\)</span> means more computation (although sometimes there is a shortcut for leave-one-out cross validation)</p></li>
+<li><p>Larger <span class="math inline">\(K\)</span> means less bias in the estimate of model accuracy</p></li>
+<li><p>Larger <span class="math inline">\(K\)</span> also means more variance in the estimate, so we don’t necessarily want <span class="math inline">\(K = n\)</span></p></li>
+<li><p>Usually choose <span class="math inline">\(K = 5\)</span> or <span class="math inline">\(K = 10\)</span></p></li>
+<li><p>If your problem is structured (e.g. time series, spatial), you should choose the folds to respect the structure.</p></li>
+</ul>
+</div>
+<div id="summing-up" class="slide section level2">
+<h1>Summing up</h1>
+<ul class="incremental">
+<li><p>We can use simulations to estimate arbitrary functions of our random variables.</p></li>
+<li><p>If we know the underlying distribution, we can simply simulate from it (Monte Carlo integration).</p></li>
+<li><p>If we don’t know the underlying distribution, we can “simulate” from the data by resampling from the data (cross validation). Resampling methods will do well to the extent that the observed data reflect the true data-generating distribution.</p></li>
+</ul>
+</div>
+</body>
+</html>

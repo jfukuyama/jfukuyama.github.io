@@ -1,0 +1,444 @@
+## More optimization...
+
+```{r setup, echo = FALSE, message = FALSE}
+library(knitr)
+opts_chunk$set(fig.cap="",
+               fig.path="lecture-19-fig/")
+```
+
+
+So far
+
+- Newton's method
+
+- Things that reduce to Newton's method
+
+Today: modifications of Newton's method
+
+- Fisher scoring (if you want to make sure the Hessian term is negative definite)
+
+- Hessian approximations (if it takes too long to re-compute/re-invert the Hessian)
+
+- Gradient descent (if you don't want to ever compute or invert the Hessian)
+
+Reading:
+
+- Boyd and Vandenberghe, Chapter 9.1-9.4
+
+## Fisher Scoring
+
+Idea: Use the expected information, $I(\theta)= E[-d^2 \ell(\theta)]$ instead of the observed information, $d^2 \ell(\theta)$.
+
+Algorithm:
+
+- Pick a starting parameter estimate $\theta_0$
+
+- Set $\theta_{n+1} = \theta_n + I(\theta)^{-1} d\ell(\theta_n)$
+
+. . .
+
+$I(\theta)$ often coincides with $-d^2 \ell(\theta)$, in which case Fisher Scoring is exactly the same as Newton's method.
+
+Sometimes $I(\theta)$ is easier to compute than $-d^2 \ell(\theta)$.
+
+## Example: Non-linear least squares
+
+Inputs:
+
+- Data $y_1,\ldots, y_n$.
+
+- Covariates $x_1,\ldots, x_n$.
+
+- Parameter vector $\theta$
+
+- Non-linear function $\mu$, with $\mu(x, \theta_1, \theta_2, \theta_3) = \frac{\theta_3}{1 + e^{-\theta_1 - \theta_2 x}}$
+
+- For notational purposes, let $\mu_i (\theta) = \mu(x_i, \theta_1,\theta_2,\theta_3)$.
+
+-----
+
+Model:
+$$
+y_i \sim N(\mu_i(\theta), \sigma^2)
+$$
+
+Log likelihood:
+$$
+\ell(\theta) = - \frac{1}{2} \sum_{i=1}^n (y_i - \mu_i(\theta))^2 + C
+$$
+
+Gradient/score:
+$$
+\begin{align*}
+d\ell(\theta) &= \sum_{i=1}^n (y_i - \mu_i(\theta)) d\mu_i(\theta)\\
+d\mu_i(\theta) &= \begin{pmatrix}
+\frac{\theta_3 e^{-\theta_1 - \theta_2 x}}{(1 + e^{-\theta_1 - \theta_2 x})^2} \\
+\frac{x\theta_3 e^{-\theta_1 - \theta_2 x}}{(1 + e^{-\theta_1 - \theta_2 x})^2} \\
+\frac{1}{(1 + e^{-\theta_1 - \theta_2 x})^2}
+\end{pmatrix}
+\end{align*}
+$$
+
+Hessian:
+$$
+d^2 \ell(\theta) = -\sum_{i=1}^n d \mu_i(\theta) d \mu_i(\theta)^T + \sum_{i=1}^n (y_i - \mu_i(\theta))d^2 \mu_i(\theta)
+$$
+
+Information:
+$$
+I(\theta) = E[-d^2 \ell(\theta)] = \sum_{i=1}^n d\mu_i(\theta) d\mu_i(\theta)^T
+$$
+
+-----
+
+Example
+
+
+
+```{r}
+fisher_scoring_iterate = function(x, y, theta_current) {
+    score = compute_score(x, y, theta_current)
+    information = compute_information(x, theta_current)
+    theta_new = theta_current + solve(information) %*% score
+}
+compute_score = function(x, y, theta) {
+    fitted = nonlin_function(x, theta)
+    grad_mu = compute_grad_mu(x, theta)
+    rowSums(sweep(grad_mu, 2, STATS = y - fitted, FUN = "*"))
+}
+compute_information = function(x, theta) {
+    ## a 3 x n matrix
+    grad_mu = compute_grad_mu(x, theta)
+    grad_mu %*% t(grad_mu)
+}
+compute_grad_mu = function(x, theta) {
+    denom = 1 + exp(-theta[1] - theta[2] * x)
+    g1 = theta[3] * exp(-theta[1] - theta[2] * x) / denom^2
+    g2 = x * theta[3] * exp(-theta[1] - theta[2] * x) / denom^2
+    g3 = 1 / denom
+    return(rbind(g1, g2, g3))
+}
+nonlin_function = function(x, theta) {
+    theta[3] / (1 + exp(-theta[1] - theta[2] * x))
+}
+```
+
+-----
+
+At the starting values:
+
+```{r}
+library(NISTnls)
+data(Ratkowsky3)
+x = Ratkowsky3$x
+y = Ratkowsky3$y
+theta = c(-5, 1, 700)
+xgrid = seq(0, 15, length.out = 1000)
+fitted = nonlin_function(xgrid, theta)
+plot(fitted ~ xgrid, type = 'l')
+points(y ~ x)
+```
+
+----
+
+After one iteration:
+```{r}
+(theta = fisher_scoring_iterate(x, y, theta))
+fitted = nonlin_function(xgrid, theta)
+plot(fitted ~ xgrid, type = 'l')
+points(y ~ x)
+```
+
+-----
+
+After two iterations:
+```{r}
+(theta = fisher_scoring_iterate(x, y, theta))
+fitted = nonlin_function(xgrid, theta)
+plot(fitted ~ xgrid, type = 'l')
+points(y ~ x)
+```
+
+-----
+
+After several more iterations
+```{r}
+for(i in 1:5) {
+    theta = fisher_scoring_iterate(x, y, theta)
+    print(theta)
+}
+```
+
+-----
+
+```{r}
+fitted = nonlin_function(xgrid, theta)
+plot(fitted ~ xgrid, type = 'l')
+points(y ~ x)
+```
+
+-----
+
+Compare with
+
+```{r}
+nls(y ~ b3 / ((1+exp(-b1-b2*x))), data = Ratkowsky3,
+    start = c(b1 = -5, b2 = 0.75, b3 = 700),
+    trace = TRUE)
+```
+
+
+## Quasi-Newton Methods
+
+Idea: If you don't move very far in one step, the Hessian shouldn't change that much either.
+
+Instead of recomputing the Hessian at each step, compute an approximate update.
+
+- Start with an initial guess at a parameter $\theta^{(0)}$.
+
+- Let $A^{(0)} = d^2 \ell(\theta)$.
+
+- Set $\theta^{(n+1)} = \theta^{(n)} - (A^{(n)})^{-1} d \ell(\theta^{(n)})$
+
+- Set $A^{(n+1)} = A^{(n)} - c^{(n)} v^{(n)} (v^{(n)})^T$
+
+$A^{(n)}$ are approximations to the Hessian.
+
+-----
+
+Idea behind Hessian update: Taylor series again:
+
+$$
+d\ell(\theta^{(n)}) \approx d\ell(\theta^{(n+1)}) + d^2 \ell(\theta^{(n+1)})(\theta^{(n)} - \theta^{(n+1)})
+$$
+
+. . .
+
+Rearranging:
+$$
+d\ell(\theta^{(n)}) - d\ell(\theta^{(n+1)})\approx d^2 \ell(\theta^{(n+1)})(\theta^{(n)} - \theta^{(n+1)})
+$$
+
+. . .
+
+Finding an approximation $A^{(n+1)}$ of $-d^2\ell(\theta^{(n+1)})$ that satisfies the equation above is called the _secant condition_.
+
+Several different ways to make the approximation:
+
+- Symmetric rank-1 update is Davidson's method, described in Lange.
+
+- Symmetric rank-2 update is BFGS (Broyden–Fletcher–Goldfarb–Shanno).
+
+-----
+
+
+For notation, let
+$$
+\begin{align*}
+g^{(n)} &= d\ell(\theta^{(n)}) - d \ell(\theta^{(n+1)}) \\
+s^{(n)} &= \theta^{(n)} - \theta^{(n+1)}
+\end{align*}
+$$
+
+We can rewrite the secant condition 
+$$
+d\ell(\theta^{(n)}) - d\ell(\theta^{(n+1)})\approx d^2 \ell(\theta^{(n+1)})(\theta^{(n)} - \theta^{(n+1)})
+$$
+as
+$$
+-A^{(n+1)} s^{(n)} = g^{(n)}
+$$
+
+
+Davidson's method is a symmetric rank-1 update.
+
+$$
+A^{(n+1)} = A^{(n)} - c^{(n)} v^{(n)} (v^{(n)})^T
+$$
+
+where
+$$
+c^{(n)} = \frac{1}{(g^{(n)} + A^{(n)} s^{(n)})^T s^{(n)}} \\
+v^{(n)} = g^{(n)} + A^{(n)} s^{(n)}
+$$
+
+(verify on your own that this satisfies the secant condition)
+
+-------
+
+BFGS is a symmetric rank-2 update.
+
+$$
+A^{(n+1)} = A^{(n)} + \alpha u u^T + \beta v v^T
+$$
+
+$u = y^{(k)}$, $v = A^{(n)} s^{(n)}$, $\alpha = -1 / (g^{(k)})^T s^{(k)}$, $\beta = - 1 / (s^{(k)})^T B^{(k)} s^{(k)}$
+
+. . .
+
+- BFGS is in R's `optim`.
+
+- The rank-1 updating method doesn't ensure that the approximate Hessian remains positive definite, while the rank-2 updating method (BFGS) does.
+
+
+----
+
+Why are these useful?
+
+- This makes it easy to compute an approximation of $-d^2 \ell(\theta)$, but we still need to invert it to take an approximate Newton step
+
+- [Woodbury matrix identity](https://en.wikipedia.org/wiki/Woodbury_matrix_identity) allows us to compute the inverse of a low-rank update quickly
+
+$$
+(A + UCV)^{-1}= A^{-1} - A^{-1} U(C^{-1} + VA^{-1} U)^{-1} V A^{-1}
+$$
+
+
+## Gradient descent
+
+Our problem:
+
+$$
+\text{minimize}_x \quad f(x)
+$$
+
+Note that we're doing minimization instead of maximization now so that the notation matches the reading, but any minimization problem can be recast as a maximization and vice versa.
+
+## Descent Methods
+
+General algorithm:
+
+Start with a point $x$
+
+Repeat
+
+- Choose a descent direction $\Delta x$
+
+- Choose step size $t$.
+
+- Update: $x \leftarrow x + t \Delta x$
+
+Until the stopping criterion is satisfied, usually $\|\nabla f(x)\|_2
+\le \epsilon$.
+
+## Line search types: Exact line search
+
+Step size $t$ found as
+$$
+t = \text{argmin}_{t > 0}f(x + t \Delta x)
+$$
+
+This can be useful if there is an analytic or otherwise quick method
+of finding the minimum of the function restricted to a ray.
+
+## Line search types: Backtracking line search
+
+- Step size $t$ found with an iterative method.
+
+- Parameters $\alpha \in (0, 1/2)$, $\beta \in (0,1)$ that you
+specify.
+
+- Algorithm: Start at $t = 1$, repeat $t \leftarrow \beta t$ until
+$$
+f(x + t \Delta x) < f(x) + \alpha t \nabla f(x)^T \Delta x
+$$
+
+![](backtracking-image.png)
+
+## Gradient descent
+
+In gradient descent, we take $\Delta x = - \nabla f(x)$.
+
+Overall algorithm:
+
+Start with a point $x$
+
+Repeat
+
+- $\Delta x \leftarrow - \nabla f(x)$.
+
+- Line search: Choose step size $t$ by either backtracking line search
+or exact line search.
+
+- Update: $x \leftarrow x + t \Delta x$
+
+Until the stopping criterion is satisfied, usually $\|\nabla f(x)\|_2
+\le \epsilon$.
+
+
+## Gradient descent example in pictures
+
+![](gradient-descent-backtracking.png)
+
+Iterates of gradient descent with backtracking line search, for
+minimizing $f(x_1, x_2) = \exp(x_1 + 3 x_2 - .1) + \exp(x_1 - 3 x_2 -
+.1) + \exp(-x_1 - .1)$
+
+Contours represent the boundaries of the  _sublevel sets_ of the
+function: $\{x : f(x) \le a\}$.
+
+## Gradient descent example for normal mean
+
+Suppose $x_1, \ldots, x_n \sim N(\theta, 1)$.
+
+We want to know $\theta$, and we will get $\hat \theta$ by minimizing the negative log likelihood:
+$$
+-\ell(\theta) = C + \frac{1}{2} \sum_{i=1}^n (x_i - \theta)^2
+$$
+
+A descent direction for the negative log likelihood is the negative derivative of the negative log likelihood:
+$$
+-d(-\ell(\theta)) = \sum_{i=1}^n (x_i - \theta)
+$$
+
+----
+
+Functions for backtrakcing gradient descent:
+
+```{r}
+backtrack_desc = function(our_fn, our_grad, start, alpha, beta, data) {
+  theta = start
+  step_size = backtracking(our_fn, our_grad, theta, alpha, beta, data)
+  new_theta = theta + step_size * our_grad(theta, data)
+  return(new_theta)
+}
+
+backtracking = function(our_fn, our_grad, theta, alpha, beta, data) {
+    t = 1
+    fn_current = our_fn(theta, data)
+    grad_current = our_grad(theta, data)
+  while(our_fn(theta + t * grad_current, data) > (fn_current + alpha * t * t(grad_current) %*% grad_current)) {
+    t = beta * t
+  }
+  return(t)
+}
+```
+
+-----
+
+Functions for the log likelihood:
+
+```{r}
+neg_log_lik = function(theta, x) {
+    return(.5 * sum((x - theta)^2))
+}
+neg_deriv = function(theta, x) {
+    return(sum(x - theta))
+}
+set.seed(0)
+x = rnorm(n = 20, mean = 5, sd = 1)
+mean(x)
+theta = 0
+for(i in 1:10) {
+    theta = backtrack_desc(neg_log_lik, neg_deriv, start = theta, alpha = .1, beta = .2, data = x)
+    cat(sprintf("Value of theta at iteration %i: %.2f\n", i, theta))
+}
+```
+
+## Summing up
+
+- Everything we've seen has an interpretation as Newton's method with some approximation of the Hessian standing in for the real thing
+
+- You need to trade off between using the analytic information you have about the problem and computational complexity.
+
+

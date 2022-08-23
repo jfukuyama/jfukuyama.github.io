@@ -1,0 +1,478 @@
+## Avoiding iteration, split/apply/combine
+
+Reading: R Cookbook, Chapter 6
+
+Agenda for today:
+
+- Avoiding iteration in base R
+
+- Split/apply/combine
+
+-----
+
+## Avoiding iteration
+
+We've already seen a lot of examples of functions in R that are written so as to avoid iteration.
+
+
+Built-in functions for making sequences or repeating elements, for example, we can say:
+
+```{r}
+x = seq(1, 11, by = 2)
+```
+
+instead of
+
+```{r}
+x = numeric(6)
+for(i in 1:length(x)) {
+    x[i] = 1 + 2 * (i - 1)
+}
+```
+
+-----
+
+Most of the built-in functions are vectorized, so we can use
+
+```{r}
+log_x = log(x)
+```
+
+instead of
+
+```{r}
+log_x = numeric(length(x))
+for(i in 1:length(x)) {
+    log_x[i] = log(x[i])
+}
+```
+
+-----
+
+Plus a whole bunch we haven't seen yet, like `rowSums`, `colMeans`, `sweep`, `scale`
+
+However, not everything is vectorized, and you will often want to go beyond the built-in functions, and for that you use the `*apply` family of functions.
+
+## Applying to one-dimensional structures
+
+`lapply`, and `sapply` will apply a function to a one-dimensional structure.
+
+The difference between them is how the output is formatted.
+
+They have the same syntax: `lapply(X = x, FUN = fun, ...)`, `sapply(X = x, FUN = fun, ...)`
+
+- `x` is a vector or list that the function should be applied to
+
+- `fun` is the function that should be applied to each element of the vector or the list
+
+- You can specify other arguments in the `...` portion. `fun` will be called with first argument equal to each element of `x`, and subsequent arguments anything you specify in the `...` portion.
+
+. . .
+
+Return values:
+
+- `lapply` returns a list with length equal to the length of `x` containing the result of the function evaluation on the corresponding element of `x`.
+
+- `sapply` tries to simplify the output to a vector or matrix. If each element of the output is of length 1 it returns a vector. If each element has the same length of two or more, it returns a matrix. Otherwise it returns a list like `lapply`.
+
+-----
+
+Examples from the homework:
+
+. . .
+
+```{r}
+library(readr)
+book_dir = "~/GitHub/stat-comp-fall-20/assignments/hw1/books"
+book_file_names = list.files(book_dir, full.names = TRUE)
+books = lapply(book_file_names, read_file)
+```
+
+We need to do this because `read_file` doesn't vectorize. Check what happens if you do `read_file(book_file_names)` (you'll have to change `book_dir` to wherever you saved the books to).
+
+-----
+
+ . . .
+
+Example using extra function arguments:
+
+```{r}
+get_num_characters = function(file_name, honorific_regex) {
+    text = read_file(file_name)
+    name_matches = regmatches(text, gregexpr(honorific_regex, text))[[1]]
+    return(length(unique(name_matches)))
+}
+first_five_books = list.files(book_dir, full.names = TRUE)[1:5]
+lapply(first_five_books, get_num_characters, "(((Mr|Ms|Mrs|Dr)\\.?)|Miss) ([A-Z]([a-z]+|\\.)[ ]+)+[A-Z][a-z]+")
+sapply(first_five_books, get_num_characters, "(((Mr|Ms|Mrs|Dr)\\.?)|Miss) ([A-Z]([a-z]+|\\.)[ ]+)+[A-Z][a-z]+")
+```
+
+
+## Applying to two-dimensional structures
+
+Syntax: `apply(X = mat, MARGIN = dim, FUN = fun, ...)`
+
+- `mat`: The matrix or data frame you want to apply the function to.
+
+- `dim`: Either 1 or 2: 1 means apply the function to each row in `mat`, 2 means apply the function to each column in `mat`. (1 and 2 are related to the way the dimensions are laid out: the first dimension in the matrix is the number of rows, the second is the number of columns.)
+
+- `fun`: The function you want to apply to each row or to each column. It should take a vector as its first argument.
+
+- `...`: Extra arguments to be passed to `fun`.
+
+As with `lapply` and `sapply`, `fun` will be called with each row or each column of `mat` as its first argument, along with any extra arguments specified after the function.
+
+-----
+
+Some simple examples:
+
+. . .
+
+```{r, echo=FALSE}
+set.seed(0)
+```
+```{r}
+X = matrix(sample(-5:5, size = 20, replace = TRUE), nrow = 4, ncol = 5)
+X
+apply(X, 2, min)
+```
+----
+
+. . .
+
+```{r}
+log_X = log(X)
+log_X
+apply(log_X, 1, min, na.rm = TRUE)
+```
+
+-----
+
+Be careful when using apply on rows of a data frame: apply assumes the argument you pass to the function is a vector, and will coerce the rows of the data frame to vectors to make it so.
+
+. . .
+
+```{r}
+steak_combinations = data.frame(
+    temp = c(117, 120, 135, 105),
+    type = c("rare", "med_rare", "med_rare", "rare"))
+
+steak_directions_for_apply = function(temp_and_type) {
+    temp = temp_and_type[1]
+    steak_type = temp_and_type[2]
+    if(steak_type == "rare" & temp > 115) {
+        return("take your steak off!")
+    } else if(steak_type == "med_rare" & temp > 125) {
+        return("take your steak off!")        
+    } 
+    "you can keep cooking"
+}
+## this works, but it really shouldn't
+apply(steak_combinations, 1, steak_directions_for_apply)
+```
+
+-----
+
+One that _actually_ doesn't work:
+```{r}
+steak_admonishments_for_apply = function(temp_and_type) {
+    temp = temp_and_type[1]
+    steak_type = temp_and_type[2]
+    if(steak_type == "rare" & temp > 115) {
+        admonishment = sprintf("Your steak is overcooked by %f degrees!", temp - 115)
+        return(admonhishment)
+    } else if(steak_type == "med_rare" & temp > 125) {
+        admonishment = sprintf("Your steak is overcooked by %f degrees!", temp - 125)
+        return(admonishment)
+    }
+    "Your steak is not overcooked yet"
+}
+apply(steak_combinations, 1, steak_admonishments_for_apply)
+```
+
+-----
+
+If you want to apply a function that uses columns of a data frame that are of different types, better/safer to use `mapply`:
+
+`mapply(FUN = f, vec1, vec2, ..., vecN)`
+
+- `f` is the function you want to apply
+
+- Output is a list, ith element will be `f(vec1[i], vec2[i], ..., vecN[i])`
+
+-----
+
+. . .
+
+```{r}
+steak_directions = function(steak_temp, steak_type) {
+    if(steak_type == "rare" & steak_temp > 115) {
+        return("take your steak off!")
+    } else if(steak_type == "med_rare" & steak_temp > 125) {
+        return("take your steak off!")        
+    } 
+    "you can keep cooking"
+}
+mapply(FUN = steak_directions, steak_combinations$temp, steak_combinations$type)
+```
+
+```{r}
+steak_admonishments = function(steak_temp, steak_type) {
+    if(steak_type == "rare" & steak_temp > 115) {
+        admonishment = sprintf("Your steak is overcooked by %i degrees!", steak_temp - 115)
+        return(admonishment)
+    } else if(steak_type == "med_rare" & steak_temp > 125) {
+        admonishment = sprintf("Your steak is overcooked by %i degrees!", steak_temp - 125)
+        return(admonishment)
+    }
+    "Your steak is not overcooked yet."
+}
+
+mapply(FUN = steak_admonishments, steak_combinations$temp, steak_combinations$type)
+```
+
+
+## What if things aren't quite so tidy?
+
+- The `*apply` functions we've seen so far have applied a function element-by-element to a vector or matrix.
+
+- What if we need to apply a function not to individual elements/rows/columns, but to subsets of different sizes?
+
+## Split/apply/combine paradigm
+
+Turns out this is common enough that it has a name and a bunch of built-in functions.
+
+The programming pattern is pretty clear from the name, what we want to do is:
+
+- split the data into groups
+
+- apply a function to each of the groups
+
+- combine the results of applying the function to each group into an output dataset
+
+## Why is this a useful abstraction?
+
+Imagine how you would do this if you only had for-loops.
+
+You would have to first
+
+- Compute what size the output dataset should be
+
+- Create a data structure to hold the output.
+
+Then, for each level of the grouping factor:
+
+- Compute how many data elements correspond to that grouping level
+
+- Create a data structure to hold the data subset
+
+- Loop through the data to extract the correct subset
+
+- Apply your function to that subset and put the output in the data structure your created at the beginning.
+
+-----
+
+Compare with split/apply/combine abstraction:
+
+- Specify data
+
+- Specify grouping variable for split
+
+- Specify function to apply to each split
+
+The abstraction is useful both for writing and reading the resulting code: you think about _what_ you want to do instead of _how_ to do it.
+
+## Split/apply/combine for vectors
+
+Simple case: we have a vector, and a grouping factor, we want to apply a function to groups of elements of the vector defined by the grouping factor
+
+Solution is tapply
+
+`tapply(X = x, INDEX = f, FUN = fun)`
+
+Syntax:
+
+- `x`: A vector with the data.
+
+- `f`: A factor variable describing how the data should be split up.
+
+- `fun`: The function you want to apply to each subset of the data.
+
+-----
+
+Example: data on police stops in New York City in 1998--1999, information on the number of stops as categorized by certain variables.
+
+In particular, we have counts of police stops for all combinations of
+
+- precinct: 75 total
+
+- eth: Ethnicity of the person stopped, three possibilities, and
+
+- crime: The type of crime, four possibilities
+
+```{r}
+frisk =
+    read.table("http://www.stat.columbia.edu/~gelman/arm/examples/police/frisk_with_noise.dat",
+               skip = 6, header = TRUE)
+head(frisk)
+```
+
+-----
+
+Suppose we want to get the total number of stops in each precinct.
+
+We can use `tapply` with the `sum` function to do so:
+
+. . .
+
+```{r}
+tapply(X = frisk$stops, INDEX = frisk$precinct, FUN = sum)
+```
+
+Just as a check, make sure that the numbers match up:
+```{r}
+precinct_1 = subset(frisk, precinct == 1)
+sum(precinct_1$stops)
+```
+
+-----
+
+And remember how much better this is than iterating using a for loop would have been:
+```{r}
+## find the number of precincts and make a vector of the right length to store the output
+precincts = unique(frisk$precinct)
+stops_per_precinct = numeric(length(precincts))
+## iterate over precinct, get the subset for each one, compute the number of stops, and store
+for(i in 1:length(precincts)) {
+    precinct_subset = subset(frisk, precinct == precincts[i])
+    precinct_stops = sum(precinct_subset$stops)
+    stops_per_precinct[i] = precinct_stops
+}
+stops_per_precinct
+```
+
+
+-----
+
+## Split/apply/combine for data frames
+
+Splitting a data frame into groups of rows and applying a function to the groups:
+
+`by(data = df, INDICES = fact, FUN = fun)`
+
+- `df`: A data frame containing the data you want to split up and apply a function to.
+
+- `fact`: A factor variable describing the groups you want to split `df` into.
+
+- `fun`: The function you want to apply to each group. It should take as its first argument a data frame.
+
+------
+
+. . .
+
+```{r}
+stops_and_past_arrests_correlation = function(frisk_subset) {
+    cor(frisk_subset$stops, frisk_subset$past.arrests)
+}
+within_precinct_cors = by(frisk, frisk$precinct, stops_and_past_arrests_correlation)
+head(within_precinct_cors)
+```
+
+## Anonymous functions
+
+. . .
+
+Here we only need the `stops_and_past_arrests_correlation` function in the context of `by`, so there's no need to define it in the global environment.
+
+Instead we can specify it as an anonymous function:
+```{r}
+within_precinct_cors = by(frisk, frisk$precinct, function(frisk_subset) {
+    cor(frisk_subset$stops, frisk_subset$past.arrests)
+})
+head(within_precinct_cors)
+```
+
+------
+
+A more complex example:
+
+```{r}
+data(diamonds)
+get_diamond_coefficients = function(data_subset) {
+    diamond_lm = lm(log(price) ~ carat, data = data_subset)
+    diamond_coefficients = coef(diamond_lm)
+    return(diamond_coefficients)
+}
+## by does the split and apply steps, and an ugly version of a combine step
+out = by(diamonds, diamonds$color, get_diamond_coefficients)
+```
+
+-----
+
+The output is as a list with some extra attributes (the class is `by`, as you can check).
+
+The form is not ideal on its own, usually you'll want to simplify it.
+You have a couple of options, including the examples below:
+
+. . .
+
+```{r}
+simplify2array(out)
+## changing the output from a list to a matrix
+do.call(rbind, out)
+## it's kind of bad that the splitting variable is only available as row names
+## we can fix that but it's a bit of a pain
+diamond_coef_matrix = do.call(rbind, out)
+diamond_coef_df = data.frame(diamond_coef_matrix,
+    color = attributes(out)$dimnames$`diamonds$color`)
+diamond_coef_df
+```
+
+-----
+
+`by` can also be used with multiple grouping factors:
+
+. . .
+
+```{r}
+by(diamonds, diamonds[, c("color", "cut")], get_diamond_coefficients)
+```
+
+But how do you get at which coefficients correspond to which factor groups?
+
+-----
+
+
+## If you want to do split and apply/combine separately
+
+`split` does just the splitting part of split/apply/combine
+
+Syntax: `split(x, f)`
+
+- `x`: Your data, either a vector or a data frame, that you want to divide into groups.
+
+- `f`: A factor variable used to split `x`. Length is equal to the length of `x` if it is a vector or equal to the number of rows of `x` if it is a data frame.
+
+Output:
+
+- A list of length equal to the number of levels in `f`
+
+- Each element of the list is either a vector or a data frame, depending on what `x` was, containing the elements of `x` corresponding to one of the levels of `f`.
+
+
+-----
+
+We can re-do the stop-and-frisk example that we used `tapply` for with `split` followed by `lapply` or `sapply`
+
+```{r}
+frisk_split_by_precinct = split(frisk$stops, frisk$precinct)
+## check that this has length 75, the number of precincts
+length(frisk_split_by_precinct)
+sapply(frisk_split_by_precinct, sum)
+```
+
+-----
+
+In general, base R apply-family functions don't produce nice output from the combine step.
+
+We'll see implementations of split/apply/combine next time that do a nicer job.

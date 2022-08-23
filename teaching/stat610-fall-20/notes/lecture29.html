@@ -1,0 +1,409 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title>lecture29</title>
+  <style type="text/css">
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <style type="text/css">
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="https://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-AMS_CHTML-full" type="text/javascript"></script>
+  <script src="https://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div id="neural-netsdeep-learning" class="slide section level2">
+<h1>Neural nets/Deep learning</h1>
+<ul>
+<li><p>Today: What are neural nets, how are they fit, examples</p></li>
+<li><p>Reading: Elements of Statistical Learning, Chapter 11.3-11.8</p></li>
+</ul>
+</div>
+<div id="review-the-brain" class="slide section level2">
+<h1>Review: The brain</h1>
+<ul>
+<li><p>Made up of neurons.</p></li>
+<li><p>Neurons connected to each other.</p></li>
+<li><p>Neuron takes input from some of its neighbors, when there is enough input it is “activated” and the neuron fires.</p></li>
+<li><p>When the neuron fires, it sends the signal to its downstream neighbors, potentially causing them to activate and fire as well.</p></li>
+</ul>
+<p><a href="https://en.wikipedia.org/wiki/Neuron#/media/File:Chemical_synapse_schema_cropped.jpg">wikipedia’s illustration</a></p>
+</div>
+<div class="slide section level2">
+
+<p>Idea:</p>
+<ul>
+<li><p>The brain somehow takes inputs and produces outputs (e.g. patterns of light on the retina to a classification of the objects in your field of vision, sensations in the periphery to a measure of temperature, etc.).</p></li>
+<li><p>If we make a computational structure that mimics the brain, we can train it to make predictions from arbitrary sets of inputs.</p></li>
+<li><p>This is just a fancy version of the regression or classification problem.</p></li>
+</ul>
+</div>
+<div id="neural-networks" class="slide section level2">
+<h1>Neural networks</h1>
+<p>Neural networks are made up of units that are supposed to mimic neurons in the brain:</p>
+<p><img src="net-unit.png" /></p>
+<ul>
+<li><p>Input links: can be from other units or from the input data</p></li>
+<li><p>Aggregation function: Linear combination of the inputs</p></li>
+<li><p>Activation function: <span class="math inline">\(g\)</span>, usually a smooth, increasing function.</p></li>
+<li><p>Output: <span class="math inline">\(a = g(\sum_i z_i \alpha_i)\)</span>, i.e., the activation function applied to the aggregated inputs.</p></li>
+<li><p>Output links: Output <span class="math inline">\(a\)</span> is sent to other units.</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>Activation functions:</p>
+<ul>
+<li>Initially: a step function</li>
+</ul>
+<p><img src="lecture-29-fig/unnamed-chunk-1-1.png" /></p>
+<ul>
+<li>sigmoid, <span class="math inline">\(\sigma(x) = \frac{1}{1 + \exp(-x)}\)</span></li>
+</ul>
+<p><img src="lecture-29-fig/unnamed-chunk-2-1.png" /></p>
+<ul>
+<li>tanh: <span class="math inline">\(\text{tanh}(x) = \frac{e^x - e^{-x}}{e^x + e^{-x}}\)</span></li>
+</ul>
+<p><img src="lecture-29-fig/unnamed-chunk-3-1.png" /></p>
+<ul>
+<li>relu: <span class="math inline">\(\text{relu}(x) = \text{max}(0, x)\)</span> probably most common now.</li>
+</ul>
+<p><img src="lecture-29-fig/unnamed-chunk-4-1.png" /></p>
+<p>Any non-linear activation function allows the net to go beyond linear functions of the input</p>
+<p>Activation functions should be smooth for fitting purposes (gradient descent)</p>
+</div>
+<div class="slide section level2">
+
+<p>Neural net structures: putting the units together</p>
+<p><img src="nnet-schematic.png" /></p>
+<ul>
+<li><p>Input layer</p></li>
+<li><p>Hidden layer(s)</p></li>
+<li><p>Output layer</p></li>
+</ul>
+<p>Multiple hidden layers vs. one hidden layer</p>
+<p>Special cases:</p>
+<ul>
+<li><p>One hidden layer, one unit in that layer, sigmoid activation = logistic regression</p></li>
+<li><p>Linear activation function = standard regression, parameterized in a strange way</p></li>
+</ul>
+</div>
+<div id="neural-nets-for-regression" class="slide section level2">
+<h1>Neural nets for regression</h1>
+<p>Notice that the net is just a fancy function of the inputs, parameterized by the weights. Therefore, we can choose the weights so that the net predicts a response, just like in linear regression.</p>
+<ul>
+<li><p>Function we want to optimize: <span class="math display">\[
+R(\theta) = \sum_{i=1}^N R_i = \sum_{i=1}^N (y_i - f(x_i; \theta))^2
+\]</span></p></li>
+<li><p><span class="math inline">\(\theta\)</span> is the parameter vector we want to optimize over, containing the weights. We want to find <span class="math inline">\(\theta\)</span> that minimizes <span class="math inline">\(R(\theta)\)</span>.</p></li>
+<li><p><span class="math inline">\(f(x_i; \theta)\)</span> is the value computed by the net on an input point <span class="math inline">\(x_i\)</span> with parameters <span class="math inline">\(\theta\)</span></p></li>
+<li><p>Fitting is by “backpropagation”, which means gradient descent with the computations organized in a particularly convenient way.</p></li>
+</ul>
+</div>
+<div id="backpropagation-derivation" class="slide section level2">
+<h1>Backpropagation derivation</h1>
+<p>Simple case:</p>
+<ul>
+<li><p>One hidden layer with <span class="math inline">\(M\)</span> hidden units.</p></li>
+<li><p>Input variables <span class="math inline">\(x_i \in \mathbb R^p\)</span>, <span class="math inline">\(i = 1,\ldots, n\)</span>.</p></li>
+<li><p><span class="math inline">\(\theta\)</span> is the set of weights <span class="math inline">\(\alpha_{m0} \in \mathbb R, \alpha_m \in \mathbb R^p, \beta_0 \in \mathbb R, \beta \in \mathbb R^M\)</span>.</p></li>
+</ul>
+<div class="incremental">
+<ul>
+<li><p>Value of the <span class="math inline">\(m\)</span>th hidden unit for the <span class="math inline">\(i\)</span>th data point: <span class="math display">\[
+z_{im} = \sigma(\alpha_{m0} + \alpha_m^T x_i)
+\]</span> The vector containing the values for all the hidden units for sample <span class="math inline">\(i\)</span> is <span class="math inline">\(z_i = (z_{i1}, z_{i2}, \ldots, z_{iM})\)</span>.</p></li>
+<li><p>Value at the final layer is <span class="math display">\[
+f(x_i) = g(\beta_0 + \beta^T z_i)
+\]</span></p></li>
+<li><p>We want to find <span class="math inline">\(\theta\)</span> to minimize <span class="math display">\[
+R(\theta) = \sum_{i=1}^N R_i = \sum_{i=1}^N (y_i - f(x_i; \theta))^2
+\]</span></p></li>
+<li><p>We fit by gradient descent, so we need derivatives of this function</p></li>
+</ul>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Derivative for the weights connecting the hidden layer to the output layer for one sample: <span class="math display">\[
+\frac{\partial R_i}{\partial \beta_{m}} = \begin{cases}
+-2(y_i - f(x_i)) g&#39;(\beta_0 + \beta^T z_i) z_{im} &amp; m = 1,\ldots, M \\
+-2(y_i - f(x_i)) g&#39;(\beta_0 + \beta^T z_i) &amp; m = 0
+\end{cases}
+\]</span></p>
+<div class="incremental">
+<p>Derivative for the weights connecting the input layer to the hidden layer for one sample: <span class="math display">\[
+\frac{\partial R_i}{\partial \alpha_{ml}} = \begin{cases}
+-2(y_i - f(x_i)) g&#39;(\beta_0 + \beta^T z_i) \beta_m\sigma&#39;(\alpha_{m0} + \alpha_m^T x_i) x_{il} &amp; l = 1, \ldots, p \\
+-2(y_i - f(x_i)) g&#39;(\beta_0 + \beta^T z_i) \beta_m\sigma&#39;(\alpha_{m0} + \alpha_m^T x_i) &amp; l = 0
+\end{cases}
+\]</span></p>
+</div>
+<div class="incremental">
+<p>Gradient descent update is then: <span class="math display">\[
+\begin{align*}
+\beta_m^{(r+1)} = \beta_{m}^{(r)} - \gamma_r \sum_{i=1}^N \frac{\partial R_i}{\partial \beta_{m}^{(r)}}\\
+\alpha_{ml}^{(r+1)} = \alpha_{ml}^{(r)} - \gamma_r \sum_{i=1}^N \frac{\partial R_i}{\partial \alpha_{ml}^{(r)}}
+\end{align*}
+\]</span></p>
+<p><span class="math inline">\(\gamma_r\)</span> is referred to as the “learning rate”, we’ve seen it as the step size before.</p>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Back-propagation equations, aka “what order do we do the computations in”?</p>
+<div class="incremental">
+<p>Write <span class="math display">\[
+\begin{align*}
+\frac{\partial R_i}{\partial \beta_{m}} &amp;= \delta_{i} z_{im} \\
+\frac{\partial R_i}{\partial \alpha_{ml}} &amp;= s_{im} x_{il}
+\end{align*}
+\]</span> so <span class="math display">\[
+\begin{align*}
+\delta_i &amp;= -2(y_i - f(x_i))g&#39;(\beta_0 + \beta^T z_i) \\
+s_{im} &amp;= -2(y_i - f(x_i)) g&#39;(\beta_0 + \beta^T z_i) \beta_m \sigma&#39;(\alpha_{m0} + \alpha_m^T x_i)
+\end{align*}
+\]</span> and <span class="math display">\[
+s_{im} = \sigma&#39;(\alpha_{m0} + \alpha_m^T x_i) \beta_m \delta_i
+\]</span></p>
+</div>
+<div class="incremental">
+<p>Back-propagation:</p>
+<ul>
+<li><p>Step 1: Forward pass through the network to compute <span class="math inline">\(z_{im}\)</span>, <span class="math inline">\(f(x_i)\)</span>.</p></li>
+<li><p>Step 2: “Propagate” errors back:</p>
+<ul>
+<li>Use <span class="math inline">\(f(x_i)\)</span> and <span class="math inline">\(z_{im}\)</span> to compute <span class="math inline">\(\delta_i\)</span>.</li>
+<li>Use <span class="math inline">\(\delta_i\)</span> to compute <span class="math inline">\(s_{im}\)</span>.</li>
+</ul></li>
+<li><p>Step 3: Compute gradients using <span class="math inline">\(z_{im}, \delta_i\)</span>, <span class="math inline">\(s_{im}\)</span>.</p></li>
+</ul>
+<p>Interpretation: <span class="math inline">\(\delta_i\)</span> and <span class="math inline">\(s_{im}\)</span> are the “errors” from the current model on the output layer and the hidden layers, respectively.</p>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Notes:</p>
+<ul>
+<li><p>Backpropagation equations just rely on the chain rule</p></li>
+<li><p>Can use any smooth activation function</p></li>
+<li><p>Can use any architecture (more hidden layers, different kinds of connections between the layers, more than one output layer, etc.)</p></li>
+<li><p>Applies to classification problems as well as regression problems</p></li>
+</ul>
+<div class="incremental">
+<p>Issues with fitting:</p>
+<ul>
+<li><p>Model is over-parameterized</p></li>
+<li><p>Non-convex, many local optima, gradient descent will converge to just one</p></li>
+<li><p>Many different strategies to deal with this. Often don’t actually want even an exact local optimum, many different “regularization” methods are used.</p></li>
+</ul>
+</div>
+</div>
+<div id="example-zip-code-data" class="slide section level2">
+<h1>Example: zip code data</h1>
+<p><img src="zip-code-data.png" /></p>
+<p>Goal: Given images representing digits, classify them correctly.</p>
+<p>Input data, <span class="math inline">\(x_i\)</span>, are <span class="math inline">\(16 \times 16\)</span> grayscale images, represented as vectors in <span class="math inline">\(\mathbb R^{256}\)</span></p>
+<p>Responses <span class="math inline">\(y_i\)</span> give the digit in the image.</p>
+<p>Encode this as a classification problem, use neural nets with different architectures to fit</p>
+</div>
+<div id="if-you-want-to-play-with-this-in-r" class="slide section level2">
+<h1>If you want to play with this in R</h1>
+<ul>
+<li><p>R package called <a href="https://keras.rstudio.com/">keras</a></p></li>
+<li><p>This is an interface to the python version of <a href="https://keras.io/">keras</a></p></li>
+<li><p>Which is itself a frontend for a couple of lower-level packages (TensorFlow, CNTK, Theano)</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>Example: the same zip code data</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="co">## if you want to do this you&#39;ll have to install some the python version of keras first, which requires you to have TensorFlow, CNTK, or Theano installed as well</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="kw">library</span>(keras)</span>
+<span id="cb1-3"><a href="#cb1-3"></a>mnist =<span class="st"> </span><span class="kw">dataset_mnist</span>()</span>
+<span id="cb1-4"><a href="#cb1-4"></a>x_train =<span class="st"> </span>mnist<span class="op">$</span>train<span class="op">$</span>x</span>
+<span id="cb1-5"><a href="#cb1-5"></a>y_train =<span class="st"> </span>mnist<span class="op">$</span>train<span class="op">$</span>y</span>
+<span id="cb1-6"><a href="#cb1-6"></a>y_train_matrix =<span class="st"> </span><span class="kw">to_categorical</span>(y_train, <span class="dt">num_classes =</span> <span class="dv">10</span>)</span>
+<span id="cb1-7"><a href="#cb1-7"></a>x_test =<span class="st"> </span>mnist<span class="op">$</span>test<span class="op">$</span>x</span>
+<span id="cb1-8"><a href="#cb1-8"></a>y_test =<span class="st"> </span>mnist<span class="op">$</span>test<span class="op">$</span>y</span></code></pre></div>
+</div>
+<div class="slide section level2">
+
+<p>Let’s look at some of the images:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="co">## function to rearrange things so that we can plot them</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a>flip_image =<span class="st"> </span><span class="cf">function</span>(x) {</span>
+<span id="cb2-3"><a href="#cb2-3"></a>    n =<span class="st"> </span><span class="kw">nrow</span>(x)</span>
+<span id="cb2-4"><a href="#cb2-4"></a>    <span class="kw">return</span>(<span class="kw">t</span>(x[n<span class="op">:</span><span class="dv">1</span>,]))</span>
+<span id="cb2-5"><a href="#cb2-5"></a>}</span>
+<span id="cb2-6"><a href="#cb2-6"></a><span class="kw">par</span>(<span class="dt">mfrow =</span> <span class="kw">c</span>(<span class="dv">3</span>,<span class="dv">3</span>))</span>
+<span id="cb2-7"><a href="#cb2-7"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="dv">9</span>) {</span>
+<span id="cb2-8"><a href="#cb2-8"></a>    <span class="kw">image</span>(<span class="kw">flip_image</span>(x_train[i,,]), <span class="dt">col =</span> <span class="kw">topo.colors</span>(<span class="dv">100</span>), <span class="dt">axes =</span> <span class="ot">FALSE</span>,</span>
+<span id="cb2-9"><a href="#cb2-9"></a>          <span class="dt">main =</span> y_train[i])</span>
+<span id="cb2-10"><a href="#cb2-10"></a>}</span></code></pre></div>
+<p><img src="lecture-29-fig/unnamed-chunk-6-1.png" /></p>
+</div>
+<div class="slide section level2">
+
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>model =<span class="st"> </span><span class="kw">keras_model_sequential</span>()</span>
+<span id="cb3-2"><a href="#cb3-2"></a>model <span class="op">%&gt;%</span></span>
+<span id="cb3-3"><a href="#cb3-3"></a><span class="st">  </span><span class="kw">layer_flatten</span>(<span class="dt">input_shape =</span> <span class="kw">c</span>(<span class="dv">28</span>, <span class="dv">28</span>)) <span class="op">%&gt;%</span></span>
+<span id="cb3-4"><a href="#cb3-4"></a><span class="st">  </span><span class="kw">layer_dense</span>(<span class="dt">units =</span> <span class="dv">128</span>, <span class="dt">activation =</span> <span class="st">&#39;relu&#39;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a><span class="st">  </span><span class="kw">layer_dense</span>(<span class="dt">units =</span> <span class="dv">10</span>, <span class="dt">activation =</span> <span class="st">&#39;softmax&#39;</span>)</span>
+<span id="cb3-6"><a href="#cb3-6"></a>model <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">compile</span>(</span>
+<span id="cb3-7"><a href="#cb3-7"></a>    <span class="dt">optimizer =</span> <span class="st">&#39;adam&#39;</span>, </span>
+<span id="cb3-8"><a href="#cb3-8"></a>    <span class="dt">loss =</span> loss_categorical_crossentropy,</span>
+<span id="cb3-9"><a href="#cb3-9"></a>    <span class="dt">metrics =</span> <span class="st">&#39;accuracy&#39;</span></span>
+<span id="cb3-10"><a href="#cb3-10"></a>)</span>
+<span id="cb3-11"><a href="#cb3-11"></a>model</span></code></pre></div>
+<pre><code>## Model
+## Model: &quot;sequential_1&quot;
+## ________________________________________________________________________________
+## Layer (type)                        Output Shape                    Param #     
+## ================================================================================
+## flatten_1 (Flatten)                 (None, 784)                     0           
+## ________________________________________________________________________________
+## dense_2 (Dense)                     (None, 128)                     100480      
+## ________________________________________________________________________________
+## dense_3 (Dense)                     (None, 10)                      1290        
+## ================================================================================
+## Total params: 101,770
+## Trainable params: 101,770
+## Non-trainable params: 0
+## ________________________________________________________________________________</code></pre>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="co">## number of parameters for the first layer: each hidden unit has a weight associated with each of the 784 predictor units, plus a bias term</span></span>
+<span id="cb5-2"><a href="#cb5-2"></a>(<span class="dv">784</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span>) <span class="op">*</span><span class="st"> </span><span class="dv">128</span></span></code></pre></div>
+<pre><code>## [1] 100480</code></pre>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="co">## number of parameters for the second layer: each output unit has a weight associated with each of the 128 hidden units, plus a bias term</span></span>
+<span id="cb7-2"><a href="#cb7-2"></a>(<span class="dv">128</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span>)<span class="op">*</span><span class="st"> </span><span class="dv">10</span></span></code></pre></div>
+<pre><code>## [1] 1290</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>Fit the model, look at the predictions:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a>model <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">fit</span>(<span class="dt">x =</span> x_train, <span class="dt">y =</span> y_train_matrix, <span class="dt">epochs =</span> <span class="dv">15</span>)</span>
+<span id="cb9-2"><a href="#cb9-2"></a>test_predictions =<span class="st"> </span>model <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">predict_classes</span>(x_test)</span>
+<span id="cb9-3"><a href="#cb9-3"></a><span class="kw">par</span>(<span class="dt">mfrow =</span> <span class="kw">c</span>(<span class="dv">3</span>,<span class="dv">3</span>))</span>
+<span id="cb9-4"><a href="#cb9-4"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="dv">9</span>) {</span>
+<span id="cb9-5"><a href="#cb9-5"></a>    <span class="kw">image</span>(<span class="kw">flip_image</span>(x_test[i,,]), <span class="dt">col =</span> <span class="kw">topo.colors</span>(<span class="dv">100</span>), <span class="dt">axes =</span> <span class="ot">FALSE</span>,</span>
+<span id="cb9-6"><a href="#cb9-6"></a>          <span class="dt">main =</span> <span class="kw">sprintf</span>(<span class="st">&quot;True digit: %i, Prediction: %i&quot;</span>, y_test[i], test_predictions[i]))</span>
+<span id="cb9-7"><a href="#cb9-7"></a>}</span></code></pre></div>
+<p><img src="lecture-29-fig/unnamed-chunk-8-1.png" /></p>
+<p>More elaborate architectures do much better, for example the <a href="https://keras.rstudio.com/articles/examples/mnist_cnn.html">convolutional model</a>.</p>
+</div>
+<div id="some-net-architectures" class="slide section level2">
+<h1>Some net architectures</h1>
+<p><img src="zip-code-architectures.png" /></p>
+</div>
+<div class="slide section level2">
+
+<p>All cases: 10 output units, corresponding to the 10 possible digits.</p>
+<ul>
+<li><p>Net 1: No hidden layer, equivalent to multinomial logistic regression</p></li>
+<li><p>Net 2: One hidden layer, 12 hidden units. Each of the hidden units is connected to each of the 256 input variables and to each of the 10 output variables.</p></li>
+<li><p>Net 3: Two hidden layers</p>
+<ul>
+<li><p>First hidden layer: 64 hidden units arranged in an 8 x 8 grid. Each hidden unit is connected to a 3x3 patch of the input variables.</p></li>
+<li><p>Secand hidden layer: 16 hidden units arranged in a 4 x 4 grid. Each hidden unit is connected to a 5 x 5 patch in the first hidden layer.</p></li>
+</ul></li>
+<li><p>Net 4: Two hidden layers with weight sharing in the first layer.</p>
+<ul>
+<li><p>First hidden layer: 128 hidden units, conceptualized as two 8 x 8 grids, each connected to a 3x3 patch of the input variables, similar to Net 3. Additional constraint that each of the units within the 8 x 8 feature map have the same set of 9 weights.</p></li>
+<li><p>Second hidden layer: 16 hidden units arranged in a 4 x 4 grid, each connected to a 5 x 5 patch in each of the two 8 x 8 grids in the first hidden layer (so each hidden unit connected to 50 units in the first hidden layer).</p></li>
+</ul></li>
+<li><p>Net 5: Two hidden layers with weight sharing in both layers:</p>
+<ul>
+<li><p>First hidden layer: Same is in Net 4.</p></li>
+<li><p>Second hidden layer: 64 hidden units arranged as four 4 x 4 grids. Each unit connected to a 5 x 5 patch of the fisrt hidden layer, and within each 4 x 4 grid, the weights connecting that unit to the previous input unit are the same.</p></li>
+</ul></li>
+</ul>
+<p>Idea behind weight constraints: Each unit computes the same functional of the previous layer, so they are extracting the same features from different parts of the image. A net with this sort of weight sharing is referred to as a <em>convolutional</em> network.</p>
+</div>
+<div class="slide section level2">
+
+<p><img src="nnet-test-results.png" /></p>
+</div>
+<div id="summing-up" class="slide section level2">
+<h1>Summing up</h1>
+<ul>
+<li><p>Deep learning = neural nets with more than one hidden layer. In practice, these work better than the single-hidden-layer networks.</p></li>
+<li><p>Think of as predictors that can fit complex functions of the input variables</p></li>
+<li><p>Also able to handle other kinds of output, e.g. sequences (natural language processing, machine translation)</p></li>
+<li><p>Good when you have a lot of data, are interested solely in prediction</p></li>
+<li><p>Not as good when you don’t have so much data or need an interpretation of the relationship between the predictors and response.</p></li>
+</ul>
+</div>
+</body>
+</html>
