@@ -42,7 +42,7 @@ Fundamental data type in R, scalars are actually just vectors of length 1.
 Creating a vector of length 1:
 
 ```{r}
-x = 1
+x <- 1
 ```
 
 . . .
@@ -50,7 +50,7 @@ x = 1
 Creating a vector of length > 1: easiest way to make a vector is with the `c` function (for "concatenate"):
 
 ```{r}
-x = c(1, 168, .3)
+x <- c(1, 168, .3)
 x
 ```
 
@@ -58,7 +58,7 @@ x
 
 The `:` operator will also make a vector of numbers separated by 1:
 ```{r}
-y = 5:10
+y <- 5:10
 y
 ```
 
@@ -113,7 +113,7 @@ Vectors can be added, subtracted, multiplied, etc.
 If the vectors are the same size, this will be done element-wise.
 
 ```{r}
-x = c(1, 2, 4)
+x <- c(1, 2, 4)
 x + c(5, 0, -1)
 x * c(5, 0, -1)
 x / c(5, 4, -1)
@@ -127,7 +127,7 @@ Remember that scalars in R are just vectors, so in the following code
 we are actually adding two vectors:
 
 ```{r}
-x = c(1, 2, 4)
+x <- c(1, 2, 4)
 x + 2
 ```
 
@@ -148,7 +148,7 @@ had length 3, and the shorter vector, `2`, had length 1. What really
 happened was more like
 
 ```{r}
-x = c(1, 2, 4)
+x <- c(1, 2, 4)
 x + rep(2, times = 3)
 x + 2 # notice that these give the same results
 ```
@@ -201,7 +201,7 @@ c(2, 5, 7) < 8
 ```{r}
 any(c(TRUE, FALSE))
 all(c(TRUE, FALSE))
-x = 1:10
+x <- 1:10
 any(x > 8)
 any(x > 88)
 all(x > 88)
@@ -216,8 +216,8 @@ We can't use `==` to test whether vectors are the same because `==`
 will give us a boolean vector.
 
 ```{r}
-x = 1:3
-y = c(1, 3, 4)
+x <- 1:3
+y <- c(1, 3, 4)
 x == y
 ```
 
@@ -261,10 +261,10 @@ The rules:
 
 For example: scalar indexing
 ```{r}
-y = c(1.2, 3.9, 0.4, 0.12)
+y <- c(1.2, 3.9, 0.4, 0.12)
 y[c(1,3)]  # extract elements 1 and 3 of y
 y[2:3]
-v = 3:4
+v <- 3:4
 y[v]
 ```
 
@@ -282,7 +282,7 @@ y[rep(c(1, 3), each = 3)]
 To exclude indices instead of include them, we can use `-`:
 
 ```{r}
-z = c(5, 12, 13)
+z <- c(5, 12, 13)
 z[-1]  # exclude element 1
 z[-1:-2]  # exclude elements 1 through 2
 ```
@@ -312,8 +312,8 @@ of the vector whose square is greater than 8.
 We could use the following code to do so:
 
 ```{r}
-z = c(5, 2, -3, 8)
-w = z[z * z > 8]
+z <- c(5, 2, -3, 8)
+w <- z[z * z > 8]
 w
 ```
 
@@ -337,7 +337,7 @@ z[z * z > 8]
 
 Another simple way to extract only some of the values of a vector is with `subset`:
 ```{r}
-z = c(5, 2, -3, 8)
+z <- c(5, 2, -3, 8)
 z[z * z > 8]
 subset(z, z * z > 8) ## gives the same result
 ```
@@ -349,7 +349,7 @@ the condition occurs, and we can use those positions to get the
 relevant subvector:
 
 ```{r}
-z = c(5, 2, -3, 8)
+z <- c(5, 2, -3, 8)
 which(z * z > 8)
 z[which(z * z > 8)]
 ```
@@ -374,9 +374,9 @@ By default, the values are arranged in column-major order, but you can
 specify that the data is coming in in row-major order instead:
 
 ```{r}
-y = matrix(c(1, 2, 3, 4), nrow = 2, ncol = 2)
+y <- matrix(c(1, 2, 3, 4), nrow = 2, ncol = 2)
 y
-y = matrix(c(1, 2, 3, 4), nrow = 2, ncol = 2, byrow = TRUE)
+y <- matrix(c(1, 2, 3, 4), nrow = 2, ncol = 2, byrow = TRUE)
 y
 ```
 
@@ -388,7 +388,7 @@ behind the scenes.
 You can specify just a number of rows or just a number of columns, and
 R will figure out what the dimensions of the matrix should be for you:
 ```{r}
-y = matrix(c(1, 2, 3, 4), nrow = 2)
+y <- matrix(c(1, 2, 3, 4), nrow = 2)
 y
 ```
 
@@ -399,9 +399,9 @@ What we learned about vector recycling applies to matrices too:
 . . .
 
 ```{r}
-y = matrix(1:2, nrow = 2, ncol = 5)
+y <- matrix(1:2, nrow = 2, ncol = 5)
 y
-y = matrix(1:3, nrow = 2, ncol = 5)
+y <- matrix(1:3, nrow = 2, ncol = 5)
 y
 ```
 
@@ -417,7 +417,7 @@ With matrices we get matrix multiplication, `%*%` in addition to the
 operations available for vectors.
 
 ```{r}
-y = matrix(c(1, 2, 3, 4), nrow = 2)
+y <- matrix(c(1, 2, 3, 4), nrow = 2)
 y
 y %*% y
 y * 3
@@ -448,7 +448,7 @@ The syntax is `matrix[rowIndices, colIndices]`.
 Let's see how this works:
 
 ```{r}
-z = matrix(sample(1:12), nrow = 4)
+z <- matrix(sample(1:12), nrow = 4)
 z
 z[,2:3] ## extract the 2nd and 3rd columns
 z[2:3, 2] ## extract the 2nd and 3rd rows of the 2nd column
@@ -460,9 +460,9 @@ z[,-1] ## negative subscripts work the same way as with vectors
 We can assign values to submatrices using this indexing as well:
 
 ```{r}
-y = matrix(1:6, nrow = 3)
+y <- matrix(1:6, nrow = 3)
 y
-y[c(1,3),] = matrix(c(1, 1, 8, 12), nrow = 2)
+y[c(1,3),] <- matrix(c(1, 1, 8, 12), nrow = 2)
 y
 ```
 
@@ -478,7 +478,7 @@ which the second column is at least 3.
 We could do that as follows:
 
 ```{r}
-x = matrix(c(1, 2, 3, 2, 3, 4), nrow = 3)
+x <- matrix(c(1, 2, 3, 2, 3, 4), nrow = 3)
 x
 x[x[,2] >= 3, ]
 ```
@@ -507,7 +507,7 @@ just one row of `x`:
 
 ```{r}
 x
-r = x[2,]
+r <- x[2,]
 r
 ```
 
@@ -530,7 +530,7 @@ str(r)
 `drop = FALSE` lets us avoid this behavior.
 
 ```{r}
-r = x[2,,drop = FALSE]
+r <- x[2,,drop = FALSE]
 r
 attributes(r)
 str(r)
@@ -554,7 +554,7 @@ the same type, but lists can have any sort of elements (including lists!).
 You can create a list with the `list` function...
 
 ```{r}
-j = list(name = "Joe", salary = 55000, union = TRUE)
+j <- list(name = "Joe", salary = 55000, union = TRUE)
 j
 ```
 
@@ -612,7 +612,7 @@ class(j[2])
 We can add to a list by tag:
 
 ```{r}
-j$hobby = "sailing"
+j$hobby <- "sailing"
 j
 ```
 
@@ -630,9 +630,9 @@ j
 We can remove an element from a list by setting it to `NULL`:
 
 ```{r}
-j[[5]] = NULL
+j[[5]] <- NULL
 j
-j$hobby = NULL
+j$hobby <- NULL
 j
 ```
 
@@ -678,7 +678,7 @@ Note that `unlist` gives an atomic vector even for recursive lists
 (lists of lists), for example:
 
 ```{r}
-complex_list = list(a = list(1), b = 1:5, c = (list(a = 1, b = 2)))
+complex_list <- list(a = list(1), b = 1:5, c = (list(a = 1, b = 2)))
 unlist(complex_list)
 ```
 

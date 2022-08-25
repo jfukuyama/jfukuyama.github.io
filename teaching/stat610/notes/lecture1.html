@@ -130,12 +130,12 @@ does R know?</p></li>
 length 1.</p>
 <div class="incremental">
 <p>Creating a vector of length 1:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>x <span class="ot">=</span> <span class="dv">1</span></span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="dv">1</span></span></code></pre></div>
 </div>
 <div class="incremental">
 <p>Creating a vector of length &gt; 1: easiest way to make a vector is
 with the <code>c</code> function (for “concatenate”):</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>x <span class="ot">=</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">168</span>, .<span class="dv">3</span>)</span>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">168</span>, .<span class="dv">3</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>x</span></code></pre></div>
 <pre><code>## [1]   1.0 168.0   0.3</code></pre>
 </div>
@@ -144,7 +144,7 @@ with the <code>c</code> function (for “concatenate”):</p>
 
 <p>The <code>:</code> operator will also make a vector of numbers
 separated by 1:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>y <span class="ot">=</span> <span class="dv">5</span><span class="sc">:</span><span class="dv">10</span></span>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="dv">5</span><span class="sc">:</span><span class="dv">10</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>y</span></code></pre></div>
 <pre><code>## [1]  5  6  7  8  9 10</code></pre>
 </div>
@@ -186,7 +186,7 @@ how the repeats work: the first element in the vector is repeated
 <h2 id="some-vector-operations">Some vector operations</h2>
 <p>Vectors can be added, subtracted, multiplied, etc.</p>
 <p>If the vectors are the same size, this will be done element-wise.</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>x <span class="ot">=</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">4</span>)</span>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">4</span>)</span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>x <span class="sc">+</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">0</span>, <span class="sc">-</span><span class="dv">1</span>)</span></code></pre></div>
 <pre><code>## [1] 6 2 3</code></pre>
 <div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>x <span class="sc">*</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">0</span>, <span class="sc">-</span><span class="dv">1</span>)</span></code></pre></div>
@@ -199,7 +199,7 @@ how the repeats work: the first element in the vector is repeated
 <p>What if the vectors are not the same size?</p>
 <p>Remember that scalars in R are just vectors, so in the following code
 we are actually adding two vectors:</p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>x <span class="ot">=</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">4</span>)</span>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">4</span>)</span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>x <span class="sc">+</span> <span class="dv">2</span></span></code></pre></div>
 <pre><code>## [1] 3 4 6</code></pre>
 </div>
@@ -214,7 +214,7 @@ the longer one.</p>
 <p>That is what happened in the example above: the longer vector,
 <code>x</code>, had length 3, and the shorter vector, <code>2</code>,
 had length 1. What really happened was more like</p>
-<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>x <span class="ot">=</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">4</span>)</span>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">4</span>)</span>
 <span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>x <span class="sc">+</span> <span class="fu">rep</span>(<span class="dv">2</span>, <span class="at">times =</span> <span class="dv">3</span>)</span></code></pre></div>
 <pre><code>## [1] 3 4 6</code></pre>
 <div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>x <span class="sc">+</span> <span class="dv">2</span> <span class="co"># notice that these give the same results</span></span></code></pre></div>
@@ -265,7 +265,7 @@ implied by their name:</p>
 <pre><code>## [1] TRUE</code></pre>
 <div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="fu">all</span>(<span class="fu">c</span>(<span class="cn">TRUE</span>, <span class="cn">FALSE</span>))</span></code></pre></div>
 <pre><code>## [1] FALSE</code></pre>
-<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>x <span class="ot">=</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">10</span></span>
+<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">10</span></span>
 <span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a><span class="fu">any</span>(x <span class="sc">&gt;</span> <span class="dv">8</span>)</span></code></pre></div>
 <pre><code>## [1] TRUE</code></pre>
 <div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="fu">any</span>(x <span class="sc">&gt;</span> <span class="dv">88</span>)</span></code></pre></div>
@@ -281,8 +281,8 @@ implied by their name:</p>
 <h2 id="testing-vector-equality">Testing vector equality</h2>
 <p>We can’t use <code>==</code> to test whether vectors are the same
 because <code>==</code> will give us a boolean vector.</p>
-<div class="sourceCode" id="cb53"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>x <span class="ot">=</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">3</span></span>
-<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>y <span class="ot">=</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">4</span>)</span>
+<div class="sourceCode" id="cb53"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">3</span></span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">4</span>)</span>
 <span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a>x <span class="sc">==</span> y</span></code></pre></div>
 <pre><code>## [1]  TRUE FALSE FALSE</code></pre>
 </div>
@@ -327,12 +327,12 @@ length of <code>vector1</code>.</p></li>
 <div class="slide section level1">
 
 <p>For example: scalar indexing</p>
-<div class="sourceCode" id="cb65"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a>y <span class="ot">=</span> <span class="fu">c</span>(<span class="fl">1.2</span>, <span class="fl">3.9</span>, <span class="fl">0.4</span>, <span class="fl">0.12</span>)</span>
+<div class="sourceCode" id="cb65"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">1.2</span>, <span class="fl">3.9</span>, <span class="fl">0.4</span>, <span class="fl">0.12</span>)</span>
 <span id="cb65-2"><a href="#cb65-2" aria-hidden="true" tabindex="-1"></a>y[<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">3</span>)]  <span class="co"># extract elements 1 and 3 of y</span></span></code></pre></div>
 <pre><code>## [1] 1.2 0.4</code></pre>
 <div class="sourceCode" id="cb67"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a>y[<span class="dv">2</span><span class="sc">:</span><span class="dv">3</span>]</span></code></pre></div>
 <pre><code>## [1] 3.9 0.4</code></pre>
-<div class="sourceCode" id="cb69"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a>v <span class="ot">=</span> <span class="dv">3</span><span class="sc">:</span><span class="dv">4</span></span>
+<div class="sourceCode" id="cb69"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a>v <span class="ot">&lt;-</span> <span class="dv">3</span><span class="sc">:</span><span class="dv">4</span></span>
 <span id="cb69-2"><a href="#cb69-2" aria-hidden="true" tabindex="-1"></a>y[v]</span></code></pre></div>
 <pre><code>## [1] 0.40 0.12</code></pre>
 </div>
@@ -348,7 +348,7 @@ length of <code>vector1</code>.</p></li>
 
 <p>To exclude indices instead of include them, we can use
 <code>-</code>:</p>
-<div class="sourceCode" id="cb75"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a>z <span class="ot">=</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">12</span>, <span class="dv">13</span>)</span>
+<div class="sourceCode" id="cb75"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a>z <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">12</span>, <span class="dv">13</span>)</span>
 <span id="cb75-2"><a href="#cb75-2" aria-hidden="true" tabindex="-1"></a>z[<span class="sc">-</span><span class="dv">1</span>]  <span class="co"># exclude element 1</span></span></code></pre></div>
 <pre><code>## [1] 12 13</code></pre>
 <div class="sourceCode" id="cb77"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a>z[<span class="sc">-</span><span class="dv">1</span><span class="sc">:-</span><span class="dv">2</span>]  <span class="co"># exclude elements 1 through 2</span></span></code></pre></div>
@@ -374,8 +374,8 @@ know in advance which elements we want.</p>
 <p>As a contrived example, suppose we want to extract just the elements
 of the vector whose square is greater than 8.</p>
 <p>We could use the following code to do so:</p>
-<div class="sourceCode" id="cb85"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb85-1"><a href="#cb85-1" aria-hidden="true" tabindex="-1"></a>z <span class="ot">=</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">2</span>, <span class="sc">-</span><span class="dv">3</span>, <span class="dv">8</span>)</span>
-<span id="cb85-2"><a href="#cb85-2" aria-hidden="true" tabindex="-1"></a>w <span class="ot">=</span> z[z <span class="sc">*</span> z <span class="sc">&gt;</span> <span class="dv">8</span>]</span>
+<div class="sourceCode" id="cb85"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb85-1"><a href="#cb85-1" aria-hidden="true" tabindex="-1"></a>z <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">2</span>, <span class="sc">-</span><span class="dv">3</span>, <span class="dv">8</span>)</span>
+<span id="cb85-2"><a href="#cb85-2" aria-hidden="true" tabindex="-1"></a>w <span class="ot">&lt;-</span> z[z <span class="sc">*</span> z <span class="sc">&gt;</span> <span class="dv">8</span>]</span>
 <span id="cb85-3"><a href="#cb85-3" aria-hidden="true" tabindex="-1"></a>w</span></code></pre></div>
 <pre><code>## [1]  5 -3  8</code></pre>
 </div>
@@ -401,7 +401,7 @@ of the vector whose square is greater than 8.</p>
 filtering</h2>
 <p>Another simple way to extract only some of the values of a vector is
 with <code>subset</code>:</p>
-<div class="sourceCode" id="cb97"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb97-1"><a href="#cb97-1" aria-hidden="true" tabindex="-1"></a>z <span class="ot">=</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">2</span>, <span class="sc">-</span><span class="dv">3</span>, <span class="dv">8</span>)</span>
+<div class="sourceCode" id="cb97"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb97-1"><a href="#cb97-1" aria-hidden="true" tabindex="-1"></a>z <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">2</span>, <span class="sc">-</span><span class="dv">3</span>, <span class="dv">8</span>)</span>
 <span id="cb97-2"><a href="#cb97-2" aria-hidden="true" tabindex="-1"></a>z[z <span class="sc">*</span> z <span class="sc">&gt;</span> <span class="dv">8</span>]</span></code></pre></div>
 <pre><code>## [1]  5 -3  8</code></pre>
 <div class="sourceCode" id="cb99"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb99-1"><a href="#cb99-1" aria-hidden="true" tabindex="-1"></a><span class="fu">subset</span>(z, z <span class="sc">*</span> z <span class="sc">&gt;</span> <span class="dv">8</span>) <span class="do">## gives the same result</span></span></code></pre></div>
@@ -413,7 +413,7 @@ with <code>subset</code>:</p>
 the positions at which the condition occurs, and we can use those
 positions to get the relevant subvector:</p>
 <div class="sourceCode" id="cb101"><pre
-class="sourceCode r"><code class="sourceCode r"><span id="cb101-1"><a href="#cb101-1" aria-hidden="true" tabindex="-1"></a>z <span class="ot">=</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">2</span>, <span class="sc">-</span><span class="dv">3</span>, <span class="dv">8</span>)</span>
+class="sourceCode r"><code class="sourceCode r"><span id="cb101-1"><a href="#cb101-1" aria-hidden="true" tabindex="-1"></a>z <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">2</span>, <span class="sc">-</span><span class="dv">3</span>, <span class="dv">8</span>)</span>
 <span id="cb101-2"><a href="#cb101-2" aria-hidden="true" tabindex="-1"></a><span class="fu">which</span>(z <span class="sc">*</span> z <span class="sc">&gt;</span> <span class="dv">8</span>)</span></code></pre></div>
 <pre><code>## [1] 1 3 4</code></pre>
 <div class="sourceCode" id="cb103"><pre
@@ -435,13 +435,13 @@ number of rows and number of columns.</p>
 <p>By default, the values are arranged in column-major order, but you
 can specify that the data is coming in in row-major order instead:</p>
 <div class="sourceCode" id="cb105"><pre
-class="sourceCode r"><code class="sourceCode r"><span id="cb105-1"><a href="#cb105-1" aria-hidden="true" tabindex="-1"></a>y <span class="ot">=</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>), <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">ncol =</span> <span class="dv">2</span>)</span>
+class="sourceCode r"><code class="sourceCode r"><span id="cb105-1"><a href="#cb105-1" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>), <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">ncol =</span> <span class="dv">2</span>)</span>
 <span id="cb105-2"><a href="#cb105-2" aria-hidden="true" tabindex="-1"></a>y</span></code></pre></div>
 <pre><code>##      [,1] [,2]
 ## [1,]    1    3
 ## [2,]    2    4</code></pre>
 <div class="sourceCode" id="cb107"><pre
-class="sourceCode r"><code class="sourceCode r"><span id="cb107-1"><a href="#cb107-1" aria-hidden="true" tabindex="-1"></a>y <span class="ot">=</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>), <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">ncol =</span> <span class="dv">2</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
+class="sourceCode r"><code class="sourceCode r"><span id="cb107-1"><a href="#cb107-1" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>), <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">ncol =</span> <span class="dv">2</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb107-2"><a href="#cb107-2" aria-hidden="true" tabindex="-1"></a>y</span></code></pre></div>
 <pre><code>##      [,1] [,2]
 ## [1,]    1    2
@@ -455,7 +455,7 @@ is stored behind the scenes.</p>
 and R will figure out what the dimensions of the matrix should be for
 you:</p>
 <div class="sourceCode" id="cb109"><pre
-class="sourceCode r"><code class="sourceCode r"><span id="cb109-1"><a href="#cb109-1" aria-hidden="true" tabindex="-1"></a>y <span class="ot">=</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>), <span class="at">nrow =</span> <span class="dv">2</span>)</span>
+class="sourceCode r"><code class="sourceCode r"><span id="cb109-1"><a href="#cb109-1" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>), <span class="at">nrow =</span> <span class="dv">2</span>)</span>
 <span id="cb109-2"><a href="#cb109-2" aria-hidden="true" tabindex="-1"></a>y</span></code></pre></div>
 <pre><code>##      [,1] [,2]
 ## [1,]    1    3
@@ -466,13 +466,13 @@ class="sourceCode r"><code class="sourceCode r"><span id="cb109-1"><a href="#cb1
 <p>What we learned about vector recycling applies to matrices too:</p>
 <div class="incremental">
 <div class="sourceCode" id="cb111"><pre
-class="sourceCode r"><code class="sourceCode r"><span id="cb111-1"><a href="#cb111-1" aria-hidden="true" tabindex="-1"></a>y <span class="ot">=</span> <span class="fu">matrix</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>, <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">ncol =</span> <span class="dv">5</span>)</span>
+class="sourceCode r"><code class="sourceCode r"><span id="cb111-1"><a href="#cb111-1" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>, <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">ncol =</span> <span class="dv">5</span>)</span>
 <span id="cb111-2"><a href="#cb111-2" aria-hidden="true" tabindex="-1"></a>y</span></code></pre></div>
 <pre><code>##      [,1] [,2] [,3] [,4] [,5]
 ## [1,]    1    1    1    1    1
 ## [2,]    2    2    2    2    2</code></pre>
 <div class="sourceCode" id="cb113"><pre
-class="sourceCode r"><code class="sourceCode r"><span id="cb113-1"><a href="#cb113-1" aria-hidden="true" tabindex="-1"></a>y <span class="ot">=</span> <span class="fu">matrix</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>, <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">ncol =</span> <span class="dv">5</span>)</span></code></pre></div>
+class="sourceCode r"><code class="sourceCode r"><span id="cb113-1"><a href="#cb113-1" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>, <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">ncol =</span> <span class="dv">5</span>)</span></code></pre></div>
 <pre><code>## Warning in matrix(1:3, nrow = 2, ncol = 5): data length [3] is not a sub-
 ## multiple or multiple of the number of rows [2]</code></pre>
 <div class="sourceCode" id="cb115"><pre
@@ -490,7 +490,7 @@ class="sourceCode r"><code class="sourceCode r"><span id="cb115-1"><a href="#cb1
 <p>With matrices we get matrix multiplication, <code>%*%</code> in
 addition to the operations available for vectors.</p>
 <div class="sourceCode" id="cb117"><pre
-class="sourceCode r"><code class="sourceCode r"><span id="cb117-1"><a href="#cb117-1" aria-hidden="true" tabindex="-1"></a>y <span class="ot">=</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>), <span class="at">nrow =</span> <span class="dv">2</span>)</span>
+class="sourceCode r"><code class="sourceCode r"><span id="cb117-1"><a href="#cb117-1" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>), <span class="at">nrow =</span> <span class="dv">2</span>)</span>
 <span id="cb117-2"><a href="#cb117-2" aria-hidden="true" tabindex="-1"></a>y</span></code></pre></div>
 <pre><code>##      [,1] [,2]
 ## [1,]    1    3
@@ -531,44 +531,44 @@ indices.</p></li>
 <div class="incremental">
 <p>Let’s see how this works:</p>
 <div class="sourceCode" id="cb125"><pre
-class="sourceCode r"><code class="sourceCode r"><span id="cb125-1"><a href="#cb125-1" aria-hidden="true" tabindex="-1"></a>z <span class="ot">=</span> <span class="fu">matrix</span>(<span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">12</span>), <span class="at">nrow =</span> <span class="dv">4</span>)</span>
+class="sourceCode r"><code class="sourceCode r"><span id="cb125-1"><a href="#cb125-1" aria-hidden="true" tabindex="-1"></a>z <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">12</span>), <span class="at">nrow =</span> <span class="dv">4</span>)</span>
 <span id="cb125-2"><a href="#cb125-2" aria-hidden="true" tabindex="-1"></a>z</span></code></pre></div>
 <pre><code>##      [,1] [,2] [,3]
-## [1,]    7    9    4
-## [2,]   12    8    6
-## [3,]    1    3   10
-## [4,]   11    2    5</code></pre>
+## [1,]    7    5    6
+## [2,]    4   10   11
+## [3,]    1    8   12
+## [4,]    9    2    3</code></pre>
 <div class="sourceCode" id="cb127"><pre
 class="sourceCode r"><code class="sourceCode r"><span id="cb127-1"><a href="#cb127-1" aria-hidden="true" tabindex="-1"></a>z[,<span class="dv">2</span><span class="sc">:</span><span class="dv">3</span>] <span class="do">## extract the 2nd and 3rd columns</span></span></code></pre></div>
 <pre><code>##      [,1] [,2]
-## [1,]    9    4
-## [2,]    8    6
-## [3,]    3   10
-## [4,]    2    5</code></pre>
+## [1,]    5    6
+## [2,]   10   11
+## [3,]    8   12
+## [4,]    2    3</code></pre>
 <div class="sourceCode" id="cb129"><pre
 class="sourceCode r"><code class="sourceCode r"><span id="cb129-1"><a href="#cb129-1" aria-hidden="true" tabindex="-1"></a>z[<span class="dv">2</span><span class="sc">:</span><span class="dv">3</span>, <span class="dv">2</span>] <span class="do">## extract the 2nd and 3rd rows of the 2nd column</span></span></code></pre></div>
-<pre><code>## [1] 8 3</code></pre>
+<pre><code>## [1] 10  8</code></pre>
 <div class="sourceCode" id="cb131"><pre
 class="sourceCode r"><code class="sourceCode r"><span id="cb131-1"><a href="#cb131-1" aria-hidden="true" tabindex="-1"></a>z[,<span class="sc">-</span><span class="dv">1</span>] <span class="do">## negative subscripts work the same way as with vectors</span></span></code></pre></div>
 <pre><code>##      [,1] [,2]
-## [1,]    9    4
-## [2,]    8    6
-## [3,]    3   10
-## [4,]    2    5</code></pre>
+## [1,]    5    6
+## [2,]   10   11
+## [3,]    8   12
+## [4,]    2    3</code></pre>
 </div>
 </div>
 <div class="slide section level1">
 
 <p>We can assign values to submatrices using this indexing as well:</p>
 <div class="sourceCode" id="cb133"><pre
-class="sourceCode r"><code class="sourceCode r"><span id="cb133-1"><a href="#cb133-1" aria-hidden="true" tabindex="-1"></a>y <span class="ot">=</span> <span class="fu">matrix</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">6</span>, <span class="at">nrow =</span> <span class="dv">3</span>)</span>
+class="sourceCode r"><code class="sourceCode r"><span id="cb133-1"><a href="#cb133-1" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">6</span>, <span class="at">nrow =</span> <span class="dv">3</span>)</span>
 <span id="cb133-2"><a href="#cb133-2" aria-hidden="true" tabindex="-1"></a>y</span></code></pre></div>
 <pre><code>##      [,1] [,2]
 ## [1,]    1    4
 ## [2,]    2    5
 ## [3,]    3    6</code></pre>
 <div class="sourceCode" id="cb135"><pre
-class="sourceCode r"><code class="sourceCode r"><span id="cb135-1"><a href="#cb135-1" aria-hidden="true" tabindex="-1"></a>y[<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">3</span>),] <span class="ot">=</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">8</span>, <span class="dv">12</span>), <span class="at">nrow =</span> <span class="dv">2</span>)</span>
+class="sourceCode r"><code class="sourceCode r"><span id="cb135-1"><a href="#cb135-1" aria-hidden="true" tabindex="-1"></a>y[<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">3</span>),] <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">8</span>, <span class="dv">12</span>), <span class="at">nrow =</span> <span class="dv">2</span>)</span>
 <span id="cb135-2"><a href="#cb135-2" aria-hidden="true" tabindex="-1"></a>y</span></code></pre></div>
 <pre><code>##      [,1] [,2]
 ## [1,]    1    8
@@ -584,7 +584,7 @@ matrices</h2>
 which the second column is at least 3.</p>
 <p>We could do that as follows:</p>
 <div class="sourceCode" id="cb137"><pre
-class="sourceCode r"><code class="sourceCode r"><span id="cb137-1"><a href="#cb137-1" aria-hidden="true" tabindex="-1"></a>x <span class="ot">=</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>), <span class="at">nrow =</span> <span class="dv">3</span>)</span>
+class="sourceCode r"><code class="sourceCode r"><span id="cb137-1"><a href="#cb137-1" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>), <span class="at">nrow =</span> <span class="dv">3</span>)</span>
 <span id="cb137-2"><a href="#cb137-2" aria-hidden="true" tabindex="-1"></a>x</span></code></pre></div>
 <pre><code>##      [,1] [,2]
 ## [1,]    1    2
@@ -637,7 +637,7 @@ class="sourceCode r"><code class="sourceCode r"><span id="cb151-1"><a href="#cb1
 ## [2,]    2    3
 ## [3,]    3    4</code></pre>
 <div class="sourceCode" id="cb153"><pre
-class="sourceCode r"><code class="sourceCode r"><span id="cb153-1"><a href="#cb153-1" aria-hidden="true" tabindex="-1"></a>r <span class="ot">=</span> x[<span class="dv">2</span>,]</span>
+class="sourceCode r"><code class="sourceCode r"><span id="cb153-1"><a href="#cb153-1" aria-hidden="true" tabindex="-1"></a>r <span class="ot">&lt;-</span> x[<span class="dv">2</span>,]</span>
 <span id="cb153-2"><a href="#cb153-2" aria-hidden="true" tabindex="-1"></a>r</span></code></pre></div>
 <pre><code>## [1] 2 3</code></pre>
 <p>What happened?</p>
@@ -663,7 +663,7 @@ class="sourceCode r"><code class="sourceCode r"><span id="cb161-1"><a href="#cb1
 
 <p><code>drop = FALSE</code> lets us avoid this behavior.</p>
 <div class="sourceCode" id="cb163"><pre
-class="sourceCode r"><code class="sourceCode r"><span id="cb163-1"><a href="#cb163-1" aria-hidden="true" tabindex="-1"></a>r <span class="ot">=</span> x[<span class="dv">2</span>,,drop <span class="ot">=</span> <span class="cn">FALSE</span>]</span>
+class="sourceCode r"><code class="sourceCode r"><span id="cb163-1"><a href="#cb163-1" aria-hidden="true" tabindex="-1"></a>r <span class="ot">&lt;-</span> x[<span class="dv">2</span>,,drop <span class="ot">=</span> <span class="cn">FALSE</span>]</span>
 <span id="cb163-2"><a href="#cb163-2" aria-hidden="true" tabindex="-1"></a>r</span></code></pre></div>
 <pre><code>##      [,1] [,2]
 ## [1,]    2    3</code></pre>
@@ -693,7 +693,7 @@ lists!).</p></li>
 <h2 id="creating-lists">Creating lists</h2>
 <p>You can create a list with the <code>list</code> function…</p>
 <div class="sourceCode" id="cb169"><pre
-class="sourceCode r"><code class="sourceCode r"><span id="cb169-1"><a href="#cb169-1" aria-hidden="true" tabindex="-1"></a>j <span class="ot">=</span> <span class="fu">list</span>(<span class="at">name =</span> <span class="st">&quot;Joe&quot;</span>, <span class="at">salary =</span> <span class="dv">55000</span>, <span class="at">union =</span> <span class="cn">TRUE</span>)</span>
+class="sourceCode r"><code class="sourceCode r"><span id="cb169-1"><a href="#cb169-1" aria-hidden="true" tabindex="-1"></a>j <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">name =</span> <span class="st">&quot;Joe&quot;</span>, <span class="at">salary =</span> <span class="dv">55000</span>, <span class="at">union =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb169-2"><a href="#cb169-2" aria-hidden="true" tabindex="-1"></a>j</span></code></pre></div>
 <pre><code>## $name
 ## [1] &quot;Joe&quot;
@@ -768,7 +768,7 @@ class="sourceCode r"><code class="sourceCode r"><span id="cb185-1"><a href="#cb1
 <h2 id="list-manipulation">List manipulation</h2>
 <p>We can add to a list by tag:</p>
 <div class="sourceCode" id="cb187"><pre
-class="sourceCode r"><code class="sourceCode r"><span id="cb187-1"><a href="#cb187-1" aria-hidden="true" tabindex="-1"></a>j<span class="sc">$</span>hobby <span class="ot">=</span> <span class="st">&quot;sailing&quot;</span></span>
+class="sourceCode r"><code class="sourceCode r"><span id="cb187-1"><a href="#cb187-1" aria-hidden="true" tabindex="-1"></a>j<span class="sc">$</span>hobby <span class="ot">&lt;-</span> <span class="st">&quot;sailing&quot;</span></span>
 <span id="cb187-2"><a href="#cb187-2" aria-hidden="true" tabindex="-1"></a>j</span></code></pre></div>
 <pre><code>## $name
 ## [1] &quot;Joe&quot;
@@ -808,7 +808,7 @@ class="sourceCode r"><code class="sourceCode r"><span id="cb189-1"><a href="#cb1
 <p>We can remove an element from a list by setting it to
 <code>NULL</code>:</p>
 <div class="sourceCode" id="cb191"><pre
-class="sourceCode r"><code class="sourceCode r"><span id="cb191-1"><a href="#cb191-1" aria-hidden="true" tabindex="-1"></a>j[[<span class="dv">5</span>]] <span class="ot">=</span> <span class="cn">NULL</span></span>
+class="sourceCode r"><code class="sourceCode r"><span id="cb191-1"><a href="#cb191-1" aria-hidden="true" tabindex="-1"></a>j[[<span class="dv">5</span>]] <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
 <span id="cb191-2"><a href="#cb191-2" aria-hidden="true" tabindex="-1"></a>j</span></code></pre></div>
 <pre><code>## $name
 ## [1] &quot;Joe&quot;
@@ -822,7 +822,7 @@ class="sourceCode r"><code class="sourceCode r"><span id="cb191-1"><a href="#cb1
 ## $hobby
 ## [1] &quot;sailing&quot;</code></pre>
 <div class="sourceCode" id="cb193"><pre
-class="sourceCode r"><code class="sourceCode r"><span id="cb193-1"><a href="#cb193-1" aria-hidden="true" tabindex="-1"></a>j<span class="sc">$</span>hobby <span class="ot">=</span> <span class="cn">NULL</span></span>
+class="sourceCode r"><code class="sourceCode r"><span id="cb193-1"><a href="#cb193-1" aria-hidden="true" tabindex="-1"></a>j<span class="sc">$</span>hobby <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
 <span id="cb193-2"><a href="#cb193-2" aria-hidden="true" tabindex="-1"></a>j</span></code></pre></div>
 <pre><code>## $name
 ## [1] &quot;Joe&quot;
@@ -866,7 +866,7 @@ class="sourceCode r"><code class="sourceCode r"><span id="cb197-1"><a href="#cb1
 <p>Note that <code>unlist</code> gives an atomic vector even for
 recursive lists (lists of lists), for example:</p>
 <div class="sourceCode" id="cb199"><pre
-class="sourceCode r"><code class="sourceCode r"><span id="cb199-1"><a href="#cb199-1" aria-hidden="true" tabindex="-1"></a>complex_list <span class="ot">=</span> <span class="fu">list</span>(<span class="at">a =</span> <span class="fu">list</span>(<span class="dv">1</span>), <span class="at">b =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="at">c =</span> (<span class="fu">list</span>(<span class="at">a =</span> <span class="dv">1</span>, <span class="at">b =</span> <span class="dv">2</span>)))</span>
+class="sourceCode r"><code class="sourceCode r"><span id="cb199-1"><a href="#cb199-1" aria-hidden="true" tabindex="-1"></a>complex_list <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">a =</span> <span class="fu">list</span>(<span class="dv">1</span>), <span class="at">b =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="at">c =</span> (<span class="fu">list</span>(<span class="at">a =</span> <span class="dv">1</span>, <span class="at">b =</span> <span class="dv">2</span>)))</span>
 <span id="cb199-2"><a href="#cb199-2" aria-hidden="true" tabindex="-1"></a><span class="fu">unlist</span>(complex_list)</span></code></pre></div>
 <pre><code>##   a  b1  b2  b3  b4  b5 c.a c.b 
 ##   1   1   2   3   4   5   1   2</code></pre>
