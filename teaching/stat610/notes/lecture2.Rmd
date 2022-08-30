@@ -7,11 +7,9 @@ opts_chunk$set(fig.cap="", fig.width = 6, fig.height = 4, dpi=175,
 
 ## Logistics
 
-- My office hours are usually 2-4pm, but this week will be 4-6pm. I sent you the zoom link in an email.
+- First lab (on text) this week.
 
-- No lab this week.
-
-- First homework will go out on Sunday.
+- First homework out.
 
 
 
@@ -43,7 +41,7 @@ the same type, but lists can have any sort of elements (including lists!).
 You can create a list with the `list` function...
 
 ```{r}
-j = list(name = "Joe", salary = 55000, union = TRUE)
+j <- list(name = "Joe", salary = 55000, union = TRUE)
 j
 ```
 
@@ -90,9 +88,9 @@ Very important: `[[]]` and `[]` are different operations:
 
 ```{r}
 j[[2]]
-class(j[[2]])
+typeof(j[[2]])
 j[2]
-class(j[2])
+typeof(j[2])
 ```
 
 -----
@@ -102,7 +100,7 @@ class(j[2])
 We can add to a list by tag:
 
 ```{r}
-j$hobby = "sailing"
+j$hobby <- "sailing"
 j
 ```
 
@@ -111,7 +109,7 @@ j
 We can add to a list by index:
 
 ```{r}
-j[[5]] = 1:5
+j[[5]] <- 1:5
 j
 ```
 
@@ -120,9 +118,9 @@ j
 We can remove an element from a list by setting it to `NULL`:
 
 ```{r}
-j[[5]] = NULL
+j[[5]] <- NULL
 j
-j$hobby = NULL
+j$hobby <- NULL
 j
 ```
 
@@ -168,7 +166,7 @@ Note that `unlist` gives an atomic vector even for recursive lists
 (lists of lists), for example:
 
 ```{r}
-complex_list = list(a = list(1), b = 1:5, c = (list(a = 1, b = 2)))
+complex_list <- list(a = list(1), b = 1:5, c = (list(a = 1, b = 2)))
 unlist(complex_list)
 ```
 
@@ -198,7 +196,7 @@ if (condition) {
 So for example:
 
 ```{r}
-weather = "sunny"
+weather <- "sunny"
 if(weather == "rainy") {
     print("Take your umbrella!")
 } else {
@@ -215,7 +213,7 @@ nested `if` statements:
 . . .
 
 ```{r}
-weather = "cloudy"
+weather <- "cloudy"
 if(weather == "rainy") {
     print("Take your umbrella!")
 } else if (weather == "cloudy") {
@@ -258,8 +256,8 @@ other languages it has two of each.
 So for example:
 
 ```{r}
-steak_type = "med_rare"
-temp = 130
+steak_type <- "med_rare"
+temp <- 130
 ```
 ```{r}
 if(steak_type == "rare" & temp > 115) {
@@ -281,8 +279,8 @@ Or, in not so dire a situation:
 . . .
 
 ```{r}
-steak_type = "rare"
-temp = 110
+steak_type <- "rare"
+temp <- 110
 ```
 ```{r}
 if(steak_type == "rare" && temp > 115) {
@@ -377,7 +375,7 @@ Rules:
 
 So for example:
 ```{r}
-x = 1:5
+x <- 1:5
 for(i in x) {
     print(i^2)
 }
@@ -392,8 +390,8 @@ As with all the other flow control elements, for loops can be nested.
 We can use this to do something slightly more complicated:
 
 ```{r}
-d = 1:5
-D = matrix(NA, nrow = length(d), ncol = length(d))
+d <- 1:5
+D <- matrix(NA, nrow = length(d), ncol = length(d))
 D
 ```
 
@@ -401,9 +399,9 @@ D
 for(i in 1:nrow(D)) {
     for(j in 1:ncol(D)) {
         if(i == j) {
-            D[i,j] = d[i]
+            D[i,j] <- d[i]
         } else {
-            D[i,j] = 0
+            D[i,j] <- 0
         }
     }
 }
@@ -427,7 +425,7 @@ p_load(Lahman)
 
 What the data looks like:
 ```{r}
-head(Master)
+head(People)
 ```
 
 -----
@@ -436,9 +434,9 @@ head(Master)
 
 And finally a for loop: What am I doing here?
 ```{r}
-for(i in 1:nrow(Master)) {
-    if(!is.na(Master$height[i]) && Master$height[i] <= 62) {
-        print(Master[i,])
+for(i in 1:nrow(People)) {
+    if(!is.na(People$height[i]) && People$height[i] <= 62) {
+        print(People[i,])
     }
 }
 ```
@@ -484,39 +482,49 @@ So for example, we could use a while loop to find the largest power of
 2 less than 1000:
 
 ```{r}
-x = 2
+x <- 2
 while(x * 2 < 1000) {
-    x = x * 2
+    x <- x * 2
 }
 x
 ```
 
 -----
 
-As a more topical example, we can use this to simulate the number of days until someone infected with the coronavirus shows up in class:
+
+Or for a slightly less silly example, we could use it to answer a
+modified birthday problem.
+
+Suppose we want to know how many classes filled with randomly selected
+individuals we would have to attend before we found one where there
+were at least two pairs of people with the same birthday.
+
+We could go through the math, or we could get partway to an answer
+with a while loop.
+
+. . .
+
+Here we draw sets of birthdays for classes of size 20, assuming that
+there are 365 days in a year:
 
 ```{r}
-set.seed(100)
-infection_rate = .01
-false_negative_rate = .3
-infected_and_not_quarantined_rate = infection_rate * false_negative_rate
-class_size = 10
-probability_no_infections = (1 - infected_and_not_quarantined_rate)^class_size
-day = 1
+days_in_year <- 365
+class_size <- 20
+num_classes <- 0
 while(TRUE) {
-    someone_infected = rbinom(n = 1, size = 1, prob = 1 - probability_no_infections)
-    if(someone_infected == 1) {
+    num_classes <- num_classes + 1
+    birthdays <- sample(1:days_in_year, class_size, replace = TRUE)
+    num_birthdays_per_day <- table(birthdays)
+    days_with_match <- num_birthdays_per_day >= 2
+    num_days_with_match <- sum(days_with_match)
+    if(num_days_with_match >= 2) {
         break
-    } else {
-        day = day + 1
     }
 }
-print(day)
+num_classes
 ```
 
-Note: this isn't actually a very good simulation for getting at how long it will take for someone to be infected, because we're not taking into account the fact that we have the same people in class every day, not new randomly drawn set each day. It is a good example of a while loop though.
 
-----
 
 . . .
 
@@ -537,7 +545,7 @@ applied to vectors element-by-element.
 - Also true of many base functions.
 
 ```{r}
-x = rgamma(10, 1, .1)
+x <- rgamma(10, 1, .1)
 x
 log(x)
 round(x)
@@ -564,9 +572,9 @@ Compare:
 
 for-loop way of computing the floor of all the elements in the vector `x`:
 ```{r}
-floor_of_x = rep(NA, length(x)) ## pre-allocate a vector to hold our computations
+floor_of_x <- rep(NA, length(x)) ## pre-allocate a vector to hold our computations
 for(i in 1:length(x)) {
-    floor_of_x[i] = floor(x[i])
+    floor_of_x[i] <- floor(x[i])
 }
 floor_of_x
 ```
@@ -600,13 +608,13 @@ $$
 Take 1:
 
 ```{r}
-x = seq(-2, 2, length = 200) ## a vector with the values at which we want to evaluate f
-fx = rep(NA, 200) ## pre-allocate a vector in which to store the values of f(x)
+x <- seq(-2, 2, length = 200) ## a vector with the values at which we want to evaluate f
+fx <- rep(NA, 200) ## pre-allocate a vector in which to store the values of f(x)
 for(i in 1:200) {
     if(abs(x[i]) < 1) {
-        fx[i] = 15/16 * (1 - x[i]^2)^2
+        fx[i] <- 15/16 * (1 - x[i]^2)^2
     } else {
-        fx[i] = 0
+        fx[i] <- 0
     }
 }
 plot(fx ~ x, type = 'l')
@@ -646,18 +654,10 @@ Rules:
 
 Take 2:
 ```{r}
-x = seq(-2, 2, length.out = 200)
-y = ifelse(abs(x) < 1, 15/16 * (1 - x^2)^2, 0)
+x <- seq(-2, 2, length.out = 200)
+y <- ifelse(abs(x) < 1, 15/16 * (1 - x^2)^2, 0)
 ```
 
 ```{r}
 plot(y ~ x, type = 'l')
 ```
-
-## Homework
-
-I'll post a homework on Sunday.
-
-You'll be able to start on it with the material we've covered so far,
-but it will also cover the text manipulation material we'll go through
-next week.
