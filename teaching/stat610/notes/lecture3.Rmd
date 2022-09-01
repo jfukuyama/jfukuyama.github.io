@@ -1,8 +1,8 @@
 ## Logistics
 
-- Homework 1 was posted, due next Tuesday
+- Homework 0 due next Thursday.
 
-- Lab 1 will happen on Friday over Zoom with John (see the canvas announcement for the link), script and data posted at jfukuyama.github.io/teaching/stat610/assignments.
+- Lab 1 will happen on Friday with John, script and data will be posted at jfukuyama.github.io/teaching/stat610/assignments.
 
 ## Regular expressions
 
@@ -152,26 +152,25 @@ the POSIX column.
 
 `grep`
 
-- syntax: `grep(regex, string)`.
+- syntax: `grep(re, string)`.
 
-- `regex` is a regular expression
+- `re` is a regular expression
 
 - `string` is a character vector
 
-- The function will return the indices in string that match `regex`
+- The function will return the indices in string that contain a match to `re`
 
 . . .
 
-`grepl` (for grep logical): Same as `grep`, but returns a Boolean vector describing the
-match indices.
+`grepl` (for grep logical): Same as `grep`, but returns a Boolean vector describing the indices of the strings that contain a match to `re`.
 
 . . .
 
-Pedantic note:
+Note:
 
 - A regular expression describes a set of strings.
 
-- If I say a string `s` "contains" or "matches" a regular expression `re`, I mean that a substring of `s` is present in the set described by `re`.
+- The functions we will be using don't check whether a string is an element of the set of strings that the regular expression corresponds to. They check whether the target string has a substring that is an element of that set.
 
 -----
 
@@ -192,19 +191,19 @@ present. What if you want to know where it is within the string?
 
 `regexpr`
 
-- Syntax: `regexpr(regex, string)`
+- Syntax: `regexpr(re, string)`
 
-- `regex` is a regular expression.
+- `re` is a regular expression.
 
 - `string` is a character vector.
 
-- Gives the location of the first occurrence of the `regex`
+- Gives the location of the first occurrence of the `re`
 expression in `string`.
 
 . . .
 
 `gregexpr`: Same syntax as `regexpr`, but gives the locations of _all_
-the occurrences of `regex` instead of just the first.
+the occurrences of `re` instead of just the first.
 
 
 
@@ -215,7 +214,7 @@ Example:
 . . .
 
 ```{r}
-fruits = "apple|banana|fruit"
+fruits <- "apple|banana|fruit"
 regexpr(fruits, "fruit flies like a banana")
 ```
 
@@ -248,8 +247,8 @@ The pattern you use to extract the text is
 Example: We have some sentence fragments and we would like to extract all the fruits from the text.
 
 ```{r}
-fruit_fly_text = "drosophila like bananas"
-wasp_text = "wasps like bananas and baby fruit flies"
+fruit_fly_text <-"drosophila like bananas"
+wasp_text <- "wasps like bananas and baby fruit flies"
 fruits
 ```
 

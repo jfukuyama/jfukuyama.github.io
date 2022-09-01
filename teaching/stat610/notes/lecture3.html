@@ -8,79 +8,81 @@
   <meta name="generator" content="pandoc" />
   <title>Stat 610 Lecture 3: Regular Expressions</title>
   <style type="text/css">
-      code{white-space: pre-wrap;}
-      span.smallcaps{font-variant: small-caps;}
-      span.underline{text-decoration: underline;}
-      div.column{display: inline-block; vertical-align: top; width: 50%;}
-  </style>
-  <style type="text/css">
-code.sourceCode > span { display: inline-block; line-height: 1.25; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode { white-space: pre; position: relative; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-code.sourceCode { white-space: pre-wrap; }
-code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-    color: #aaaaaa;
-  }
-pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-code.sourceCode > span > a:first-child::before { text-decoration: underline; }
-}
-code span.al { color: #ff0000; font-weight: bold; } /* Alert */
-code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
-code span.at { color: #7d9029; } /* Attribute */
-code span.bn { color: #40a070; } /* BaseN */
-code span.bu { } /* BuiltIn */
-code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
-code span.ch { color: #4070a0; } /* Char */
-code span.cn { color: #880000; } /* Constant */
-code span.co { color: #60a0b0; font-style: italic; } /* Comment */
-code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
-code span.do { color: #ba2121; font-style: italic; } /* Documentation */
-code span.dt { color: #902000; } /* DataType */
-code span.dv { color: #40a070; } /* DecVal */
-code span.er { color: #ff0000; font-weight: bold; } /* Error */
-code span.ex { } /* Extension */
-code span.fl { color: #40a070; } /* Float */
-code span.fu { color: #06287e; } /* Function */
-code span.im { } /* Import */
-code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
-code span.kw { color: #007020; font-weight: bold; } /* Keyword */
-code span.op { color: #666666; } /* Operator */
-code span.ot { color: #007020; } /* Other */
-code span.pp { color: #bc7a00; } /* Preprocessor */
-code span.sc { color: #4070a0; } /* SpecialChar */
-code span.ss { color: #bb6688; } /* SpecialString */
-code span.st { color: #4070a0; } /* String */
-code span.va { color: #19177c; } /* Variable */
-code span.vs { color: #4070a0; } /* VerbatimString */
-code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
   </style>
   <link rel="stylesheet" type="text/css" media="screen, projection, print"
     href="https://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-AMS_CHTML-full" type="text/javascript"></script>
+  <script
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js"
+  type="text/javascript"></script>
   <script src="https://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
     charset="utf-8" type="text/javascript"></script>
 </head>
@@ -91,16 +93,23 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="logistics" class="slide section level2">
 <h1>Logistics</h1>
 <ul class="incremental">
-<li><p>Homework 1 was posted, due next Tuesday</p></li>
-<li><p>Lab 1 will happen on Friday over Zoom with John (see the canvas announcement for the link), script and data posted at jfukuyama.github.io/teaching/stat610/assignments.</p></li>
+<li><p>Homework 0 due next Thursday.</p></li>
+<li><p>Lab 1 will happen on Friday with John, script and data will be
+posted at jfukuyama.github.io/teaching/stat610/assignments.</p></li>
 </ul>
 </div>
 <div id="regular-expressions" class="slide section level2">
 <h1>Regular expressions</h1>
 <p>Reading: Matloff Chapter 11.2.</p>
-<p>I’ve linked to a couple of regular expression testers from the page with the course notes.</p>
-<p><a href="https://en.wikipedia.org/wiki/Regular_expression">Wikipedia</a> actually has a good treatment if you go through it slowly.</p>
-<p>You can also find formal treatments of regular expressions in books on the foundations of computing, e.g. Hopcroft, Motwani, and Ullman (2000). <em>Introduction to Automata Theory, Languages, and Computation</em>.</p>
+<p>I’ve linked to a couple of regular expression testers from the page
+with the course notes.</p>
+<p><a
+href="https://en.wikipedia.org/wiki/Regular_expression">Wikipedia</a>
+actually has a good treatment if you go through it slowly.</p>
+<p>You can also find formal treatments of regular expressions in books
+on the foundations of computing, e.g. Hopcroft, Motwani, and Ullman
+(2000). <em>Introduction to Automata Theory, Languages, and
+Computation</em>.</p>
 </div>
 <div id="what-is-a-regular-expression" class="slide section level2">
 <h1>What is a regular expression?</h1>
@@ -109,45 +118,86 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li>For example, the regular expression</li>
 </ul>
 <p><code>, *</code></p>
-<p>specifies the set of strings that start with a comma and are followed by any number (including zero) of spaces.</p>
+<p>specifies the set of strings that start with a comma and are followed
+by any number (including zero) of spaces.</p>
 </div>
 <div class="slide section level2">
 
 <p>Why do we need them?</p>
 <ul class="incremental">
-<li><p>Parsimony: We can express sets of strings more compactly. <br><br> For example: <code>(J.|Julia) Fukuyama</code> represents the set containing <code>J. Fukuyama</code> and <code>Julia Fukuyama</code></p></li>
-<li><p>Allows us to specify infinite-size sets in finite space. <br><br> For example: our <code>, *</code> expression from before.</p></li>
+<li><p>Parsimony: We can express sets of strings more compactly.
+<br><br> For example: <code>(J.|Julia) Fukuyama</code> represents the
+set containing <code>J. Fukuyama</code> and <code>Julia
+Fukuyama</code></p></li>
+<li><p>Allows us to specify infinite-size sets in finite space. <br><br>
+For example: our <code>, *</code> expression from before.</p></li>
 </ul>
 </div>
 <div id="regular-expressions-abstractly" class="slide section level2">
 <h1>Regular expressions abstractly</h1>
-<p>The formal definition of a regular expression is inductive. Suppose that we have a finite alphabet <span class="math inline">\(\Sigma\)</span>.</p>
+<p>The formal definition of a regular expression is inductive. Suppose
+that we have a finite alphabet <span
+class="math inline">\(\Sigma\)</span>.</p>
 <p>We start with specifying the following as regular expressions:</p>
 <ul class="incremental">
-<li><p><span class="math inline">\(\emptyset\)</span> is a regular expression specifying the empty set</p></li>
-<li><p><span class="math inline">\(\varepsilon\)</span> is a regular expression specifying the set containing the empty string <code>""</code></p></li>
-<li><p>Literal character <span class="math inline">\(a\)</span> is a regular expression specifying the one-element set <span class="math inline">\(\{a\}\)</span>, for <span class="math inline">\(a \in \Sigma\)</span></p></li>
+<li><p><span class="math inline">\(\emptyset\)</span> is a regular
+expression specifying the empty set</p></li>
+<li><p><span class="math inline">\(\varepsilon\)</span> is a regular
+expression specifying the set containing the empty string
+<code>""</code></p></li>
+<li><p>Literal character <span class="math inline">\(a\)</span> is a
+regular expression specifying the one-element set <span
+class="math inline">\(\{a\}\)</span>, for <span class="math inline">\(a
+\in \Sigma\)</span></p></li>
 </ul>
 </div>
 <div class="slide section level2">
 
-<p>The following operations, performed on regular expressions, yield regular expressions:</p>
+<p>The following operations, performed on regular expressions, yield
+regular expressions:</p>
 <ul class="incremental">
-<li>Concatenation: If <span class="math inline">\(R\)</span> and <span class="math inline">\(S\)</span> are regular expressions, <span class="math inline">\(RS\)</span> is a regular expression specifying the set of strings that can be formed by concatenating a string in <span class="math inline">\(R\)</span> followed by a string in <span class="math inline">\(S\)</span>. <br><br> If <span class="math inline">\(R = \{good, bad\}\)</span> and <span class="math inline">\(S = \{boy, girl\}\)</span>, then <span class="math inline">\(RS = \{goodboy, goodgirl, badboy, badgirl\}\)</span>.</li>
+<li>Concatenation: If <span class="math inline">\(R\)</span> and <span
+class="math inline">\(S\)</span> are regular expressions, <span
+class="math inline">\(RS\)</span> is a regular expression specifying the
+set of strings that can be formed by concatenating a string in <span
+class="math inline">\(R\)</span> followed by a string in <span
+class="math inline">\(S\)</span>. <br><br> If <span
+class="math inline">\(R = \{good, bad\}\)</span> and <span
+class="math inline">\(S = \{boy, girl\}\)</span>, then <span
+class="math inline">\(RS = \{goodboy, goodgirl, badboy,
+badgirl\}\)</span>.</li>
 </ul>
 <div class="incremental">
 <ul class="incremental">
-<li>Alternation (boolean or): If <span class="math inline">\(R\)</span> and <span class="math inline">\(S\)</span> are regular expressions, <span class="math inline">\(R|S\)</span> is a regular expression specifying the set of strings strings formed by taking either an element of <span class="math inline">\(R\)</span> or an element of <span class="math inline">\(S\)</span>. This is the same as the set union. <br><br> Same example: If <span class="math inline">\(R = \{good, bad\}\)</span> and <span class="math inline">\(S = \{boy, girl\}\)</span>, then <span class="math inline">\(R|S = \{good, bad, boy, girl\}\)</span>.</li>
+<li>Alternation (boolean or): If <span class="math inline">\(R\)</span>
+and <span class="math inline">\(S\)</span> are regular expressions,
+<span class="math inline">\(R|S\)</span> is a regular expression
+specifying the set of strings strings formed by taking either an element
+of <span class="math inline">\(R\)</span> or an element of <span
+class="math inline">\(S\)</span>. This is the same as the set union.
+<br><br> Same example: If <span class="math inline">\(R = \{good,
+bad\}\)</span> and <span class="math inline">\(S = \{boy,
+girl\}\)</span>, then <span class="math inline">\(R|S = \{good, bad,
+boy, girl\}\)</span>.</li>
 </ul>
 </div>
 <div class="incremental">
 <ul class="incremental">
-<li>Kleene star: If <span class="math inline">\(R\)</span> is a regular expression, <span class="math inline">\(R^\star\)</span> is a regular expression denoting the set of strings created by concatenating any finite number (including zero) of the strings in <span class="math inline">\(R\)</span>. <br><br> If <span class="math inline">\(R = \{good, bad\}\)</span>, <span class="math inline">\(R^\star\)</span> contains , good, goodgood, goodbad, bad, badgood, badbadgood, and so on</li>
+<li>Kleene star: If <span class="math inline">\(R\)</span> is a regular
+expression, <span class="math inline">\(R^\star\)</span> is a regular
+expression denoting the set of strings created by concatenating any
+finite number (including zero) of the strings in <span
+class="math inline">\(R\)</span>. <br><br> If <span
+class="math inline">\(R = \{good, bad\}\)</span>, <span
+class="math inline">\(R^\star\)</span> contains , good, goodgood,
+goodbad, bad, badgood, badbadgood, and so on</li>
 </ul>
 </div>
 <div class="incremental">
-<p>Order of operations: Kleene star has highest priority, followed by concatenation, followed by alternation.</p>
-<p>If a different grouping is desired, use parentheses <code>()</code>.</p>
+<p>Order of operations: Kleene star has highest priority, followed by
+concatenation, followed by alternation.</p>
+<p>If a different grouping is desired, use parentheses
+<code>()</code>.</p>
 </div>
 </div>
 <div class="slide section level2">
@@ -155,77 +205,108 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <p>Examples:</p>
 <ul class="incremental">
 <li><p><code>a|b</code>: <code>{"a", "b"}</code></p></li>
-<li><p><code>a|b*</code>: <code>{ε, "a", "b", "bb", "bbb", ...}</code></p></li>
+<li><p><code>a|b*</code>: <code>{ε, "a", "b", "bb", "bbb",
+...}</code></p></li>
 </ul>
 <div class="incremental">
 <ul class="incremental">
-<li><code>(a|b)*</code>: The set of all string containing only <code>a</code> and <code>b</code>, <code>{ε, "a", "b", "aa", "ab", "ba", "bb", "aaa", ...}</code></li>
+<li><code>(a|b)*</code>: The set of all string containing only
+<code>a</code> and <code>b</code>, <code>{ε, "a", "b", "aa", "ab", "ba",
+"bb", "aaa", ...}</code></li>
 </ul>
 </div>
 <div class="incremental">
 <ul class="incremental">
-<li><code>ab*(c|ε)</code>: The set of strings starting with a single <code>a</code>, followed by zero or more <code>b</code>’s, optionally ending with a <code>c</code>, <code>{"a", "ac", "ab", "abc", "abb", "abbc", ...}</code></li>
+<li><code>ab*(c|ε)</code>: The set of strings starting with a single
+<code>a</code>, followed by zero or more <code>b</code>’s, optionally
+ending with a <code>c</code>, <code>{"a", "ac", "ab", "abc", "abb",
+"abbc", ...}</code></li>
 </ul>
 </div>
 </div>
-<div id="how-they-are-actually-implemented" class="slide section level2">
+<div id="how-they-are-actually-implemented"
+class="slide section level2">
 <h1>How they are actually implemented</h1>
-<p>Actual implementations of regular expressions have many more symbols and operators, but they are mostly just shorthand for some common operations that would take longer to express using only the three operations in the formal definition.</p>
+<p>Actual implementations of regular expressions have many more symbols
+and operators, but they are mostly just shorthand for some common
+operations that would take longer to express using only the three
+operations in the formal definition.</p>
 </div>
 <div id="quantification-operations" class="slide section level2">
 <h1>Quantification operations</h1>
 <ul class="incremental">
-<li><p><code>*</code>: Same as in the formal definition: zero or more times.</p></li>
-<li><p><code>?</code>: Zero or one occurrence of the preceding element. <code>colou?r</code> matches <code>color</code> and <code>colour</code>.</p></li>
-<li><p><code>+</code>: One or more occurrences of the preceding element.</p></li>
-<li><p><code>{m}</code>: Exactly m occurrences of the preceding element.</p></li>
-<li><p><code>{m,}</code>: At least m occurrences of the preceding element.</p></li>
-<li><p><code>{m,n}</code>: Between m and n occurrences of the preceding element, inclusive.</p></li>
+<li><p><code>*</code>: Same as in the formal definition: zero or more
+times.</p></li>
+<li><p><code>?</code>: Zero or one occurrence of the preceding element.
+<code>colou?r</code> matches <code>color</code> and
+<code>colour</code>.</p></li>
+<li><p><code>+</code>: One or more occurrences of the preceding
+element.</p></li>
+<li><p><code>{m}</code>: Exactly m occurrences of the preceding
+element.</p></li>
+<li><p><code>{m,}</code>: At least m occurrences of the preceding
+element.</p></li>
+<li><p><code>{m,n}</code>: Between m and n occurrences of the preceding
+element, inclusive.</p></li>
 </ul>
 </div>
 <div id="alternatives-to" class="slide section level2">
 <h1>Alternatives to |</h1>
 <ul class="incremental">
-<li><p><code>[]</code>: Matches any single character inside the brackets.</p></li>
-<li><p><code>[^ ]</code>: Negation, matches anything <em>except</em> the set of characters inside the brackets.</p></li>
+<li><p><code>[]</code>: Matches any single character inside the
+brackets.</p></li>
+<li><p><code>[^ ]</code>: Negation, matches anything <em>except</em> the
+set of characters inside the brackets.</p></li>
 <li><p><code>.</code>: Wildcard, matches any character.</p></li>
-<li><p>Character classes, defined differently for the different implementations. See <a href="https://en.wikipedia.org/wiki/Regular_expression#Character_classes">https://en.wikipedia.org/wiki/Regular_expression#Character_classes</a>, the POSIX column.</p></li>
+<li><p>Character classes, defined differently for the different
+implementations. See <a
+href="https://en.wikipedia.org/wiki/Regular_expression#Character_classes">https://en.wikipedia.org/wiki/Regular_expression#Character_classes</a>,
+the POSIX column.</p></li>
 </ul>
 </div>
-<div id="what-do-we-do-with-regular-expressions" class="slide section level2">
+<div id="what-do-we-do-with-regular-expressions"
+class="slide section level2">
 <h1>What do we do with regular expressions?</h1>
 <ul class="incremental">
 <li><p>Check whether a string contains a regular expression</p></li>
-<li><p>Extract the portion of the string that matches a regular expression</p></li>
-<li><p>Split a string into pieces delimited by a regular expression</p></li>
+<li><p>Extract the portion of the string that matches a regular
+expression</p></li>
+<li><p>Split a string into pieces delimited by a regular
+expression</p></li>
 </ul>
 </div>
 <div id="finding-regular-expressions" class="slide section level2">
 <h1>Finding regular expressions</h1>
 <p><code>grep</code></p>
 <ul class="incremental">
-<li><p>syntax: <code>grep(regex, string)</code>.</p></li>
-<li><p><code>regex</code> is a regular expression</p></li>
+<li><p>syntax: <code>grep(re, string)</code>.</p></li>
+<li><p><code>re</code> is a regular expression</p></li>
 <li><p><code>string</code> is a character vector</p></li>
-<li><p>The function will return the indices in string that match <code>regex</code></p></li>
+<li><p>The function will return the indices in string that contain a
+match to <code>re</code></p></li>
 </ul>
 <div class="incremental">
-<p><code>grepl</code> (for grep logical): Same as <code>grep</code>, but returns a Boolean vector describing the match indices.</p>
+<p><code>grepl</code> (for grep logical): Same as <code>grep</code>, but
+returns a Boolean vector describing the indices of the strings that
+contain a match to <code>re</code>.</p>
 </div>
 <div class="incremental">
-<p>Pedantic note:</p>
+<p>Note:</p>
 <ul class="incremental">
 <li><p>A regular expression describes a set of strings.</p></li>
-<li><p>If I say a string <code>s</code> “contains” or “matches” a regular expression <code>re</code>, I mean that a substring of <code>s</code> is present in the set described by <code>re</code>.</p></li>
+<li><p>The functions we will be using don’t check whether a string is an
+element of the set of strings that the regular expression corresponds
+to. They check whether the target string has a substring that is an
+element of that set.</p></li>
 </ul>
 </div>
 </div>
 <div class="slide section level2">
 
 <div class="incremental">
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">grep</span>(<span class="st">&quot;(K|k)ansas&quot;</span>, state.name)</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">grep</span>(<span class="st">&quot;(K|k)ansas&quot;</span>, state.name)</span></code></pre></div>
 <pre><code>## [1]  4 16</code></pre>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">grepl</span>(<span class="st">&quot;(K|k)ansas&quot;</span>, state.name)</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">grepl</span>(<span class="st">&quot;(K|k)ansas&quot;</span>, state.name)</span></code></pre></div>
 <pre><code>##  [1] FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
 ## [13] FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
 ## [25] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
@@ -235,26 +316,31 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 <div class="slide section level2">
 
-<p><code>grep</code> and <code>grepl</code> just tell us if the regular expression is present. What if you want to know where it is within the string?</p>
+<p><code>grep</code> and <code>grepl</code> just tell us if the regular
+expression is present. What if you want to know where it is within the
+string?</p>
 <div class="incremental">
 <p><code>regexpr</code></p>
 <ul class="incremental">
-<li><p>Syntax: <code>regexpr(regex, string)</code></p></li>
-<li><p><code>regex</code> is a regular expression.</p></li>
+<li><p>Syntax: <code>regexpr(re, string)</code></p></li>
+<li><p><code>re</code> is a regular expression.</p></li>
 <li><p><code>string</code> is a character vector.</p></li>
-<li><p>Gives the location of the first occurrence of the <code>regex</code> expression in <code>string</code>.</p></li>
+<li><p>Gives the location of the first occurrence of the <code>re</code>
+expression in <code>string</code>.</p></li>
 </ul>
 </div>
 <div class="incremental">
-<p><code>gregexpr</code>: Same syntax as <code>regexpr</code>, but gives the locations of <em>all</em> the occurrences of <code>regex</code> instead of just the first.</p>
+<p><code>gregexpr</code>: Same syntax as <code>regexpr</code>, but gives
+the locations of <em>all</em> the occurrences of <code>re</code> instead
+of just the first.</p>
 </div>
 </div>
 <div class="slide section level2">
 
 <p>Example:</p>
 <div class="incremental">
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>fruits =<span class="st"> &quot;apple|banana|fruit&quot;</span></span>
-<span id="cb5-2"><a href="#cb5-2"></a><span class="kw">regexpr</span>(fruits, <span class="st">&quot;fruit flies like a banana&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>fruits <span class="ot">&lt;-</span> <span class="st">&quot;apple|banana|fruit&quot;</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">regexpr</span>(fruits, <span class="st">&quot;fruit flies like a banana&quot;</span>)</span></code></pre></div>
 <pre><code>## [1] 1
 ## attr(,&quot;match.length&quot;)
 ## [1] 5
@@ -262,7 +348,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 ## [1] &quot;chars&quot;
 ## attr(,&quot;useBytes&quot;)
 ## [1] TRUE</code></pre>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="kw">gregexpr</span>(fruits, <span class="st">&quot;fruit flies like a banana&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">gregexpr</span>(fruits, <span class="st">&quot;fruit flies like a banana&quot;</span>)</span></code></pre></div>
 <pre><code>## [[1]]
 ## [1]  1 20
 ## attr(,&quot;match.length&quot;)
@@ -275,11 +361,15 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 <div class="slide section level2">
 
-<p>If you want the text that matches the regular expression, you need <code>regmatches</code></p>
+<p>If you want the text that matches the regular expression, you need
+<code>regmatches</code></p>
 <p>Syntax: <code>regmatches(text, match)</code></p>
 <ul class="incremental">
-<li><p><code>match</code> is the output from <code>regexpr</code> or <code>gregexpr</code>, describing the locations of the regular expressions.</p></li>
-<li><p><code>text</code> is the character vector you passed to <code>regexpr</code> or <code>gregexpr</code>.</p></li>
+<li><p><code>match</code> is the output from <code>regexpr</code> or
+<code>gregexpr</code>, describing the locations of the regular
+expressions.</p></li>
+<li><p><code>text</code> is the character vector you passed to
+<code>regexpr</code> or <code>gregexpr</code>.</p></li>
 </ul>
 <div class="incremental">
 <p>The pattern you use to extract the text is</p>
@@ -288,20 +378,21 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 <div class="slide section level2">
 
-<p>Example: We have some sentence fragments and we would like to extract all the fruits from the text.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a>fruit_fly_text =<span class="st"> &quot;drosophila like bananas&quot;</span></span>
-<span id="cb9-2"><a href="#cb9-2"></a>wasp_text =<span class="st"> &quot;wasps like bananas and baby fruit flies&quot;</span></span>
-<span id="cb9-3"><a href="#cb9-3"></a>fruits</span></code></pre></div>
+<p>Example: We have some sentence fragments and we would like to extract
+all the fruits from the text.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>fruit_fly_text <span class="ot">&lt;-</span><span class="st">&quot;drosophila like bananas&quot;</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>wasp_text <span class="ot">&lt;-</span> <span class="st">&quot;wasps like bananas and baby fruit flies&quot;</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>fruits</span></code></pre></div>
 <pre><code>## [1] &quot;apple|banana|fruit&quot;</code></pre>
 <div class="incremental">
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a><span class="kw">regmatches</span>(fruit_fly_text, <span class="kw">regexpr</span>(fruits, fruit_fly_text))</span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">regmatches</span>(fruit_fly_text, <span class="fu">regexpr</span>(fruits, fruit_fly_text))</span></code></pre></div>
 <pre><code>## [1] &quot;banana&quot;</code></pre>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a><span class="kw">regmatches</span>(wasp_text, <span class="kw">regexpr</span>(fruits, wasp_text))</span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">regmatches</span>(wasp_text, <span class="fu">regexpr</span>(fruits, wasp_text))</span></code></pre></div>
 <pre><code>## [1] &quot;banana&quot;</code></pre>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1"></a><span class="kw">regmatches</span>(fruit_fly_text, <span class="kw">gregexpr</span>(fruits, fruit_fly_text))</span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">regmatches</span>(fruit_fly_text, <span class="fu">gregexpr</span>(fruits, fruit_fly_text))</span></code></pre></div>
 <pre><code>## [[1]]
 ## [1] &quot;banana&quot;</code></pre>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1"></a><span class="kw">regmatches</span>(wasp_text, <span class="kw">gregexpr</span>(fruits, wasp_text))</span></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">regmatches</span>(wasp_text, <span class="fu">gregexpr</span>(fruits, wasp_text))</span></code></pre></div>
 <pre><code>## [[1]]
 ## [1] &quot;banana&quot; &quot;fruit&quot;</code></pre>
 </div>
@@ -310,28 +401,38 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <h1>Splitting on regular expressions</h1>
 <p>Syntax: <code>strsplit(s, split)</code></p>
 <ul class="incremental">
-<li><p><code>s</code> is a character vector (can have length greater than 1), and the function vectorizes.</p></li>
-<li><p><code>split</code> gives the regular expression we want to split on: every element of <code>s</code> will be split into pieces separated by the regex <code>split</code>.</p></li>
+<li><p><code>s</code> is a character vector (can have length greater
+than 1), and the function vectorizes.</p></li>
+<li><p><code>split</code> gives the regular expression we want to split
+on: every element of <code>s</code> will be split into pieces separated
+by the regex <code>split</code>.</p></li>
 </ul>
 <div class="incremental">
-<p>Two other arguments you should know about, <code>fixed</code> and <code>perl</code>:</p>
+<p>Two other arguments you should know about, <code>fixed</code> and
+<code>perl</code>:</p>
 <ul class="incremental">
-<li><p><code>fixed = TRUE</code> means to treat <code>split</code> as the literal string instead of a regular expression, <code>fixed = FALSE</code> is the default and means that we treat the splitting expression as a regular expression.</p></li>
-<li><p><code>perl</code> relates to the flavor of regular expressions used.</p></li>
+<li><p><code>fixed = TRUE</code> means to treat <code>split</code> as
+the literal string instead of a regular expression, <code>fixed =
+FALSE</code> is the default and means that we treat the splitting
+expression as a regular expression.</p></li>
+<li><p><code>perl</code> relates to the flavor of regular expressions
+used.</p></li>
 </ul>
 </div>
 </div>
 <div class="slide section level2">
 
 <div class="incremental">
-<p><a href="http://itre.cis.upenn.edu/myl/languagelog/archives/002932.html">1</a> <a href="https://en.wikipedia.org/wiki/Serial_comma">2</a></p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1"></a><span class="kw">strsplit</span>(<span class="st">&quot;my parents, Ayn Rand, and God&quot;</span>, <span class="st">&quot;,[[:space:]]*(and)?[[:space:]]+&quot;</span>)</span></code></pre></div>
+<p><a
+href="http://itre.cis.upenn.edu/myl/languagelog/archives/002932.html">1</a>
+<a href="https://en.wikipedia.org/wiki/Serial_comma">2</a></p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">strsplit</span>(<span class="st">&quot;my parents, Ayn Rand, and God&quot;</span>, <span class="st">&quot;,[[:space:]]*(and)?[[:space:]]+&quot;</span>)</span></code></pre></div>
 <pre><code>## [[1]]
 ## [1] &quot;my parents&quot; &quot;Ayn Rand&quot;   &quot;God&quot;</code></pre>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a><span class="kw">strsplit</span>(<span class="st">&quot;my parents, Ayn Rand and God&quot;</span>, <span class="st">&quot;,[[:space:]]*(and)?[[:space:]]+&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">strsplit</span>(<span class="st">&quot;my parents, Ayn Rand and God&quot;</span>, <span class="st">&quot;,[[:space:]]*(and)?[[:space:]]+&quot;</span>)</span></code></pre></div>
 <pre><code>## [[1]]
 ## [1] &quot;my parents&quot;       &quot;Ayn Rand and God&quot;</code></pre>
-<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1"></a><span class="kw">strsplit</span>(<span class="st">&quot;my parents, Ayn Rand and God&quot;</span>, <span class="st">&quot;(,[[:space:]]*)|([[:space:]]+and[[:space:]]+)&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">strsplit</span>(<span class="st">&quot;my parents, Ayn Rand and God&quot;</span>, <span class="st">&quot;(,[[:space:]]*)|([[:space:]]+and[[:space:]]+)&quot;</span>)</span></code></pre></div>
 <pre><code>## [[1]]
 ## [1] &quot;my parents&quot; &quot;Ayn Rand&quot;   &quot;God&quot;</code></pre>
 </div>
@@ -339,54 +440,72 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="two-more-ideas" class="slide section level2">
 <h1>Two more ideas</h1>
 <ul class="incremental">
-<li><p>Greedy quantification: There can be more than one match of a string to a regular expression that begins at the same place. Which one do you want?</p></li>
-<li><p>Anchoring: Can constrain the expression to match at certain places in words or lines.</p></li>
+<li><p>Greedy quantification: There can be more than one match of a
+string to a regular expression that begins at the same place. Which one
+do you want?</p></li>
+<li><p>Anchoring: Can constrain the expression to match at certain
+places in words or lines.</p></li>
 </ul>
 </div>
 <div id="greedy-quantification" class="slide section level2">
 <h1>Greedy quantification</h1>
-<p>By default, quantifiers are greedy, meaning they match the longest substring possible.</p>
-<p>We can make them have the opposite behavior by modifying them with the <code>?</code> character: in that case, they match the shortest substring possible.</p>
-<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1"></a><span class="kw">regmatches</span>(<span class="st">&quot;[i][j]&quot;</span>, <span class="kw">regexpr</span>(<span class="st">&quot;</span><span class="ch">\\</span><span class="st">[.*</span><span class="ch">\\</span><span class="st">]&quot;</span>, <span class="st">&quot;[i][j]&quot;</span>))</span></code></pre></div>
+<p>By default, quantifiers are greedy, meaning they match the longest
+substring possible.</p>
+<p>We can make them have the opposite behavior by modifying them with
+the <code>?</code> character: in that case, they match the shortest
+substring possible.</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">regmatches</span>(<span class="st">&quot;[i][j]&quot;</span>, <span class="fu">regexpr</span>(<span class="st">&quot;</span><span class="sc">\\</span><span class="st">[.*</span><span class="sc">\\</span><span class="st">]&quot;</span>, <span class="st">&quot;[i][j]&quot;</span>))</span></code></pre></div>
 <pre><code>## [1] &quot;[i][j]&quot;</code></pre>
-<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1"></a><span class="kw">regmatches</span>(<span class="st">&quot;[i][j]&quot;</span>, <span class="kw">regexpr</span>(<span class="st">&quot;</span><span class="ch">\\</span><span class="st">[.*?</span><span class="ch">\\</span><span class="st">]&quot;</span>, <span class="st">&quot;[i][j]&quot;</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">regmatches</span>(<span class="st">&quot;[i][j]&quot;</span>, <span class="fu">regexpr</span>(<span class="st">&quot;</span><span class="sc">\\</span><span class="st">[.*?</span><span class="sc">\\</span><span class="st">]&quot;</span>, <span class="st">&quot;[i][j]&quot;</span>))</span></code></pre></div>
 <pre><code>## [1] &quot;[i]&quot;</code></pre>
 <div class="incremental">
 <p>Note: Escaping</p>
 <ul class="incremental">
-<li><p>The special characters used for regular expressions need to be escaped using <code>\\</code>.</p></li>
-<li><p>One <code>\</code> is the normal escape character, its function is to tell the string processing tools that the next character should be read in a special way.</p></li>
-<li><p>When we create a regular expression, we need a literal <code>\</code>, and so we need to escape the escape character.</p></li>
+<li><p>The special characters used for regular expressions need to be
+escaped using <code>\\</code>.</p></li>
+<li><p>One <code>\</code> is the normal escape character, its function
+is to tell the string processing tools that the next character should be
+read in a special way.</p></li>
+<li><p>When we create a regular expression, we need a literal
+<code>\</code>, and so we need to escape the escape character.</p></li>
 </ul>
 </div>
 </div>
 <div id="anchoring" class="slide section level2">
 <h1>Anchoring</h1>
 <ul class="incremental">
-<li><p><code>^</code> (not inside square brackets) means that what comes after must be at the start of a line.</p></li>
-<li><p><code>$</code> means that what comes before must be at the end of a line.</p></li>
+<li><p><code>^</code> (not inside square brackets) means that what comes
+after must be at the start of a line.</p></li>
+<li><p><code>$</code> means that what comes before must be at the end of
+a line.</p></li>
 <li><p><code>\&lt;</code> anchors to the beginning of a word.</p></li>
-<li><p><code>\&gt;</code> anchors to the end of a word. Note that when you create a string using this operator, you will have to escape the <code>\</code></p></li>
-<li><p><code>\b</code> anchors to the boundary of words (beginning or ending)</p></li>
-<li><p><code>\B</code> anchors to anywhere aside from the boundary</p></li>
+<li><p><code>\&gt;</code> anchors to the end of a word. Note that when
+you create a string using this operator, you will have to escape the
+<code>\</code></p></li>
+<li><p><code>\b</code> anchors to the boundary of words (beginning or
+ending)</p></li>
+<li><p><code>\B</code> anchors to anywhere aside from the
+boundary</p></li>
 </ul>
 </div>
 <div class="slide section level2">
 
 <div class="incremental">
-<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1"></a><span class="kw">grepl</span>(<span class="st">&quot;</span><span class="ch">\\</span><span class="st">&lt;a&quot;</span>, <span class="st">&quot;hat at&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">grepl</span>(<span class="st">&quot;</span><span class="sc">\\</span><span class="st">&lt;a&quot;</span>, <span class="st">&quot;hat at&quot;</span>)</span></code></pre></div>
 <pre><code>## [1] TRUE</code></pre>
-<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1"></a><span class="kw">grepl</span>(<span class="st">&quot;</span><span class="ch">\\</span><span class="st">&lt;a&quot;</span>, <span class="st">&quot;hat cat&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">grepl</span>(<span class="st">&quot;</span><span class="sc">\\</span><span class="st">&lt;a&quot;</span>, <span class="st">&quot;hat cat&quot;</span>)</span></code></pre></div>
 <pre><code>## [1] FALSE</code></pre>
-<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1"></a><span class="kw">grepl</span>(<span class="st">&quot;</span><span class="ch">\\</span><span class="st">bnana&quot;</span>, <span class="st">&quot;bananas&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">grepl</span>(<span class="st">&quot;</span><span class="sc">\\</span><span class="st">bnana&quot;</span>, <span class="st">&quot;bananas&quot;</span>)</span></code></pre></div>
 <pre><code>## [1] FALSE</code></pre>
-<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1"></a><span class="kw">grepl</span>(<span class="st">&quot;</span><span class="ch">\\</span><span class="st">Bnana&quot;</span>, <span class="st">&quot;bananas&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">grepl</span>(<span class="st">&quot;</span><span class="sc">\\</span><span class="st">Bnana&quot;</span>, <span class="st">&quot;bananas&quot;</span>)</span></code></pre></div>
 <pre><code>## [1] TRUE</code></pre>
 </div>
 </div>
 <div id="a-final-note" class="slide section level2">
 <h1>A final note</h1>
-<p><a href="https://stackoverflow.com/questions/201323/how-to-validate-an-email-address-using-a-regular-expression">They’re not for everything</a></p>
+<p><a
+href="https://stackoverflow.com/questions/201323/how-to-validate-an-email-address-using-a-regular-expression">They’re
+not for everything</a></p>
 </div>
 </body>
 </html>
