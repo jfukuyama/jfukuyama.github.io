@@ -94,7 +94,7 @@ Questions:
 
 - What is the purpose of the `?` in the regular expression above?
 
-- What happens if we don't use it? Hint: Try it the other way, with `pattern = <.+?>`, and compare.
+- What happens if we don't use it? Hint: Try it the other way, with `pattern = <.+>`, and compare.
 
 Once the article is formatted a little better, we can do things like
 count the number of ads placed in the body of the article.
