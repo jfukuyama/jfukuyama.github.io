@@ -95,7 +95,7 @@ cat("We use the '\\' character to escape")
 
 -----
 
-Last time, we didn't get to anchoring in regular expressions.
+Last time, we went through anchors a little bit quickly.
 
 The rules were:
 
@@ -167,7 +167,7 @@ We need to use `substr`.
 Syntax is `substr(string, start, stop)`:
 
 ```{r}
-lancaster = "Burt Lancaster"
+lancaster <- "Burt Lancaster"
 substr(lancaster, 1, 4)
 ```
 
@@ -193,7 +193,7 @@ We can use `substr` for replacement as well:
 
 ```{r}
 lancaster
-substr(lancaster, 1, 4) = "Bill"
+substr(lancaster, 1, 4) <- "Bill"
 lancaster
 ```
 
@@ -286,9 +286,13 @@ everything we need?
 . . .
 
 ```{r}
-split.brothers = strsplit("Groucho and Harpo and Chico", "and")
+split.brothers <- strsplit("Groucho and Harpo and Chico", "and")
 typeof(split.brothers)
 split.brothers
+
+split.two.groups <- strsplit(c("Groucho and Harpo and Chico", "David and John"), "and")
+typeof(split.two.groups)
+split.two.groups
 ```
 
 -----
@@ -303,12 +307,12 @@ the output files to have the same prefix but have the extension `.txt`
 instead of `.fasta`:
 
 ```{r}
-file.names = c("ighv_human.fasta", "ighd_mouse.fasta", "ighj_human.fasta", "ighv_mouse.fasta", "ighd_human.fasta", "ighj_mouse.fasta")
-split.files = strsplit(file.names, ".", fixed = TRUE)
-output.names = character(length = length(file.names))
+file.names <- c("ighv_human.fasta", "ighd_mouse.fasta", "ighj_human.fasta", "ighv_mouse.fasta", "ighd_human.fasta", "ighj_mouse.fasta")
+split.files <- strsplit(file.names, ".", fixed = TRUE)
+output.names <- character(length = length(file.names))
 for(i in 1:length(split.files)) {
-    prefix = split.files[[i]][[1]]
-    output.names[i] = paste(prefix, ".txt", sep = "")
+    prefix <- split.files[[i]][[1]]
+    output.names[i] <- paste(prefix, ".txt", sep = "")
 }
 output.names
 ```
@@ -352,7 +356,7 @@ factor(c("a", "b", "b", "z"))
 ```{r}
 state.name
 typeof(state.name) ## typeof tells us about R's internal representation of the variable
-state.name.fac = as.factor(state.name)
+state.name.fac <- as.factor(state.name)
 typeof(state.name.fac) ## typeof tells us that from R's point of view, state.name.fac is a vector of integers 
 class(state.name.fac) ## class tells us that the object is a factor
 attributes(state.name.fac)
@@ -397,7 +401,7 @@ We need to change our state names to reflect the new state of affairs,
 and we want to replace California with Puerto Rico.
 
 ```{r}
-cal.index = which(state.name.fac == "California")
+cal.index <- which(state.name.fac == "California")
 state.name.fac[cal.index] = "Puerto Rico"
 state.name.fac
 ```
@@ -411,9 +415,9 @@ Why does this happen?
 Let's try again:
 
 ```{r}
-state.name.fac = factor(state.name)
-levels(state.name.fac) = c(levels(state.name.fac), "Puerto Rico")
-state.name.fac[cal.index] = "Puerto Rico"
+state.name.fac <- factor(state.name)
+levels(state.name.fac) <- c(levels(state.name.fac), "Puerto Rico")
+state.name.fac[cal.index] <- "Puerto Rico"
 state.name.fac
 ```
 
@@ -427,8 +431,8 @@ of Puerto Rico, or The PR of PR, for its pleasing symmetry.
 We need to modify our state names again. How can we do it?
 
 ```{r}
-pr.index = which(levels(state.name.fac) == "Puerto Rico")
-levels(state.name.fac)[pr.index] = "The PR of PR"
+pr.index <- which(levels(state.name.fac) == "Puerto Rico")
+levels(state.name.fac)[pr.index] <- "The PR of PR"
 state.name.fac
 ```
 
@@ -442,8 +446,8 @@ rid of it.
 What can we do?
 
 ```{r}
-cal.index = which(levels(state.name.fac) == "California")
-levels(state.name.fac) = levels(state.name.fac)[-cal.index]
+cal.index <- which(levels(state.name.fac) == "California")
+levels(state.name.fac) <- levels(state.name.fac)[-cal.index]
 ```
 
 This is good behavior! It prevents us from messing up our factor
@@ -506,10 +510,10 @@ This gives essentially a heterogeneous analog of a matrix.
 ## Data frame creation
 
 ```{r}
-kids = c("Jack", "Jill")
-ages = c(12, 10)
-df = data.frame(kids, ages)
-df = data.frame(Kids = kids, Ages = ages)
+kids <- c("Jack", "Jill")
+ages <- c(12, 10)
+df <- data.frame(kids, ages)
+df <- data.frame(Kids = kids, Ages = ages)
 typeof(df)
 class(df)
 ```
@@ -551,5 +555,3 @@ Pay attention to the return type: some subsetting operations give you
 a data frame back, but some give you a vector.
 
 ## That's all, folks
-
-- Please see me in Zoom office hours this afternoon if you have any questions about how to submit the assignment or R scripts.
