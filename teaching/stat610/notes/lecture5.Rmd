@@ -42,7 +42,7 @@ Next time: More practical advice on how to write functions, best practices, etc.
 Syntax for function creation:
 
 ```
-f = function(arguments) {
+f <- function(argument) {
 	body
 }
 ```
@@ -61,13 +61,13 @@ Idea: You want to be able to evaluate the function for any possible _actual argu
 
 -----
 
-So for example, if we return to our steak-cooking example from the first week, we might define the following function:
+So for example, if we return to our steak-cooking example from a couple lectures ago, we might define the following function:
 
 ```{r}
-steak_directions = function(temp, steak_type) {
-    if(steak_type == "rare" & temp > 115) {
+steak_directions <- function(temp, steak_type) {
+    if(steak_type == "rare" && temp > 115) {
         return("take your steak off!")
-    } else if(steak_type == "med_rare" & temp > 125) {
+    } else if(steak_type == "med_rare" && temp > 125) {
         return("take your steak off!")        
     } 
     "you can keep cooking"
@@ -126,10 +126,10 @@ When you call such a function, if you don't specify a value for that argument, i
 For example, in the following function the default argument for `steak_type` is `"rare"`.
 
 ```{r}
-steak_directions = function(temp, steak_type = "rare") {
-    if(steak_type == "rare" & temp > 115) {
+steak_directions <- function(temp, steak_type = "rare") {
+    if(steak_type == "rare" && temp > 115) {
         return("take your steak off!")
-    } else if(steak_type == "med_rare" & temp > 125) {
+    } else if(steak_type == "med_rare" && temp > 125) {
         return("take your steak off!")        
     } 
     "you can keep cooking"
@@ -164,10 +164,10 @@ The commands in the body of the function are executed until a `return` statement
 Let's think through what happens when we call the function these two ways:
 
 ```{r}
-steak_directions = function(temp, steak_type = "rare") {
-    if(steak_type == "rare" & temp > 115) {
+steak_directions <- function(temp, steak_type = "rare") {
+    if(steak_type == "rare" && temp > 115) {
         return("take your steak off!")
-    } else if(steak_type == "med_rare" & temp > 125) {
+    } else if(steak_type == "med_rare" && temp > 125) {
         return("take your steak off!")        
     } 
     "you can keep cooking"
@@ -191,8 +191,8 @@ Invisible return is a bit R-specific:
 . . .
 
 ```{r}
-square_invisible = function(x) invisible(x^2)
-square = function(x) x^2
+square_invisible <- function(x) invisible(x^2)
+square <- function(x) x^2
 ```
 
 . . .
@@ -214,7 +214,7 @@ square_invisible(4)
 The square was computed though, and we can see this if we assign the output:
 
 ```{r}
-xsquared = square_invisible(4)
+xsquared <- square_invisible(4)
 xsquared
 ```
 
@@ -223,28 +223,28 @@ xsquared
 Another example: compare the two versions of oddcount:
 
 ```{r}
-oddcount = function(x) {
-    k = 0
+oddcount <- function(x) {
+    k <- 0
     for(n in x) {
-        if (n %% 2 == 1) k = k + 1
+        if (n %% 2 == 1) k <- k + 1
     }
     return(k)
 }
-oddcount(c(0, 5))
+oddcount(x = c(0, 5))
 ```
 
 . . .
 
 
 ```{r}
-oddcount = function(x) {
-    k = 0
+oddcount <- function(x) {
+    k <- 0
     for(n in x) {
-        if (n %% 2 == 1) k = k + 1
+        if (n %% 2 == 1) k <- k + 1
     }
 }
-oddcount(c(0, 5))
-oddcount_output = oddcount(c(0, 5))
+oddcount(x = c(0, 5))
+oddcount_output = oddcount(x = c(0, 5))
 oddcount_output
 ```
 
@@ -261,8 +261,8 @@ We get `NULL` for the value of `oddcount_output` because the last function to be
 - Your return value can even be another function!
 
 ```{r}
-g = function() {
-    t = function(x) x^2
+g <- function() {
+    t <- function(x) x^2
     return(t)
 }
 g
@@ -337,17 +337,17 @@ Package environments are all ancestral to the global environment, so when R foun
 When a function is called, its body is evaluated in an execution environment whose parent is the function's environment.
 
 ```{r}
-w = 12
-f = function(y) {
-    d = 8
-    h = function() {
+w <- 12
+f <- function(y) {
+    d <- 8
+    h <- function() {
         return(d * (w + y))
     }
     cat("h's environment: ", "\n")
     print(environment(h))
     cat("h's parent environment:", "\n")
     print(parent.env(environment(h)))
-    output = h()
+    output <- h()
     return(output)
 }
 f(1)
@@ -362,8 +362,8 @@ Compare with:
 
 ```{r}
 f = function(y) {
-    d = 8
-    output = h()
+    d <- 8
+    output <- h()
     return(output)
 }
 
@@ -409,15 +409,15 @@ For example:
 
 
 ```{r}
-w = 12
-f = function(y) {
-   d = 8
-   w = w + 1
-   y = y - 2
+w <- 12
+f <- function(y) {
+   d <- 8
+   w <- w + 1
+   y <- y - 2
    cat(sprintf("Value of w: %i", w), "\n")
    return(d * (w + y))
 }
-t = 4
+t <- 4
 f(t)
 w
 ```
