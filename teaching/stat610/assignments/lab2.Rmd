@@ -31,24 +31,24 @@ ggplot(ChickWeight, aes(x = Time, y = weight, color = Diet, group = Chick)) +
 Suppose we are interested in how much weight the chickens have put on after four days on diet 1.
 We write the following code:
 ```{r}
-time_zero_indices = ChickWeight$Time == 0 & ChickWeight$Diet == 1
-end_time_indices = ChickWeight$Time == 4 & ChickWeight$Diet == 1
-end_weight = mean(ChickWeight$weight[end_time_indices])
-initial_weight = mean(ChickWeight$weight[time_zero_indices])
+time_zero_indices <- ChickWeight$Time == 0 & ChickWeight$Diet == 1
+end_time_indices <- ChickWeight$Time == 4 & ChickWeight$Diet == 1
+end_weight <- mean(ChickWeight$weight[end_time_indices])
+initial_weight <- mean(ChickWeight$weight[time_zero_indices])
 end_weight - initial_weight
 ```
 
 We then decide that we might want to be able to compute this value for any diet and any end time, and so we would like to write a function to do so.
 We try to do so in the following way:
 ```{r}
-n_diets = length(unique(ChickWeight$Diet))
-weight_gained_vector = rep(NA, n_diets)
-set_weight_gained = function(diet, end_time) {
-    time_zero_indices = ChickWeight$Time == 0 & ChickWeight$Diet == diet
-    end_time_indices = ChickWeight$Time == end_time & ChickWeight$Diet == diet
-    end_weight = mean(ChickWeight$weight[end_time_indices])
-    initial_weight = mean(ChickWeight$weight[time_zero_indices])
-    weight_gained_vector[diet] = end_weight - initial_weight
+n_diets <- length(unique(ChickWeight$Diet))
+weight_gained_vector <- rep(NA, n_diets)
+set_weight_gained <- function(diet, end_time) {
+    time_zero_indices <- ChickWeight$Time == 0 & ChickWeight$Diet == diet
+    end_time_indices <- ChickWeight$Time == end_time & ChickWeight$Diet == diet
+    end_weight <- mean(ChickWeight$weight[end_time_indices])
+    initial_weight <- mean(ChickWeight$weight[time_zero_indices])
+    weight_gained_vector[diet] <- end_weight - initial_weight
 }
 for(diet in 1:4) {
     set_weight_gained(diet = diet, end_time = 4)
@@ -67,13 +67,13 @@ The `ls()` function lists all of the variables present in the environment `ls` i
 We can use it to see what variables are present inside the function call by printing out the result from `ls` in the middle of the function.
 Try that in the `set_weight_gained` function:
 ```{r}
-set_weight_gained = function(diet, end_time) {
-    time_zero_indices = ChickWeight$Time == 0 & ChickWeight$Diet == diet
-    end_time_indices = ChickWeight$Time == end_time & ChickWeight$Diet == diet
-    end_weight = mean(ChickWeight$weight[end_time_indices])
-    initial_weight = mean(ChickWeight$weight[time_zero_indices])
+set_weight_gained <- function(diet, end_time) {
+    time_zero_indices <- ChickWeight$Time == 0 & ChickWeight$Diet == diet
+    end_time_indices <- ChickWeight$Time == end_time & ChickWeight$Diet == diet
+    end_weight <- mean(ChickWeight$weight[end_time_indices])
+    initial_weight <- mean(ChickWeight$weight[time_zero_indices])
     print(ls())
-    weight_gained_vector[diet] = end_weight - initial_weight
+    weight_gained_vector[diet] <- end_weight - initial_weight
 }
 set_weight_gained(diet = diet, end_time = 4)
 ```
