@@ -80,7 +80,7 @@ Example:
 
 ```{r}
 library(plyr)
-a_list = list(a = 1, b = "state", c = TRUE)
+a_list <- list(a = 1, b = "state", c = TRUE)
 a_list
 laply(a_list, typeof)
 ```
@@ -90,7 +90,7 @@ laply(a_list, typeof)
 `l*ply` will also work on vectors, e.g.:
 
 ```{r}
-vec = 1:10
+vec <- 1:10
 laply(vec, log)
 ```
 
@@ -112,7 +112,7 @@ syntax: `a*ply(data, margin, fun)`
 Example:
 
 ```{r}
-X = matrix(1:6, nrow = 2, ncol = 3)
+X <- matrix(1:6, nrow = 2, ncol = 3)
 X
 aaply(X, 1, sum)
 adply(X, 1, sum)
@@ -187,8 +187,8 @@ First ask:
 First define a function that will take a subset of the data and find return to us the average height:
 
 ```{r}
-get_avg_height = function(data_subset) {
-    avg_height = mean(data_subset$height)
+get_avg_height <- function(data_subset) {
+    avg_height <- mean(data_subset$height)
     return(avg_height)
 }
 ```
@@ -212,9 +212,9 @@ Slightly more complicated example: we want to know the fraction of individuals w
 . . .
 
 ```{r}
-get_frac_yellow_eyes = function(data_subset) {
-    num_yellow_eyes = sum(data_subset$eye_color == "yellow")
-    num_individuals = nrow(data_subset)
+get_frac_yellow_eyes <- function(data_subset) {
+    num_yellow_eyes <- sum(data_subset$eye_color == "yellow")
+    num_individuals <- nrow(data_subset)
     return(num_yellow_eyes / num_individuals)
 }
 ```
@@ -241,12 +241,23 @@ We've seen examples above, but let's look more systematically.
 
 ```{r}
 data(diamonds)
-diamond_coefs = ddply(diamonds, .(color), function(data_subset) {
-    diamond_lm = lm(log(price) ~ carat, data = data_subset)
-    diamond_coefs = coef(diamond_lm)
+diamond_coefs <- ddply(diamonds, .(color), function(data_subset) {
+    diamond_lm <- lm(log(price) ~ carat, data = data_subset)
+    diamond_coefs <- coef(diamond_lm)
     return(diamond_coefs)
 })
 diamond_coefs
+```
+
+```{r}
+diamond_coefs_2 <- ddply(diamonds, .(color), function(data_subset) {
+    diamond_lm <- lm(log(price) ~ carat, data = data_subset)
+    diamond_coefs <- coef(diamond_lm)
+    df_row <- data.frame(slope = diamond_coefs['carat'],
+                         my_color_description = paste0("color", unique(data_subset$color)))
+    return(df_row)
+})
+diamond_coefs_2
 ```
 
 Check on your own what happens when you replace `.(color)` with `.(color, clarity)`. How is the output different than what we got using `by` last time? Is it better?
@@ -267,9 +278,9 @@ The first dimensions in the array correspond to the split dimensions, and subseq
 Here we split along one dimension and have one-dimensional output. Similar to what we've seen before with apply in base R.
 
 ```{r}
-X = matrix(1:6, nrow = 3, ncol = 2)
+X <- matrix(1:6, nrow = 3, ncol = 2)
 X
-row_sums_x = aaply(X, 1, sum)
+row_sums_x <- aaply(X, 1, sum)
 dim(row_sums_x)
 length(row_sums_x)
 row_sums_x
@@ -282,10 +293,10 @@ row_sums_x
 Here we split along two dimensions and have two-dimensional output:
 
 ```{r}
-X_array = array(data = 1:12, dim = c(3, 2, 2))
+X_array <- array(data = 1:12, dim = c(3, 2, 2))
 dim(X_array)
 X_array
-third_dim_sums_x = aaply(X_array, 1:2, sum)
+third_dim_sums_x <- aaply(X_array, 1:2, sum)
 dim(third_dim_sums_x)
 third_dim_sums_x
 ```
@@ -294,15 +305,15 @@ third_dim_sums_x
 
 . . .
 
-Here we split along one dimension and have two-dimensional output:
+Here we split along one dimension and have four-dimensional output:
 
 ```{r}
-nonsense_function = function(x) {
-    out = c(x[1] * 2, x[2] * -1)
+nonsense_function <- function(x) {
+    out <- c(x[1] * 2, x[2] * -1, 0, 0)
     return(out)
 }
 X
-nonsense_applied_to_rows = aaply(X, 1, nonsense_function)
+nonsense_applied_to_rows <- aaply(X, 1, nonsense_function)
 dim(nonsense_applied_to_rows)
 nonsense_applied_to_rows
 ```
@@ -316,7 +327,7 @@ nonsense_applied_to_rows
 -----
 
 ```{r}
-diamond_lms = dlply(diamonds, .(color), function(data_subset) {
+diamond_lms <- dlply(diamonds, .(color), function(data_subset) {
     lm(log(price) ~ carat, data = data_subset)
 })
 
@@ -369,9 +380,10 @@ The output of `f1(x)` is used as the first argument to `f2`.
 For example:
 
 ```{r}
+library(magrittr)
 head(rnorm(10))
 rnorm(10) %>% head()
-````
+```
 
 -----
 
