@@ -58,38 +58,85 @@ This is usually the way that other functions want the data to come in.
 -----
 
 For example:
-```{r,echo=FALSE}
-religion = c("Agnostic", "Atheist", "Buddhist", "Catholic", "Don't know/refused", "Evangelical Prot", "Hindu", "Historically Black Prot", "Jehovah's Witness", "Jewish")
-income_bins = c("<$10k", "$10k-$20k", "$20k-$30k", "$30k-$40k", "$40k-$50k", "$50k-75k")
-values = c(27, 12, 27, 418, 15, 575, 1, 228, 20, 19, 34, 27, 21, 617, 14, 869, 9, 244, 27, 19, 60, 37, 30, 732, 15, 1064, 7, 236, 24, 25, 81, 52, 34, 670, 11, 982, 9, 238, 24, 25, 76, 35, 33, 638, 10, 881, 11, 197, 21, 30, 137, 70, 58, 1116, 35, 1486, 34, 223, 30, 95)
-income_and_religion = matrix(values, byrow = FALSE, nrow = length(religion), ncol = length(income_bins))
-colnames(income_and_religion) = income_bins
-rownames(income_and_religion) = religion
-```
 
-```{r}
-income_and_religion
-```
+![](treatment-wide.png)
 
-This table is easy to read, but the variables are encoded in the row
-and column names, which makes it hard to use with modeling functions
-in R.
+What is easy to do with data in this format?
 
+- See which treatment worked better for each individual.
+
+- Run a paired t-test on treatment a vs. treatment b.
+
+What is hard to do with data in this format?
+
+- Run a linear model with result modeled as a function of treatment.
+
+- Subset the data to the observations corresponding to a specific treatment (not hard so much as not programmatically nice).
 
 -----
 
-This data table contains all the same information:
+Same information:
 
-```{r}
-head(melt(income_and_religion, varnames = c("religion", "income"), value.name = "count"), n = 20)
-```
+![](treatment-long.png)
 
-It's harder to look at this table, but easier to manipulate
-programmatically.
+What is easy to do with data in this format?
 
-We'll see `melt` in a couple slides.
+- Run a linear model with result modeled as a function of treatment.
+
+- Subset to observations corresponding to one treatment.
+
+What is hard?
+
+- Compute treatment a - treatment b.
+
+- Run a paired t-test.
 
 -----
+
+Another example:
+
+![](tb-wide.png)
+
+Easy:
+
+- See overall numbers of cases for each country.
+
+- Compare some of the age ranges.
+
+
+Hard:
+
+- Plot cases as a function of sex, age, country, year.
+
+- Model cases as a function of sex, age, country, year.
+
+-----
+
+![](tb-long.png)
+
+Easy:
+
+- Plot cases as a function of sex, age, country, year.
+
+- Model cases as a function of sex, age, country, year.
+
+Hard:
+
+- Compute differences between number of cases in different categories (e.g. differences in cases between males and females holding all the other categories constant).
+
+- See overall number of cases (not as compact as the other way).
+
+-----
+
+## General rules of thumb
+
+- Columns are all special (accessed by name) and rows are not special (accessed programmatically).
+
+- Easy to define functional relationships between variables (e.g. difference between two variables)/hard to define functional relationships between rows.
+
+- Easy to subset rows/hard to subset columns.
+
+- Easy to aggregate over rows/hard to aggregate over columns.
 
 ## Reshaping
 
@@ -129,17 +176,6 @@ the variable measured.
 - One column for the value of the measured variable on the corresponding
 observation.
 
-. . .
-
-Here id variables are income and religion, and the measurement is the
-count of each.
-
-Since we only have one measurement variable, we don't need an extra
-column describing what the measured variable is.
-
-```{r}
-head(melt(income_and_religion))
-```
 
 ## Melting
 
@@ -157,7 +193,7 @@ specify id variables or measurement variables.
 
 ## Melting data frames
 
-Let's see an example.
+Let's see an example. (Actually a very interesting study, can read [here](https://www.researchgate.net/publication/226555631_Frying_Performance_of_No-trans_Low-Linolenic_Acid_Soybean_Oils).)
 
 ```{r}
 head(french_fries)
@@ -250,8 +286,8 @@ melt(HairEyeColor, value.name = "number")
 reshape2 uses `*cast`: either `dcast` or `acast` for data frame or
 array output, respectively.
 
-Syntax: `*cast(data = mdata, formula = col_var_1 + ... + col_var_n ~ row_var_1 + ... +
-row_var_m, value.var)`
+Syntax: `*cast(data = mdata, formula = row_var_1 + ... + row_var_n ~ col_var_1 + ... +
+col_var_m, value.var)`
 
 - `mdata` should be a molten data set
 
@@ -272,9 +308,9 @@ Example
 . . .
 
 ```{r}
-ff_m = melt(french_fries, id.vars = 1:4, variable.name = "flavor", na.rm = TRUE)
+ff_m <- melt(french_fries, id.vars = 1:4, variable.name = "flavor", na.rm = TRUE)
 head(ff_m)
-cast_ex_1 = dcast(ff_m, time + treatment ~ subject + rep + flavor, value.var = "value")
+cast_ex_1 <- dcast(ff_m, time + treatment ~ subject + rep + flavor, value.var = "value")
 cast_ex_1[1:5,1:5]
 ## check to see if the numbers match
 subset(ff_m, time == 1 & subject == "3" &  rep == 1 & flavor == "potato")
@@ -291,7 +327,7 @@ than one measurement, and so they need to be aggregated in some way.
 
 ```{r}
 head(ff_m)
-dcast(ff_m, subject ~ flavor, value.var = "value")
+dcast(ff_m, time ~ flavor, value.var = "value")
 ```
 
 -----
@@ -299,7 +335,7 @@ dcast(ff_m, subject ~ flavor, value.var = "value")
 The aggregation function is specified with `fun.aggregate`:
 
 ```{r}
-dcast(ff_m, subject ~ flavor, value.var = "value", fun.aggregate = mean)
+dcast(ff_m, time ~ flavor, value.var = "value", fun.aggregate = mean)
 ```
 
 -----
@@ -308,15 +344,26 @@ A couple of other notes:
 
 - You can use `.` to represent all the other variables in the formula.
 
-- The order that you specify the variables in the formula matters for
-the way the output is ordered: the first variables change most slowly,
-and the later ones change more quickly.
+- The order that you specify the variables in the formula matters for the way the output is ordered: the first variables change most slowly, and the later ones change more quickly. This is mainly important for looking at the data.
+
+- `acast` will give you array output instead of data frame output.
 
 -----
 
+Example of different orders:
+
 ```{r}
-head(dcast(ff_m, subject + treatment ~ flavor, fun.aggregate = mean), n = 10)
-head(dcast(ff_m, treatment + subject ~ flavor, fun.aggregate = mean), n = 10)
+dcast(ff_m, time + treatment ~ flavor, fun.aggregate = mean)
+dcast(ff_m, treatment + time ~ flavor, fun.aggregate = mean)
+```
+
+-----
+
+Example of `acast`. id variables are row names.
+
+```{r}
+acast(ff_m, time ~ flavor, fun.aggregate = mean)
+acast(ff_m, time + treatment ~ flavor, fun.aggregate = mean)
 ```
 
 ## Merging 
@@ -338,7 +385,7 @@ Basic syntax: `merge(x, y, by.x, by.y)`
 Example:
 
 ```{r}
-cities = data.frame(
+cities <- data.frame(
     city=c('New York','Boston','Juneau',
            'Anchorage','San Diego',
            'Philadelphia','Los Angeles',
@@ -346,7 +393,7 @@ cities = data.frame(
     state.abb=c('NY','MA','AK','AK','CA',
                 'PA','CA','AK','MI','WA'))
 
-states = data.frame(state.name, state.abb)
+states <- data.frame(state.name, state.abb)
 cities
 head(states)
 ```
@@ -413,5 +460,3 @@ Some other options are:
 - `gather` and `spread`, and more recently `pivot_longer` and `pivot_wider` in the `tidyr` package do roughly the same thing as `cast` and `melt`.
 
 - There are multiple iterations of reshape, `reshape2` was a redesign of `reshape`.
-
-- `plyr` and `dplyr` are also two packages that have basically the same goal, but `dplyr` is focused more on data frames.
