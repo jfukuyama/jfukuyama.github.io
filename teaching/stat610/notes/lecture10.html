@@ -88,23 +88,12 @@
 <h1>Debugging</h1>
 <p>Reading: Matloff Chapter 13</p>
 <p>Today: Debugging</p>
-</div>
-<div id="principle-of-confirmation" class="slide section level2">
-<h1>Principle of confirmation</h1>
-<p>You wrote a function, and it does something you don’t think it
-should. Debugging is figuring out why this is.</p>
-<p>Aside from syntax errors, bugs are assumptions you made when writing
-the code that aren’t actually true.</p>
-<div class="incremental">
-<p>This is Matloff’s principle of confirmation:</p>
-<blockquote>
-<p>Fixing a buggy program is a process of confirming, one by one, that
-the many things you <em>believe</em> to be true about the code actually
-<em>are</em> true. When you find that one of your assumptions is
-<em>not</em> true, you have found a clue about the location (if not the
-exact nature) of a bug.</p>
-</blockquote>
-</div>
+<ul class="incremental">
+<li><p>Common causes of bugs</p></li>
+<li><p>Bug processing</p></li>
+<li><p>Debugging operations in R</p></li>
+<li><p>Examples</p></li>
+</ul>
 </div>
 <div id="some-common-causes-of-bugs" class="slide section level2">
 <h1>Some common causes of bugs</h1>
@@ -192,6 +181,19 @@ variables.</p></li>
 through the function or adding print statements in places you think are
 likely to have gone wrong).</p></li>
 </ul>
+</div>
+<div id="overall-principle-for-debugging" class="slide section level2">
+<h1>Overall principle for debugging</h1>
+<p>Aside from syntax errors, bugs are assumptions you made when writing
+the code that aren’t actually true.</p>
+<p>This is Matloff’s principle of confirmation:</p>
+<blockquote>
+<p>Fixing a buggy program is a process of confirming, one by one, that
+the many things you <em>believe</em> to be true about the code actually
+<em>are</em> true. When you find that one of your assumptions is
+<em>not</em> true, you have found a clue about the location (if not the
+exact nature) of a bug.</p>
+</blockquote>
 </div>
 <div id="main-debugging-operations" class="slide section level2">
 <h1>Main debugging operations</h1>

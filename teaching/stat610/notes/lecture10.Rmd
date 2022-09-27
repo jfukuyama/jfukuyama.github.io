@@ -4,18 +4,15 @@ Reading: Matloff Chapter 13
 
 Today: Debugging
 
+- Common causes of bugs
 
-## Principle of confirmation
+- Bug processing
 
-You wrote a function, and it does something you don't think it should. Debugging is figuring out why this is.
+- Debugging operations in R
 
-Aside from syntax errors, bugs are assumptions you made when writing the code that aren't actually true.
+- Examples
 
-. . .
 
-This is Matloff's principle of confirmation:
-
-> Fixing a buggy program is a process of confirming, one by one, that the many things you _believe_ to be true about the code actually _are_ true. When you find that one of your assumptions is _not_ true, you have found a clue about the location (if not the exact nature) of a bug.
 
 
 ## Some common causes of bugs
@@ -69,6 +66,8 @@ Scope issues/global variables:
 
 - Confusion between arguments to the function and global variables.
 
+
+
 ## Bug processing
 
 Once you realize you have a bug, there are three steps:
@@ -96,6 +95,15 @@ Localizing the bug
 - First find the function that made the issue (`traceback` helps here)
 
 - Find the line in that function that made the bug (single-stepping through the function or adding print statements in places you think are likely to have gone wrong).
+
+## Overall principle for debugging
+
+Aside from syntax errors, bugs are assumptions you made when writing the code that aren't actually true.
+
+This is Matloff's principle of confirmation:
+
+> Fixing a buggy program is a process of confirming, one by one, that the many things you _believe_ to be true about the code actually _are_ true. When you find that one of your assumptions is _not_ true, you have found a clue about the location (if not the exact nature) of a bug.
+
 
 
 ## Main debugging operations
