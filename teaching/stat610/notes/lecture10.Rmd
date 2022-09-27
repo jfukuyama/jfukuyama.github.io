@@ -133,22 +133,22 @@ The `debug` function:
 
 -----
 
-```{r}
-f = function(y, z) {
-    x = y^2 - 3 * z^2
-    w = 28
+```{r, eval = FALSE}
+f <- function(y, z) {
+    x <- y^2 - 3 * z^2
+    w <- 28
     if (x > 0 && a > 0) {
-        u = 1 + x
+        u <- 1 + x
     } else {
-        u = 10
+        u <- 10
     }
     return(u)
 }
 f(y = 0, z = 1)
 f(y = 1, z = 0)
 ## try:
-#debug(f)
-#f(y = 1, z = 0)
+debug(f)
+f(y = 1, z = 0)
 ```
 
 -----
@@ -157,7 +157,8 @@ The `browser` function:
 
 - Syntax: `browser(expr = condition)`
 
-- You enter the browser if the condition evaluates to TRUE.
+- `condition` is some expression, if it evaluates to `TRUE` you enter the browser.
+
 
 - If you don't specify a condition, the function stops executing and
 you enter the browser when you reach the `browser` line in the
@@ -167,14 +168,14 @@ function.
 
 
 ```{r, eval=FALSE}
-f = function(y, z) {
-    x = y^2 - 3 * z^2
-    w = 28
+f <- function(y, z) {
+    x <- y^2 - 3 * z^2
+    w <- 28
     browser(expr = x > 0)
     if (x > 0 && a > 0) {
-        u = 1 + x
+        u <- 1 + x
     } else {
-        u = 10
+        u <- 10
     }
     return(u)
 }
@@ -216,27 +217,27 @@ Commands once you're in the browser
 ------
 
 ```{r, eval = FALSE}
-g = function(a) {
-    y = a^2 + 3
+g <- function(a) {
+    y <- a^2 + 3
     if(y - 10 > 2) {
         return(y)
     } else {
         return(z)
     }
 }
-f = function(y, z) {
-    x = y^2 - 3 * g(z)
-    w = 28
+f <- function(y, z) {
+    x <- y^2 - 3 * g(z)
+    w <- 28
     if (x > 0 && a > 0) {
-        u = 1 + x
+        u <- 1 + x
     } else {
-        u = 10
+        u <- 10
     }
     return(u)
 }
 f(y = 0, z = 1)
-#debug(f)
-#f(y = 0, z = 1)
+debug(f)
+f(y = 0, z = 1)
 ```
 
 ------
@@ -254,45 +255,45 @@ The `traceback` function:
 -----
 
 ```{r, eval=FALSE}
-f = function(y, z) {
-    x = y^2 - 3 * z^2
-    w = 28
+f <- function(y, z) {
+    x <- y^2 - 3 * z^2
+    w <- 28
     if (x > 0 && a > 0) {
-        u = 1 + x
+        u <- 1 + x
     } else {
-        u = 10
+        u <- 10
     }
     return(u)
 }
-#f(y = 1, z = 0)
-#traceback()
+f(y = 1, z = 0)
+traceback()
 ```
 
 -----
 
 ```{r, eval=FALSE}
-g = function(a) {
-    y = a^2 + 3
+g <- function(a) {
+    y <- a^2 + 3
     if(y - 10 > 2) {
         return(y)
     } else {
         return(z)
     }
 }
-f = function(y, z) {
-    x = y^2 - 3 * g(z)
-    w = 28
+f <- function(y, z) {
+    x <- y^2 - 3 * g(z)
+    w <- 28
     if (x > 0 && a > 0) {
-        u = 1 + x
+        u <- 1 + x
     } else {
-        u = 10
+        u <- 10
     }
     return(u)
 }
-## f(y = 1, z = 0)
-## traceback()
-## f(y = 10, z = 3.1)
-## traceback()
+f(y = 1, z = 0)
+traceback()
+f(y = 10, z = 3.1)
+traceback()
 ```
 
 
@@ -311,9 +312,9 @@ The `debugger` function:
 -----
 
 ```{r, eval = FALSE}
-## options(error = dump.frames)
-## f(y = 1,z = 0)
-## debugger()
+options(error = dump.frames)
+f(y = 1,z = 0)
+debugger()
 ```
 
 ## Example 1
@@ -322,13 +323,13 @@ The `debugger` function:
 
 . . .
 
-```{r}
-findruns = function(x, k) {
-    n = length(x)
-    runs = NULL
-    for(i in 1:(n-k)) {
-        if(all(x[i:i+k-1] == 1)) {
-            runs = c(runs, i)
+```{r, eval = FALSE}
+findruns <- function(x, k) {
+    n <- length(x)
+    runs <- NULL
+    for(i in 1:(n-k+1)) {
+        if(all(x[i:(i+k-1)] == 1)) {
+            runs <- c(runs, i)
         }
         
     }
@@ -341,31 +342,31 @@ findruns(c(1,0,0,1,1,0,1,1,1),2)
 ## Example 2
 
 
-```{r}
+```{r, eval = FALSE}
 ## returns the minimum value of d[i,j], i != j, and
 ## the row/col attaining that minimum, for square
 ## symmetric matrix d; no special policy on ties;
 ## motivated by distance matrices
-mind = function(d) {
-    n = nrow(d)
+mind <- function(d) {
+    n <- nrow(d)
     ## add a column to identify row number for apply()
-    dd = cbind(d, 1:n)
-    wmins = apply(dd[-n, ], 1, imin)
+    dd <- cbind(d, 1:n)
+    wmins <- apply(dd[-n, ], 1, imin)
     ## wmins will be 2xn, 1st row being indices and 2nd being values
-    i = which.min(wmins[1, ])
-    j = wmins[2, i]
+    i <- which.min(wmins[1, ])
+    j <- wmins[2, i]
     return(c(d[i, j], i, j))
 }
 
 ## finds the location, value of the minimum in a row x
-imin = function(x) {
-    n = length(x)
-    i = x[n]
-    j = which.min(x[(i + 1):(n - 1)])
+imin <- function(x) {
+    n <- length(x)
+    i <- x[n]
+    j <- which.min(x[(i + 1):(n - 1)])
     return(c(j, x[j]))
 }
 
-m = rbind(c(0, 12, 5), c(12, 0, 8), c(5, 8, 0))
+m <- rbind(c(0, 12, 5), c(12, 0, 8), c(5, 8, 0))
 ```
 
 ```{r, eval = FALSE, echo = FALSE}
