@@ -405,11 +405,11 @@ all the runs of 1’s of length <code>k</code> in <code>x</code>:</p>
 <div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>findruns <span class="ot">&lt;-</span> <span class="cf">function</span>(x, k) {</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    n <span class="ot">&lt;-</span> <span class="fu">length</span>(x)</span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    runs <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>(n<span class="sc">-</span>k<span class="sc">+</span><span class="dv">1</span>)) {</span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span>(<span class="fu">all</span>(x[i<span class="sc">:</span>(i<span class="sc">+</span>k<span class="dv">-1</span>)] <span class="sc">==</span> <span class="dv">1</span>)) {</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>(n<span class="sc">-</span>k)) {</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span>(<span class="fu">all</span>(x[i<span class="sc">:</span>i<span class="sc">+</span>k<span class="dv">-1</span>] <span class="sc">==</span> <span class="dv">1</span>)) {</span>
 <span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>            runs <span class="ot">&lt;-</span> <span class="fu">c</span>(runs, i)</span>
 <span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>        }</span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    }</span>
 <span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(runs)</span>
 <span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>}</span>
