@@ -1,16 +1,12 @@
 ## Testing and debugging
 
-Logistics
-
-- Lab this week.
-
-- Homework due Friday.
-
-- The next homework (on debugging) is on the website now.
-
 Today:
 
-- Testing, test-based design
+- Informal testing
+
+- Test-based design
+
+- Formal testing
 
 
 Reading
@@ -41,22 +37,22 @@ You're checking that the core behavior is correct.
 ## the row/col attaining that minimum, for square
 ## symmetric matrix d; no special policy on ties;
 ## motivated by distance matrices
-mind = function(d) {
-    n = nrow(d)
+mind <- function(d) {
+    n <- nrow(d)
     ## add a column to identify row number for apply()
-    dd = cbind(d, 1:n)
-    wmins = apply(dd[-n, ], 1, imin)
+    dd <- cbind(d, 1:n)
+    wmins <- apply(dd[-n, ], 1, imin)
     ## wmins will be 2xn, 1st row being indices and 2nd being values
-    i = which.min(wmins[1, ])
-    j = wmins[2, i]
+    i <- which.min(wmins[1, ])
+    j <- wmins[2, i]
     return(c(d[i, j], i, j))
 }
 
 ## finds the location, value of the minimum in a row x
-imin = function(x) {
-    n = length(x)
-    i = x[n]
-    j = which.min(x[(i + 1):(n - 1)])
+imin <- function(x) {
+    n <- length(x)
+    i <- x[n]
+    j <- which.min(x[(i + 1):(n - 1)])
     return(c(j, x[j]))
 }
 
@@ -73,8 +69,8 @@ The comment says that it finds the location and value of the minimum in a row x,
 
 ```{r}
 ## location of the minimum
-x = 1:5
-index_and_value = imin(x)
+x <- 1:5
+index_and_value <- imin(x)
 ## should be 1, per the comment
 index_and_value[1]
 ## should be 1, per the comment
@@ -90,13 +86,13 @@ This is very confusing, and it's why there was a bug in the function to begin wi
 We might be tempted to change the function in the following way:
 
 ```{r}
-imin = function(x) {
-    n = length(x)
-    row = x[n]
-    upper_tri_idx = (row + 1):(n - 1)
-    min_idx_in_upper_tri = which.min(x[upper_tri_idx])
-    idx = upper_tri_idx[min_idx_in_upper_tri]
-    value = x[idx]
+imin <- function(x) {
+    n <- length(x)
+    row <- x[n]
+    upper_tri_idx <- (row + 1):(n - 1)
+    min_idx_in_upper_tri <- which.min(x[upper_tri_idx])
+    idx <- upper_tri_idx[min_idx_in_upper_tri]
+    value <- x[idx]
     return(c(idx, value))
 }
 ```
@@ -108,9 +104,9 @@ imin = function(x) {
 And then we can test:
 
 ```{r}
-row = 1
-x = c(5:1, row)
-index_and_value = imin(x)
+row <- 1
+x <- c(5:1, row)
+index_and_value <- imin(x)
 ## index of the minimum should be 5
 index_and_value[1] == 5
 ## value of the minimum should be 1
@@ -134,9 +130,9 @@ Idea: If the input to the function isn't exactly what you expect, what happens?
 Let's try testing the `imin` function again with an edge case:
 
 ```{r}
-row = 5
-x = c(5:1, row)
-index_and_value = imin(x)
+row <- 5
+x <- c(5:1, row)
+index_and_value <- imin(x)
 ## there aren't any elements in the upper triangle in row 5, so these should be some sort of NA
 index_and_value
 ```
@@ -146,17 +142,17 @@ index_and_value
 Based on our test, we might modify our function to look like this:
 
 ```{r}
-imin = function(x) {
-    n = length(x)
-    row = x[n]
+imin <- function(x) {
+    n <- length(x)
+    row <- x[n]
     if(row >= (length(x) - 1)) {
-        upper_tri_idx = c()
+        upper_tri_idx <- c()
     } else {
-        upper_tri_idx = (row + 1):(n - 1)
+        upper_tri_idx <- (row + 1):(n - 1)
     }
-    idx_in_upper_tri = which.min(x[upper_tri_idx])
-    idx = upper_tri_idx[idx_in_upper_tri]
-    value = x[idx]
+    idx_in_upper_tri <- which.min(x[upper_tri_idx])
+    idx <- upper_tri_idx[idx_in_upper_tri]
+    value <- x[idx]
     return(c(idx, value))
 }
 ```
@@ -168,9 +164,9 @@ imin = function(x) {
 And try testing again:
 
 ```{r}
-row = 5
-x = c(5:1, row)
-index_and_value = imin(x)
+row <- 5
+x <- c(5:1, row)
+index_and_value <- imin(x)
 ## there aren't any elements in the upper triangle in row 5, so these should be some sort of NA
 index_and_value
 ```
@@ -231,10 +227,10 @@ deriv(function(x) exp(x), 0) == exp(0)
 Then I write the following function, based on advice from [wikipedia](https://en.wikipedia.org/wiki/Numerical_differentiation):
 
 ```{r}
-deriv = function(fn, x) {
-    eps = .Machine$double.eps
-    h = sqrt(eps) * x
-    deriv = (fn(x + h) - fn(x - h)) / (2 * h)
+deriv <- function(fn, x) {
+    eps <- .Machine$double.eps
+    h <- sqrt(eps) * x
+    deriv <- (fn(x + h) - fn(x - h)) / (2 * h)
     return(deriv)
 }
 ```
@@ -263,14 +259,14 @@ The third and fourth tests failed, and not just because of precision. Why?
 Then we can modify the function to evaluate derivatives at $x = 0$
 
 ```{r}
-deriv = function(fn, x) {
-    eps = .Machine$double.eps
+deriv <- function(fn, x) {
+    eps <- .Machine$double.eps
     if(x == 0) {
-        h = 2 * eps
+        h <- 2 * eps
     } else {
-        h = sqrt(eps) * x
+        h <- sqrt(eps) * x
     }
-    deriv = (fn(x + h) - fn(x - h)) / (2 * h)
+    deriv <- (fn(x + h) - fn(x - h)) / (2 * h)
     return(deriv)
 }
 ```
@@ -331,14 +327,14 @@ test_that("error thrown when derivative doesn't exist", {
 `numerical_deriv.R`:
 
 ```{r, eval = FALSE}
-deriv = function(fn, x) {
-    eps = .Machine$double.eps
+deriv <- function(fn, x) {
+    eps <- .Machine$double.eps
     if(x == 0) {
-        h = 2 * eps
+        h <- 2 * eps
     } else {
-        h = sqrt(eps) * x
+        h <- sqrt(eps) * x
     }
-    deriv = (fn(x + h) - fn(x - h)) / (2 * h)
+    deriv <- (fn(x + h) - fn(x - h)) / (2 * h)
     return(deriv)
 }
 ```
@@ -379,10 +375,10 @@ Some of the most useful expectations
 
 
 ```{r}
-a_int = 1:2
-a_double = as.double(a_int)
-a_named = a_int
-names(a_named) = letters[1:2]
+a_int <- 1:2
+a_double <- as.double(a_int)
+a_named <- a_int
+names(a_named) <- letters[1:2]
 a_int
 a_double
 a_named
@@ -406,7 +402,7 @@ expect_equivalent(a_double, a_named)
 
 - `expect_output`: Checks the output of a function the same way `expect_match` would
 ```{r}
-a = list(1:10, letters)
+a <- list(1:10, letters)
 str(a)
 expect_output(str(a), "List of 2")
 expect_output(str(a), "int [1:10]", fixed = TRUE)
