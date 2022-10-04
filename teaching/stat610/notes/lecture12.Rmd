@@ -1,5 +1,11 @@
 ## Top-down design (and the bootstrap)
 
+Reading: 
+
+- [Wirth, Program Development by Stepwise Refinement](https://dl.acm.org/doi/pdf/10.1145/362575.362577)
+
+- [Efron + Hastie, Computer-Age Statistical Inference](https://hastie.su.domains/CASI/order.html) 10.2, 11.2
+
 
 ## What does it mean?
 
@@ -9,7 +15,7 @@ General approach to problem solving.
 
 - Break the problem up into a couple of smaller pieces.
 
-- Put the pieces together so that they solve the problem.
+- Assume you can work out each of the pieces, and put them together so that they solve the problem.
 
 - Solve each of the smaller pieces in the same way.
 
@@ -19,9 +25,9 @@ For example, if you're designing a house, you might think:
 
 - Problem to solve: Create a layout for the house.
 
-- Sub-problems: Layouts for each of the rooms.
+- Assume that we have layouts for each of the rooms (sub-problems = layout for each room).
 
-- Put the pieces together: Assuming that we have layouts for each of the rooms, decide on how to fit them together.
+- Decide how to fit the rooms together (assemble the smaller pieces).
 
 - Then think about the detailed layout of each of the rooms.
 
@@ -30,10 +36,10 @@ For example, if you're designing a house, you might think:
 In programming:
 
 ```{r, eval = FALSE}
-big_function = function(arguments) {
-    piece_1 = get_piece_1(some_arguments)
-    piece_2 = get_piece_2(other_arguments)
-    output = put_pieces_together(piece_1, piece_2)
+big_function <- function(all_arguments) {
+    piece_1 <- get_piece_1(some_arguments)
+    piece_2 <- get_piece_2(other_arguments)
+    output <- put_pieces_together(piece_1, piece_2)
 }
 ```
 
@@ -97,16 +103,16 @@ We'll try to compute bootstrap confidence intervals today.
 First try at a function to compute bootstrap confidence intervals.
 
 ```{r}
-bootstrap_mean_ci = function(data, alpha, B) {
-    n = length(data)
-    boot_means = replicate(B, {
-        boot_indices = sample(x = 1:n, size = n, replace = TRUE)
-        boot_data = data[boot_indices]
-        boot_mean = mean(boot_data)
+bootstrap_mean_ci <- function(data, alpha, B) {
+    n <- length(data)
+    boot_means <- replicate(B, {
+        boot_indices <- sample(x = 1:n, size = n, replace = TRUE)
+        boot_data <- data[boot_indices]
+        boot_mean <- mean(boot_data)
     })
-    q_lo = alpha / 2
-    q_hi = 1 - (alpha / 2)
-    boot_ci = quantile(boot_means, probs = c(q_lo, q_hi))
+    q_lo <- alpha / 2
+    q_hi <- 1 - (alpha / 2)
+    boot_ci <- quantile(boot_means, probs = c(q_lo, q_hi))
     return(boot_ci)
 }
 ```
@@ -127,9 +133,9 @@ resampled estimates, so we:
 . . .
 
 ```{r, eval = FALSE}
-bootstrap_mean_ci = function(data, alpha, B) {
-    boot_means = get_boot_means(data, B)
-    boot_ci = get_ci(boot_means, alpha)
+bootstrap_mean_ci <- function(data, alpha, B) {
+    boot_means <- get_boot_means(data, B)
+    boot_ci <- get_ci(boot_means, alpha)
     return(boot_ci)
 }
 ```
@@ -156,22 +162,22 @@ We might also want to check that
 Then we write the two sub-functions:
 
 ```{r}
-get_boot_means = function(data, B) {
-    n = length(data)
-    boot_means = replicate(B, {
-        boot_indices = sample(x = 1:n, size = n, replace = TRUE)
-        boot_data = data[boot_indices]
-        boot_mean = mean(boot_data)
+get_boot_means <- function(data, B) {
+    n <- length(data)
+    boot_means <- replicate(B, {
+        boot_indices <- sample(x = 1:n, size = n, replace = TRUE)
+        boot_data <- data[boot_indices]
+        boot_mean <- mean(boot_data)
     })
     return(boot_means)
 }
 ```
 
 ```{r}
-get_ci = function(x, alpha){
-    q_lo = alpha / 2
-    q_hi = 1 - (alpha / 2)
-    ci = quantile(x, probs = c(q_lo, q_hi))
+get_ci <- function(x, alpha){
+    q_lo <- alpha / 2
+    q_hi <- 1 - (alpha / 2)
+    ci <- quantile(x, probs = c(q_lo, q_hi))
     return(ci)
 }
 ```
@@ -201,32 +207,32 @@ bootstrap_mean_ci(data = rnorm(10), alpha = .05, B = 100)
 ## Example 2
 
 ```{r, eval = FALSE}
-bootstrap_mean_ci = function(data, alpha, B) {
-    n = length(data)
-    boot_means = replicate(B, {
-        boot_indices = sample(x = 1:n, size = n, replace = TRUE)
-        boot_data = data[boot_indices]
-        boot_mean = mean(boot_data)
+bootstrap_mean_ci <- function(data, alpha, B) {
+    n <- length(data)
+    boot_means <- replicate(B, {
+        boot_indices <- sample(x = 1:n, size = n, replace = TRUE)
+        boot_data <- data[boot_indices]
+        boot_mean <- mean(boot_data)
     })
-    q_lo = alpha / 2
-    q_hi = 1 - (alpha / 2)
-    boot_ci = quantile(boot_means, probs = c(q_lo, q_hi))
+    q_lo <- alpha / 2
+    q_hi <- 1 - (alpha / 2)
+    boot_ci <- quantile(boot_means, probs = c(q_lo, q_hi))
     return(boot_ci)
 }
 ```
 
 ```{r, eval = FALSE}
-bootstrap_lm_ci = function(data, formula, alpha, B) {
-    n = nrow(data)
-    boot_sampled_coefs = replicate(B, {
-        boot_indices = sample(x = 1:n, size = n, replace = TRUE)
-        boot_data = data[boot_indices,]
-        boot_lm = lm(formula = formula, data = boot_data)
-        boot_coefs = coef(boot_lm)
+bootstrap_lm_ci <- function(data, formula, alpha, B) {
+    n <- nrow(data)
+    boot_sampled_coefs <- replicate(B, {
+        boot_indices <- sample(x = 1:n, size = n, replace = TRUE)
+        boot_data <- data[boot_indices,]
+        boot_lm <- lm(formula = formula, data = boot_data)
+        boot_coefs <- coef(boot_lm)
     })
-    q_lo = alpha / 2
-    q_hi = 1 - (alpha / 2)
-    boot_ci = plyr::aaply(boot_sampled_coefs, 1, function(x) quantile(x, probs = c(q_lo, q_hi)))
+    q_lo <- alpha / 2
+    q_hi <- 1 - (alpha / 2)
+    boot_ci <- plyr::aaply(boot_sampled_coefs, 1, function(x) quantile(x, probs = c(q_lo, q_hi)))
     return(boot_ci)
 }
 ```
@@ -252,9 +258,9 @@ Within each function, we have two steps:
 -----
 
 ```{r}
-bootstrap_ci = function(data, estimator, alpha, B) {
-    boot_estimates = get_boot_estimates(data, estimator, B)
-    boot_ci = get_ci(boot_estimates, alpha)
+bootstrap_ci <- function(data, estimator, alpha, B) {
+    boot_estimates <- get_boot_estimates(data, estimator, B)
+    boot_ci <- get_ci(boot_estimates, alpha)
     return(boot_ci)
 }
 ```
@@ -294,15 +300,15 @@ know the answer.
 Next step: fill out the functions
 
 ```{r}
-get_ci = function(estimates, alpha) {
-    q_lo = alpha / 2
-    q_hi = 1 - (alpha / 2)
+get_ci <- function(estimates, alpha) {
+    q_lo <- alpha / 2
+    q_hi <- 1 - (alpha / 2)
     if(!is.null(dim(estimates))) {
         ## if we have multi-dimensional estimates
-        cis = plyr::aaply(estimates, 1, function(x) quantile(x, probs = c(q_lo, q_hi)))
+        cis <- plyr::aaply(estimates, 1, function(x) quantile(x, probs = c(q_lo, q_hi)))
     } else {
         ## if we have one-dimensional estimates
-        cis = quantile(estimates, probs = c(q_lo, q_hi))
+        cis <- quantile(estimates, probs = c(q_lo, q_hi))
     }
     return(cis)
 }
@@ -311,10 +317,10 @@ get_ci = function(estimates, alpha) {
 . . .
 
 ```{r}
-get_boot_estimates = function(data, estimator, B) {
-    boot_estimates = replicate(B, expr = {
-        resampled_data = get_bootstrap_sample(data)
-        boot_estimate = estimator(resampled_data)
+get_boot_estimates <- function(data, estimator, B) {
+    boot_estimates <- replicate(B, expr = {
+        resampled_data <- get_bootstrap_sample(data)
+        boot_estimate <- estimator(resampled_data)
         return(boot_estimate)
     })
     return(boot_estimates)
@@ -331,17 +337,17 @@ We made another problem for ourselves! Still need `get_bootstrap_sample`.
 Fill out `get_bootstrap_sample`
 
 ```{r}
-get_bootstrap_sample = function(data) {
+get_bootstrap_sample <- function(data) {
     if(!is.null(dim(data))) {
         ## in this case, data is rectangular, and we want to sample rows
-        n = nrow(data)
-        boot_idx = sample(1:n, size = n, replace = TRUE)
-        bootstrap_sample = data[boot_idx,]
+        n <- nrow(data)
+        boot_idx <- sample(1:n, size = n, replace = TRUE)
+        bootstrap_sample <- data[boot_idx,]
     } else {
         ## in this case, data is a vector and we want to sample elements of the vector
-        n = length(data)
-        boot_idx = sample(1:n, size = n, replace = TRUE)
-        bootstrap_sample = data[boot_idx]
+        n <- length(data)
+        boot_idx <- sample(1:n, size = n, replace = TRUE)
+        bootstrap_sample <- data[boot_idx]
     }
     return(bootstrap_sample)
 }
@@ -352,26 +358,26 @@ get_bootstrap_sample = function(data) {
 Could make an argument for breaking into two functions:
 
 ```{r, eval = FALSE}
-get_bootstrap_sample = function(data) {
+get_bootstrap_sample <- function(data) {
     if(!is.null(dim(data))) {
-        boot_sample = bootstrap_sample_rows(data)
+        boot_sample <- bootstrap_sample_rows(data)
     } else {
-        boot_sample =  bootstrap_sample_elements(data)
+        boot_sample <- bootstrap_sample_elements(data)
     }
     return(boot_sample)
 }
 
-bootstrap_sample_rows = function(data) {
-    n = nrow(data)
-    boot_idx = sample(1:n, size = n, replace = TRUE)
-    bootstrap_sample = data[boot_idx,]
+bootstrap_sample_rows <- function(data) {
+    n <- nrow(data)
+    boot_idx <- sample(1:n, size = n, replace = TRUE)
+    bootstrap_sample <- data[boot_idx,]
     return(bootstrap_sample)
 }
 
-bootstrap_sample_elements = function(data) {
-    n = length(data)
-    boot_idx = sample(1:n, size = n, replace = TRUE)
-    bootstrap_sample = data[boot_idx]
+bootstrap_sample_elements <- function(data) {
+    n <- length(data)
+    boot_idx <- sample(1:n, size = n, replace = TRUE)
+    bootstrap_sample <- data[boot_idx]
     return(bootstrap_sample)
 }
 ```
@@ -411,6 +417,6 @@ bootstrap_ci(data = iris,
              alpha = .05,
              B = 1000)
 ## compare with
-iris_lm = lm(Sepal.Length ~ Sepal.Width + Petal.Length, data = iris)
+iris_lm <- lm(Sepal.Length ~ Sepal.Width + Petal.Length, data = iris)
 confint(iris_lm)
 ```
