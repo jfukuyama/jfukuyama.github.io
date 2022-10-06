@@ -98,17 +98,22 @@ directory. This is where the history of the project is stored.</p>
 current state of the <code>ggplot2</code> project and access to all the
 previous versions.</p>
 </div>
-<div id="recording-changes-to-the-repository"
-class="slide section level1">
-<h1>Recording changes to the repository</h1>
+<div id="staging-and-creating-commits" class="slide section level1">
+<h1>Staging and creating commits</h1>
 <p>Once you have the repository, you usually want to change things and
-record those changes.</p>
+record those changes = create a commit.</p>
+<p>Our first problem is that you might want to record just a subset of
+the changes that you made.</p>
+<p>This problem is solved with the “staging area.”</p>
+</div>
+<div class="slide section level1">
+
 <p>When you make changes to files, Git sees that they are different from
 the last version recorded.</p>
 <p>Files can be in four states:</p>
 <ul class="incremental">
 <li><p>Untracked: The file was not tracked (not part of the most recent
-commit) an is not in the staging area.</p></li>
+commit) and is not in the staging area.</p></li>
 <li><p>Unmodified: The file was part of the most recent commit but
 hasn’t been modified since.</p></li>
 <li><p>Modified: The file was part of the most recent commit and has
