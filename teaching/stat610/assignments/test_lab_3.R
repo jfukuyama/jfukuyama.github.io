@@ -7,7 +7,7 @@ x = rnorm(n)
 y = rnorm(x + rnorm(n))
 z = seq(-1, 1, length.out = 100)
 test_that("llr output has correct length", {
-    expect_equal(length(llr(x, y, z, omega = 1), length(z)))
+    expect_equal(length(llr(x, y, z, omega = 1)), length(z))
 })
 
 
