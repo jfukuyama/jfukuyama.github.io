@@ -78,16 +78,16 @@ How does Rprof work?
 
 ```{r}
 library(profvis)
-f = function() {
+f <- function() {
   pause(0.1)
   g()
   h()
 }
-g = function() {
+g <- function() {
   pause(0.1)
   h()
 }
-h = function() {
+h <- function() {
   pause(0.1)
 }
 ```
@@ -97,7 +97,7 @@ source("profiling-example.R")
 ```
 
 ```{r, eval = FALSE}
-tmp = tempfile()
+tmp <- tempfile()
 Rprof(tmp, interval = 0.02)
 f()
 Rprof(NULL)
@@ -112,7 +112,7 @@ summaryRprof(tmp)
 If we don't sample frequently enough, we don't get very useful output:
 
 ```{r, eval = FALSE}
-tmp = tempfile()
+tmp <- tempfile()
 Rprof(tmp, interval = 0.2)
 f()
 Rprof(NULL)
@@ -160,7 +160,7 @@ Here we're bypassing the method dispatch for `mean`.
 
 ```{r}
 library(microbenchmark)
-x = runif(1e2)
+x <- runif(1e2)
 
 microbenchmark(
   mean(x),
@@ -177,14 +177,14 @@ Suppose that we have a list and want to change it to a data frame.
 If we're sure it's formatted correctly, we can use the `quickdf` function.
 
 ```{r}
-quickdf = function(l) {
-  class(l) = "data.frame"
-  attr(l, "row.names") = 1:length(l[[1]])
+quickdf <- function(l) {
+  class(l) <- "data.frame"
+  attr(l, "row.names") <- 1:length(l[[1]])
   l
 }
 
-l = lapply(1:26, function(i) runif(1e3))
-names(l) = letters
+l <- lapply(1:26, function(i) runif(1e3))
+names(l) <- letters
 ```
 
 . . .
@@ -206,16 +206,16 @@ quickdf(list(x = 1, y = 1:2))
 # Avoid copies
 
 ```{r}
-random_string = function() {
+random_string <- function() {
   paste(sample(letters, 50, replace = TRUE), collapse = "")
 }
-strings10 = replicate(10, random_string())
-strings100 = replicate(100, random_string())
+strings10 <- replicate(10, random_string())
+strings100 <- replicate(100, random_string())
 
-collapse = function(xs) {
+collapse <- function(xs) {
   out = ""
   for (x in xs) {
-    out = paste0(out, x)
+    out <- paste0(out, x)
   }
   out
 }
@@ -238,15 +238,15 @@ microbenchmark(
 . . .
 
 ```{r}
-x = matrix(rnorm(15), nrow = 3, ncol = 5)
-row_means_loop = function(x) {
-    row_means = numeric(nrow(x))
+x <- matrix(rnorm(15), nrow = 3, ncol = 5)
+row_means_loop <- function(x) {
+    row_means <- numeric(nrow(x))
     for(i in 1:nrow(x)) {
-        row_sum = 0
+        row_sum <- 0
         for(j in 1:ncol(x)) {
-            row_sum = row_sum + x[i,j]
+            row_sum <- row_sum + x[i,j]
         }
-        row_means[i] = row_sum / ncol(x)
+        row_means[i] <- row_sum / ncol(x)
     }
     return(row_means)
 }
@@ -277,17 +277,17 @@ First attempt:
 ```{r}
 # perform nreps repetitions of the marble experiment, to estimate
 # P(pick blue from Urn 2)
-sim1 = function(nreps)  {
-    nb1 = 10 #10 blue marbles in Urn1
-    n1 = 18 # number of marbles in Urn 1 at 1st pick
-    n2 = 13 # number of marbles in Urn 2 at 2nd pick
-    count = 0 # number of repetitions in which get blue from Urn 2
+sim1 <- function(nreps)  {
+    nb1 <- 10 #10 blue marbles in Urn1
+    n1 <- 18 # number of marbles in Urn 1 at 1st pick
+    n2 <- 13 # number of marbles in Urn 2 at 2nd pick
+    count <- 0 # number of repetitions in which get blue from Urn 2
     for (i in 1:nreps) {
-        nb2 = 6 # 6 blue marbles orig. in Urn2
+        nb2 <- 6 # 6 blue marbles orig. in Urn2
         ## pick from Urn 1 and put in Urn 2; is it blue?
-        if (runif(1) < nb1/n1) nb2 = nb2 + 1
+        if (runif(1) < nb1/n1) nb2 <- nb2 + 1
         ## pick from Urn 2; is it blue?
-        if (runif(1) < nb2/n2) count = count + 1
+        if (runif(1) < nb2/n2) count <- count + 1
     }
     return(count/nreps) # est. P(pick blue from Urn 2)
 }
@@ -298,22 +298,22 @@ sim1 = function(nreps)  {
 Let's try pre-generate all of our random numbers and remove the for loop:
 
 ```{r}
-sim2 = function(nreps) {
-    nb1 = 10
-    nb2 = 6
-    n1 = 18
-    n2 = 13
+sim2 <- function(nreps) {
+    nb1 <- 10
+    nb2 <- 6
+    n1 <- 18
+    n2 <- 13
     ## pre-generate all our random numbers, one row per repetition
-    u = matrix(c(runif(2 * nreps)), nrow = nreps, ncol = 2)
+    u <- matrix(c(runif(2 * nreps)), nrow = nreps, ncol = 2)
     ## define simfun for use in apply(); simulates one repetition
-    simfun = function(rw) {
+    simfun <- function(rw) {
         ## rw ("row") is a pair of random numbers
         ## choose from Urn 1
-        if (rw[1] < nb1 / n1) nb2 = nb2 + 1
+        if (rw[1] < nb1 / n1) nb2 <- nb2 + 1
         ## choose from Urn 2, and return boolean on choosing blue
         return (rw[2] < nb2 / n2)
     }
-    z = apply(u, 1, simfun)
+    z <- apply(u, 1, simfun)
     return(mean(z))
 }
 ```
@@ -331,14 +331,14 @@ The timings here are different from in Matloff. I believe this is because more r
 Take 3:
 
 ```{r}
-sim3 = function(nreps) {
-    nb1 = 10
-    nb2 = 6
-    n1 = 18
-    n2 = 13
-    u = matrix(c(runif(2 * nreps)), nrow = nreps, ncol = 2)
+sim3 <- function(nreps) {
+    nb1 <- 10
+    nb2 <- 6
+    n1 <- 18
+    n2 <- 13
+    u <- matrix(c(runif(2 * nreps)), nrow = nreps, ncol = 2)
     ## set up the condition vector
-    cndtn =
+    cndtn <-
         u[,1] <= nb1 / n1 & u[,2] <= (nb2+1) / n2 |
         u[,1] > nb1 / n1 & u[,2] <= nb2 / n2
     return(mean(cndtn))
