@@ -8,126 +8,133 @@
   <meta name="generator" content="pandoc" />
   <title>lecture16</title>
   <style type="text/css">
-      code{white-space: pre-wrap;}
-      span.smallcaps{font-variant: small-caps;}
-      span.underline{text-decoration: underline;}
-      div.column{display: inline-block; vertical-align: top; width: 50%;}
-  </style>
-  <style type="text/css">
-code.sourceCode > span { display: inline-block; line-height: 1.25; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode { white-space: pre; position: relative; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-code.sourceCode { white-space: pre-wrap; }
-code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-    color: #aaaaaa;
-  }
-pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-code.sourceCode > span > a:first-child::before { text-decoration: underline; }
-}
-code span.al { color: #ff0000; font-weight: bold; } /* Alert */
-code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
-code span.at { color: #7d9029; } /* Attribute */
-code span.bn { color: #40a070; } /* BaseN */
-code span.bu { } /* BuiltIn */
-code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
-code span.ch { color: #4070a0; } /* Char */
-code span.cn { color: #880000; } /* Constant */
-code span.co { color: #60a0b0; font-style: italic; } /* Comment */
-code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
-code span.do { color: #ba2121; font-style: italic; } /* Documentation */
-code span.dt { color: #902000; } /* DataType */
-code span.dv { color: #40a070; } /* DecVal */
-code span.er { color: #ff0000; font-weight: bold; } /* Error */
-code span.ex { } /* Extension */
-code span.fl { color: #40a070; } /* Float */
-code span.fu { color: #06287e; } /* Function */
-code span.im { } /* Import */
-code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
-code span.kw { color: #007020; font-weight: bold; } /* Keyword */
-code span.op { color: #666666; } /* Operator */
-code span.ot { color: #007020; } /* Other */
-code span.pp { color: #bc7a00; } /* Preprocessor */
-code span.sc { color: #4070a0; } /* SpecialChar */
-code span.ss { color: #bb6688; } /* SpecialString */
-code span.st { color: #4070a0; } /* String */
-code span.va { color: #19177c; } /* Variable */
-code span.vs { color: #4070a0; } /* VerbatimString */
-code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
   </style>
   <link rel="stylesheet" type="text/css" media="screen, projection, print"
     href="https://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-AMS_CHTML-full" type="text/javascript"></script>
+  <script
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js"
+  type="text/javascript"></script>
   <script src="https://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
     charset="utf-8" type="text/javascript"></script>
 </head>
 <body>
-<div id="lecture-16-fitting-probability-models" class="slide section level2">
+<div id="lecture-16-fitting-probability-models"
+class="slide section level2">
 <h1>Lecture 16: Fitting probability models</h1>
-<p>Today: Transitioning away from R/software engineering, towards algorithms for statistics</p>
+<p>Today: Transitioning away from R/software engineering, towards
+algorithms for statistics</p>
 <p>Agenda</p>
 <ul class="incremental">
 <li><p>Probability/maximum likelihood review</p></li>
 <li><p>Distributions in R</p></li>
 <li><p>Fitting distributions</p></li>
 </ul>
-<p>Logistics:</p>
-<ul class="incremental">
-<li><p>Final project: can be done individually or in teams of up to 3</p></li>
-<li><p>Final project presentations in the last week of class</p></li>
-<li><p>Email me with your group and desired topic by October 30.</p></li>
-<li><p>Discussion thread on the course website for finding teammates.</p></li>
-</ul>
 </div>
 <div id="very-short-review-of-probability" class="slide section level2">
 <h1>Very short review of probability</h1>
-<p>We need to know about <em>random variables</em> and their distributions.</p>
+<p>We need to know about <em>random variables</em> and their
+distributions.</p>
 </div>
 <div class="slide section level2">
 
 <p>What is a random variable?</p>
 <ul class="incremental">
-<li><p>Very formally: a function from a state space to the real numbers</p></li>
-<li><p>Less formally: Think about random variables as describing the outcome of an experiment</p></li>
+<li><p>Very formally: a function from a state space to the real
+numbers</p></li>
+<li><p>Less formally: Think about random variables as describing the
+outcome of an experiment</p></li>
 </ul>
 </div>
 <div class="slide section level2">
 
 <div class="incremental">
-<p>In R, you can draw a random variable from a distribution with functions of the form <code>rdist</code>.</p>
+<p>In R, you can draw a random variable from a distribution with
+functions of the form <code>rdist</code>.</p>
 <ul class="incremental">
-<li><p><code>rnorm</code> draws a random variable from a normal distribution.</p></li>
-<li><p><code>rbinom</code> draws a random variable from a binomial distribution</p></li>
-<li><p><code>rpois</code> draws a random variable from a Poisson distribution</p></li>
+<li><p><code>rnorm</code> draws a random variable from a normal
+distribution.</p></li>
+<li><p><code>rbinom</code> draws a random variable from a binomial
+distribution</p></li>
+<li><p><code>rpois</code> draws a random variable from a Poisson
+distribution</p></li>
 </ul>
 <p>… and so on</p>
 <p>Syntax is <code>rdist(n, param1, param2,..., paramn)</code></p>
 <ul class="incremental">
-<li><p><code>n</code> is the number of random variables to draw from the distribution.</p></li>
-<li><p><code>param1</code>, …, <code>paramn</code> are the parameters of the distribution (e.g. mean and standard deviation for the normal, mean for the Poisson, probability of success for the binomial)</p></li>
+<li><p><code>n</code> is the number of random variables to draw from the
+distribution.</p></li>
+<li><p><code>param1</code>, …, <code>paramn</code> are the parameters of
+the distribution (e.g. mean and standard deviation for the normal, mean
+for the Poisson, probability of success for the binomial)</p></li>
 </ul>
 </div>
 </div>
@@ -135,37 +142,53 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 <div class="incremental">
 <p>Examples</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">rnorm</span>(<span class="dt">n =</span> <span class="dv">10</span>, <span class="dt">mean =</span> <span class="dv">5</span>, <span class="dt">sd =</span> <span class="fl">.1</span>)</span></code></pre></div>
-<pre><code>##  [1] 5.238266 5.183131 4.690491 4.904679 4.982820 4.848105 4.966133 4.986758
-##  [9] 4.983466 5.074715</code></pre>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">rbinom</span>(<span class="dt">n =</span> <span class="dv">5</span>, <span class="dt">size =</span> <span class="dv">5</span>, <span class="dt">prob =</span> <span class="fl">.8</span>)</span></code></pre></div>
-<pre><code>## [1] 4 4 4 2 5</code></pre>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="kw">rpois</span>(<span class="dt">n =</span> <span class="dv">20</span>, <span class="dt">lambda =</span> <span class="dv">10</span>)</span></code></pre></div>
-<pre><code>##  [1] 16 10 16 12 11  8  6  7 14 10  4  8  5  6 12 13 13  7  8 12</code></pre>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rnorm</span>(<span class="at">n =</span> <span class="dv">10</span>, <span class="at">mean =</span> <span class="dv">5</span>, <span class="at">sd =</span> .<span class="dv">1</span>)</span></code></pre></div>
+<pre><code>##  [1] 4.851023 4.968979 5.014208 4.917905 5.034567 4.964010 5.095236 5.097832
+##  [9] 4.967656 5.150968</code></pre>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rbinom</span>(<span class="at">n =</span> <span class="dv">5</span>, <span class="at">size =</span> <span class="dv">5</span>, <span class="at">prob =</span> .<span class="dv">8</span>)</span></code></pre></div>
+<pre><code>## [1] 5 3 4 4 5</code></pre>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rpois</span>(<span class="at">n =</span> <span class="dv">20</span>, <span class="at">lambda =</span> <span class="dv">10</span>)</span></code></pre></div>
+<pre><code>##  [1] 14 11  8 11 10  9  9  8 10 12 16 12 11 13 13  8 10 12  9 16</code></pre>
 </div>
 </div>
 <div class="slide section level2">
 
-<p>A random variable is characterized by its <em>cumulative distribution function</em> (CDF).</p>
+<p>A random variable is characterized by its <em>cumulative distribution
+function</em> (CDF).</p>
 <ul class="incremental">
-<li><p>Measures the probability that the random variable takes a value at most <span class="math inline">\(x\)</span>.</p></li>
-<li><p>If <span class="math inline">\(F_X\)</span> is the cumulative distribution function for a random variable <span class="math inline">\(X\)</span>, <span class="math inline">\(F_X(x) = P(X \le x)\)</span>.</p></li>
-<li><p>Can get all the other information you need about the random variable from this function (e.g. probability it lies above a certain value, probability it lies in an interval, probability it lies in other sets)</p></li>
+<li><p>Measures the probability that the random variable takes a value
+at most <span class="math inline">\(x\)</span>.</p></li>
+<li><p>If <span class="math inline">\(F_X\)</span> is the cumulative
+distribution function for a random variable <span
+class="math inline">\(X\)</span>, <span class="math inline">\(F_X(x) =
+P(X \le x)\)</span>.</p></li>
+<li><p>Can get all the other information you need about the random
+variable from this function (e.g. probability it lies above a certain
+value, probability it lies in an interval, probability it lies in other
+sets)</p></li>
 </ul>
 </div>
 <div class="slide section level2">
 
-<p>In R, the cumulative distribution functions for common distributions are available as <code>pdist</code>, so</p>
+<p>In R, the cumulative distribution functions for common distributions
+are available as <code>pdist</code>, so</p>
 <ul class="incremental">
-<li><p><code>pnorm</code> gives the cumulative distribution function for a normal distribution.</p></li>
-<li><p><code>pbinom</code> gives the cumulative distribution function for a binomial distribution.</p></li>
-<li><p><code>ppois</code> gives the cumulative distribution function for a Poisson distribution.</p></li>
+<li><p><code>pnorm</code> gives the cumulative distribution function for
+a normal distribution.</p></li>
+<li><p><code>pbinom</code> gives the cumulative distribution function
+for a binomial distribution.</p></li>
+<li><p><code>ppois</code> gives the cumulative distribution function for
+a Poisson distribution.</p></li>
 </ul>
 <div class="incremental">
 <p>Syntax is <code>pdist(q, param1, ..., paramn)</code></p>
 <ul class="incremental">
-<li><p>Returns <span class="math inline">\(F_X(q)\)</span>, if <span class="math inline">\(F_X\)</span> is the cumulative distribution function for a random variable <span class="math inline">\(X\)</span> following distribution <code>dist</code></p></li>
-<li><p><code>param1</code>, …, <code>paramn</code> are the parameters of the distribution</p></li>
+<li><p>Returns <span class="math inline">\(F_X(q)\)</span>, if <span
+class="math inline">\(F_X\)</span> is the cumulative distribution
+function for a random variable <span class="math inline">\(X\)</span>
+following distribution <code>dist</code></p></li>
+<li><p><code>param1</code>, …, <code>paramn</code> are the parameters of
+the distribution</p></li>
 </ul>
 </div>
 </div>
@@ -175,43 +198,46 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <p>For example:</p>
 </div>
 <div class="incremental">
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="kw">pnorm</span>(<span class="dt">q =</span> <span class="dv">0</span>, <span class="dt">mean =</span> <span class="dv">0</span>, <span class="dt">sd =</span> <span class="dv">1</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pnorm</span>(<span class="at">q =</span> <span class="dv">0</span>, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="dv">1</span>)</span></code></pre></div>
 <pre><code>## [1] 0.5</code></pre>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a><span class="kw">pbinom</span>(<span class="dt">q =</span> <span class="fl">.1</span>, <span class="dt">size =</span> <span class="dv">1</span>, <span class="dt">prob =</span> <span class="fl">.2</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pbinom</span>(<span class="at">q =</span> .<span class="dv">1</span>, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> .<span class="dv">2</span>)</span></code></pre></div>
 <pre><code>## [1] 0.8</code></pre>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a><span class="kw">pbinom</span>(<span class="dt">q =</span> <span class="dv">1</span>, <span class="dt">size =</span> <span class="dv">1</span>, <span class="dt">prob =</span> <span class="fl">.2</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pbinom</span>(<span class="at">q =</span> <span class="dv">1</span>, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> .<span class="dv">2</span>)</span></code></pre></div>
 <pre><code>## [1] 1</code></pre>
 </div>
 </div>
 <div class="slide section level2">
 
 <p>Normal CDF:</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a>qvec =<span class="st"> </span><span class="kw">seq</span>(<span class="op">-</span><span class="dv">3</span>, <span class="dv">3</span>, <span class="dt">length.out =</span> <span class="dv">1000</span>)</span>
-<span id="cb13-2"><a href="#cb13-2"></a>Fx =<span class="st"> </span><span class="kw">sapply</span>(qvec, pnorm, <span class="dt">mean =</span> <span class="dv">0</span>, <span class="dt">sd =</span> <span class="dv">1</span>)</span>
-<span id="cb13-3"><a href="#cb13-3"></a><span class="kw">plot</span>(Fx <span class="op">~</span><span class="st"> </span>qvec, <span class="dt">type =</span> <span class="st">&#39;l&#39;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>qvec <span class="ot">=</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="dv">3</span>, <span class="dv">3</span>, <span class="at">length.out =</span> <span class="dv">1000</span>)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>Fx <span class="ot">=</span> <span class="fu">sapply</span>(qvec, pnorm, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="dv">1</span>)</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(Fx <span class="sc">~</span> qvec, <span class="at">type =</span> <span class="st">&#39;l&#39;</span>)</span></code></pre></div>
 <p><img src="lecture-16-fig/unnamed-chunk-3-1.png" /></p>
 </div>
 <div class="slide section level2">
 
 <p>Binomial CDF:</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a>qvec =<span class="st"> </span><span class="kw">seq</span>(<span class="dv">0</span>, <span class="dv">5</span>, <span class="dt">length.out =</span> <span class="dv">1001</span>)</span>
-<span id="cb14-2"><a href="#cb14-2"></a>Fx =<span class="st"> </span><span class="kw">sapply</span>(qvec, pbinom, <span class="dt">size =</span> <span class="dv">5</span>, <span class="dt">p =</span> <span class="fl">.5</span>)</span>
-<span id="cb14-3"><a href="#cb14-3"></a><span class="kw">plot</span>(Fx <span class="op">~</span><span class="st"> </span>qvec, <span class="dt">type =</span> <span class="st">&#39;l&#39;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>qvec <span class="ot">=</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">5</span>, <span class="at">length.out =</span> <span class="dv">1001</span>)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>Fx <span class="ot">=</span> <span class="fu">sapply</span>(qvec, pbinom, <span class="at">size =</span> <span class="dv">5</span>, <span class="at">p =</span> .<span class="dv">5</span>)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(Fx <span class="sc">~</span> qvec, <span class="at">type =</span> <span class="st">&#39;l&#39;</span>)</span></code></pre></div>
 <p><img src="lecture-16-fig/unnamed-chunk-4-1.png" /></p>
 </div>
 <div class="slide section level2">
 
-<p>Remember that <code>rdist</code> draws random variables from <code>dist</code>, and <code>pdist(q)</code> computes the probability that a random variable with distribution <code>dist</code> takes a value less than or equal to q?</p>
+<p>Remember that <code>rdist</code> draws random variables from
+<code>dist</code>, and <code>pdist(q)</code> computes the probability
+that a random variable with distribution <code>dist</code> takes a value
+less than or equal to q?</p>
 <div class="incremental">
 <p>Let’s check:</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1"></a><span class="co">## draw 100 random variables from a normal with mean 0 and sd 1</span></span>
-<span id="cb15-2"><a href="#cb15-2"></a>x =<span class="st"> </span><span class="kw">rnorm</span>(<span class="dt">n =</span> <span class="dv">1000</span>, <span class="dt">mean =</span> <span class="dv">0</span>, <span class="dt">sd =</span> <span class="dv">1</span>)</span>
-<span id="cb15-3"><a href="#cb15-3"></a><span class="co">## compute what fraction of the random variables are at most -.5</span></span>
-<span id="cb15-4"><a href="#cb15-4"></a>q =<span class="st"> </span><span class="fl">-.5</span></span>
-<span id="cb15-5"><a href="#cb15-5"></a><span class="kw">mean</span>(x <span class="op">&lt;=</span><span class="st"> </span>q)</span></code></pre></div>
-<pre><code>## [1] 0.309</code></pre>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1"></a><span class="co">## compute what fraction of the time the random variables should be less than or equal to -.5</span></span>
-<span id="cb17-2"><a href="#cb17-2"></a><span class="kw">pnorm</span>(<span class="dt">q =</span> q, <span class="dt">mean =</span> <span class="dv">0</span>, <span class="dt">sd =</span> <span class="dv">1</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="do">## draw 100 random variables from a normal with mean 0 and sd 1</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>x <span class="ot">=</span> <span class="fu">rnorm</span>(<span class="at">n =</span> <span class="dv">1000</span>, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="dv">1</span>)</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="do">## compute what fraction of the random variables are at most -.5</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>q <span class="ot">=</span> <span class="sc">-</span>.<span class="dv">5</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(x <span class="sc">&lt;=</span> q)</span></code></pre></div>
+<pre><code>## [1] 0.312</code></pre>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="do">## compute what fraction of the time the random variables should be less than or equal to -.5</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">pnorm</span>(<span class="at">q =</span> q, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="dv">1</span>)</span></code></pre></div>
 <pre><code>## [1] 0.3085375</code></pre>
 <p>Not exactly the same, but pretty close!</p>
 </div>
@@ -219,147 +245,211 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div class="slide section level2">
 
 <div class="incremental">
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1"></a><span class="co">## try again with a binomial distribution</span></span>
-<span id="cb19-2"><a href="#cb19-2"></a>x =<span class="st"> </span><span class="kw">rbinom</span>(<span class="dt">n =</span> <span class="dv">1000</span>, <span class="dt">size =</span> <span class="dv">5</span>, <span class="dt">prob =</span> <span class="fl">.2</span>)</span>
-<span id="cb19-3"><a href="#cb19-3"></a><span class="co">## compute what fraction of the random variables are 1 or less</span></span>
-<span id="cb19-4"><a href="#cb19-4"></a>q =<span class="st"> </span><span class="dv">1</span></span>
-<span id="cb19-5"><a href="#cb19-5"></a><span class="kw">mean</span>(x <span class="op">&lt;=</span><span class="st"> </span>q)</span></code></pre></div>
-<pre><code>## [1] 0.735</code></pre>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a><span class="co">## compute what fraction of the time the random variables should be 1 or less</span></span>
-<span id="cb21-2"><a href="#cb21-2"></a><span class="kw">pbinom</span>(<span class="dt">q =</span> q, <span class="dt">size =</span> <span class="dv">5</span>, <span class="dt">prob =</span> <span class="fl">.2</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="do">## try again with a binomial distribution</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>x <span class="ot">=</span> <span class="fu">rbinom</span>(<span class="at">n =</span> <span class="dv">1000</span>, <span class="at">size =</span> <span class="dv">5</span>, <span class="at">prob =</span> .<span class="dv">2</span>)</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="do">## compute what fraction of the random variables are 1 or less</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>q <span class="ot">=</span> <span class="dv">1</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(x <span class="sc">&lt;=</span> q)</span></code></pre></div>
+<pre><code>## [1] 0.744</code></pre>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="do">## compute what fraction of the time the random variables should be 1 or less</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="fu">pbinom</span>(<span class="at">q =</span> q, <span class="at">size =</span> <span class="dv">5</span>, <span class="at">prob =</span> .<span class="dv">2</span>)</span></code></pre></div>
 <pre><code>## [1] 0.73728</code></pre>
-<p>Again, pretty close! You can check for other values of q and other distributions.</p>
+<p>Again, pretty close! You can check for other values of q and other
+distributions.</p>
 </div>
 </div>
 <div class="slide section level2">
 
-<p>Final concept: probability mass functions and probability density functions</p>
+<p>Final concept: probability mass functions and probability density
+functions</p>
 <ul class="incremental">
-<li><p>Probability mass functions describe <em>discrete</em> radom variables</p></li>
-<li><p>Probability density functions describe <em>continuous</em> random variables</p></li>
+<li><p>Probability mass functions describe <em>discrete</em> radom
+variables</p></li>
+<li><p>Probability density functions describe <em>continuous</em> random
+variables</p></li>
 </ul>
 </div>
 <div class="slide section level2">
 
 <p>Discrete random variables:</p>
 <ul class="incremental">
-<li><p>The random variable can take on either a finite number of values or a countable number of values</p></li>
-<li><p>For example: binomial random variable with size <span class="math inline">\(n\)</span> and probability <span class="math inline">\(p\)</span> can take values <span class="math inline">\(0, 1, 2, \ldots, n\)</span></p></li>
-<li><p>For example: A Poisson random variable can take values <span class="math inline">\(0, 1, 2,\ldots\)</span></p></li>
-<li><p>If <span class="math inline">\(X\)</span> is a discrete random variable, there are some values <span class="math inline">\(x\)</span> for which <span class="math inline">\(P(X = x) &gt; 0\)</span>.</p></li>
+<li><p>The random variable can take on either a finite number of values
+or a countable number of values</p></li>
+<li><p>For example: binomial random variable with size <span
+class="math inline">\(n\)</span> and probability <span
+class="math inline">\(p\)</span> can take values <span
+class="math inline">\(0, 1, 2, \ldots, n\)</span></p></li>
+<li><p>For example: A Poisson random variable can take values <span
+class="math inline">\(0, 1, 2,\ldots\)</span></p></li>
+<li><p>If <span class="math inline">\(X\)</span> is a discrete random
+variable, there are some values <span class="math inline">\(x\)</span>
+for which <span class="math inline">\(P(X = x) &gt; 0\)</span>.</p></li>
 </ul>
 </div>
 <div class="slide section level2">
 
-<p>Definition of probability mass function: If <span class="math inline">\(f_X\)</span> is the probability mass function for a random variable <span class="math inline">\(X\)</span>, <span class="math inline">\(f_X(x) = P(X = x)\)</span>.</p>
+<p>Definition of probability mass function: If <span
+class="math inline">\(f_X\)</span> is the probability mass function for
+a random variable <span class="math inline">\(X\)</span>, <span
+class="math inline">\(f_X(x) = P(X = x)\)</span>.</p>
 <div class="incremental">
-<p>In R: probability mass functions for common distributions are given by functions of the form <code>ddist</code>.</p>
-<p>Syntax: <code>ddist(x, param1, ..., paramn)</code> computes <span class="math inline">\(f_X(x)\)</span> for the a random variable <span class="math inline">\(X\)</span> following distribution <code>dist</code> with parameters <code>param1</code>, …, <code>paramn</code></p>
+<p>In R: probability mass functions for common distributions are given
+by functions of the form <code>ddist</code>.</p>
+<p>Syntax: <code>ddist(x, param1, ..., paramn)</code> computes <span
+class="math inline">\(f_X(x)\)</span> for the a random variable <span
+class="math inline">\(X\)</span> following distribution
+<code>dist</code> with parameters <code>param1</code>, …,
+<code>paramn</code></p>
 </div>
 </div>
 <div class="slide section level2">
 
 <div class="incremental">
 <p>For example:</p>
-<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1"></a><span class="kw">dbinom</span>(<span class="dt">x =</span> <span class="dv">1</span>, <span class="dt">size =</span> <span class="dv">1</span>, <span class="dt">prob =</span> <span class="fl">.5</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dbinom</span>(<span class="at">x =</span> <span class="dv">1</span>, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> .<span class="dv">5</span>)</span></code></pre></div>
 <pre><code>## [1] 0.5</code></pre>
-<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1"></a><span class="kw">dbinom</span>(<span class="dt">x =</span> <span class="dv">2</span>, <span class="dt">size =</span> <span class="dv">2</span>, <span class="dt">prob =</span> <span class="fl">.5</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dbinom</span>(<span class="at">x =</span> <span class="dv">2</span>, <span class="at">size =</span> <span class="dv">2</span>, <span class="at">prob =</span> .<span class="dv">5</span>)</span></code></pre></div>
 <pre><code>## [1] 0.25</code></pre>
-<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1"></a><span class="kw">dbinom</span>(<span class="dt">x =</span> <span class="fl">.5</span>, <span class="dt">size =</span> <span class="dv">2</span>, <span class="dt">prob =</span> <span class="fl">.5</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dbinom</span>(<span class="at">x =</span> .<span class="dv">5</span>, <span class="at">size =</span> <span class="dv">2</span>, <span class="at">prob =</span> .<span class="dv">5</span>)</span></code></pre></div>
 <pre><code>## Warning in dbinom(x = 0.5, size = 2, prob = 0.5): non-integer x = 0.500000</code></pre>
 <pre><code>## [1] 0</code></pre>
 </div>
 </div>
 <div class="slide section level2">
 
-<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1"></a>x_vec =<span class="st"> </span><span class="dv">0</span><span class="op">:</span><span class="dv">2</span></span>
-<span id="cb30-2"><a href="#cb30-2"></a>fx =<span class="st"> </span><span class="kw">sapply</span>(x_vec, dbinom, <span class="dt">size =</span> <span class="dv">2</span>, <span class="dt">prob =</span> <span class="fl">.5</span>)</span>
-<span id="cb30-3"><a href="#cb30-3"></a><span class="kw">plot</span>(fx <span class="op">~</span><span class="st"> </span>x_vec, <span class="dt">type =</span> <span class="st">&#39;h&#39;</span>, <span class="dt">ylim =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="fl">.5</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>x_vec <span class="ot">=</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">2</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>fx <span class="ot">=</span> <span class="fu">sapply</span>(x_vec, dbinom, <span class="at">size =</span> <span class="dv">2</span>, <span class="at">prob =</span> .<span class="dv">5</span>)</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(fx <span class="sc">~</span> x_vec, <span class="at">type =</span> <span class="st">&#39;h&#39;</span>, <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, .<span class="dv">5</span>))</span></code></pre></div>
 <p><img src="lecture-16-fig/unnamed-chunk-8-1.png" /></p>
 </div>
 <div class="slide section level2">
 
-<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1"></a>x_vec =<span class="st"> </span><span class="dv">0</span><span class="op">:</span><span class="dv">5</span></span>
-<span id="cb31-2"><a href="#cb31-2"></a>fx =<span class="st"> </span><span class="kw">sapply</span>(x_vec, dbinom, <span class="dt">size =</span> <span class="dv">5</span>, <span class="dt">prob =</span> <span class="fl">.8</span>)</span>
-<span id="cb31-3"><a href="#cb31-3"></a><span class="kw">plot</span>(fx <span class="op">~</span><span class="st"> </span>x_vec, <span class="dt">type =</span> <span class="st">&#39;h&#39;</span>, <span class="dt">ylim =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="fl">.5</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>x_vec <span class="ot">=</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">5</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>fx <span class="ot">=</span> <span class="fu">sapply</span>(x_vec, dbinom, <span class="at">size =</span> <span class="dv">5</span>, <span class="at">prob =</span> .<span class="dv">8</span>)</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(fx <span class="sc">~</span> x_vec, <span class="at">type =</span> <span class="st">&#39;h&#39;</span>, <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, .<span class="dv">5</span>))</span></code></pre></div>
 <p><img src="lecture-16-fig/unnamed-chunk-9-1.png" /></p>
 </div>
 <div class="slide section level2">
 
 <div class="incremental">
 <p>As before, we can check that our definitions are consistent:</p>
-<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1"></a><span class="co">## generate random variables from a binomial distribution with size = 2 and prob = .5</span></span>
-<span id="cb32-2"><a href="#cb32-2"></a>X =<span class="st"> </span><span class="kw">rbinom</span>(<span class="dt">n =</span> <span class="dv">1000</span>, <span class="dt">size =</span> <span class="dv">2</span>, <span class="dt">prob =</span> <span class="fl">.5</span>)</span>
-<span id="cb32-3"><a href="#cb32-3"></a><span class="kw">head</span>(X)</span></code></pre></div>
-<pre><code>## [1] 0 0 2 1 1 1</code></pre>
-<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1"></a><span class="co">## compute the fraction of the random variables that took value exactly equal to 1</span></span>
-<span id="cb34-2"><a href="#cb34-2"></a>x =<span class="st"> </span><span class="dv">2</span></span>
-<span id="cb34-3"><a href="#cb34-3"></a><span class="kw">mean</span>(X <span class="op">==</span><span class="st"> </span>x)</span></code></pre></div>
-<pre><code>## [1] 0.249</code></pre>
-<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1"></a><span class="co">## compute the pmf for the distribution at x = 1</span></span>
-<span id="cb36-2"><a href="#cb36-2"></a><span class="kw">dbinom</span>(<span class="dt">x =</span> x, <span class="dt">size =</span> <span class="dv">2</span>, <span class="dt">prob =</span> <span class="fl">.5</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="do">## generate random variables from a binomial distribution with size = 2 and prob = .5</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>X <span class="ot">=</span> <span class="fu">rbinom</span>(<span class="at">n =</span> <span class="dv">1000</span>, <span class="at">size =</span> <span class="dv">2</span>, <span class="at">prob =</span> .<span class="dv">5</span>)</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(X)</span></code></pre></div>
+<pre><code>## [1] 1 2 1 0 0 1</code></pre>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="do">## compute the fraction of the random variables that took value exactly equal to 1</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>x <span class="ot">=</span> <span class="dv">2</span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(X <span class="sc">==</span> x)</span></code></pre></div>
+<pre><code>## [1] 0.258</code></pre>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="do">## compute the pmf for the distribution at x = 1</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="fu">dbinom</span>(<span class="at">x =</span> x, <span class="at">size =</span> <span class="dv">2</span>, <span class="at">prob =</span> .<span class="dv">5</span>)</span></code></pre></div>
 <pre><code>## [1] 0.25</code></pre>
-<p>Apologies for the notation, but the norm is to denote random variables by capital letters and to denote the actual values they take by lower-case letters.</p>
-<p>You’ll often see things like <span class="math inline">\(P(X = x)\)</span>, which means the probability that a random variable <span class="math inline">\(X\)</span> takes value <span class="math inline">\(x\)</span>.</p>
+<p>Apologies for the notation, but the norm is to denote random
+variables by capital letters and to denote the actual values they take
+by lower-case letters.</p>
+<p>You’ll often see things like <span class="math inline">\(P(X =
+x)\)</span>, which means the probability that a random variable <span
+class="math inline">\(X\)</span> takes value <span
+class="math inline">\(x\)</span>.</p>
 </div>
 </div>
 <div class="slide section level2">
 
 <p>Continuous random variables:</p>
 <ul class="incremental">
-<li><p>Formally: A random variable whose cumulative distribution function is continuous.</p></li>
-<li><p>You can think of this as random variables that can take values either on the entire real line, or on subsets of the real line.</p></li>
+<li><p>Formally: A random variable whose cumulative distribution
+function is continuous.</p></li>
+<li><p>You can think of this as random variables that can take values
+either on the entire real line, or on subsets of the real line.</p></li>
 <li><p>For example: normal distribution, gamma distribution</p></li>
-<li><p>In contrast to discrete random variables, if <span class="math inline">\(X\)</span> is a continuous random variable, there are no values <span class="math inline">\(x\)</span> for which <span class="math inline">\(P(X = x) &gt; 0\)</span>.</p></li>
-<li><p>Because of this, we can’t define a probability mass function the way we did for discrete random variables, we have to do something else, and that something else is a probability density function.</p></li>
+<li><p>In contrast to discrete random variables, if <span
+class="math inline">\(X\)</span> is a continuous random variable, there
+are no values <span class="math inline">\(x\)</span> for which <span
+class="math inline">\(P(X = x) &gt; 0\)</span>.</p></li>
+<li><p>Because of this, we can’t define a probability mass function the
+way we did for discrete random variables, we have to do something else,
+and that something else is a probability density function.</p></li>
 </ul>
 </div>
 <div class="slide section level2">
 
-<p>Probability density function formally: If <span class="math inline">\(X\)</span> is a continuous random variable with cumulative distribution function <span class="math inline">\(F_X\)</span>, the probability density function of <span class="math inline">\(X\)</span>, <span class="math inline">\(f_X(x)\)</span>, is defined as <span class="math inline">\(f_X(x) = F_X&#39;(x)\)</span>.</p>
+<p>Probability density function formally: If <span
+class="math inline">\(X\)</span> is a continuous random variable with
+cumulative distribution function <span
+class="math inline">\(F_X\)</span>, the probability density function of
+<span class="math inline">\(X\)</span>, <span
+class="math inline">\(f_X(x)\)</span>, is defined as <span
+class="math inline">\(f_X(x) = F_X&#39;(x)\)</span>.</p>
 <div class="incremental">
 <p>Think of as analogous to probability mass functions</p>
 <ul class="incremental">
-<li><p><span class="math inline">\(P(X = x) = 0\)</span> for continuous random variables, but…</p></li>
-<li><p>The random variable <span class="math inline">\(X\)</span> is more likely to take on values close to <span class="math inline">\(x\)</span> if <span class="math inline">\(f_X(x)\)</span> is large than if <span class="math inline">\(f_X(x)\)</span> is small.</p></li>
+<li><p><span class="math inline">\(P(X = x) = 0\)</span> for continuous
+random variables, but…</p></li>
+<li><p>The random variable <span class="math inline">\(X\)</span> is
+more likely to take on values close to <span
+class="math inline">\(x\)</span> if <span
+class="math inline">\(f_X(x)\)</span> is large than if <span
+class="math inline">\(f_X(x)\)</span> is small.</p></li>
 </ul>
 </div>
 </div>
 <div class="slide section level2">
 
-<p>In R: probability density functions for common distributions are given by functions of the form <code>ddist</code> (the same as for probability mass functions)</p>
-<p>Syntax: <code>ddist(x, param1, ..., paramn)</code> computes <span class="math inline">\(f_X(x)\)</span> for the a random variable <span class="math inline">\(X\)</span> following distribution <code>dist</code> with parameters <code>param1</code>, …, <code>paramn</code></p>
+<p>In R: probability density functions for common distributions are
+given by functions of the form <code>ddist</code> (the same as for
+probability mass functions)</p>
+<p>Syntax: <code>ddist(x, param1, ..., paramn)</code> computes <span
+class="math inline">\(f_X(x)\)</span> for the a random variable <span
+class="math inline">\(X\)</span> following distribution
+<code>dist</code> with parameters <code>param1</code>, …,
+<code>paramn</code></p>
 </div>
 <div class="slide section level2">
 
 <div class="incremental">
 <p>For example:</p>
-<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1"></a><span class="kw">dnorm</span>(<span class="dt">x =</span> <span class="dv">0</span>, <span class="dt">mean =</span> <span class="dv">0</span>, <span class="dt">sd =</span> <span class="dv">1</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dnorm</span>(<span class="at">x =</span> <span class="dv">0</span>, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="dv">1</span>)</span></code></pre></div>
 <pre><code>## [1] 0.3989423</code></pre>
-<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1"></a><span class="kw">dnorm</span>(<span class="dt">x =</span> <span class="dv">1</span>, <span class="dt">mean =</span> <span class="dv">0</span>, <span class="dt">sd =</span> <span class="dv">1</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dnorm</span>(<span class="at">x =</span> <span class="dv">1</span>, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="dv">1</span>)</span></code></pre></div>
 <pre><code>## [1] 0.2419707</code></pre>
-<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1"></a><span class="kw">dnorm</span>(<span class="dt">x =</span> <span class="dv">50</span>, <span class="dt">mean =</span> <span class="dv">0</span>, <span class="dt">sd =</span> <span class="dv">1</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dnorm</span>(<span class="at">x =</span> <span class="dv">50</span>, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="dv">1</span>)</span></code></pre></div>
 <pre><code>## [1] 0</code></pre>
 </div>
 </div>
 <div class="slide section level2">
 
-<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1"></a>x_vec =<span class="st"> </span><span class="kw">seq</span>(<span class="op">-</span><span class="dv">3</span>, <span class="dv">3</span>, <span class="dt">length.out =</span> <span class="dv">1000</span>)</span>
-<span id="cb44-2"><a href="#cb44-2"></a>fx =<span class="st"> </span><span class="kw">sapply</span>(x_vec, dnorm, <span class="dt">mean =</span> <span class="dv">0</span>, <span class="dt">sd =</span> <span class="dv">1</span>)</span>
-<span id="cb44-3"><a href="#cb44-3"></a><span class="kw">plot</span>(fx <span class="op">~</span><span class="st"> </span>x_vec, <span class="dt">type =</span> <span class="st">&#39;l&#39;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>x_vec <span class="ot">=</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="dv">3</span>, <span class="dv">3</span>, <span class="at">length.out =</span> <span class="dv">1000</span>)</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>fx <span class="ot">=</span> <span class="fu">sapply</span>(x_vec, dnorm, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="dv">1</span>)</span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(fx <span class="sc">~</span> x_vec, <span class="at">type =</span> <span class="st">&#39;l&#39;</span>)</span></code></pre></div>
 <p><img src="lecture-16-fig/unnamed-chunk-12-1.png" /></p>
 </div>
 <div id="summing-up-probability" class="slide section level2">
 <h1>Summing up: probability</h1>
 <ul class="incremental">
-<li><p>Random variables are like any other variables, but the values they take are random</p></li>
-<li><p>If <span class="math inline">\(F_X\)</span> is the cumulative distribution function for a random variable <span class="math inline">\(X\)</span>, <span class="math inline">\(F_X(x)\)</span> gives <span class="math inline">\(P(X \le x)\)</span>, and characterizes the distribution.</p></li>
-<li><p>If <span class="math inline">\(f_X\)</span> is the probability density or probability mass function for a random variable <span class="math inline">\(X\)</span>, <span class="math inline">\(f_X(x)\)</span> large means that <span class="math inline">\(X\)</span> is more likely to take values exactly equal to <span class="math inline">\(x\)</span> (for discrete random variables) or close to <span class="math inline">\(x\)</span> (for continuous random variables).</p></li>
+<li><p>Random variables are like any other variables, but the values
+they take are random</p></li>
+<li><p>If <span class="math inline">\(F_X\)</span> is the cumulative
+distribution function for a random variable <span
+class="math inline">\(X\)</span>, <span
+class="math inline">\(F_X(x)\)</span> gives <span
+class="math inline">\(P(X \le x)\)</span>, and characterizes the
+distribution.</p></li>
+<li><p>If <span class="math inline">\(f_X\)</span> is the probability
+density or probability mass function for a random variable <span
+class="math inline">\(X\)</span>, <span
+class="math inline">\(f_X(x)\)</span> large means that <span
+class="math inline">\(X\)</span> is more likely to take values exactly
+equal to <span class="math inline">\(x\)</span> (for discrete random
+variables) or close to <span class="math inline">\(x\)</span> (for
+continuous random variables).</p></li>
 </ul>
 </div>
-<div id="fitting-probability-models-to-data" class="slide section level2">
+<div id="fitting-probability-models-to-data"
+class="slide section level2">
 <h1>Fitting probability models to data</h1>
-<p>Setup: We have a set of data points <span class="math inline">\(x_1, \ldots, x_n\)</span>, and we want to find a probability distribution that describes the data well.</p>
+<p>Setup: We have a set of data points <span class="math inline">\(x_1,
+\ldots, x_n\)</span>, and we want to find a probability distribution
+that describes the data well.</p>
 <div class="incremental">
 <p>Why do we want to do this?</p>
 <ul class="incremental">
@@ -380,146 +470,200 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 <div id="maximum-likelihood" class="slide section level2">
 <h1>Maximum likelihood</h1>
-<p>Problem: We have a family of probability distributions, indexed by a parameter <span class="math inline">\(\theta\)</span>, and we need to choose one to describe the data.</p>
+<p>Problem: We have a family of probability distributions, indexed by a
+parameter <span class="math inline">\(\theta\)</span>, and we need to
+choose one to describe the data.</p>
 <p>Solution, heuristically:</p>
 <ul class="incremental">
-<li><p>Assume that our data <span class="math inline">\(x_1, \ldots, x_n\)</span> are realizations of independent random variables <span class="math inline">\(X_1, \ldots, X_n\)</span>, each coming from some distribution, with a parameter (vector) <span class="math inline">\(\theta\)</span> controlling the distributions.</p></li>
-<li><p>Find the value of <span class="math inline">\(\theta\)</span> that makes the data most likely.</p></li>
-<li><p>Use either the probability density (continuous random variables) or probability mass (discrete random variables) to describe how likely the data is for a given value of the parameter <span class="math inline">\(\theta\)</span>.</p></li>
+<li><p>Assume that our data <span class="math inline">\(x_1, \ldots,
+x_n\)</span> are realizations of independent random variables <span
+class="math inline">\(X_1, \ldots, X_n\)</span>, each coming from some
+distribution, with a parameter (vector) <span
+class="math inline">\(\theta\)</span> controlling the
+distributions.</p></li>
+<li><p>Find the value of <span class="math inline">\(\theta\)</span>
+that makes the data most likely.</p></li>
+<li><p>Use either the probability density (continuous random variables)
+or probability mass (discrete random variables) to describe how likely
+the data is for a given value of the parameter <span
+class="math inline">\(\theta\)</span>.</p></li>
 </ul>
 </div>
 <div class="slide section level2">
 
 <p>Formally:</p>
 <ul class="incremental">
-<li><p>Let <span class="math inline">\(f(x; \theta)\)</span> be the probability density function or probability mass function of a random variable with drawn from a distribution with parameter <span class="math inline">\(\theta\)</span>.</p></li>
-<li><p>With independent data points <span class="math inline">\(x_1, x_2,\ldots , x_n\)</span>, the likelihood is</p></li>
+<li><p>Let <span class="math inline">\(f(x; \theta)\)</span> be the
+probability density function or probability mass function of a random
+variable with drawn from a distribution with parameter <span
+class="math inline">\(\theta\)</span>.</p></li>
+<li><p>With independent data points <span class="math inline">\(x_1,
+x_2,\ldots , x_n\)</span>, the likelihood is</p></li>
 </ul>
 <p><span class="math display">\[
 L(\theta)=\prod_{i=1}^n f(x_i;\theta)
 \]</span></p>
 <div class="incremental">
-<p>Recall that the probability density/mass function describes how likely a random variable is to take a given value.</p>
+<p>Recall that the probability density/mass function describes how
+likely a random variable is to take a given value.</p>
 <ul class="incremental">
-<li><p>If <span class="math inline">\(f(x_i; \theta)\)</span> is high, it is very likely that we would see the value <span class="math inline">\(x_i\)</span> if <span class="math inline">\(x_i\)</span> really came from a distribution with parameter <span class="math inline">\(\theta\)</span></p></li>
-<li><p>If <span class="math inline">\(f(x_i; \theta)\)</span> is low, it is unlikely that we would see the value <span class="math inline">\(x_i\)</span> if <span class="math inline">\(x_i\)</span> really came from a distribution with parameter <span class="math inline">\(\theta\)</span></p></li>
+<li><p>If <span class="math inline">\(f(x_i; \theta)\)</span> is high,
+it is very likely that we would see the value <span
+class="math inline">\(x_i\)</span> if <span
+class="math inline">\(x_i\)</span> really came from a distribution with
+parameter <span class="math inline">\(\theta\)</span></p></li>
+<li><p>If <span class="math inline">\(f(x_i; \theta)\)</span> is low, it
+is unlikely that we would see the value <span
+class="math inline">\(x_i\)</span> if <span
+class="math inline">\(x_i\)</span> really came from a distribution with
+parameter <span class="math inline">\(\theta\)</span></p></li>
 </ul>
-<p>Therefore: find the value of <span class="math inline">\(\theta\)</span> that maximizes the likelihood.</p>
+<p>Therefore: find the value of <span
+class="math inline">\(\theta\)</span> that maximizes the likelihood.</p>
 </div>
 </div>
 <div class="slide section level2">
 
-<p>In practice, we work with the log likelihood instead of the likelihood:</p>
+<p>In practice, we work with the log likelihood instead of the
+likelihood:</p>
 <p><span class="math display">\[
 \ell(\theta) = \sum_{i=1}^n \log f(x_i; \theta)
 \]</span></p>
 <ul class="incremental">
 <li><p>Easier to work with analytically</p></li>
-<li><p>Better computationally because multiplying lots of small numbers together is bad (if you have a lot of data points you can get within machine tolerance of 0).</p></li>
+<li><p>Better computationally because multiplying lots of small numbers
+together is bad (if you have a lot of data points you can get within
+machine tolerance of 0).</p></li>
 </ul>
 </div>
 <div class="slide section level2">
 
-<p>For example: we have data points <span class="math inline">\(x_1, \ldots, x_n\)</span>, and we want to find the <span class="math inline">\(N(\theta, 1)\)</span> distribution that fits the data the best.</p>
+<p>For example: we have data points <span class="math inline">\(x_1,
+\ldots, x_n\)</span>, and we want to find the <span
+class="math inline">\(N(\theta, 1)\)</span> distribution that fits the
+data the best.</p>
 <div class="incremental">
 <p>The likelihood is <span class="math display">\[
-L(x;  \theta) = \prod_{i=1}^n \frac{1}{\sqrt{2\pi}}\exp(-\frac{1}{2}(x_i - \theta)^2)
+L(x;  \theta) = \prod_{i=1}^n \frac{1}{\sqrt{2\pi}}\exp(-\frac{1}{2}(x_i
+- \theta)^2)
 \]</span></p>
 <p>and the log likelihood is <span class="math display">\[
-\ell(x;  \theta) = \sum_{i=1}^n\log \left( \frac{1}{\sqrt{2\pi}}\exp(-\frac{1}{2}(x_i - \theta)^2) \right) 
+\ell(x;  \theta) = \sum_{i=1}^n\log \left(
+\frac{1}{\sqrt{2\pi}}\exp(-\frac{1}{2}(x_i - \theta)^2) \right)
 \]</span></p>
 </div>
 </div>
 <div class="slide section level2">
 
-<p>We can use <code>dnorm</code> in R to compute the log likelihood for any <span class="math inline">\(x\)</span> and <span class="math inline">\(\theta\)</span> we want:</p>
-<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1"></a><span class="co">## create a function that computes the log likelihood</span></span>
-<span id="cb45-2"><a href="#cb45-2"></a>likelihood =<span class="st"> </span><span class="cf">function</span>(theta, x) {</span>
-<span id="cb45-3"><a href="#cb45-3"></a>    <span class="kw">sum</span>(<span class="kw">log</span>(<span class="kw">dnorm</span>(x, <span class="dt">mean =</span> theta, <span class="dt">sd =</span> <span class="dv">1</span>)))</span>
-<span id="cb45-4"><a href="#cb45-4"></a>}</span>
-<span id="cb45-5"><a href="#cb45-5"></a>x =<span class="st"> </span><span class="kw">c</span>(<span class="fl">5.5</span>, <span class="dv">4</span>, <span class="fl">3.2</span>, <span class="fl">4.7</span>, <span class="fl">4.3</span>, <span class="fl">3.5</span>)</span>
-<span id="cb45-6"><a href="#cb45-6"></a>theta_vec =<span class="st"> </span><span class="kw">seq</span>(<span class="dv">0</span>, <span class="dv">10</span>, <span class="dt">length.out =</span> <span class="dv">100</span>)</span>
-<span id="cb45-7"><a href="#cb45-7"></a>l_of_theta =<span class="st"> </span><span class="kw">sapply</span>(theta_vec, likelihood, x)</span>
-<span id="cb45-8"><a href="#cb45-8"></a><span class="kw">plot</span>(l_of_theta <span class="op">~</span><span class="st"> </span>theta_vec, <span class="dt">type =</span> <span class="st">&#39;l&#39;</span>)</span></code></pre></div>
+<p>We can use <code>dnorm</code> in R to compute the log likelihood for
+any <span class="math inline">\(x\)</span> and <span
+class="math inline">\(\theta\)</span> we want:</p>
+<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="do">## create a function that computes the log likelihood</span></span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>likelihood <span class="ot">=</span> <span class="cf">function</span>(theta, x) {</span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sum</span>(<span class="fu">log</span>(<span class="fu">dnorm</span>(x, <span class="at">mean =</span> theta, <span class="at">sd =</span> <span class="dv">1</span>)))</span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>x <span class="ot">=</span> <span class="fu">c</span>(<span class="fl">5.5</span>, <span class="dv">4</span>, <span class="fl">3.2</span>, <span class="fl">4.7</span>, <span class="fl">4.3</span>, <span class="fl">3.5</span>)</span>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a>theta_vec <span class="ot">=</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">10</span>, <span class="at">length.out =</span> <span class="dv">100</span>)</span>
+<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a>l_of_theta <span class="ot">=</span> <span class="fu">sapply</span>(theta_vec, likelihood, x)</span>
+<span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(l_of_theta <span class="sc">~</span> theta_vec, <span class="at">type =</span> <span class="st">&#39;l&#39;</span>)</span></code></pre></div>
 <p><img src="lecture-16-fig/unnamed-chunk-13-1.png" /></p>
 </div>
 <div class="slide section level2">
 
 <p>What is the maximum?</p>
-<div class="sourceCode" id="cb46"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1"></a><span class="kw">plot</span>(l_of_theta <span class="op">~</span><span class="st"> </span>theta_vec, <span class="dt">type =</span> <span class="st">&#39;l&#39;</span>)</span>
-<span id="cb46-2"><a href="#cb46-2"></a><span class="kw">abline</span>(<span class="dt">v =</span> <span class="kw">mean</span>(x))</span></code></pre></div>
+<div class="sourceCode" id="cb46"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(l_of_theta <span class="sc">~</span> theta_vec, <span class="at">type =</span> <span class="st">&#39;l&#39;</span>)</span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">v =</span> <span class="fu">mean</span>(x))</span></code></pre></div>
 <p><img src="lecture-16-fig/unnamed-chunk-14-1.png" /></p>
 </div>
 <div class="slide section level2">
 
 <p>Alternately, just search over the grid:</p>
-<div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1"></a>max_idx =<span class="st"> </span><span class="kw">which.max</span>(l_of_theta)</span>
-<span id="cb47-2"><a href="#cb47-2"></a>theta_vec[max_idx]</span></code></pre></div>
+<div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>max_idx <span class="ot">=</span> <span class="fu">which.max</span>(l_of_theta)</span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>theta_vec[max_idx]</span></code></pre></div>
 <pre><code>## [1] 4.242424</code></pre>
-<div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1"></a><span class="co">## compare with</span></span>
-<span id="cb49-2"><a href="#cb49-2"></a><span class="kw">mean</span>(x)</span></code></pre></div>
+<div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="do">## compare with</span></span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(x)</span></code></pre></div>
 <pre><code>## [1] 4.2</code></pre>
 </div>
 <div class="slide section level2">
 
-<p>Another example: Binomial, five trials, unknown success probability.</p>
-<div class="sourceCode" id="cb51"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1"></a>likelihood =<span class="st"> </span><span class="cf">function</span>(theta, x) {</span>
-<span id="cb51-2"><a href="#cb51-2"></a>    <span class="kw">sum</span>(<span class="kw">log</span>(<span class="kw">dbinom</span>(<span class="dt">x =</span> x, <span class="dt">size =</span> <span class="dv">5</span>, <span class="dt">prob =</span> theta)))</span>
-<span id="cb51-3"><a href="#cb51-3"></a>}</span></code></pre></div>
+<p>Another example: Binomial, five trials, unknown success
+probability.</p>
+<div class="sourceCode" id="cb51"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>likelihood <span class="ot">=</span> <span class="cf">function</span>(theta, x) {</span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sum</span>(<span class="fu">log</span>(<span class="fu">dbinom</span>(<span class="at">x =</span> x, <span class="at">size =</span> <span class="dv">5</span>, <span class="at">prob =</span> theta)))</span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 </div>
 <div class="slide section level2">
 
-<p>Compute the likelihoods for many possible values of <code>prob</code></p>
-<div class="sourceCode" id="cb52"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1"></a>x =<span class="st"> </span><span class="kw">rbinom</span>(<span class="dt">n =</span> <span class="dv">100</span>, <span class="dt">size =</span> <span class="dv">5</span>, <span class="dt">prob =</span> <span class="fl">.2</span>)</span>
-<span id="cb52-2"><a href="#cb52-2"></a>theta_vec =<span class="st"> </span><span class="kw">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dt">length.out =</span> <span class="dv">100</span>)</span>
-<span id="cb52-3"><a href="#cb52-3"></a>log_likelihoods =<span class="st"> </span><span class="kw">sapply</span>(theta_vec, likelihood, x)</span>
-<span id="cb52-4"><a href="#cb52-4"></a><span class="kw">plot</span>(log_likelihoods <span class="op">~</span><span class="st"> </span>theta_vec, <span class="dt">type =</span> <span class="st">&#39;l&#39;</span>)</span>
-<span id="cb52-5"><a href="#cb52-5"></a><span class="kw">abline</span>(<span class="dt">v =</span> <span class="fl">.2</span>)</span></code></pre></div>
+<p>Compute the likelihoods for many possible values of
+<code>prob</code></p>
+<div class="sourceCode" id="cb52"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>x <span class="ot">=</span> <span class="fu">rbinom</span>(<span class="at">n =</span> <span class="dv">100</span>, <span class="at">size =</span> <span class="dv">5</span>, <span class="at">prob =</span> .<span class="dv">2</span>)</span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>theta_vec <span class="ot">=</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="at">length.out =</span> <span class="dv">100</span>)</span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>log_likelihoods <span class="ot">=</span> <span class="fu">sapply</span>(theta_vec, likelihood, x)</span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(log_likelihoods <span class="sc">~</span> theta_vec, <span class="at">type =</span> <span class="st">&#39;l&#39;</span>)</span>
+<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">v =</span> .<span class="dv">2</span>)</span></code></pre></div>
 <p><img src="lecture-16-fig/unnamed-chunk-17-1.png" /></p>
 </div>
 <div class="slide section level2">
 
-<p>We see that the maximum is pretty close to the true value, <span class="math inline">\(.2\)</span></p>
-<div class="sourceCode" id="cb53"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1"></a>max_idx =<span class="st"> </span><span class="kw">which.max</span>(log_likelihoods)</span>
-<span id="cb53-2"><a href="#cb53-2"></a>theta_vec[max_idx]</span></code></pre></div>
-<pre><code>## [1] 0.2121212</code></pre>
+<p>We see that the maximum is pretty close to the true value, <span
+class="math inline">\(.2\)</span></p>
+<div class="sourceCode" id="cb53"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>max_idx <span class="ot">=</span> <span class="fu">which.max</span>(log_likelihoods)</span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>theta_vec[max_idx]</span></code></pre></div>
+<pre><code>## [1] 0.1717172</code></pre>
 </div>
 <div class="slide section level2">
 
-<p>In the binomial and normal examples, we used <em>grid search</em>.</p>
+<p>In the binomial and normal examples, we used <em>grid
+search</em>.</p>
 <p>Two reasons why those examples are silly:</p>
 <ul class="incremental">
-<li><p>We have closed-form solutions to the problems, so we don’t need to search.</p></li>
-<li><p>Even if we didn’t have closed-form solutions, there are more efficient ways of finding the maximum than grid search.</p></li>
+<li><p>We have closed-form solutions to the problems, so we don’t need
+to search.</p></li>
+<li><p>Even if we didn’t have closed-form solutions, there are more
+efficient ways of finding the maximum than grid search.</p></li>
 </ul>
 <div class="incremental">
 <p>One reason why getting the numbers is non-trivial:</p>
 <ul class="incremental">
-<li><p>Maximum likelihood in each case is <span class="math inline">\(\sum_{i=1}^n x_i / n\)</span>.</p></li>
-<li><p>How does the computer get the actual numbers out? Division is easy to write down but actually <a href="https://web.stanford.edu/class/ee486/doc/chap5.pdf">non-trivial</a>.</p></li>
+<li><p>Maximum likelihood in each case is <span
+class="math inline">\(\sum_{i=1}^n x_i / n\)</span>.</p></li>
+<li><p>How does the computer get the actual numbers out? Division is
+easy to write down but actually <a
+href="https://web.stanford.edu/class/ee486/doc/chap5.pdf">non-trivial</a>.</p></li>
 </ul>
 </div>
 </div>
 <div id="distribution-fitting-in-r" class="slide section level2">
 <h1>Distribution fitting in R</h1>
-<p>For the simple case where all the data come from the same distribution, can use <code>fitdistr</code></p>
+<p>For the simple case where all the data come from the same
+distribution, can use <code>fitdistr</code></p>
 <p>Syntax: <code>fitdistr(x, densfun, start)</code> with</p>
 <ul class="incremental">
-<li><p><code>x</code>: A vector of length at least 1 containing the data</p></li>
-<li><p><code>densfun</code>: A function whose first argument is the value at which we want the density evaluated and whose subsequent arguments are the parameters of the distribution.</p></li>
-<li><p><code>start</code>: Starting values to use when searching for parameters.</p></li>
+<li><p><code>x</code>: A vector of length at least 1 containing the
+data</p></li>
+<li><p><code>densfun</code>: A function whose first argument is the
+value at which we want the density evaluated and whose subsequent
+arguments are the parameters of the distribution.</p></li>
+<li><p><code>start</code>: Starting values to use when searching for
+parameters.</p></li>
 </ul>
 </div>
 <div id="example-negative-binomial" class="slide section level2">
 <h1>Example: negative binomial</h1>
 <p>Negative binomial distribution:</p>
 <ul class="incremental">
-<li><p>Suppose we have a coin that we flip repeatedly, with <span class="math inline">\(P(heads) = p\)</span>.</p></li>
-<li><p>We flip the coin until we have seen <span class="math inline">\(r\)</span> tails.</p></li>
-<li><p>If we let <span class="math inline">\(X\)</span> be a random variable describing the number of heads we saw, <span class="math inline">\(X \sim NB(r, p)\)</span>.</p></li>
+<li><p>Suppose we have a coin that we flip repeatedly, with <span
+class="math inline">\(P(heads) = p\)</span>.</p></li>
+<li><p>We flip the coin until we have seen <span
+class="math inline">\(r\)</span> tails.</p></li>
+<li><p>If we let <span class="math inline">\(X\)</span> be a random
+variable describing the number of heads we saw, <span
+class="math inline">\(X \sim NB(r, p)\)</span>.</p></li>
 </ul>
 <div class="incremental">
-<p>Probability mass function of <span class="math inline">\(X\)</span>: <span class="math display">\[
+<p>Probability mass function of <span class="math inline">\(X\)</span>:
+<span class="math display">\[
 \begin{align*}
 P(X = x) &amp;= \begin{pmatrix}x+r-1 \\x  \end{pmatrix}(1-p)^r p^x \\
 &amp;= \frac{(x+r-1)!}{(r-1)!x!}(1-p)^r p^x
@@ -529,50 +673,69 @@ P(X = x) &amp;= \begin{pmatrix}x+r-1 \\x  \end{pmatrix}(1-p)^r p^x \\
 </div>
 <div class="slide section level2">
 
-<p>Suppose we have <span class="math inline">\(x_1,\ldots, x_n\)</span>, and we want to fit a negative binomial distribution, i.e., find the values of <span class="math inline">\(r\)</span> and <span class="math inline">\(p\)</span> that make <span class="math inline">\(x_1,\ldots, x_n\)</span> the most likely.</p>
-<p>The log likelihood of <span class="math inline">\(x_1,\ldots, x_n\)</span> is <span class="math display">\[
-\sum_{i=1}^n \log((x_i + r - 1)!) - \log((r-1)!) - \log(x_i!) + r \log(1-p) + x \log p
+<p>Suppose we have <span class="math inline">\(x_1,\ldots, x_n\)</span>,
+and we want to fit a negative binomial distribution, i.e., find the
+values of <span class="math inline">\(r\)</span> and <span
+class="math inline">\(p\)</span> that make <span
+class="math inline">\(x_1,\ldots, x_n\)</span> the most likely.</p>
+<p>The log likelihood of <span class="math inline">\(x_1,\ldots,
+x_n\)</span> is <span class="math display">\[
+\sum_{i=1}^n \log((x_i + r - 1)!) - \log((r-1)!) - \log(x_i!) + r
+\log(1-p) + x \log p
 \]</span></p>
-<p>If you go through the calculus, you can find a closed-form solution for the maximizing value of <span class="math inline">\(p\)</span>: <span class="math inline">\(\hat p = \frac{\sum_{i=1}^n x_i}{n r + \sum_{i=1}^n x_i}\)</span>.</p>
-<p>There is no closed-form solution for <span class="math inline">\(r\)</span>.</p>
+<p>If you go through the calculus, you can find a closed-form solution
+for the maximizing value of <span class="math inline">\(p\)</span>:
+<span class="math inline">\(\hat p = \frac{\sum_{i=1}^n x_i}{n r +
+\sum_{i=1}^n x_i}\)</span>.</p>
+<p>There is no closed-form solution for <span
+class="math inline">\(r\)</span>.</p>
 </div>
 <div class="slide section level2">
 
-<p>Note: there are multiple parameterizations of the negative binomial, and R uses a slightly different one than what we defined above.</p>
-<div class="sourceCode" id="cb55"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1"></a><span class="kw">library</span>(MASS)</span>
-<span id="cb55-2"><a href="#cb55-2"></a>x =<span class="st"> </span><span class="kw">rnbinom</span>(<span class="dt">n =</span> <span class="dv">1000</span>, <span class="dt">size =</span> <span class="dv">4</span>, <span class="dt">mu =</span> <span class="dv">5</span>)</span>
-<span id="cb55-3"><a href="#cb55-3"></a>nb_fit =<span class="st"> </span><span class="kw">fitdistr</span>(x, <span class="dt">densfun =</span> dnbinom, <span class="dt">start =</span> <span class="kw">list</span>(<span class="dt">size =</span> <span class="dv">1</span>, <span class="dt">mu =</span> <span class="dv">1</span>))</span>
-<span id="cb55-4"><a href="#cb55-4"></a>nb_fit</span></code></pre></div>
+<p>Note: there are multiple parameterizations of the negative binomial,
+and R uses a slightly different one than what we defined above.</p>
+<div class="sourceCode" id="cb55"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(MASS)</span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>x <span class="ot">=</span> <span class="fu">rnbinom</span>(<span class="at">n =</span> <span class="dv">1000</span>, <span class="at">size =</span> <span class="dv">4</span>, <span class="at">mu =</span> <span class="dv">5</span>)</span>
+<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a>nb_fit <span class="ot">=</span> <span class="fu">fitdistr</span>(x, <span class="at">densfun =</span> dnbinom, <span class="at">start =</span> <span class="fu">list</span>(<span class="at">size =</span> <span class="dv">1</span>, <span class="at">mu =</span> <span class="dv">1</span>))</span>
+<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a>nb_fit</span></code></pre></div>
 <pre><code>##      size         mu    
-##   3.7594421   4.9750000 
-##  (0.3102882) (0.1075109)</code></pre>
+##   3.7065090   5.1750002 
+##  (0.2974855) (0.1113566)</code></pre>
 </div>
 <div class="slide section level2">
 
-<p>We can check informally that these values of <code>mu</code> and <code>size</code> are maximizers:</p>
-<div class="sourceCode" id="cb57"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1"></a>fitted_log_lik =<span class="st"> </span><span class="kw">dnbinom</span>(x, <span class="dt">size =</span> nb_fit<span class="op">$</span>estimate[<span class="st">&quot;size&quot;</span>], <span class="dt">mu =</span> nb_fit<span class="op">$</span>estimate[<span class="st">&quot;mu&quot;</span>], <span class="dt">log =</span> <span class="ot">TRUE</span>)</span>
-<span id="cb57-2"><a href="#cb57-2"></a><span class="kw">sum</span>(fitted_log_lik)</span></code></pre></div>
-<pre><code>## [1] -2532.61</code></pre>
-<div class="sourceCode" id="cb59"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1"></a><span class="co">## the log likelihood at a couple other values of mu and size</span></span>
-<span id="cb59-2"><a href="#cb59-2"></a><span class="kw">sum</span>(<span class="kw">dnbinom</span>(x, <span class="dt">size =</span> <span class="dv">2</span>, <span class="dt">mu =</span> <span class="dv">3</span>, <span class="dt">log =</span> <span class="ot">TRUE</span>))</span></code></pre></div>
-<pre><code>## [1] -2761.059</code></pre>
-<div class="sourceCode" id="cb61"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1"></a><span class="kw">sum</span>(<span class="kw">dnbinom</span>(x, <span class="dt">size =</span> <span class="dv">10</span>, <span class="dt">mu =</span> <span class="dv">4</span>, <span class="dt">log =</span> <span class="ot">TRUE</span>))</span></code></pre></div>
-<pre><code>## [1] -2659.392</code></pre>
+<p>We can check informally that these values of <code>mu</code> and
+<code>size</code> are maximizers:</p>
+<div class="sourceCode" id="cb57"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>fitted_log_lik <span class="ot">=</span> <span class="fu">dnbinom</span>(x, <span class="at">size =</span> nb_fit<span class="sc">$</span>estimate[<span class="st">&quot;size&quot;</span>], <span class="at">mu =</span> nb_fit<span class="sc">$</span>estimate[<span class="st">&quot;mu&quot;</span>], <span class="at">log =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(fitted_log_lik)</span></code></pre></div>
+<pre><code>## [1] -2566.476</code></pre>
+<div class="sourceCode" id="cb59"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="do">## the log likelihood at a couple other values of mu and size</span></span>
+<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(<span class="fu">dnbinom</span>(x, <span class="at">size =</span> <span class="dv">2</span>, <span class="at">mu =</span> <span class="dv">3</span>, <span class="at">log =</span> <span class="cn">TRUE</span>))</span></code></pre></div>
+<pre><code>## [1] -2830.554</code></pre>
+<div class="sourceCode" id="cb61"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(<span class="fu">dnbinom</span>(x, <span class="at">size =</span> <span class="dv">10</span>, <span class="at">mu =</span> <span class="dv">4</span>, <span class="at">log =</span> <span class="cn">TRUE</span>))</span></code></pre></div>
+<pre><code>## [1] -2731.002</code></pre>
 </div>
 <div id="more-generally" class="slide section level2">
 <h1>More generally</h1>
-<p>The examples so far have all been for the simple case where we assume that all the data come from the same distribution, but:</p>
-<p>In general, we can let different data points come from different distributions, but the setup is the same:</p>
+<p>The examples so far have all been for the simple case where we assume
+that all the data come from the same distribution, but:</p>
+<p>In general, we can let different data points come from different
+distributions, but the setup is the same:</p>
 <ul class="incremental">
-<li><p>We have a parameter vector <span class="math inline">\(\theta\)</span>.</p></li>
-<li><p>Different values of <span class="math inline">\(\theta\)</span> correspond to different distributions for the data.</p></li>
-<li><p>We want to find <span class="math inline">\(\theta\)</span> that maximizes the likelihood of the data.</p></li>
+<li><p>We have a parameter vector <span
+class="math inline">\(\theta\)</span>.</p></li>
+<li><p>Different values of <span class="math inline">\(\theta\)</span>
+correspond to different distributions for the data.</p></li>
+<li><p>We want to find <span class="math inline">\(\theta\)</span> that
+maximizes the likelihood of the data.</p></li>
 </ul>
 </div>
 <div id="concretely-linear-models" class="slide section level2">
 <h1>Concretely: Linear models</h1>
-<p>We have data <span class="math inline">\(y_i, \ldots, y_n\)</span> and <span class="math inline">\(x_1,\ldots, x_n\)</span>.</p>
-<p>We assume that the <span class="math inline">\(y_i\)</span>’s are realizations of random variables: <span class="math display">\[
+<p>We have data <span class="math inline">\(y_i, \ldots, y_n\)</span>
+and <span class="math inline">\(x_1,\ldots, x_n\)</span>.</p>
+<p>We assume that the <span class="math inline">\(y_i\)</span>’s are
+realizations of random variables: <span class="math display">\[
 \begin{align*}
 y_i \sim N(\beta_0 + \beta_1 x_i, \sigma^2)
 \end{align*}
@@ -580,17 +743,26 @@ y_i \sim N(\beta_0 + \beta_1 x_i, \sigma^2)
 <div class="incremental">
 <p>In this case:</p>
 <ul class="incremental">
-<li><p>The <span class="math inline">\(y_i\)</span>’s don’t come from the same distribution (they are assumed to have different means).</p></li>
-<li><p><span class="math inline">\(\theta = (\beta_0, \beta_1, \sigma)\)</span> is our parameter vector, and we want to find the value of <span class="math inline">\(\theta\)</span> that makes the data the most likely.</p></li>
+<li><p>The <span class="math inline">\(y_i\)</span>’s don’t come from
+the same distribution (they are assumed to have different
+means).</p></li>
+<li><p><span class="math inline">\(\theta = (\beta_0, \beta_1,
+\sigma)\)</span> is our parameter vector, and we want to find the value
+of <span class="math inline">\(\theta\)</span> that makes the data the
+most likely.</p></li>
 </ul>
 </div>
 </div>
 <div id="summing-up" class="slide section level2">
 <h1>Summing up</h1>
 <ul class="incremental">
-<li><p>Fitting probability distributions just means finding the one that “looks” the most like your data, according to some measure.</p></li>
-<li><p>For all but very simple cases where we can get closed-form solutions with pen and paper, we need more computational tools to fit these distributions.</p></li>
-<li><p>Over the next couple of weeks we will be looking at algorithms for this problem in more detail.</p></li>
+<li><p>Fitting probability distributions just means finding the one that
+“looks” the most like your data, according to some measure.</p></li>
+<li><p>For all but very simple cases where we can get closed-form
+solutions with pen and paper, we need more computational tools to fit
+these distributions.</p></li>
+<li><p>Over the next couple of weeks we will be looking at algorithms
+for this problem in more detail.</p></li>
 </ul>
 </div>
 </body>

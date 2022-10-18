@@ -18,16 +18,6 @@ Agenda
 - Fitting distributions
 
 
-Logistics:
-
-- Final project: can be done individually or in teams of up to 3
-
-- Final project presentations in the last week of class
-
-- Email me with your group and desired topic by October 30.
-
-- Discussion thread on the course website for finding teammates.
-
 ## Very short review of probability
 
 We need to know about _random variables_ and their distributions.
