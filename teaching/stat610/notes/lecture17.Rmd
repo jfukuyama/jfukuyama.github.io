@@ -17,11 +17,6 @@ Reading:
 
 - Kenneth Lange, Numerical Analysis for Statisticians, Section 11.2, 13.3
 
-Logistics:
-
-- Homework due today
-
-- Next homework posted, due in two weeks (Tuesday November 3)
 
 ## Newton's method
 
@@ -187,9 +182,9 @@ This puts us at the maximum, as you can check by evaluating first and second der
 Let's look at the log likelihood and the Taylor approximation of the log likelihood:
 
 ```{r}
-x = c(1.1, 2.3, 3, 1.5)
-theta_vec = seq(0, 4, length.out = 1000)
-log_lik = sapply(theta_vec, function(theta) sum(log(dnorm(x, mean = theta, sd = 1))))
+x <- c(1.1, 2.3, 3, 1.5)
+theta_vec <- seq(0, 4, length.out = 1000)
+log_lik <- sapply(theta_vec, function(theta) sum(log(dnorm(x, mean = theta, sd = 1))))
 plot(log_lik ~ theta_vec, type = 'l')
 ```
 
@@ -198,14 +193,14 @@ plot(log_lik ~ theta_vec, type = 'l')
 Taylor approximation:
 
 ```{r}
-theta_0 = 0
-taylor_approx = function(theta, theta_0, loglik, dloglik, d2loglik, x) {
+theta_0 <- 0
+taylor_approx <- function(theta, theta_0, loglik, dloglik, d2loglik, x) {
     loglik(theta_0, x) + dloglik(theta_0, x) * (theta - theta_0) + .5 * d2loglik(theta_0, x) * (theta - theta_0)^2
 }
-loglik_norm = function(theta, x) sum(log(dnorm(x, mean = theta, sd = 1)))
-dloglik_norm = function(theta, x) sum(x - theta)
-d2loglik_norm = function(theta, x) -length(x)
-taylor_approx_vector = sapply(theta_vec, taylor_approx, theta_0 = 0, loglik = loglik_norm, dloglik = dloglik_norm, d2loglik = d2loglik_norm, x = x)
+loglik_norm <- function(theta, x) sum(log(dnorm(x, mean = theta, sd = 1)))
+dloglik_norm <- function(theta, x) sum(x - theta)
+d2loglik_norm <- function(theta, x) -length(x)
+taylor_approx_vector <- sapply(theta_vec, taylor_approx, theta_0 = 0, loglik = loglik_norm, dloglik = dloglik_norm, d2loglik = d2loglik_norm, x = x)
 plot(log_lik ~ theta_vec, pch = 2)
 points(taylor_approx_vector ~ theta_vec, col = 'red')
 ```
@@ -266,19 +261,19 @@ Let's look at the log likelihood and the Taylor approximation of the log likelih
 
 ```{r}
 set.seed(0)
-x = rnbinom(n = 5, size = 4, prob = .5)
-theta_vec = seq(1, 10, length.out = 1000)
-log_lik = sapply(theta_vec, function(theta) sum(log(dnbinom(x, size = theta, prob = .5))))
+x <- rnbinom(n = 5, size = 4, prob = .5)
+theta_vec <- seq(1, 10, length.out = 1000)
+log_lik <- sapply(theta_vec, function(theta) sum(log(dnbinom(x, size = theta, prob = .5))))
 plot(log_lik ~ theta_vec, type = 'l')
 ```
 
 -----
 
 ```{r}
-loglik_nbinom = function(theta, x) sum(log(dnbinom(x, size = theta, prob = .5)))
-dloglik_nbinom = function(theta, x) sum(digamma(x + theta) - digamma(theta) + log(.5))
-d2loglik_nbinom = function(theta, x) sum(trigamma(x + theta) - trigamma(theta))
-taylor_approx_vector = sapply(theta_vec, taylor_approx, theta_0 = 7, loglik = loglik_nbinom, dloglik = dloglik_nbinom, d2loglik = d2loglik_nbinom, x = x)
+loglik_nbinom <- function(theta, x) sum(log(dnbinom(x, size = theta, prob = .5)))
+dloglik_nbinom <- function(theta, x) sum(digamma(x + theta) - digamma(theta) + log(.5))
+d2loglik_nbinom <- function(theta, x) sum(trigamma(x + theta) - trigamma(theta))
+taylor_approx_vector <- sapply(theta_vec, taylor_approx, theta_0 = 7, loglik = loglik_nbinom, dloglik = dloglik_nbinom, d2loglik = d2loglik_nbinom, x = x)
 plot(log_lik ~ theta_vec, type = 'l', xlim = c(0, 10), ylim = c(-20, -8))
 points(taylor_approx_vector ~ theta_vec, type = 'l', col = 'red')
 ```
@@ -290,15 +285,15 @@ What is the maximizing point?
 
 ```{r}
 theta_vec[which.max(taylor_approx_vector)]
-theta_0 = 7
-theta_1 = theta_0 - dloglik_nbinom(theta_0, x) / d2loglik_nbinom(theta_0, x)
+theta_0 <- 7
+theta_1 <- theta_0 - dloglik_nbinom(theta_0, x) / d2loglik_nbinom(theta_0, x)
 theta_1
 ```
 
 -----
 
 ```{r}
-taylor_approx_vector = sapply(theta_vec, taylor_approx, theta_0 = theta_1, loglik = loglik_nbinom, dloglik = dloglik_nbinom, d2loglik = d2loglik_nbinom, x = x)
+taylor_approx_vector <- sapply(theta_vec, taylor_approx, theta_0 = theta_1, loglik = loglik_nbinom, dloglik = dloglik_nbinom, d2loglik = d2loglik_nbinom, x = x)
 plot(log_lik ~ theta_vec, type = 'l', xlim = c(0, 10), ylim = c(-20, -8))
 points(taylor_approx_vector ~ theta_vec, type = 'l', col = 'red')
 ```
@@ -308,14 +303,14 @@ points(taylor_approx_vector ~ theta_vec, type = 'l', col = 'red')
 Another Newton step:
 
 ```{r}
-theta_2 = theta_1 - dloglik_nbinom(theta_1, x) / d2loglik_nbinom(theta_1, x)
+theta_2 <- theta_1 - dloglik_nbinom(theta_1, x) / d2loglik_nbinom(theta_1, x)
 theta_2
 ```
 
 . . .
 
 ```{r}
-taylor_approx_vector = sapply(theta_vec, taylor_approx, theta_0 = theta_2, loglik = loglik_nbinom, dloglik = dloglik_nbinom, d2loglik = d2loglik_nbinom, x = x)
+taylor_approx_vector <- sapply(theta_vec, taylor_approx, theta_0 = theta_2, loglik = loglik_nbinom, dloglik = dloglik_nbinom, d2loglik = d2loglik_nbinom, x = x)
 plot(log_lik ~ theta_vec, type = 'l', xlim = c(0, 10), ylim = c(-20, -8))
 points(taylor_approx_vector ~ theta_vec, type = 'l', col = 'red')
 ```
@@ -338,14 +333,14 @@ Mixture model
 For example, we can visualize the density for a mixture of a $N(0, .5)$ and a $N(3, 2.5)$ distribution with mixing parameter $\theta = .2$:
 
 ```{r}
-mean_G = 0
-mean_H = 3
-sd_G = .5
-sd_H = 2.5
-q_seq = seq(-3, 8, length.out = 1000)
-g = dnorm(q_seq, mean = mean_G, sd = sd_G)
-h = dnorm(q_seq, mean = mean_H, sd = sd_H)
-theta = .2
+mean_G <- 0
+mean_H <- 3
+sd_G <- .5
+sd_H <- 2.5
+q_seq <- seq(-3, 8, length.out = 1000)
+g <- dnorm(q_seq, mean = mean_G, sd = sd_G)
+h <- dnorm(q_seq, mean = mean_H, sd = sd_H)
+theta <- .2
 plot(theta * g + (1 - theta) * h ~ q_seq, type = 'l')
 ```
 
@@ -403,13 +398,13 @@ $$
 Again: log likelihood and the Taylor approximation of the log likelihood
 
 ```{r}
-x = c(-.5,.2,.2,.1,.2,3,3,4,3,4)
-theta_vec = seq(0, 1, length.out = 1000)
-phi1 = function(x) dnorm(x, mean = 0, sd = .5)
-phi2 = function(x) dnorm(x, mean = 3, sd = 2.5)
-mixture_density = function(theta, x)
+x <- c(-.5,.2,.2,.1,.2,3,3,4,3,4)
+theta_vec <- seq(0, 1, length.out = 1000)
+phi1 <- function(x) dnorm(x, mean = 0, sd = .5)
+phi2 <- function(x) dnorm(x, mean = 3, sd = 2.5)
+mixture_density <- function(theta, x)
     theta * phi1(x) + (1 - theta) * phi2(x)
-log_lik = sapply(theta_vec, function(theta) sum(log(mixture_density(theta, x))))
+log_lik <- sapply(theta_vec, function(theta) sum(log(mixture_density(theta, x))))
 plot(log_lik ~ theta_vec, type = 'l', ylim = c(-40, -15))
 ```
 
@@ -420,13 +415,13 @@ plot(log_lik ~ theta_vec, type = 'l', ylim = c(-40, -15))
 We'll start at a pretty bad point, $\theta_0 = .95$:
 
 ```{r}
-loglik_mixture = function(theta, x)
+loglik_mixture <- function(theta, x)
     sum(log(mixture_density(theta, x)))
-dloglik_mixture = function(theta, x)
+dloglik_mixture <- function(theta, x)
     sum((phi1(x) - phi2(x)) / (theta * phi1(x) + (1 - theta) * phi2(x)))
-d2loglik_mixture = function(theta, x)
+d2loglik_mixture <- function(theta, x)
     -sum((phi1(x) - phi2(x))^2 / (theta * phi1(x) + (1 - theta) * phi2(x))^2)
-taylor_approx_vector = sapply(theta_vec, taylor_approx, theta_0 = .95, loglik = loglik_mixture, dloglik = dloglik_mixture, d2loglik = d2loglik_mixture, x = x)
+taylor_approx_vector <- sapply(theta_vec, taylor_approx, theta_0 = .95, loglik = loglik_mixture, dloglik = dloglik_mixture, d2loglik = d2loglik_mixture, x = x)
 plot(log_lik ~ theta_vec, type = 'l', ylim = c(-40, -15))
 points(taylor_approx_vector ~ theta_vec, type = 'l', col = 'red')
 ```
@@ -438,8 +433,8 @@ What is the maximizing point?
 
 ```{r}
 theta_vec[which.max(taylor_approx_vector)]
-theta_0 = .95
-theta_1 = theta_0 - dloglik_mixture(theta_0, x) / d2loglik_mixture(theta_0, x)
+theta_0 <- .95
+theta_1 <- theta_0 - dloglik_mixture(theta_0, x) / d2loglik_mixture(theta_0, x)
 theta_1
 ```
 
@@ -448,7 +443,7 @@ theta_1
 Then do a Taylor approximation around $\theta_1$:
 
 ```{r}
-taylor_approx_vector = sapply(theta_vec, taylor_approx, theta_0 = theta_1, loglik = loglik_mixture, dloglik = dloglik_mixture, d2loglik = d2loglik_mixture, x = x)
+taylor_approx_vector <- sapply(theta_vec, taylor_approx, theta_0 = theta_1, loglik = loglik_mixture, dloglik = dloglik_mixture, d2loglik = d2loglik_mixture, x = x)
 plot(log_lik ~ theta_vec, type = 'l', ylim = c(-40, -15))
 points(taylor_approx_vector ~ theta_vec, type = 'l', col = 'red')
 ```
@@ -458,7 +453,7 @@ points(taylor_approx_vector ~ theta_vec, type = 'l', col = 'red')
 And another Newton step:
 
 ```{r}
-theta_2 = theta_1 - dloglik_mixture(theta_1, x) / d2loglik_mixture(theta_1, x)
+theta_2 <- theta_1 - dloglik_mixture(theta_1, x) / d2loglik_mixture(theta_1, x)
 theta_2
 ```
 
@@ -467,13 +462,13 @@ theta_2
 Another Taylor approximation/Newton step:
 
 ```{r}
-taylor_approx_vector = sapply(theta_vec, taylor_approx, theta_0 = theta_2, loglik = loglik_mixture, dloglik = dloglik_mixture, d2loglik = d2loglik_mixture, x = x)
+taylor_approx_vector <- sapply(theta_vec, taylor_approx, theta_0 = theta_2, loglik = loglik_mixture, dloglik = dloglik_mixture, d2loglik = d2loglik_mixture, x = x)
 plot(log_lik ~ theta_vec, type = 'l', ylim = c(-40, -15))
 points(taylor_approx_vector ~ theta_vec, type = 'l', col = 'red')
 ```
 
 ```{r}
-theta_3 = theta_2 - dloglik_mixture(theta_2, x) / d2loglik_mixture(theta_2, x)
+theta_3 <- theta_2 - dloglik_mixture(theta_2, x) / d2loglik_mixture(theta_2, x)
 theta_3
 ```
 
@@ -535,7 +530,7 @@ Newton's method for multiple parameters has the same issues as with one paramete
 
 - How do you know the function converges to a maximum and not a minimum?
 
-In addition, we have the problem of inverting the Hessian, this scales badly with $p$, the number of parameters. (Usually think of as $O(p^3)$, but computer scientists have worked really hard and gotten $O(p^{2.4ish})$)
+In addition, we have the problem of inverting the Hessian, this scales badly with $p$, the number of parameters. (Usually think of as $O(p^3)$, but [computer scientists](https://en.wikipedia.org/wiki/Strassen_algorithm) and [computers](https://www.deepmind.com/blog/discovering-novel-algorithms-with-alphatensor) have worked really hard and gotten $O(p^{2.4ish})$)
 
 Several ways of choosing starting points, but one way that often works is _method of moments_.
 
@@ -614,14 +609,14 @@ Mixture model
 For example, we can visualize the density for a mixture of a $N(0, .5)$ and a $N(3, 2.5)$ distribution with mixing parameter $\theta = .2$:
 
 ```{r}
-mean_G = 0
-mean_H = 3
-sd_G = .5
-sd_H = 2.5
-q_seq = seq(-3, 8, length.out = 1000)
-g = dnorm(q_seq, mean = mean_G, sd = sd_G)
-h = dnorm(q_seq, mean = mean_H, sd = sd_H)
-theta = .2
+mean_G <- 0
+mean_H <- 3
+sd_G <- .5
+sd_H <- 2.5
+q_seq <- seq(-3, 8, length.out = 1000)
+g <- dnorm(q_seq, mean = mean_G, sd = sd_G)
+h <- dnorm(q_seq, mean = mean_H, sd = sd_H)
+theta <- .2
 plot(theta * g + (1 - theta) * h ~ q_seq, type = 'l')
 ```
 
