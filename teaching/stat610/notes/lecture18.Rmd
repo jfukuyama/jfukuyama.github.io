@@ -80,7 +80,7 @@ Logistic regression model:
 - $y \in \{0,1\}^n$, 
 - $x_i \in \mathbb R^p$, $X \in \mathbb R^{n \times p}$, $X = \begin{pmatrix} x_1^T \\ \vdots \\ x_n^T \end{pmatrix}$
 - $\theta \in \mathbb R^p$, 
-- $y_i \sim \text{Bern}(p_i)$, $p_i=\exp(x_i^T \theta) / (1 + \exp(x_i^T \theta)$
+- $y_i \sim \text{Bern}(p_i)$, $p_i=\exp(x_i^T \theta) / (1 + \exp(x_i^T \theta))$
 
 -----
 
@@ -111,7 +111,7 @@ $$
 Second derivatives:
 $$
 \begin{align*}
-d^2 \ell(\theta) &= \sum_{i=1}^n p_i(1 - p_i) x_i x_i^T \\
+d^2 \ell(\theta) &= -\sum_{i=1}^n p_i(1 - p_i) x_i x_i^T \\
 &= -X^T W X
 \end{align*}
 $$
@@ -315,7 +315,7 @@ $$
 \begin{align*}
 \eta &= \mu\\
 T(y) &= y\\
-A(\eta) &= \frac{\mu^2}{ 2} = \eta_1\\
+A(\eta) &= \frac{\mu^2}{ 2} = \frac{\eta^2}{2}\\
 h(y) &= \frac{1}{\sqrt{2\pi}}\exp(-y^2 / 2)
 \end{align*}
 $$
@@ -365,14 +365,14 @@ where $f$ is an exponential family, $\eta_i$ the natural parameter
 
 . . .
 
-- Systematic component
+- Systematic component or the linear predictor
 $$
 \eta_i = x_i^T \theta
 $$
 
 . . .
 
-- Link function: links the mean to the natural parameter
+- Link function: links the mean to the linear predictor
 $$
 \eta_i = g(\mu_i)
 $$
@@ -384,7 +384,7 @@ $$
 
 ## Choice of link functions
 
-The _canonical link_ is the one that maps the mean to the natural parameter.
+The _canonical link_ is the one that maps the mean to the natural parameter. If you use the canonical link, the natural parameter will be linear in the predictors.
 
 - Normal: Canonical link is the identity: $g(x) = x$
 
