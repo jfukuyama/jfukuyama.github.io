@@ -105,7 +105,8 @@ Hessian)</p></li>
 </ul>
 <p>Reading:</p>
 <ul class="incremental">
-<li>Boyd and Vandenberghe, Chapter 9.1-9.4</li>
+<li>Lange Chapter 11.1-11.4, 11.6; Boyd and Vandenberghe, Chapter
+9.1-9.4</li>
 </ul>
 </div>
 <div id="fisher-scoring" class="slide section level2">
@@ -340,7 +341,7 @@ class="math inline">\(-d^2\ell(\theta^{(n+1)})\)</span> that satisfies
 the equation above is called the <em>secant condition</em>.</p>
 <p>Several different ways to make the approximation:</p>
 <ul class="incremental">
-<li><p>Symmetric rank-1 update is Davidson’s method, described in
+<li><p>Symmetric rank-1 update is Davidon’s method, described in
 Lange.</p></li>
 <li><p>Symmetric rank-2 update is BFGS
 (Broyden–Fletcher–Goldfarb–Shanno).</p></li>
@@ -361,12 +362,14 @@ d\ell(\theta^{(n)}) - d\ell(\theta^{(n+1)})\approx d^2
 \]</span> as <span class="math display">\[
 -A^{(n+1)} s^{(n)} = g^{(n)}
 \]</span></p>
-<p>Davidson’s method is a symmetric rank-1 update.</p>
+<p>Davidon’s method is a symmetric rank-1 update.</p>
 <p><span class="math display">\[
 A^{(n+1)} = A^{(n)} - c^{(n)} v^{(n)} (v^{(n)})^T
 \]</span></p>
 <p>where <span class="math display">\[
-c^{(n)} = \frac{1}{(g^{(n)} + A^{(n)} s^{(n)})^T s^{(n)}} \\
+c^{(n)} = \frac{1}{(g^{(n)} + A^{(n)} s^{(n)})^T s^{(n)}}
+\]</span></p>
+<p><span class="math display">\[
 v^{(n)} = g^{(n)} + A^{(n)} s^{(n)}
 \]</span></p>
 <p>(verify on your own that this satisfies the secant condition)</p>

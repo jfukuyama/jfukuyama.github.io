@@ -23,7 +23,7 @@ Today: modifications of Newton's method
 
 Reading:
 
-- Boyd and Vandenberghe, Chapter 9.1-9.4
+- Lange Chapter 11.1-11.4, 11.6; Boyd and Vandenberghe, Chapter 9.1-9.4
 
 ## Fisher Scoring
 
@@ -225,7 +225,7 @@ Finding an approximation $A^{(n+1)}$ of $-d^2\ell(\theta^{(n+1)})$ that satisfie
 
 Several different ways to make the approximation:
 
-- Symmetric rank-1 update is Davidson's method, described in Lange.
+- Symmetric rank-1 update is Davidon's method, described in Lange.
 
 - Symmetric rank-2 update is BFGS (Broyden–Fletcher–Goldfarb–Shanno).
 
@@ -250,7 +250,7 @@ $$
 $$
 
 
-Davidson's method is a symmetric rank-1 update.
+Davidon's method is a symmetric rank-1 update.
 
 $$
 A^{(n+1)} = A^{(n)} - c^{(n)} v^{(n)} (v^{(n)})^T
@@ -258,7 +258,10 @@ $$
 
 where
 $$
-c^{(n)} = \frac{1}{(g^{(n)} + A^{(n)} s^{(n)})^T s^{(n)}} \\
+c^{(n)} = \frac{1}{(g^{(n)} + A^{(n)} s^{(n)})^T s^{(n)}}
+$$
+
+$$
 v^{(n)} = g^{(n)} + A^{(n)} s^{(n)}
 $$
 
