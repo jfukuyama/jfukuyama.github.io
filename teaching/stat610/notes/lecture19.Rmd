@@ -321,29 +321,12 @@ Repeat
 Until the stopping criterion is satisfied, usually $\|\nabla f(x)\|_2
 \le \epsilon$.
 
-## Line search types: Exact line search
 
-Step size $t$ found as
-$$
-t = \text{argmin}_{t > 0}f(x + t \Delta x)
-$$
 
-This can be useful if there is an analytic or otherwise quick method
-of finding the minimum of the function restricted to a ray.
 
-## Line search types: Backtracking line search
 
-- Step size $t$ found with an iterative method.
 
-- Parameters $\alpha \in (0, 1/2)$, $\beta \in (0,1)$ that you
-specify.
 
-- Algorithm: Start at $t = 1$, repeat $t \leftarrow \beta t$ until
-$$
-f(x + t \Delta x) < f(x) + \alpha t \nabla f(x)^T \Delta x
-$$
-
-![](backtracking-image.png)
 
 ## Gradient descent
 
@@ -357,14 +340,30 @@ Repeat
 
 - $\Delta x \leftarrow - \nabla f(x)$.
 
-- Line search: Choose step size $t$ by either backtracking line search
-or exact line search.
+- Choose a step size t. Can be deterministic based on the step or adaptive.
 
 - Update: $x \leftarrow x + t \Delta x$
 
 Until the stopping criterion is satisfied, usually $\|\nabla f(x)\|_2
 \le \epsilon$.
 
+## Choosing the step size
+
+A lot of options, grouped into deterministic and adaptive.
+
+Deterministic methods:
+
+- Time-based schedules, e.g. $t_{n+1} = t_n / (1 + di)$ ($d$ a decay parameter, $i$ the iteration)
+
+- Step-based schedules, e.g. $t_n = t_0 / (1 + i / \tau)$ ($\tau$ a "search time" parameter, $i$ the iteration, $t_0$ an initial step size).
+
+- Exponential schedules, e.g. $t_n = t_0 e^{-di}$ ($i$ the iteration, $d$ a decay parameter, $t_0$ an initial step size).
+
+Adaptive methods:
+
+- Exact line search
+
+- Backtracking line search
 
 ## Gradient descent example in pictures
 
@@ -393,28 +392,6 @@ $$
 
 ----
 
-Functions for backtrakcing gradient descent:
-
-```{r}
-backtrack_desc = function(our_fn, our_grad, start, alpha, beta, data) {
-  theta = start
-  step_size = backtracking(our_fn, our_grad, theta, alpha, beta, data)
-  new_theta = theta + step_size * our_grad(theta, data)
-  return(new_theta)
-}
-
-backtracking = function(our_fn, our_grad, theta, alpha, beta, data) {
-    t = 1
-    fn_current = our_fn(theta, data)
-    grad_current = our_grad(theta, data)
-  while(our_fn(theta + t * grad_current, data) > (fn_current + alpha * t * t(grad_current) %*% grad_current)) {
-    t = beta * t
-  }
-  return(t)
-}
-```
-
------
 
 Functions for the log likelihood:
 
@@ -425,20 +402,84 @@ neg_log_lik = function(theta, x) {
 neg_deriv = function(theta, x) {
     return(sum(x - theta))
 }
+```
+```{r}
+step_size = function(i, eta0, tau) {
+    return(eta0 / (1 + i / tau))
+}
+step_size_exponential = function(i, t0, d) {
+    return(t0 * exp(-i * d))
+}
+```
+
+-----
+
+```{r}
 set.seed(0)
 x = rnorm(n = 20, mean = 5, sd = 1)
 mean(x)
 theta = 0
-for(i in 1:10) {
-    theta = backtrack_desc(neg_log_lik, neg_deriv, start = theta, alpha = .1, beta = .2, data = x)
-    cat(sprintf("Value of theta at iteration %i: %.2f\n", i, theta))
+niter = 1000
+intermediate_theta_vals = numeric(niter)
+for(i in 1:niter) {
+    theta = theta + step_size(i, eta0 = 1, tau = 40) * neg_deriv(theta, x)
+    intermediate_theta_vals[i] = theta
+    #cat(sprintf("Value of theta at iteration %i: %.2f\n", i, theta))
+}
+theta
+plot(intermediate_theta_vals)
+```
+
+## Logistic regression
+
+Set up the data the same way as last time:
+```{r}
+set.seed(1)
+theta_true = c(1,2)
+n = 100
+X = cbind(rep(1, n), rnorm(n, mean = 0, sd = 1))
+colnames(X) = c("Intercept", "x")
+p = exp(X %*% theta_true) / (1 + exp(X %*% theta_true))
+y = rbinom(n = n, size = 1, prob = p)
+plot(y ~ X[,"x"])
+points(p ~ X[,"x"], col = "red")
+```
+
+-----
+
+Set up the gradient function (minimizing the negative log likelihood, need the negative gradient of the negative log likelihood or the gradient of the log likelihood):
+```{r}
+neg_gradient = function(theta, X, y) {
+    p = exp(X %*% theta) / (1 + exp(X %*% theta))
+    return(t(X) %*% (y - p))
 }
 ```
+
+----
+
+Do our gradient calculations:
+```{r}
+theta = c(0,0)
+niter = 10000
+intermediate_theta_vals = matrix(0, nrow = 2, ncol = niter)
+for(i in 1:niter) {
+    theta = theta + step_size(i, eta0 = .1, tau = 1) * neg_gradient(theta, X, y)
+    intermediate_theta_vals[,i] = theta
+    #cat(sprintf("Value of theta at iteration %i: %.2f\n", i, theta))
+}
+theta
+(thetahat = coef(glm(y ~ 0 + X, family = "binomial")))
+plot(intermediate_theta_vals[1,])
+abline(h = thetahat[1])
+plot(intermediate_theta_vals[2,])
+abline(h = thetahat[2])
+plot(log10(abs(thetahat[1] - intermediate_theta_vals[1,])))
+plot(log10(abs(thetahat[2] - intermediate_theta_vals[2,])))
+```
+
 
 ## Summing up
 
 - Everything we've seen has an interpretation as Newton's method with some approximation of the Hessian standing in for the real thing
 
 - You need to trade off between using the analytic information you have about the problem and computational complexity.
-
-
