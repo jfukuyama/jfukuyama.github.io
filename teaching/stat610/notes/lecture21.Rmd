@@ -269,7 +269,7 @@ $$
 
 Notes
 
-- The expected number of iterations required to accept a draw is $1/c$
+- The expected fraction of accepted samples is $1/c$
 
 - Therefore, should make $c$ as small as possible
 
