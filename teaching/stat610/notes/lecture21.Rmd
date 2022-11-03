@@ -10,11 +10,6 @@ set.seed(1)
 ```
 
 
-Logistics
-
-- Homework posted last Friday
-
-- Lab this Friday on code review
 
 Agenda for today
 
@@ -63,11 +58,11 @@ Define $X_{n+1} = (aX_n + c) \text{ mod } m$
 . . .
 
 ```{r}
-lcg_sequence = function(a=5, c=12, m=16, seed = 10, n_deviates = 20) {
-    sequence = numeric(n_deviates)
-    sequence[1] = seed
+lcg_sequence <- function(a=5, c=12, m=16, seed = 10, n_deviates = 20) {
+    sequence <- numeric(n_deviates)
+    sequence[1] <- seed
     for(i in 2:n_deviates) {
-        sequence[i] = (a * sequence[i-1] + c) %% m
+        sequence[i] <- (a * sequence[i-1] + c) %% m
     }
   return(sequence)
 }
@@ -84,7 +79,7 @@ One recommendation:
 . . .
 
 ```{r}
-random_unifs = (lcg_sequence(a = 25214903917, c = 11, m = 2^48, seed = 2^47 - 17, n_deviates = 1000)) /
+random_unifs <- (lcg_sequence(a = 25214903917, c = 11, m = 2^48, seed = 2^47 - 17, n_deviates = 1000)) /
     2^48
 head(round(random_unifs, digits = 3))
 mean(random_unifs <= .5)
@@ -182,13 +177,13 @@ Let's check:
 . . .
 
 ```{r}
-generate_exponential = function() {
-    U = runif(1)
-    X = -log(1 - U)
+generate_exponential <- function() {
+    U <- runif(1)
+    X <- -log(1 - U)
     return(X)
 }
-random_exponentials = replicate(n = 10000, generate_exponential())
-grid = seq(0,4, length.out = 200)
+random_exponentials <- replicate(n = 10000, generate_exponential())
+grid <- seq(0,4, length.out = 200)
 plot(sapply(grid, function(g) mean(random_exponentials <= g)) ~ grid, type = 'l',
      ylab = "Theoretical and Empirical CDF", xlab = "x")
 points(pexp(grid) ~ grid, type = 'l', col = "red")
@@ -214,11 +209,14 @@ $$
 F^{[-1]}(u) &= \text{inf} \{ x : F(x) \ge u\} \\
 &= \begin{cases}
 -\infty & u = 0 \\
-\lfloor nu \rfloor + 1 & u \in (0,1) \\
-n & u = 1
+1 & u \in (0, 1/n] \\
+2 & u \in (1/n, 2/n] \\
+\vdots & \vdots  \\
+n & u \in ((n-1)/n, 1]
 \end{cases}
 \end{align*}
 $$
+Not including the points $1/n, 2/n, \ldots, (n-1)/n$, this is equal to $\lfloor nu \rfloor + 1$.
 
 -----
 
@@ -227,11 +225,11 @@ Let's check:
 . . .
 
 ```{r}
-generate_discrete_uniform = function(n) {
-    U = runif(1)
+generate_discrete_uniform <- function(n) {
+    U <- runif(1)
     return(floor(n * U) + 1)
 }
-discrete_uniforms = replicate(n = 10000, generate_discrete_uniform(3))
+discrete_uniforms <- replicate(n = 10000, generate_discrete_uniform(3))
 head(discrete_uniforms)
 table(discrete_uniforms) / length(discrete_uniforms)
 ```
@@ -293,10 +291,10 @@ Let $c = \sqrt {2e / \pi} \approx 1.32$ (obtained by finding the maximum of $f_X
 Check: $f_X(x) \le cg(x)$ for all $x \ge 0$
 
 ```{r}
-fX = function(x) 2 / sqrt(2 * pi) * exp(-x^2 / 2)
-g = function(x) exp(-x)
-c = sqrt(2 * exp(1) / pi)
-grid = seq(0, 4, length.out = 200)
+fX <- function(x) 2 / sqrt(2 * pi) * exp(-x^2 / 2)
+g <- function(x) exp(-x)
+c <- sqrt(2 * exp(1) / pi)
+grid <- seq(0, 4, length.out = 200)
 plot(fX(grid) ~ grid, type = 'l', ylim = c(0, 1.5))
 points(c * g(grid) ~ grid, type = 'l', col = 'red')
 ```
@@ -316,13 +314,13 @@ Overall algorithm:
 Let's check:
 
 ```{r}
-gen_half_normal = function() {
-    fX = function(x) 2 / sqrt(2 * pi) * exp(-x^2 / 2)
-    g = function(x) exp(-x)
-    c = sqrt(2 * exp(1) / pi)
+gen_half_normal <- function() {
+    fX <- function(x) 2 / sqrt(2 * pi) * exp(-x^2 / 2)
+    g <- function(x) exp(-x)
+    c <- sqrt(2 * exp(1) / pi)
     while(TRUE) {
-        U = runif(1)
-        Z = rexp(1, rate = 1)
+        U <- runif(1)
+        Z <- rexp(1, rate = 1)
         if(U <= fX(Z) / (c * g(Z))) {
             return(Z)
         }
@@ -333,9 +331,9 @@ gen_half_normal = function() {
 . . .
 
 ```{r}
-half_normals = replicate(n = 10000, gen_half_normal())
-signs = ifelse(runif(10000) >= .5, -1, 1)
-normals = half_normals * signs
+half_normals <- replicate(n = 10000, gen_half_normal())
+signs <- ifelse(runif(10000) >= .5, -1, 1)
+normals <- half_normals * signs
 qqnorm(normals)
 ```
 
