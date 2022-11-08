@@ -87,13 +87,13 @@ Last time, we looked at how to generate exponentially distributed random variabl
 
 ```{r}
 set.seed(0)
-generate_exponential = function() {
-    U = runif(1)
-    X = -log(1 - U)
+generate_exponential <- function() {
+    U <- runif(1)
+    X <- -log(1 - U)
     return(X)
 }
-n_reps = 10000
-random_exponentials = replicate(n = n_reps, generate_exponential())
+n_reps <- 10000
+random_exponentials <- replicate(n = n_reps, generate_exponential())
 ```
 
 . . .
@@ -101,14 +101,14 @@ random_exponentials = replicate(n = n_reps, generate_exponential())
 We compared an estimate of the probability that our randomly generated exponentials were less than a value $x$ to the theoretical probability:
 
 ```{r}
-x = 1
+x <- 1
 mean(random_exponentials <= x)
 pexp(x)
 ```
 
 The line `mean(random_exponentials <= x)` is exactly the same as the procedure we described above.
 ```{r}
-f = function(X, x) {
+f <- function(X, x) {
     ifelse(X <= x, 1, 0)
 }
 head(f(random_exponentials, x))
@@ -122,7 +122,7 @@ mean(random_exponentials <= x)
 We can check that the accuracy of this estimate:
 
 ```{r}
-vhat = var(random_exponentials) / n_reps
+vhat <- var(random_exponentials) / n_reps
 sqrt(vhat)
 mean(f(random_exponentials, x)) - pexp(x)
 ```
@@ -196,6 +196,12 @@ E \left[ \mathbf 1_{\{U_i \le W_i\}} | N, W_1,\ldots, W_N \right] \approx W_i
 $$
 
 
+The "Rao Blackwellized" estimator will be
+
+$$
+\hat{E[f(X)]} =  \frac{1}{m} \sum_{i=1}^N W_i f(X_i)
+$$
+
 
 ## Example: Mean of folded normal
 
@@ -221,21 +227,21 @@ In the notation from the previous slide, we have
 . . .
 
 ```{r}
-half_normal_rb_sample = function() {
-    f = function(x) x
-    g = function(x) 2 / sqrt(2 * pi) * exp(-x^2 / 2)
-    h = function(x) exp(-x)
-    c = sqrt(2 * exp(1) / pi)
-    U = runif(1)
-    X = rexp(1, rate = 1)
-    W =  g(X) / (c * h(X))
+half_normal_rb_sample <- function() {
+    f <- function(x) x
+    g <- function(x) 2 / sqrt(2 * pi) * exp(-x^2 / 2)
+    h <- function(x) exp(-x)
+    c <- sqrt(2 * exp(1) / pi)
+    U <- runif(1)
+    X <- rexp(1, rate = 1)
+    W <-  g(X) / (c * h(X))
     return(c(accepted = (U <= W), fX = f(X), weight = W))
 }
-samples = replicate(n = 200, half_normal_rb_sample())
-accepted = which(samples["accepted",] == 1)
-m = length(accepted)
-fX = samples["fX",]
-weights = samples["weight",]
+samples <- replicate(n = 200, half_normal_rb_sample())
+accepted <- which(samples["accepted",] == 1)
+m <- length(accepted)
+fX <- samples["fX",]
+weights <- samples["weight",]
 ## theoretical mean of folded normal
 sqrt(2) / sqrt(pi)
 ## Rao-Blackwellized version of accept/reject
@@ -244,6 +250,27 @@ sum(fX * weights) / m
 mean(fX[accepted])
 ```
 
+----
+
+Checking on the variances:
+
+```{r}
+half_normal_estimates <- function(n_samples) {
+    samples <- replicate(n = n_samples, half_normal_rb_sample())
+    accepted <- which(samples["accepted",] == 1)
+    m <- length(accepted)
+    fX <- samples["fX",]
+    weights <- samples["weight",]
+    ## Rao-Blackwellized version of accept/reject
+    rb_estimate <- sum(fX * weights) / m
+    ## Non-Rao-Blackwellized version of accept/reject
+    non_rb_estimate <- mean(fX[accepted])
+    return(c(rb = rb_estimate, non_rb = non_rb_estimate))
+}
+estimates = replicate(n = 5000, half_normal_estimates(n_samples = 200))
+apply(estimates, 1, function(x) sqrt(mean((x - sqrt(2) / sqrt(pi))^2)))
+apply(estimates, 1, sd)
+```
 
 ----
 
@@ -313,12 +340,12 @@ What is your expected return to playing this game?
 Naive Monte Carlo estimate:
 ```{r}
 set.seed(1)
-f = function(x) {
+f <- function(x) {
     if(x < .01)
         return(-100)
     return(0)
 }
-mc_samples = runif(1000)
+mc_samples <- runif(1000)
 mean(sapply(mc_samples, f))
 ```
 
@@ -334,8 +361,8 @@ Recall Beta distributions: Supported on the interval $[0,1]$, can tune so that t
 
 Beta(1,10) has density:
 ```{r}
-x = seq(0, 1, length.out = 200)
-beta_density = dbeta(x, shape1 = 1, shape2 = 10)
+x <- seq(0, 1, length.out = 200)
+beta_density <- dbeta(x, shape1 = 1, shape2 = 10)
 plot(beta_density ~ x, type = 'l')
 ```
 
@@ -343,8 +370,8 @@ plot(beta_density ~ x, type = 'l')
 
 Importance sampling from Beta(1,10):
 ```{r}
-mc_importance_samples = rbeta(1000, shape1 = 1, shape2 = 10)
-importance_function = function(x) {
+mc_importance_samples <- rbeta(1000, shape1 = 1, shape2 = 10)
+importance_function <- function(x) {
     return(f(x) / dbeta(x, shape1 = 1, shape2 = 10))
 }
 mean(sapply(mc_importance_samples, importance_function))
@@ -436,20 +463,20 @@ $$
 ## Example
 
 ```{r}
-n = 100
-p = 20
-X = matrix(rnorm(n * p), nrow = n)
-y = rnorm(n)
-get_rss_submodels = function(n_predictors, y, X) {
+n <- 100
+p <- 20
+X <- matrix(rnorm(n * p), nrow = n)
+y <- rnorm(n)
+get_rss_submodels <- function(n_predictors, y, X) {
     if(n_predictors == 0) {
-        lm_submodel = lm(y ~ 0)
+        lm_submodel <- lm(y ~ 0)
     } else {
-        lm_submodel = lm(y ~ 0 + X[,1:n_predictors, drop = FALSE])
+        lm_submodel <- lm(y ~ 0 + X[,1:n_predictors, drop = FALSE])
     }
     return(sum(residuals(lm_submodel)^2))
 }
-p_vec = 0:p
-rss = sapply(p_vec, get_rss_submodels, y, X)
+p_vec <- 0:p
+rss <- sapply(p_vec, get_rss_submodels, y, X)
 plot(rss ~ p_vec)
 
 ```
@@ -457,35 +484,37 @@ plot(rss ~ p_vec)
 -----
 
 ```{r}
-get_cv_error = function(n_predictors, y, X, folds) {
-    cv_vec = numeric(length(unique(folds)))
+get_cv_error <- function(n_predictors, y, X, folds) {
+    cv_vec <- numeric(length(unique(folds)))
     for(f in unique(folds)) {
-        cv_vec[f] = rss_on_held_out(
+        cv_vec[f] <- rss_on_held_out(
                   n_predictors,
-                  y_train = y[folds != f],
-                  X_train = X[folds != f,],
-                  y_test = y[folds == f],
-                  X_test = X[folds == f,])
+                  y_train <- y[folds != f],
+                  X_train <- X[folds != f,],
+                  y_test <- y[folds == f],
+                  X_test <- X[folds == f,])
     }
     return(mean(cv_vec))
 }
 
-rss_on_held_out = function(n_predictors, y_train, X_train, y_test, X_test) {
+rss_on_held_out <- function(n_predictors, y_train, X_train, y_test, X_test) {
     if(n_predictors == 0) {
-        lm_submodel = lm(y_train ~ 0)
-        preds_on_test = rep(0, length(y_test))
+        lm_submodel <- lm(y_train ~ 0)
+        preds_on_test <- rep(0, length(y_test))
     } else {
-        lm_submodel = lm(y_train ~ 0 + X_train[,1:n_predictors, drop = FALSE])
-        preds_on_test = X_test[,1:n_predictors, drop= FALSE] %*% coef(lm_submodel)
+        lm_submodel <- lm(y_train ~ 0 + X_train[,1:n_predictors, drop = FALSE])
+        preds_on_test <- X_test[,1:n_predictors, drop= FALSE] %*% coef(lm_submodel)
     }
 
     return(sum((y_test - preds_on_test)^2))
 }
-K = 5
-## normally you would do this at random
-folds = rep(1:K, each = n / K)
-p_vec = 0:p
-cv_errors = sapply(p_vec, get_cv_error, y, X, folds)
+K <- 5
+## each of the K folds has n / K points
+folds <- rep(1:K, each = n / K)
+## shuffle so that each sample comes from a random fold
+folds <- sample(folds, size = length(folds), replace = FALSE)
+p_vec <- 0:p
+cv_errors <- sapply(p_vec, get_cv_error, y, X, folds)
 plot(cv_errors ~ p_vec)
 ```
 
