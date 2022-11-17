@@ -3,7 +3,7 @@
 ```{r setup, echo = FALSE, message = FALSE}
 library(knitr)
 opts_chunk$set(fig.cap="",
-               fig.path="lecture-27-fig/",
+               fig.path="lecture-25-fig/",
                fig.width=6, fig.height=4, dpi=150,
                warning = FALSE)
 set.seed(1)
@@ -29,14 +29,14 @@ Reading:
 
 . . .
 
-- Last time we saw that if a Markov chain has a stationary distribution $\pi$, we can estimate $E_{X \sim \pi}(f(X))$ as $\frac{1}{n} \sum_{i=1}^n f(X_i)$, where $X_1,X_2, \ldots, X_n$ are drawn from the Markov chain.
+- Last time we saw that if a Markov chain has a invariant distribution $\pi$, we can estimate $E_{X \sim \pi}(f(X))$ as $\frac{1}{n} \sum_{i=1}^n f(X_i)$, where $X_1,X_2, \ldots, X_n$ are drawn from the Markov chain.
 
-- Metropolis-Hastings will let us specify a stationary distribution $\pi$ and build a Markov chain having $\pi$ as its stationary distribution.
+- Metropolis-Hastings will let us specify a invariant distribution $\pi$ and build a Markov chain having $\pi$ as its invariant distribution.
 
 
 ## Metropolis-Hastings: The Idea
 
-- Start off with a Markov chain that has the wrong stationary distribution, e.g., a random walk
+- Start off with a Markov chain that has the wrong invariant distribution, e.g., a random walk
 
 - Modify the chain so that it spends more time in regions of high probability under the target distribution.
 
@@ -47,7 +47,7 @@ Given:
 
 - A proposal distribution $q$ such that $q(y \mid x) = q(x \mid y)$
 
-- A target stationary distribution $\pi$
+- A target invariant distribution $\pi$
 
 . . .
 
@@ -114,7 +114,7 @@ Given:
 
 - A proposal distribution $q$, not necessarily such that $q(y \mid x) = q(x \mid y)$
 
-- A target stationary distribution $\pi$
+- A target invariant distribution $\pi$
 
 . . .
 
@@ -158,10 +158,10 @@ Notes:
 - Notice that $q$ is symmetric, and so the acceptance probability for moving from $X$ to $Y$ is $\text{min}\{\pi(Y) / \pi(X), 1\}$
 
 ```{r}
-sample_with_symmetric_proposal =
+sample_with_symmetric_proposal <-
     function(proposal_function, target_distribution, current_state) {
-        proposal = proposal_function(current_state)
-        acceptance_probability = min(1, target_distribution(proposal) / target_distribution(current_state))
+        proposal <- proposal_function(current_state)
+        acceptance_probability <- min(1, target_distribution(proposal) / target_distribution(current_state))
         if(runif(1) <= acceptance_probability) {
             return(proposal)
         } else {
@@ -174,16 +174,16 @@ sample_with_symmetric_proposal =
 
 ```{r}
 ## The proposal distribution is normal, centered at the current state, standard deviation .3
-proposal_function = function(x) rnorm(n = 1, mean = x, sd = .3)
+proposal_function <- function(x) rnorm(n = 1, mean = x, sd = .3)
 ## The target distribution is N(0,1)
-target_distribution = dnorm
+target_distribution <- dnorm
 ## check the sampling:
 sample_with_symmetric_proposal(proposal_function, target_distribution, -10)
-n_samples = 1000
-chain_output = numeric(n_samples)
-chain_output[1] = -10
+n_samples <- 1000
+chain_output <- numeric(n_samples)
+chain_output[1] <- -10
 for(i in 2:n_samples) {
-    chain_output[i] = sample_with_symmetric_proposal(proposal_function, target_distribution, chain_output[i-1])
+    chain_output[i] <- sample_with_symmetric_proposal(proposal_function, target_distribution, chain_output[i-1])
 }
 plot(chain_output)
 mean(chain_output)
@@ -194,7 +194,7 @@ sd(chain_output)
 
 Notice:
 
-- We see that before about 200 steps, the chain has not converged to its stationary distribution.
+- We see that before about 200 steps, the chain has not converged to its invariant distribution.
 
 - Even after it has converged, the elements in the chain are not independent.
 
@@ -205,13 +205,13 @@ Notice:
 Let's run the chain longer and discard the first 200 steps as "burn-in"
 
 ```{r}
-n_samples = 10000
-chain_output = numeric(n_samples)
-chain_output[1] = -10
+n_samples <- 10000
+chain_output <- numeric(n_samples)
+chain_output[1] <- -10
 for(i in 2:n_samples) {
-    chain_output[i] = sample_with_symmetric_proposal(proposal_function, target_distribution, chain_output[i-1])
+    chain_output[i] <- sample_with_symmetric_proposal(proposal_function, target_distribution, chain_output[i-1])
 }
-chain_no_burnin = chain_output[201:n_samples]
+chain_no_burnin <- chain_output[201:n_samples]
 plot(chain_no_burnin)
 mean(chain_no_burnin)
 sd(chain_no_burnin)
@@ -221,7 +221,7 @@ sd(chain_no_burnin)
 
 Note:
 
-- This chain looks like it has reached its stationary distribution, and we can confirm that by checking that the sample expected values match what they should be for a $N(0,1)$ distribution.
+- This chain looks like it has reached its invariant distribution, and we can confirm that by checking that the sample expected values match what they should be for a $N(0,1)$ distribution.
 
 - The ergodic theorem doesn't require that we discard the burn-in period, but people often do anyway.
 
@@ -239,14 +239,14 @@ Note:
 
 ```{r}
 ## The proposal distribution is normal, centered at the current state, standard deviation .3
-proposal_function = function(x) rnorm(n = 1, mean = x, sd = .3)
+proposal_function <- function(x) rnorm(n = 1, mean = x, sd = .3)
 ## The target distribution is N(0,1)
-target_distribution = function(x) .25 * dnorm(x, mean = 1, sd = 1) + .75 * dnorm(x, mean = 5, sd = .2)
-n_samples = 1000
-chain_output = numeric(n_samples)
-chain_output[1] = -10
+target_distribution <- function(x) .25 * dnorm(x, mean = 1, sd = 1) + .75 * dnorm(x, mean = 5, sd = .2)
+n_samples <- 1000
+chain_output <- numeric(n_samples)
+chain_output[1] <- -10
 for(i in 2:n_samples) {
-    chain_output[i] = sample_with_symmetric_proposal(proposal_function, target_distribution, chain_output[i-1])
+    chain_output[i] <- sample_with_symmetric_proposal(proposal_function, target_distribution, chain_output[i-1])
 }
 plot(chain_output)
 mean(chain_output)
@@ -257,7 +257,7 @@ sd(chain_output)
 
 Notice:
 
-- Still takes about 200 steps to get to something that looks like a stationary distribution
+- Still takes about 200 steps to get to something that looks like a invariant distribution
 
 - No samples with values above 2!
 
@@ -267,11 +267,11 @@ Notice:
 Let's try running the chain a lot longer:
 
 ```{r}
-n_samples = 100000
-chain_output = numeric(n_samples)
-chain_output[1] = -10
+n_samples <- 100000
+chain_output <- numeric(n_samples)
+chain_output[1] <- -10
 for(i in 2:n_samples) {
-    chain_output[i] = sample_with_symmetric_proposal(proposal_function, target_distribution, chain_output[i-1])
+    chain_output[i] <- sample_with_symmetric_proposal(proposal_function, target_distribution, chain_output[i-1])
 }
 plot(chain_output)
 mean(chain_output)
@@ -286,12 +286,12 @@ What's happening?
 Another way to fix this: change the proposal distribution.
 
 ```{r}
-proposal_function = function(x) rnorm(n = 1, mean = x, sd = 2)
-n_samples = 1000
-chain_output = numeric(n_samples)
-chain_output[1] = -10
+proposal_function <- function(x) rnorm(n = 1, mean = x, sd = 2)
+n_samples <- 1000
+chain_output <- numeric(n_samples)
+chain_output[1] <- -10
 for(i in 2:n_samples) {
-    chain_output[i] = sample_with_symmetric_proposal(proposal_function, target_distribution, chain_output[i-1])
+    chain_output[i] <- sample_with_symmetric_proposal(proposal_function, target_distribution, chain_output[i-1])
 }
 plot(chain_output)
 mean(chain_output)
@@ -329,7 +329,7 @@ Overall:
 
 ## Summing up
 
-Metropolis Hastings is a simple, general-purpose method for creating a Markov chain with a specified stationary distribution. It is particularly useful when:
+Metropolis Hastings is a simple, general-purpose method for creating a Markov chain with a specified invariant distribution. It is particularly useful when:
 
 - You only know the target distribution up to a constant of proportionality.
 
