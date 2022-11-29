@@ -1,10 +1,10 @@
-## Lecture 28: MCMC Applications
+## Lecture 26: MCMC Applications
 
 ```{r setup, echo = FALSE, message = FALSE, warning = FALSE}
 library(rstan)
 library(knitr)
 opts_chunk$set(fig.cap="",
-               fig.path="lecture-28-fig/",
+               fig.path="lecture-26-fig/",
                fig.width=6, fig.height=4, dpi=150,
                cache=TRUE,
                warning = FALSE)
@@ -294,7 +294,7 @@ x <- matrix(c( .8, 102,
 n <- nrow(x) # number of people/units measured
 
 # precision of measurement:
-sigmaerror = c(.03, 5)
+sigmaerror <- c(.03, 5)
 
 data <- list(x=x, n=n, sigmaerror=sigmaerror) # to be passed on to Stan
 myinits <- list(
@@ -308,7 +308,8 @@ samples <- stan(model_code=model,
                 pars=parameters,
                 iter=20000, 
                 chains=1, 
-                thin=1)
+                thin=1,
+                algorithm="HMC")
 ```
 
 -----
@@ -316,7 +317,7 @@ samples <- stan(model_code=model,
 . . .
 
 ```{r}
-r = extract(samples)$r
+r <- extract(samples)$r
 plot(r)
 ## posterior density for r
 qplot(r, geom = "density")
@@ -420,7 +421,8 @@ samples_seven_scientists <- stan(model_code=model_seven_scientists,
                 pars=parameters,
                 iter=20000, 
                 chains=1, 
-                thin=1)
+                thin=1,
+                algorithm="HMC")
 ```
 
 -----
@@ -428,7 +430,7 @@ samples_seven_scientists <- stan(model_code=model_seven_scientists,
 . . .
 
 ```{r}
-samples_extracted = extract(samples_seven_scientists)
+samples_extracted <- extract(samples_seven_scientists)
 ## show the chain
 plot(samples_extracted$mu)
 ## posterior mean of mu
@@ -460,7 +462,7 @@ The mean activity level will be different before and after the changepoint, and 
 
 
 ```{r}
-c = scan("changepointdata.txt")
+c <- scan("changepointdata.txt")
 ggplot(data.frame(activity = c, time = 1:length(c))) + geom_point(aes(x = time, y = activity))
 ```
 
@@ -516,7 +518,7 @@ parameters {
 } 
 transformed parameters {
   real<lower=0> sigma;
-  sigma <- inv_sqrt(lambda);
+  sigma = inv_sqrt(lambda);
 }
 model { 
   // Group Means
@@ -553,7 +555,8 @@ samples_changepoint <- stan(model_code=model_changepoint,
                 chains=1, 
                 thin=1,
                 warmup = 150,
-                            seed = 1)
+                seed = 1,
+                control=list(max_treedepth=12))
 ```
 
 -----
@@ -572,8 +575,8 @@ plot(extract(samples_changepoint)$mu[,2], ylab = "mu2")
 ```
 
 ```{r}
-time_data = data.frame(activity = c, time = 1:length(c))
-time_data$activity_fitted = ifelse(time_data$time <= mean.tau, mean.mu1, mean.mu2)
+time_data <- data.frame(activity = c, time = 1:length(c))
+time_data$activity_fitted <- ifelse(time_data$time <= mean.tau, mean.mu1, mean.mu2)
 ggplot(time_data) + geom_point(aes(x = time, y = activity)) +
     geom_line(aes(x = time, y = activity_fitted), color = "red")
 ```
