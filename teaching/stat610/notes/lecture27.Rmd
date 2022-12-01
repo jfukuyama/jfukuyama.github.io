@@ -10,9 +10,11 @@ set.seed(1)
 ```
 
 
-> - Today: What are neural nets, how are they fit
+> What are neural nets
 
-> - Thursday: Cross validation, some examples, show you how to use R interfaces to net fitting software
+> How are they fit
+
+> Examples
 
 Reading: Elements of Statistical Learning, Chapter 11.3-11.8
 
@@ -315,6 +317,103 @@ Idea behind weight constraints: Each unit computes the same functional of the pr
 ![](zip-code-training.png)
 
 -----
+
+-----
+
+Example: the same zip code data
+
+```{r}
+## if you want to do this you'll have to install some the python version of keras first, which requires you to have TensorFlow, CNTK, or Theano installed as well
+library(keras)
+mnist = dataset_mnist()
+img_rows = img_cols = 28
+num_classes = 10
+x_train = mnist$train$x
+x_train = array_reshape(x_train, c(nrow(x_train), img_rows, img_cols, 1))
+y_train = mnist$train$y
+y_train_matrix = to_categorical(y_train, num_classes = num_classes)
+x_test = mnist$test$x
+x_test = array_reshape(x_test, c(nrow(x_test), img_rows, img_cols, 1))
+y_test = mnist$test$y
+```
+
+-----
+
+Let's look at some of the images:
+
+```{r, fig.width=10, fig.height=10}
+## function to rearrange things so that we can plot them
+flip_image = function(x) {
+    n = nrow(x)
+    return(t(x[n:1,]))
+}
+par(mfrow = c(3,3))
+for(i in 1:9) {
+    image(flip_image(x_train[i,,,]), col = topo.colors(100), axes = FALSE,
+          main = y_train[i])
+}
+
+```
+
+-----
+
+```{r}
+model = keras_model_sequential()
+model %>%
+  layer_flatten(input_shape = c(img_rows, img_cols, 1)) %>%
+  layer_dense(units = 128, activation = 'relu') %>%
+  layer_dense(units = num_classes, activation = 'softmax')
+model %>% compile(
+    optimizer = 'adam', 
+    loss = loss_categorical_crossentropy,
+    metrics = 'accuracy'
+)
+model
+## number of parameters for the first layer: each hidden unit has a weight associated with each of the 784 predictor units, plus a bias term
+(784 + 1) * 128
+## number of parameters for the second layer: each output unit has a weight associated with each of the 128 hidden units, plus a bias term
+(128 + 1)* 10
+```
+
+-----
+
+Fit the model, look at the predictions:
+
+```{r, fig.width=10, fig.height=10}
+model %>% fit(x = x_train, y = y_train_matrix, epochs = 15)
+test_predictions = model %>% predict(x_test) %>% k_argmax() %>% as.vector
+par(mfrow = c(3,3))
+for(i in 1:9) {
+    image(flip_image(x_test[i,,,]), col = topo.colors(100), axes = FALSE,
+          main = sprintf("True digit: %i, Prediction: %i", y_test[i], test_predictions[i]))
+}
+```
+
+-----
+
+More elaborate architectures do much better, for example the [convolutional model](https://keras.rstudio.com/articles/examples/mnist_cnn.html).
+
+```{r, eval = FALSE}
+model_conv <- keras_model_sequential() %>%
+    layer_conv_2d(filters = 32, kernel_size = c(3,3), activation = 'relu',
+                  input_shape = c(img_rows,img_cols,1)) %>%
+    layer_conv_2d(filters = 64, kernel_size = c(3,3), activation = 'relu') %>%
+    layer_max_pooling_2d(pool_size = c(2, 2)) %>%
+    layer_dropout(rate = 0.25) %>%
+    layer_flatten() %>%
+    layer_dense(units = 128, activation = 'relu') %>%
+    layer_dropout(rate = 0.5) %>%
+    layer_dense(units = num_classes, activation = 'softmax')
+model_conv %>% compile(
+  loss = loss_categorical_crossentropy,
+  optimizer = 'adam',
+  metrics = c('accuracy')
+  )
+model_conv
+model_conv %>% fit(x = x_train, y = y_train_matrix, epochs = 15)
+```
+
+
 
 ## Summing up
 
