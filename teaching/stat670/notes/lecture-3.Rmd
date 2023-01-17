@@ -3,28 +3,16 @@
 
 ```{r setup, echo = FALSE}
 library(knitr)
-opts_chunk$set(fig.cap="", fig.width = 4, fig.height = 2.5, dpi=200, fig.path="lecture-3-fig/")
+opts_chunk$set(fig.cap="", warning = FALSE, message = FALSE, fig.width = 4, fig.height = 2.5, dpi=200, fig.path="lecture-3-fig/")
 ```
 
-## Last time: Visualizing and comparing univariate distributions
+## Today: Comparing many univariate distributions
 
-- Empirical CDF/quantile plots
+> - Tidy data/reshaping
 
-- Histograms
+> - Measures of center and spread
 
-- Density estimates
-
-- Q-Q plot for comparing samples to each other
-
-- Q-Normal plot for comparing samples to a reference distribution
-
-## This time
-
-- Tidy data/reshaping
-
-- Measures of center and spread
-
-- Boxplots
+> - Boxplots
 
 ## Computational Interlude: Tidy Data
 
@@ -32,11 +20,14 @@ Reading: [http://r4ds.had.co.nz/tidy-data.html](http://r4ds.had.co.nz/tidy-data.
 
 Tidy data means:
 
-- Every column is a variable.
+> - Every column is a variable.
 
-- Every row is an observation.
+> - Every row is an observation.
 
-- Every element is a value.
+> - Every element is a value.
+
+
+------
 
 ```{r tidy-data}
 library(tidyverse)
@@ -47,37 +38,70 @@ table4a
 table4b
 ```
 
+## Pipes
+
+The `magrittr` library offers the "pipe" operation, `%>%`.
+
+In words: "Pipe the output of the last function as input to the next function".
+
+. . .
+
+Suppose `f1` and `f2` are functions. These are equivalent:
+
+> - `f2(f1(x))`
+
+> - `f1(x) %>% f2()`
+
+The output of `f1(x)` is used as the first argument to `f2`.
+
+. . .
+
+For example:
+
+```{r}
+head(seq(.5, 11, by = 1))
+seq(.5, 11, by = 1) %>% head()
+```
+
 
 ## Pivot longer
 
-```{r gather}
-table4a %>% 
-  pivot_longer(c(`1999`, `2000`), names_to = "year", values_to = "cases")
+Problem: some of the column names are not names of variables, but values of a variable
 
+To solve this problem, we need to _pivot longer_.
+To describe that operation, we need three parameters:
+
+> - The set of columns whose names are values, not variables.
+
+> - The name of the variable to move the column names to.
+
+> - The name of the variable to move the column values to.
+
+```{r gather}
+table4a %>%
+    pivot_longer(c(`1999`, `2000`), names_to = "year", values_to = "cases") %>%
+    head(n = 3)
+
+head(pivot_longer(table4a, c(`1999`, `2000`), names_to = "year", values_to = "cases"), n = 3)
 ```
 
 ## Pivot wider
+
+Problem: an observation is scattered across multiple rows.
+
+To solve this problem, we need to _pivot wider_.
+To describe that operation, we need two parameters:
+
+> - The column to take variable names from.
+
+> - The column to take values from.
+
 ```{r spread}
+table2
 table2 %>%
     pivot_wider(names_from = type, values_from = count)
 ```
 
-## A new dataset
-
-With [Cytometry by Time of Flight](https://en.wikipedia.org/wiki/Mass_cytometry), we can look at cells individually and quantify how many molecules of each of about 40 markers are on the cell.
-
-[data](https://jfukuyama.github.io/teaching/stat670/notes/cytof_one_experiment.csv)
-
-## Exercises
-
-Load the CyTOF dataset.
-
-We will want to make ecdf plots, histograms, and density plots for all of the markers. To do this with ggplot2, we need to have one variable describing the marker, analogous to voice.part in the singer data. How would you get the CyTOF data into the right form?
-
-
-Make ecdf plots, histograms, and density plots for all of the markers. Which do you like best?
-
-Take two of the variables and construct a Q-Q plot. What is the relationship between the variables?
 
 
 # Measures of center and spread
@@ -98,13 +122,13 @@ $$
 
 ## Some drawbacks
 
-- Mean and standard deviation are good if you have normal data (how would we check this?)
+> - Mean and standard deviation are good if you have normal data (how would we check this?)
 
-- What if our data are not normal?
+> - What if our data are not normal?
 
-- What if they are highly skewed? (e.g. income data, house price data)
+> - What if they are highly skewed? (e.g. income data, house price data)
 
-- What if some fraction of the values are corrupted? (e.g. someone coded missing values as 999)
+> - What if some fraction of the values are corrupted? (e.g. someone coded missing values as 999)
 
 ## Breakdown point
 
@@ -128,45 +152,45 @@ Functions with high breakdown points are _robust_, insensitive to corruption and
 
 Suppose our sorted observations are $x_{(1)}, \ldots, x_{(n)}$
 
-- Median: If $n$ is odd,
+> - Median: If $n$ is odd,
 $$\text{med}(x_{(1)}, \ldots, x_{(n)}) = x_{((n+1)/2)}$$
 If $n$ is even, we can use
 $$\text{med}(x_{(1)}, \ldots, x_{(n)}) = \frac{1}{2}x_{(n/2)} + \frac{1}{2}x_{(n/2 + 1)}$$
 
 . . .
 
-- $\alpha$-trimmed mean: Drop the $\alpha n$ lowest and highest observations, take the mean of the remainder.
+> - $\alpha$-trimmed mean: Drop the $\alpha n$ lowest and highest observations, take the mean of the remainder.
 
 . . .
 
-- $\alpha$-winsorized mean: Assuming $\alpha n$ is a whole number: Replace the $\alpha n$ lowest and highest observations with $x_{(\alpha n + 1)}$ and $x_{((1 - \alpha) n - 1)}$, respectively. Take the mean of the modified values.
+> - $\alpha$-winsorized mean: Assuming $\alpha n$ is a whole number: Replace the $\alpha n$ lowest and highest observations with $x_{(\alpha n + 1)}$ and $x_{((1 - \alpha) n - 1)}$, respectively. Take the mean of the modified values.
 
 . . .
 
-- What are their breakdown points?
+> - What are their breakdown points?
 
 ## Robust measures of spread
 
-- Median absolute deviation:
+> - Median absolute deviation:
 $$
 \text{mad}(x_1, \ldots, x_n) = \text{med} (|x_1 - \text{med}(x_1, \ldots, x_n)|, \ldots, |x_n - \text{med}(x_1, \ldots, x_n)|)
 $$
 
-- Interquartile range: If $.25n$ and $.75n$ are whole numbers, then
+> - Interquartile range: If $.25n$ and $.75n$ are whole numbers, then
 $$
 \text{iqr}(x_1,\ldots, x_n) = x_{(.75n)} - x_{(.25n)}
 $$
 
-- What are their breakdown points? Can you think of other robust measures of spread?
+> - What are their breakdown points? Can you think of other robust measures of spread?
 
 
 ## Tradeoffs
 
 Why would we want to use a less robust estimator?
 
-- Tradeoff between efficiency and robustness
+> - Tradeoff between efficiency and robustness
 
-- Robust version might not estimate what you want, or could be biased for the quantity you want
+> - Robust version might not estimate what you want, or could be biased for the quantity you want
 
 
 ## Computational Interlude: Aggregation
@@ -184,33 +208,31 @@ library(dplyr)
 ## for the data
 library(lattice)
 singer %>% summarise(median(height))
+summarise(singer, median(height))
 singer %>% group_by(voice.part) %>% summarise(median(height))
+
+summarise(group_by(singer, voice.part), median(height))
 ```
 
-## Exercises
 
-Try computing some measures of center and spread for each of the markers in the CyTOF dataset. Which ones do you like best? Can you think of other measures that would be more informative?
+## Boxplots
 
+Goal:
 
+> - More parsimonious representation of the distribution.
 
-# Boxplots
-
-## Goal
-
-- More parsimonious representation of the distribution.
-
-- Why do we want this? Shouldn't we always try to keep all the data?
+> - Why do we want this? Shouldn't we always try to keep all the data?
 
 ## Boxplot Statistics
 Suppose our data is $x_1, \ldots, x_n$. We compute five statistics of the data:
 
-- $q_x(.5)$, the median.
+> - $q_x(.5)$, the median.
 
-- $q_x(.25)$, the .25 quantile of $x_1, \ldots, x_n$ aka the lower quartile
+> - $q_x(.25)$, the .25 quantile of $x_1, \ldots, x_n$ aka the lower quartile
 
-- $q_x(.75)$, the .75 quantile of $x_1, \ldots, x_n$ aka the upper quartile
+> - $q_x(.75)$, the .75 quantile of $x_1, \ldots, x_n$ aka the upper quartile
 
-- Upper adjacent value (UAV), lower adjacent value (LAV)
+> - Upper adjacent value (UAV), lower adjacent value (LAV)
 
 
   $$r =q_x(.75) - q_x(.25)$$
@@ -225,13 +247,13 @@ Note that these are all robust statistics
 
 ## Reading a Boxplot
 
-- Bar in the middle represents the median.
+> - Bar in the middle represents the median.
 
-- Edges of box represent $q_x(.25)$ and $q_x(.75)$.
+> - Edges of box represent $q_x(.25)$ and $q_x(.75)$.
 
-- Whiskers represent the UAV and LAV.
+> - Whiskers represent the UAV and LAV.
 
-- Any values outside of the range $[\text{LAV}, \text{UAV}]$ are referred to as _outside values_ and are plotted individually.
+> - Any values outside of the range $[\text{LAV}, \text{UAV}]$ are referred to as _outside values_ and are plotted individually.
 
 
 ## Boxplot Demonstration
@@ -330,11 +352,3 @@ ggplot(df) +
     geom_boxplot(aes(x = x, y = y)) +
     coord_flip() + xlab("") + ggtitle("Boxplot of 3000 normal samples")
 ```
-
-## Exercises
-
-Try out boxplots on different distributions, and with different numbers of points.
-
-Is plotting the outside values always useful? Is it more useful when you have a lot of points or just a few?
-
-Make boxplots out of the CyTOF data. Do you like boxplots for this application?
