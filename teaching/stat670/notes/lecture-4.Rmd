@@ -8,9 +8,9 @@ opts_chunk$set(fig.cap="", fig.width = 4, fig.height = 2.5, dpi=200, fig.path="l
 
 ## Today
 
-- Review some of the computational tools
+> - Review some of the computational tools
 
-- Transformations
+> - Transformations
 
 Reading: R for data science chapters [10](https://r4ds.had.co.nz/tibbles.html) and [12](https://r4ds.had.co.nz/tidy-data.html), Cleveland pp. 42--67.
 
@@ -18,11 +18,11 @@ Reading: R for data science chapters [10](https://r4ds.had.co.nz/tibbles.html) a
 
 Three main ways to store data
 
-- Matrix: Requires all the elements to be of the same type (e.g. numeric or character)
+> - Matrix: Requires all the elements to be of the same type (e.g. numeric or character)
 
-- Data frame: Allows for mixed types of variables
+> - Data frame: Allows for mixed types of variables
 
-- Tibble: Like a data frame, but works more consistently
+> - Tibble: Like a data frame, but works more consistently
 
 ## Tibbles
 
@@ -32,9 +32,9 @@ The [documentation](https://tibble.tidyverse.org/) describes them as "data.frame
 
 Two other advantages:
 
-- They subset more consistently: when you use square brackets to subset a tibble, you always get another tibble. With data frames you sometimes get a vector and sometimes get a data frame.
+> - They subset more consistently: when you use square brackets to subset a tibble, you always get another tibble. With data frames you sometimes get a vector and sometimes get a data frame.
 
-- They print more elegantly.
+> - They print more elegantly.
 
 Base R functions, including those for data frames, try to guess what you want to do.
 
@@ -45,7 +45,7 @@ This sometimes leads to unexpected outcomes, so tibbles have done away with most
 
 . . .
 
-```{r}
+```{r, message = FALSE}
 library(tidyverse)
 (df = data.frame("a" = 1:5, "b 2" = 5:1))
 (ti = tibble("a" = 1:5, "b 2" = 5:1))
@@ -75,24 +75,39 @@ df$b
 ti$b
 ```
 
-## Tibbles don't coerce strings to factors
+## Two more useful data wrangling functions
 
-The most annoying thing about data frames:
+Separate:
+
+> - Pulls one column apart into multiple columns.
+> - Splits the values in the column based on a separator.
+> - Default separator is all the non-alphanumeric characters.
+
 ```{r}
-## arrrgh so inconsistent!
-df = data.frame(l1 = letters[1:5])
-df$l2 = letters[1:5]
-class(df$l1)
-class(df$l2)
+separate
 ```
 
-Tibbles don't have this problem
+. . .
+
 ```{r}
-## but with tibbles it's all the same
-ti = tibble(l1 = letters[1:5])
-ti$l2 = letters[1:5]
-class(ti$l1)
-class(ti$l2)
+(df_test = data.frame(t = c("a b", "a c", "a c d")))
+df_test %>% separate(t, into = c("position 1", "position 2"))
+df_test %>% separate(t, into = c("position 1", "position 2", "position 3"))
+```
+
+----
+
+Mutate:
+
+> - Creates new variables as functions of existing variables.
+> - First argument is the data.
+> - Subsequent arguments: name of the argument is what you want the new column name to be. Value of the argument is an expression giving a transformation of the existing variables (column names) in the data set.
+
+. . .
+
+```{r}
+(df_test = data.frame(a = sample(10), b = sample(10, replace = TRUE)))
+df_test %>% mutate(sum = a + b, log_ratio = log(a / b))
 ```
 
 ## Example
@@ -172,15 +187,6 @@ Again, let's look at the tibble to make sure the operation was done right:
 select(billboard_time_in_sec, time, minutes, seconds, time_in_seconds)
 ```
 
-## Pipes
-
-The operations above motivate the use of pipes.
-
-The pipe operation, %>%, simply allows you to lay out your code in a different way.
-
-When you use a pipe, whatever is to the left of the pipe becomes the first argument to the function on the right of the pipe.
-
-So: `x %>% function(y)` is the same as `function(x, y)`.
 
 ## Repeating the code from before with pipes
 
@@ -219,8 +225,8 @@ Now that we have our dataset in a nice format, let's try looking at the distribu
 
 . . .
 ```{r}
-ggplot(billboard, aes(x=time_in_seconds / 60)) +
-    geom_histogram(breaks=seq(2.5, 8, by = .2)) +
+ggplot(billboard, aes(x = time_in_seconds / 60)) +
+    geom_histogram(breaks = seq(2.5, 8, by = .2)) +
     xlab("Time in Minutes")
 
 ggplot(billboard, aes(x = time_in_seconds / 60)) + stat_ecdf() +
@@ -244,7 +250,7 @@ billboard_long
 
 ## why are there 5307 observations? Shouldn't there be 5200 (52 weeks times 100 songs)?
 
-ggplot(billboard_long, aes(x=time_in_seconds / 60)) +
+ggplot(billboard_long, aes(x = time_in_seconds / 60)) +
     geom_histogram(breaks=seq(2.5, 8, by = .2)) +
     xlab("Time in Minutes")
 ggplot(billboard_long, aes(x = time_in_seconds / 60)) + stat_ecdf() +
@@ -271,13 +277,19 @@ top10 = billboard_long %>%
 ggplot(top10, aes(x = time_in_seconds / 60)) +
     geom_density() +  geom_rug() +
     facet_wrap(~ rank, ncol = 4) + xlab("Time in minutes")
+ggplot(top10, aes(x = time_in_seconds / 60, fill = as.factor(rank))) +
+    geom_density(alpha = .5) +  geom_rug() +
+    xlab("Time in minutes")
 ggplot(top10, aes(x = time_in_seconds / 60)) +
     geom_histogram() + 
     facet_wrap(~ rank, ncol = 4) + xlab("Time in minutes")
-ggplot(top10, aes(x = time_in_seconds / 60)) +
-    stat_ecdf(aes(color = as.factor(rank))) + xlab("Time in minutes")
+ggplot(top10, aes(x = time_in_seconds / 60, fill = as.factor(rank))) +
+    geom_histogram(alpha = .5) + 
+    xlab("Time in minutes")
 ggplot(top10, aes(x = time_in_seconds / 60)) +
     stat_ecdf() + facet_wrap(~ rank) + xlab("Time in minutes")
+ggplot(top10, aes(x = time_in_seconds / 60)) +
+    stat_ecdf(aes(color = as.factor(rank))) + xlab("Time in minutes")
 ```
 
 Which plot do you think makes it the easiest to compare the distributions?
@@ -312,15 +324,15 @@ Later on we'll learn a bit about *smoothing*, which would help a lot here.
 Reading: Cleveland pp. 42--67.
 
 
-### Log transformation
+## Log transformation
 
 In an intro course like S320/520, you learned to use the most common transformation, the log.
 
-The main reason we gave was that it often made positive data more normal.
+> - The main reason we gave was that it often made positive data more normal.
 
-But there's another and perhaps more fundamental reason: It often leads to differences between samples that we can interpret as a *multiplicative shift*.
+> - Taking logs amounts to changing the units of the data in such a way that equal differences now mean equal multiplicative factors. This simplifies the interpretation of the measurement scale because addition is easier than multiplication.
 
-Some statisticians will go as far as to recommend log transforming positive data by default, though by the end of Cleveland's chapter 2, we'll see an example where that backfires.
+> - Some statisticians will go as far as to recommend log transforming positive data by default, though by the end of Cleveland's chapter 2, we'll see an example where that backfires.
 
 ## Power transformations
 
