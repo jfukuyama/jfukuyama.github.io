@@ -9,11 +9,11 @@ opts_chunk$set(fig.cap="", fig.width = 4, fig.height = 2.5, dpi=200, fig.path="l
 
 ## Today
 
-- Build and critique simple models
+> - Build and critique simple models
 
-- We've presented a lot of visualization methods for univariate data simply as visualization methods, but they can also be thought of as model validation techniques. e.g. a QQ plot is for checking normality of a distribution.
+> - We've presented a lot of visualization methods for univariate data simply as visualization methods, but they can also be thought of as model validation techniques. e.g. a QQ plot is for checking normality of a distribution.
 
-- From other statistics classes, you know how to infer parameter values and test hypotheses. Those parameter estimates and the corresponding tests are valid given certain assumptions about the data. Today we're going to talk about how to check whether those assumptions hold, how to try to make the data to fit those assumptions if they don't hold, and what to do if even the transformations don't work.
+> - From other statistics classes, you know how to infer parameter values and test hypotheses. Those parameter estimates and the corresponding tests are valid given certain assumptions about the data. Today we're going to talk about how to check whether those assumptions hold, how to try to make the data to fit those assumptions if they don't hold, and what to do if even the transformations don't work.
 
 
 ## Linear models
@@ -22,9 +22,9 @@ From your earlier statistics courses, you remember linear models.
 
 Recall the assumptions for a linear model:
 
-- Normality of the errors
+> - Normality of the errors
 
-- Same variance of errors within each group (homoscedasticity)
+> - Same variance of errors within each group (homoscedasticity)
 
 
 ## Singer example
@@ -174,20 +174,20 @@ If your residuals are about normal that's nice, but as long as they're not horri
 
 About singers:
 
-- We've seen that average height increases as the voice part range decreases.
+> - We've seen that average height increases as the voice part range decreases.
 
-- Within each voice part, the residuals look like they come from a normal distribution with the same variance for each voice part.
+> - Within each voice part, the residuals look like they come from a normal distribution with the same variance for each voice part.
 This suggests that there's nothing further we need to do to explain singer heights: we have an average for each voice part, and there is no suggestion of systematic differences beyond that due to voice part.
 
 . . .
 
 About data analysis:
 
-- We can use some of our univariate visualization tools, particularly boxplots and ecdfs, to look for evidence of heteroscedasticity.
+> - We can use some of our univariate visualization tools, particularly boxplots and ecdfs, to look for evidence of heteroscedasticity.
 
-- We can use normal QQ plots on both pooled and un-pooled residuals to look for evidence of non-normality.
+> - We can use normal QQ plots on both pooled and un-pooled residuals to look for evidence of non-normality.
 
-- If we wanted to do formal tests or parameter estimation for singer heights, we would feel pretty secure using results based on normal theory.
+> - If we wanted to do formal tests or parameter estimation for singer heights, we would feel pretty secure using results based on normal theory.
 
 
 
@@ -212,9 +212,9 @@ The results of the experiment are in `lattice.RData`, in a data frame `bin.packi
 
 The data frame contains two variables:
 
-- `empty.space`: The amount of empty space.
+> - `empty.space`: The amount of empty space.
 
-- `number.runs`: The number of randomly generated objects (this is poorly named).
+> - `number.runs`: The number of randomly generated objects (this is poorly named).
 
 We are interested in how empty space depends on the number of randomly generated objects (`number.runs`).
 
@@ -266,11 +266,11 @@ The boxplots also show us that aside from some outliers for the small values of 
 
 We might consider log transforming these data for a couple of reasons:
 
-- The distributions are skewed.
+> - The distributions are skewed.
 
-- The data are positive.
+> - The data are positive.
 
-- Computer scientists like logs.
+> - Computer scientists like logs.
 
 Let's see what happens if we do so.
 
@@ -496,11 +496,11 @@ b_{in} = l_n + \varepsilon_{in}
 $$
 where
 
-- $b_{in}$ is the value of empty space for the $i$th simulation with $n$ runs.
+> - $b_{in}$ is the value of empty space for the $i$th simulation with $n$ runs.
 
-- $l_n$ is the median value of empty space for the simulations with $n$ runs.
+> - $l_n$ is the median value of empty space for the simulations with $n$ runs.
 
-- The $\varepsilon_{in}$ values are independent and identically distributed.
+> - The $\varepsilon_{in}$ values are independent and identically distributed.
 
 If we were interested in testing or inference, we might feel that the residuals look close enough to normal that we would be happy with normal theory, or we might feel that the deviations from normal are enough to warrant nonparametric tests.
 
@@ -510,19 +510,19 @@ However, the biggest issue here is the outliers: we aren't really going to be ha
 
 About the bin packing algorithm:
 
-- This suggests that there are two regimes for the bin-packing algorithm: one where the empty space is within a couple of MADs of the median, and another where we have a lot more empty space than normal.
+> - This suggests that there are two regimes for the bin-packing algorithm: one where the empty space is within a couple of MADs of the median, and another where we have a lot more empty space than normal.
 
-- The second regime only seems to happen with small values of `number.runs`, and if we were the people running the simulation we would probably want to go back and look at the "outlier" points that had much more empty space than the bulk.
+> - The second regime only seems to happen with small values of `number.runs`, and if we were the people running the simulation we would probably want to go back and look at the "outlier" points that had much more empty space than the bulk.
 
-- The variance in the first regime (for the bulk of the data) doesn't seem to change with number of runs.
+> - The variance in the first regime (for the bulk of the data) doesn't seem to change with number of runs.
 
 . . .
 
 About data analysis:
 
-- Transformations don't always work: you need to check if they're helping and abandon them if they're not.
+> - Transformations don't always work: you need to check if they're helping and abandon them if they're not.
 
-- The different measures of center and spread tell us qualitatively different things about the data. In this case, both MADs and SDs are valid summaries, telling us different things about the spread of the data.
+> - The different measures of center and spread tell us qualitatively different things about the data. In this case, both MADs and SDs are valid summaries, telling us different things about the spread of the data.
 
 
 . . .
