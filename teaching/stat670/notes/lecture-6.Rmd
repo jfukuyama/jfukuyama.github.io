@@ -1,7 +1,7 @@
 % Stat 470/670 Lecture 6: ggplot2, more formally
 % Julia Fukuyama
 
-```{r setup, echo = FALSE}
+```{r setup, echo = FALSE, message = FALSE}
 library(knitr)
 opts_chunk$set(fig.cap="", fig.width = 4, fig.height = 2.5, dpi=200, fig.path="lecture-6-fig/")
 library(tidyverse)
@@ -54,15 +54,15 @@ dodged_bar_plot + coord_polar(theta = "y")
 
 ## What are the components of a plot?
 
-- A default dataset and set of mappings from variables to aesthetics.
+> - A default dataset and set of mappings from variables to aesthetics.
 
-- One or more _layers_, each of which contains one geometric (`geom_*`) object, one statistical transformation (`stat_*`), one position adjustment (`position_*`), and one dataset and set of aesthetic mappings.
+> - One or more _layers_, each of which contains one geometric (`geom_*`) object, one statistical transformation (`stat_*`), one position adjustment (`position_*`), and one dataset and set of aesthetic mappings.
 
-- One scale for each aesthetic mapping.
+> - One scale for each aesthetic mapping.
 
-- A coordinate system (`coord_*`).
+> - A coordinate system (`coord_*`).
 
-- A facet specification (`facet_*`).
+> - A facet specification (`facet_*`).
 
 Layers are the most important and involved part of the plot.
 
@@ -71,26 +71,26 @@ Layers are the most important and involved part of the plot.
 
 ggplots are composed of one or more layers
 
-- If you want anything to show up, you need to create a layer: any of the `geom_*` or `stat_*` commands create a layer for you.
+> - If you want anything to show up, you need to create a layer: any of the `geom_*` or `stat_*` commands create a layer for you.
 
-- Layers can also be created by hand using the `layer` command, and we'll see that today for teaching purposes, but in practice you make layers with `geom_*` or `stat_*`
+> - Layers can also be created by hand using the `layer` command, and we'll see that today for teaching purposes, but in practice you make layers with `geom_*` or `stat_*`
 
-- The `ggplot` function on its own does not create a layer.
+> - The `ggplot` function on its own does not create a layer.
 
 ## What is a layer?
 
-- data and aesthetic mapping
+> - data and aesthetic mapping
 
-- statistical transformation (stat)
+> - statistical transformation (stat)
 
-- geometric object (geom)
+> - geometric object (geom)
 
-- position adjustment
+> - position adjustment
 
 . . .
 
 ```{r}
-p = ggplot() + geom_point(aes(x = color, y = clarity), data = diamonds)
+p = ggplot() + geom_point(data = diamonds, aes(x = color, y = clarity))
 p$layers
 ```
 
@@ -101,11 +101,11 @@ Data: self evident. For ggplot the data needs to be formatted as a tibble or a d
 
 Aesthetic mapping:
 
-- Describes how variables in the dataset are mapping to "aesthetic" attributes of the plot.
+> - Describes how variables in the dataset are mapping to "aesthetic" attributes of the plot.
 
-- "Aesthetic" here means perceivable: something you can observe on the plot.
+> - "Aesthetic" here means perceivable: something you can observe on the plot.
 
-- Examples of aesthetic attributes/perceivable attributes: position along the $x$-axis, color, shape, position along the $y$-axis, opacity, linetype
+> - Examples of aesthetic attributes/perceivable attributes: position along the $x$-axis, color, shape, position along the $y$-axis, opacity, linetype
 
 Data and aesthetic mapping go together because they are not at all independent of each other: the aesthetic mapping takes variables in your data and maps them to aesthetics/perceivable parts of the plot and is therefore specific to a dataset.
 
@@ -122,14 +122,38 @@ There's some overlap between these and position adjustments: often there is more
 
 Geometric objects (`geom_*`) control the type of plot you create. Examples are
 
-- Points, text (zero-dimensional geometric objects)
+> - Points, text (zero-dimensional geometric objects)
 
-- Line, path (one-dimensional geometric objects)
+> - Line, path (one-dimensional geometric objects)
 
-- Polygon, interval (two-dimensional geometric objects)
+> - Polygon, interval (two-dimensional geometric objects)
 
-- More complicated: boxplot
+> - More complicated: boxplot
 
+-----
+
+```{r}
+## point geom
+ggplot(mtcars, aes(x = wt, y = mpg)) + geom_point()
+## text geom
+ggplot(mtcars, aes(x = wt, y = mpg, label = rownames(mtcars))) + geom_text(size = 2)
+## bar geom
+ggplot(mpg, aes(x = class)) +  geom_bar()
+## line geom
+ggplot(economics, aes(x = date, y = unemploy)) + geom_line()
+## path geom
+ggplot(economics, aes(x = unemploy / pop, y = psavert)) + geom_path()
+## data for errorbar geom
+df <- data.frame(
+  trt = factor(c(1, 1, 2, 2)),
+  resp = c(1, 5, 3, 4),
+  group = factor(c(1, 2, 1, 2)),
+  upper = c(1.1, 5.3, 3.3, 4.2),
+  lower = c(0.8, 4.6, 2.4, 3.6)
+)
+## errorbar geom
+ggplot(df, aes(x = trt, y = resp, colour = group)) + geom_errorbar(aes(ymin = lower, ymax = upper), width = 0.2)
+```
 
 ## Relationship between stats and geoms
 
@@ -139,20 +163,20 @@ Stats and geoms are not completely orthogonal: not every combination is valid (a
 
 For example:
 
-- `stat_bin` and `geom_bar` is valid and standard for a histogram.
+> - `stat_bin` and `geom_bar` is valid and standard for a histogram.
 
-- `stat_bin` and `geom_point` or `stat_bin` + `geom_line` are valid but non-standard combinations. They give a plot that is similar to a histogram and that is interpretable in the same way.
+> - `stat_bin` and `geom_point` or `stat_bin` + `geom_line` are valid but non-standard combinations. They give a plot that is similar to a histogram and that is interpretable in the same way.
 
-- `stat_identity` and  `geom_boxplot` is invalid, because boxplot needs certain computed quantities from the data.
+> - `stat_identity` and  `geom_boxplot` is invalid, because boxplot needs certain computed quantities from the data.
 
 
 ## Position adjustment
 
 Used to avoid "collisions" in the plot objects:
 
-- In bar plots where one of the aesthetics is height, the bars would often be plotted over each other. In this case we use the "dodge" or "stack" position adjustments.
+> - In bar plots where one of the aesthetics is height, the bars would often be plotted over each other. In this case we use the "dodge" or "stack" position adjustments.
 
-- If we have issues with overplotting (multiple points in exactly the same place), we can use the "jitter" position adjustment to randomly move the points a small amount.
+> - If we have issues with overplotting (multiple points in exactly the same place), we can use the "jitter" position adjustment to randomly move the points a small amount.
 
 ```{r}
 p = ggplot(diamonds) + geom_boxplot(aes(x = color, y = price))
@@ -200,11 +224,25 @@ To do so, you use the `scale_*` functions.
 
 Another aspect of the plot that can be specified independently of everything else is the coordinate system.
 
-- `coord_cartesian` is the default, and is almost always what you want.
+> - `coord_cartesian` is the default, and is almost always what you want.
 
-- `coord_flip` is sometimes useful: for example, boxplots require the explanatory variable to be mapped to x, so if you want a horizontal boxplot you need to use `coord_flip`.
+> - `coord_flip` is sometimes useful: for example, boxplots require the explanatory variable to be mapped to x, so if you want a horizontal boxplot you need to use `coord_flip`.
 
-- `coord_polar` will often make your plots look cooler and more difficult to read. Not usually recommended.
+> - `coord_polar` will often make your plots look cooler and more difficult to read. Not usually recommended.
+
+----
+
+```{r}
+p = ggplot(cars, aes(x = speed, y = dist)) + 
+    geom_point()
+## cartesian coordinates
+p
+## log scale
+p + coord_trans(x = "log10", y = "log10")
+## polar coordinates
+p + coord_polar()
+p + coord_polar(theta = "y")
+```
 
 ## Faceting
 
@@ -216,10 +254,19 @@ Each facet plots a subset of the data, and it takes as input what variable(s) to
 
 The two options are:
 
-- `facet_wrap`: Lays out the plots for each subset sequentially.
+> - `facet_wrap`: Lays out the plots for each subset sequentially.
 
-- `facet_grid`: Subsets the data according to two separate variables. The facet position along the $x$-axis represents levels of one variable, and the facet position along the $y$-axis represents levels of the other variable.
+> - `facet_grid`: Subsets the data according to two separate variables. The facet position along the $x$-axis represents levels of one variable, and the facet position along the $y$-axis represents levels of the other variable.
 
+
+-----
+
+```{r}
+p = ggplot(mpg, aes(displ, hwy)) + geom_point()
+p + facet_wrap(~ class)
+p + facet_grid(drv ~ cyl)
+p + facet_grid(. ~ cyl)
+```
 
 ## How this all works: the long way
 
@@ -253,13 +300,13 @@ p = ggplot(data = diamonds, aes(x = carat, y = price)) +
 
 This is still fairly long, but we don't have to specify
 
-- position: Default for both `geom_point` and `stat_smooth` is `position = "identity"`.
+> - position: Default for both `geom_point` and `stat_smooth` is `position = "identity"`.
 
-- stat, for `geom_point`: The default stat for `geom_point` is `stat = "identity"`.
+> - stat, for `geom_point`: The default stat for `geom_point` is `stat = "identity"`.
 
-- geom, for `stat_smooth`: The default geom for `stat_smooth` is `geom_smooth`.
+> - geom, for `stat_smooth`: The default geom for `stat_smooth` is `geom_smooth`.
 
-- coordinate system: `coord_cartesian` is always the default.
+> - coordinate system: `coord_cartesian` is always the default.
 
 -----
 
@@ -301,42 +348,24 @@ Notice: we have a new dataset for this layer.
 
 Some things that we still don't like about this plot:
 
-- We would like the colors for advance and retreat to be grey and red.
+> - We would like the colors for advance and retreat to be grey and red.
 
-- We want the line widths to be proportional to the number of survivors.
+> - We want the line widths to be proportional to the number of survivors.
 
-- We would like the line ends to be round instead of square.
+> - We would like the line ends to be round instead of square.
 
 -----
 
 A "final" version of the plot, with better scales:
-```{r, fig.width=6}
+```{r, fig.width=7}
 ggplot(minard) +
     geom_path(aes(x = long, y = lat, color = direction, size = surviv^2, group = division), lineend = "round") +
     geom_text(aes(x = long, y = lat, label = city), data = minard_cities, size = 3) + 
-    scale_size(range = c(.18, 15), breaks = (1:3 * 10^5)^2, labels = scales::comma(1:3 * 10^5), "Survivors") +
+    scale_size(range = c(.18, 15), breaks = (1:3 * 10^5)^2, labels = paste("   ", scales::comma(1:3 * 10^5)), "Survivors") +
     scale_color_manual(values = c("grey50","red"), breaks = c("A", "R"), labels = c("Advance", "Retreat"), "") +
     xlab(NULL) + ylab(NULL) + theme(axis.text = element_blank(), axis.ticks = element_blank(), panel.grid = element_blank())
 ```
 
-
-
-## Exercises
-
-- Try creating a histogram on the diamonds dataset, for example with
-```{r}
-p = ggplot() + geom_histogram(aes(x = carat), data = diamonds)
-```
-
-Re-write this using the `layer` function. Hint: if you don't know what the default values for some of the aspects of the plot, examine `p$layers`
-
-- Remember that a histogram is a plot with `stat_bin` and `geom_bar`. Modify your histogram code so that it uses a different geom, for example `geom_line` or `geom_point`. This should be simple once you have the `layer` specification of a histogram.
-
-- In your histogram, add an aesthetic mapping from one of the factor variables (maybe color or clarity) to the color aesthetic.
-
-- What is the default position adjustment for a histogram? Try changing the position adjustment to something different (hint: try `position_dodge`).
-
-- Very difficult: Recreate the Minard map more precisely. Add text for the number of troops surviving on each segment, and add the time and temperature data to the bottom of the plot.
 
 
 ## ggplot and EDA
