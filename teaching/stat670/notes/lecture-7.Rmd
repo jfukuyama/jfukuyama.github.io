@@ -14,6 +14,8 @@ Read Chapter 5 more for the philosophy than for the implementation details.
 
 In particular, Tukey fits lines by eye (sections A-C in Chapter 5), which we will never do.
 
+Reading 2: Wikle, [_Data Visualization_ Chapter 29](https://clauswilke.com/dataviz/telling-a-story.html), "Telling a story and making a point"
+
 ## Motivation/What questions do we want to answer?
 
 Recall the EDA philosophy: We want to notice as many things as possible about the data, collect all appearances.
@@ -25,11 +27,11 @@ Because this is EDA, we want to explain the relationship between the variables, 
 
 The simplest explanation for the relationship between two variables is linear, so today we will look at
 
-- How to fit a linear relation
+> - How to fit a linear relation
 
-- How to transform  variables so as to create a linear relation
+> - How to transform  variables so as to create a linear relation
 
-- How to critique the linear relation once we have it
+> - How to critique the linear relation once we have it
 
 
 
@@ -135,7 +137,8 @@ ggplot(augment(fit_late)) + geom_point(aes(x = Year, y = .resid))
 
 ```{r}
 ggplot(augment(fit_late)) + geom_point(aes(x = Year, y = .resid)) +
-    scale_y_continuous(limits = c(-5 * 10^6, 5 * 10^6))
+    scale_y_continuous(limits = c(-5 * 10^6, 5 * 10^6)) +
+    scale_x_continuous(limits = c(midpoint, max(census$Year)))
 ```
 
 ## Linearity of log-population
@@ -167,6 +170,7 @@ ggplot(augment(fit_early)) + geom_point(aes(x = Year, y = .resid))
 ```{r}
 ggplot(augment(fit_early)) +
     geom_point(aes(x = Year, y = .resid)) +
+    scale_x_continuous(limits = c(min(census$Year), midpoint)) +
     scale_y_continuous(limits = c(-.025, .025))
 ```
 
@@ -182,9 +186,9 @@ What if we don't know anything in particular about the problem? How do we know w
 
 Defining curvature:
 
-- _Hollow upward_ means that if we take three points on the curve, the middle point is below the line joining the other two (more standard: [convex or concave up](https://en.wikipedia.org/wiki/Convex_function)).
+> - _Hollow upward_ means that if we take three points on the curve, the middle point is below the line joining the other two (more standard: [convex or concave up](https://en.wikipedia.org/wiki/Convex_function)).
 
-- _Hollow downward_ is the opposite: if we take three points on the curve, the middle point is above the line joining the other two (more standard: [concave or concave down](https://en.wikipedia.org/wiki/Concave_function)).
+> - _Hollow downward_ is the opposite: if we take three points on the curve, the middle point is above the line joining the other two (more standard: [concave or concave down](https://en.wikipedia.org/wiki/Concave_function)).
 
 If the relationship between our variables is hollow upward or hollow downward, there is some general advice about power transformations to use to straighten out the relationship.
 
@@ -196,6 +200,7 @@ We can think of these as a ladder of transformations: for example, for $\tau = 3
 
 $$\begin{matrix} \frac{y^3 - 1}{3}\\ \frac{y^2 - 1}{2}\\ y\\ \frac{\sqrt y - 1}{1/2}\\ \log y\\ - \frac{y^{-1/2} - 1}{1/2}\\ -y^{-1} - 1\\ -\frac{y^{-2} - 1}{2} \\ -\frac{y^3 - 1}{3}\end{matrix}$$
 
+Note: I have expressed these as the Box-Cox transformations, but you can also use power transformations with the same "ladder" structure.
 
 ------
 
@@ -207,9 +212,11 @@ If the relationship between one transformation of $y$ and $x$ is straight, the r
 
 Therefore, the following advice:
 
-- If our plot is hollow upward, we look down the ladder (more negative values of $\tau$ in the Box-Cox transformations) for straightness.
+> - If our plot is hollow upward, we look down the ladder (more negative values of $\tau$ in the Box-Cox transformations) for straightness.
 
-- If our plot is hollow downward, we look up the ladder (more positive values of $\tau$ in the Box-Cox transformations) for straightness.
+> - If our plot is hollow downward, we look up the ladder (more positive values of $\tau$ in the Box-Cox transformations) for straightness.
+
+> - These transformatiosn will be effective only if the ratio between the largest and smallest values in the dataset is relatively large. If the ratio is small, the transformations are approximately linear and they won't help much.
 
 -----
 
@@ -254,19 +261,27 @@ census = census %>% mutate(CentSince1600 = (Year - 1600) / 100)
 box_cox = function(y, tau) {
     return((y^tau - 1) / tau)
 }
-ggplot(subset(census, Year <= midpoint)) + geom_point(aes(x = Population, y = CentSince1600))
-ggplot(subset(census, Year <= midpoint)) +
-    geom_point(aes(x = Population, y = box_cox(CentSince1600, 3))) +
-    xlab("Power = 3")
-ggplot(subset(census, Year <= midpoint)) +
-    geom_point(aes(x = Population, y = box_cox(CentSince1600, 5))) +
-    xlab("Power = 5")
-ggplot(subset(census, Year <= midpoint)) +
-    geom_point(aes(x = Population, y = box_cox(CentSince1600, 7))) +
-    xlab("Power = 7")
-ggplot(subset(census, Year <= midpoint)) +
-    geom_point(aes(x = Population, y = box_cox(CentSince1600, 9))) +
-    xlab("Power = 9")
+ggplot(subset(census, Year <= midpoint), aes(x = Population, y = CentSince1600)) +
+    geom_point() +
+    stat_smooth(method = "lm", se = FALSE)
+ggplot(subset(census, Year <= midpoint), aes(x = Population, y = box_cox(CentSince1600, 3))) +
+    geom_point() +
+    stat_smooth(method = "lm", se = FALSE)
+    ylab("Transformed Year, Power = 3")
+ggplot(subset(census, Year <= midpoint), aes(x = Population, y = box_cox(CentSince1600, 5))) +
+    geom_point() +
+    stat_smooth(method = "lm", se = FALSE) +
+    ylab("Transformed Year, Power = 5")
+
+ggplot(subset(census, Year <= midpoint), aes(x = Population, y = box_cox(CentSince1600, 7))) +
+    geom_point() +
+    stat_smooth(method = "lm", se = FALSE) +
+    ylab("Transformed Year, Power = 7")
+
+ggplot(subset(census, Year <= midpoint), aes(x = Population, y = box_cox(CentSince1600, 9))) +
+    geom_point() +
+    stat_smooth(method = "lm", se = FALSE) +
+    ylab("Transformed Year, Power = 9")
 ```
 
 We get a really straight relationship with the re-expressed x, but the interpretation isn't as nice as the log transformation.
@@ -278,25 +293,56 @@ For communicating our findings to other people, and for understanding them ourse
 
 Data = fit + residual
 
-- From the fits, we have gained a simple explanation of the broad trends in the US population.
+> - From the fits, we have gained a simple explanation of the broad trends in the US population.
 
-- If we were really interested in the US population or in the census, the residuals need to be explained and would give us our next task.
+> - If we were really interested in the US population or in the census, the residuals need to be explained and would give us our next task.
 
-- This would require more data than we have available to us, for example, the details of the census process in the years where the deviations were particularly large.
+> - This would require more data than we have available to us, for example, the details of the census process in the years where the deviations were particularly large.
 
-- We have advice on how to transform either response or predictor values to straighten out the relationship between them, but we need to make sure that we don't take this as a natural law.
+> - We have advice on how to transform either response or predictor values to straighten out the relationship between them, but we need to make sure that we don't take this as a natural law.
 
 Note that this is a more data analytic than statistical look at the numbers.
 
 If we were thinking like statisticians, we might draw Q-normal plots of the residuals.
 
+## If we were presenting this material
+
+Would present: Broad-scale trends, then deviations from those trends
+
+Early population growth is exponential, or linear on a log scale:
+```{r, fig.width=5, fig.height=3}
+ggplot(census) + geom_point(aes(x = Year, y = log10(Population))) +
+    geom_abline(aes(intercept = estimate[1], slope = estimate[2]), data = tidy(fit_early)) +
+    ggtitle("Log-population of the US\nwith a line of best fit for years before 1875")
+```
+
+Late population growth is approximately linear:
+```{r, fig.width=5, fig.height=3}
+ggplot(census) + geom_point(aes(x = Year, y = Population)) +
+    geom_abline(aes(intercept = estimate[1], slope = estimate[2]), data = tidy(fit_late)) +
+    ggtitle("Population of the US\nwith a line of best fit for the years after 1875")
+```
+
+There are some major deviations from what we would expect in both the early and the late regimes:
+```{r, fig.width=5, fig.height=3}
+ggplot(augment(fit_early)) +
+    geom_point(aes(x = Year, y = .resid)) +
+    scale_x_continuous(limits = c(min(census$Year), midpoint)) +
+    scale_y_continuous(limits = c(-.025, .025)) +
+    ggtitle("Deviations of early census numbers\nfrom exponential trend")
+ggplot(augment(fit_late)) + geom_point(aes(x = Year, y = .resid)) +
+    scale_y_continuous(limits = c(-5 * 10^6, 5 * 10^6)) +
+    scale_x_continuous(limits = c(midpoint, max(census$Year))) +
+    ggtitle("Deviations of late census numbers\nfrom linear trend")
+```
+
 ## What progress have we made?
 
-- We have seen how transforming one or more of the variables can help with interpretability by straightening out the relationship between the variables. This is a new use of transformations: in the univariate section, we used transformations to correct skewness and make distributions closer to normal.
+> - We have seen how transforming one or more of the variables can help with interpretability by straightening out the relationship between the variables. This is a new use of transformations: in the univariate section, we used transformations to correct skewness and make distributions closer to normal.
 
-- We have seen how to fit the relationship between variables with a straight line.
+> - We have seen how to fit the relationship between variables with a straight line.
 
-- We have seen how breaking down the data into a fit plus residuals can allow us to inspect the residuals more closely and make better progress in understanding the data.
+> - We have seen how breaking down the data into a fit plus residuals can allow us to inspect the residuals more closely and make better progress in understanding the data.
 
 ## Next time
 
