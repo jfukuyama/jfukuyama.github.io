@@ -7,7 +7,7 @@
   <meta http-equiv="Content-Style-Type" content="text/css" />
   <meta name="generator" content="pandoc" />
   <meta name="author" content="Julia Fukuyama" />
-  <title>Stat 470/670 Lecture 8: Smoothing bivariate data</title>
+  <title>Stat 470/670 Lecture 8: Flexible modeling for bivariate data</title>
   <style type="text/css">
     code{white-space: pre-wrap;}
     span.smallcaps{font-variant: small-caps;}
@@ -89,17 +89,19 @@
 </head>
 <body>
 <div class="slide titlepage">
-  <h1 class="title">Stat 470/670 Lecture 8: Smoothing bivariate
-data</h1>
+  <h1 class="title">Stat 470/670 Lecture 8: Flexible modeling for
+bivariate data</h1>
   <p class="author">
 Julia Fukuyama
   </p>
 </div>
 <div id="today" class="slide section level2">
 <h1>Today</h1>
-<ul class="incremental">
-<li><p>Review linear regression</p></li>
-<li><p>Smoothers</p></li>
+<ul>
+<li>Review linear regression/parametric smoothers</li>
+</ul>
+<ul>
+<li>Nonparametric smoothers</li>
 </ul>
 </div>
 <div id="regression-review" class="slide section level2">
@@ -118,12 +120,13 @@ use as predictors carat plus the second and third powers of carat.</p>
 <p>This gives us the best-fitting third-degree polynomial.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(broom)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>lm.poly <span class="ot">=</span> <span class="fu">lm</span>(</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    price <span class="sc">~</span> carat <span class="sc">+</span> <span class="fu">I</span>(carat<span class="sc">^</span><span class="dv">2</span>) <span class="sc">+</span> <span class="fu">I</span>(carat<span class="sc">^</span><span class="dv">3</span>),</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> diamonds, <span class="at">subset =</span> clarity <span class="sc">==</span> <span class="st">&quot;VS1&quot;</span>)</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">augment</span>(lm.poly)) <span class="sc">+</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> carat, <span class="at">y =</span> price)) <span class="sc">+</span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> carat, <span class="at">y =</span> .fitted), <span class="at">color =</span> <span class="st">&quot;red&quot;</span>)</span></code></pre></div>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>diamonds <span class="ot">=</span> diamonds <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">log_price =</span> <span class="fu">log10</span>(price))</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>lm.poly <span class="ot">=</span> <span class="fu">lm</span>(</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    log_price <span class="sc">~</span> carat <span class="sc">+</span> <span class="fu">I</span>(carat<span class="sc">^</span><span class="dv">2</span>) <span class="sc">+</span> <span class="fu">I</span>(carat<span class="sc">^</span><span class="dv">3</span>),</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> diamonds, <span class="at">subset =</span> clarity <span class="sc">==</span> <span class="st">&quot;VS1&quot;</span>)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">augment</span>(lm.poly)) <span class="sc">+</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> carat, <span class="at">y =</span> log_price), <span class="at">size =</span> .<span class="dv">5</span>, <span class="at">alpha =</span> .<span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> carat, <span class="at">y =</span> .fitted), <span class="at">color =</span> <span class="st">&quot;blue&quot;</span>)</span></code></pre></div>
 <p><img src="lecture-8-fig/unnamed-chunk-1-1.png" /></p>
 </div>
 <div
@@ -143,13 +146,15 @@ f_a(x) = \begin{cases}
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>step <span class="ot">=</span> <span class="cf">function</span>(x, step_position) {</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="fu">ifelse</span>(x <span class="sc">&gt;=</span> step_position, <span class="dv">0</span>, <span class="dv">1</span>))</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>lm.steps <span class="ot">=</span> <span class="fu">lm</span>(price <span class="sc">~</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    carat <span class="sc">+</span> <span class="fu">I</span>(<span class="fu">step</span>(carat, .<span class="dv">5</span>)) <span class="sc">+</span> <span class="fu">I</span>(<span class="fu">step</span>(carat, <span class="dv">1</span>)) <span class="sc">+</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">I</span>(<span class="fu">step</span>(carat, <span class="fl">1.5</span>)) <span class="sc">+</span> <span class="fu">I</span>(<span class="fu">step</span>(carat, <span class="dv">2</span>)),</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> diamonds, <span class="at">subset =</span> clarity <span class="sc">==</span> <span class="st">&quot;VS1&quot;</span>)</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">augment</span>(lm.steps)) <span class="sc">+</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> carat, <span class="at">y =</span> price)) <span class="sc">+</span></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> carat, <span class="at">y =</span> .fitted), <span class="at">color =</span> <span class="st">&quot;red&quot;</span>)</span></code></pre></div>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>lm.steps <span class="ot">=</span> <span class="fu">lm</span>(</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    log_price <span class="sc">~</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>        carat <span class="sc">+</span> <span class="fu">I</span>(carat<span class="sc">^</span><span class="dv">2</span>) <span class="sc">+</span> <span class="fu">I</span>(carat<span class="sc">^</span><span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>        <span class="fu">step</span>(carat, .<span class="dv">3</span>) <span class="sc">+</span> <span class="fu">step</span>(carat, .<span class="dv">5</span>) <span class="sc">+</span> <span class="fu">step</span>(carat, <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>        <span class="fu">step</span>(carat, <span class="fl">1.5</span>) <span class="sc">+</span> <span class="fu">step</span>(carat, <span class="dv">2</span>),</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> diamonds, <span class="at">subset =</span> clarity <span class="sc">==</span> <span class="st">&quot;VS1&quot;</span>)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">augment</span>(lm.steps)) <span class="sc">+</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> carat, <span class="at">y =</span> log_price), <span class="at">size =</span> .<span class="dv">5</span>, <span class="at">alpha =</span> .<span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> carat, <span class="at">y =</span> .fitted), <span class="at">color =</span> <span class="st">&quot;red&quot;</span>)</span></code></pre></div>
 <p><img src="lecture-8-fig/unnamed-chunk-2-1.png" /></p>
 </div>
 </div>
@@ -238,11 +243,13 @@ weights more closely than points with low weights.</p></li>
 <h1>References</h1>
 <p>If you feel like you need to brush up on this, a good reference is
 Weisberg, Applied Linear Regression.</p>
-<ul class="incremental">
-<li><p>Section 3.4 of Weisberg describes the matrix notation version of
-multiple regression.</p></li>
-<li><p>Chapter 6 of Weisberg describes polynomial regression and
-indicator matrices for factor variables.</p></li>
+<ul>
+<li>Section 3.4 of Weisberg describes the matrix notation version of
+multiple regression.</li>
+</ul>
+<ul>
+<li>Chapter 6 of Weisberg describes polynomial regression and indicator
+matrices for factor variables.</li>
 </ul>
 </div>
 <div id="smoothing" class="slide section level2">
@@ -267,14 +274,16 @@ smoother, or if any other weird things are happening.</p></li>
 <h1>LOESS</h1>
 <p>LOESS, or local regression, builds on standard regression. The setup
 is:</p>
-<ul class="incremental">
-<li><p>We have bivariate data, so pairs <span
-class="math inline">\((y_i, x_i)\)</span>, <span class="math inline">\(i
-= 1,\ldots, n\)</span>.</p></li>
-<li><p>We want to estimate the mean <span class="math inline">\(E(Y \mid
+<ul>
+<li>We have bivariate data, so pairs <span class="math inline">\((y_i,
+x_i)\)</span>, <span class="math inline">\(i = 1,\ldots,
+n\)</span>.</li>
+</ul>
+<ul>
+<li>We want to estimate the mean <span class="math inline">\(E(Y \mid
 X)\)</span>. We think this is a smooth function of <span
 class="math inline">\(X\)</span>, but we don’t know what the form of
-that function is.</p></li>
+that function is.</li>
 </ul>
 <p>The idea is that since the mean function is smooth, it can be
 approximated with a linear or low-order polynomial function in small
@@ -298,7 +307,7 @@ class="math inline">\(\Delta_{i}(x_0)\)</span>, and <span
 class="math inline">\(q = \alpha n\)</span>, rounded to the nearest
 integer.</p>
 <p><span class="math inline">\(T\)</span> is the tricube weight function
-(inverted by Tukey!): <span class="math display">\[
+(invented by Tukey!): <span class="math display">\[
 T(u) = \begin{cases}
 (1 - |u|^3)^3 &amp; |u| \le 1 \\
 0 &amp; |u| &gt; 1
@@ -390,22 +399,6 @@ variables, we need to pass <code>augment</code> the extra argument
 <span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">y =</span> psavert)) <span class="sc">+</span> <span class="fu">geom_line</span>(<span class="at">color =</span> <span class="st">&quot;red&quot;</span>)</span></code></pre></div>
 <p><img src="lecture-8-fig/unnamed-chunk-7-1.png" /></p>
 </div>
-</div>
-<div id="exercises" class="slide section level2">
-<h1>Exercises</h1>
-<ul class="incremental">
-<li><p>Try out different values of <span
-class="math inline">\(\alpha\)</span> and <span
-class="math inline">\(\lambda\)</span> in the loess smooth of the (hint:
-<span class="math inline">\(\lambda\)</span> corresponds to the
-<code>degree</code> argument in the loess function, <span
-class="math inline">\(\alpha\)</span> corresponds to the
-<code>span</code> argument). What do you think are good values? What do
-they tell you about the data?</p></li>
-<li><p>Try using a loess smooth on the diamonds data that we looked at
-at the beginning of class. Do you like loess for this
-application?</p></li>
-</ul>
 </div>
 </body>
 </html>
