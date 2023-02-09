@@ -76,22 +76,22 @@ where $s = \text{median}(|\hat \varepsilon_i|)$ and $k$ is a parameter that you 
 
 Notes:
 
-- If the errors are actually normal, $6s$ corresponds to about $4 \sigma$, and $4.685s$ corresponds to about $3 \sigma$ (the standard deviation of a normal distribution is 1.48 times the MAD).
+> - If the errors are actually normal, $6s$ corresponds to about $4 \sigma$, and $4.685s$ corresponds to about $3 \sigma$ (the standard deviation of a normal distribution is 1.48 times the MAD).
 
-- The $ks$ in the denominator is a tunable parameter that you can change, but the standard values are chosen because they lead to good efficiency when the errors are normally distributed.
+> - The $ks$ in the denominator is a tunable parameter that you can change, but the standard values are chosen because they lead to good efficiency when the errors are normally distributed.
 
 
 ## Iteratively re-weighted least squares
 
 Algorithm for robust regression:
 
-0. Start with an estimate of the regression line, e.g. standard least squares
+> 0. Start with an estimate of the regression line, e.g. standard least squares
 
 Repeat until convergence:
 
-1. Compute robustness weights based on the estimated regression line.
+> 1. Compute robustness weights based on the estimated regression line.
 
-2. Perform weighted least squares with the robustness weights to get a new estimate of the regression line.
+> 2. Perform weighted least squares with the robustness weights to get a new estimate of the regression line.
 
 
 ## Example
@@ -101,8 +101,9 @@ Repeat until convergence:
 
 ```{r}
 dating.rlm.0 = lm(diff ~ carbon, data = dating)
-ggplot(dating) +
+ggplot(data.frame(dating, weights = 1)) +
     geom_point(aes(x = carbon, y = diff)) +
+    geom_label(aes(x = carbon, y = diff, label = weights)) +
     geom_line(aes(x = carbon, y = dating.rlm.0$fitted.values), color = 'red') +
     ylim(c(0,7))
 ```
@@ -111,8 +112,10 @@ ggplot(dating) +
 
 ```{r}
 dating.rlm.1 = rlm(diff ~ carbon, data = dating, maxit = 1, psi = psi.bisquare)
-ggplot(dating) +
+weight_strings = as.character(round(dating.rlm.1$w, digits = 2))
+ggplot(data.frame(dating, weights = weight_strings)) +
     geom_point(aes(x = carbon, y = diff)) +
+    geom_label(aes(x = carbon, y = diff, label = weights)) +
     geom_line(aes(x = carbon, y = dating.rlm.1$fitted.values), color = 'red') +
     ylim(c(0,7))
 ```
@@ -121,8 +124,10 @@ ggplot(dating) +
 
 ```{r}
 dating.rlm.2 = rlm(diff ~ carbon, data = dating, maxit = 2, psi = psi.bisquare)
-ggplot(dating) +
+weight_strings = as.character(round(dating.rlm.2$w, digits = 2))
+ggplot(data.frame(dating, weights = weight_strings)) +
     geom_point(aes(x = carbon, y = diff)) +
+    geom_label(aes(x = carbon, y = diff, label = weights)) +
     geom_line(aes(x = carbon, y = dating.rlm.2$fitted.values), color = 'red') +
     ylim(c(0,7))
 ```
@@ -131,8 +136,10 @@ ggplot(dating) +
 
 ```{r}
 dating.rlm.3 = rlm(diff ~ carbon, data = dating, maxit = 3, psi = psi.bisquare)
-ggplot(dating) +
+weight_strings = as.character(round(dating.rlm.3$w, digits = 2))
+ggplot(data.frame(dating, weights = weight_strings)) +
     geom_point(aes(x = carbon, y = diff)) +
+    geom_label(aes(x = carbon, y = diff, label = weights)) +
     geom_line(aes(x = carbon, y = dating.rlm.3$fitted.values), color = 'red') +
     ylim(c(0,7))
 ```
@@ -142,8 +149,10 @@ ggplot(dating) +
 
 ```{r}
 dating.rlm.11 = rlm(diff ~ carbon, data = dating, maxit = 11, psi = psi.bisquare)
-ggplot(dating) +
+weight_strings = as.character(round(dating.rlm.11$w, digits = 2))
+ggplot(data.frame(dating, weights = weight_strings)) +
     geom_point(aes(x = carbon, y = diff)) +
+    geom_label(aes(x = carbon, y = diff, label = weights)) +
     geom_line(aes(x = carbon, y = dating.rlm.11$fitted.values), color = 'red') +
     ylim(c(0,7))
 ```
@@ -154,8 +163,10 @@ ggplot(dating) +
 
 ```{r}
 dating.rlm.12 = rlm(diff ~ carbon, data = dating, maxit = 12, psi = psi.bisquare)
-ggplot(dating) +
+weight_strings = as.character(round(dating.rlm.12$w, digits = 2))
+ggplot(data.frame(dating, weights = weight_strings)) +
     geom_point(aes(x = carbon, y = diff)) +
+    geom_label(aes(x = carbon, y = diff, label = weights)) +
     geom_line(aes(x = carbon, y = dating.rlm.12$fitted.values), color = 'red') +
     ylim(c(0,7))
 ```
@@ -265,15 +276,15 @@ ggplot(penalties, aes(x = error, y = penalty)) +
 
 Bisquare:
 
-- Can completely remove the influnce of outliers from the regression line (the weight function is equal to $0$ for outliers more than $3$ or $4$ standard deviations).
+> - Can completely remove the influnce of outliers from the regression line (the weight function is equal to $0$ for outliers more than $3$ or $4$ standard deviations).
 
-- Doesn't have a unique solution, can get stuck in local optima, sometimes helps to give it a good initialization point.
+> - Doesn't have a unique solution, can get stuck in local optima, sometimes helps to give it a good initialization point.
 
 Huber:
 
-- Never completely removes the influence of outliers from the regression line (weight function is never equal to $0$).
+> - Never completely removes the influence of outliers from the regression line (weight function is never equal to $0$).
 
-- Has a unique solution, no need to worry about local optima or good starting points.
+> - Has a unique solution, no need to worry about local optima or good starting points.
 
 Other methods have other definitions of the weight function and allow you to make different tradeoffs between tractability and outlier removal.
 
@@ -299,11 +310,11 @@ Smoothers can be very helpful visualization tools for comparing bivariate models
 
 As an example, consider the `ethanol` dataset in `lattice.RData`. The data are from an experiment studying exhaust from a one-cylinder engine fueled by ethanol. The variables in the dataset are
 
-- `NOx`: Concentration of NO plus NO2 (NOx), divided by the amount of work the engine did.
+> - `NOx`: Concentration of NO plus NO2 (NOx), divided by the amount of work the engine did.
 
-- `E`: The equivalence ratio at which the engine was run, measuring the richness of the mixture of air and fuel (more fuel = higher E).
+> - `E`: The equivalence ratio at which the engine was run, measuring the richness of the mixture of air and fuel (more fuel = higher E).
 
-- `C`: The compression ratio to which the engine was set, that is, the maximum volume inside the cylinder (volume with piston retracted) divided by the minimum volume inside the cylinder (volume with piston at maximal penetration).
+> - `C`: The compression ratio to which the engine was set, that is, the maximum volume inside the cylinder (volume with piston retracted) divided by the minimum volume inside the cylinder (volume with piston at maximal penetration).
 
 ------
 
@@ -358,11 +369,11 @@ ggplot(ethanol, aes(x = E, y = NOx, color = Cfac)) +
 
 Remember our good friend the diamonds dataset. The variables we'll be interested in for now are:
 
-- `price`: How much the diamond sold for.
+> - `price`: How much the diamond sold for.
 
-- `carat`: How big the diamond is.
+> - `carat`: How big the diamond is.
 
-- `clarity`: How clear it is. This is coded is an ordered factor (this is what `<ord>` at the top of the `clarity` column means when you print out the diamonds tibble) , higher clarities tend to be more rare and expensive.
+> - `clarity`: How clear it is. This is coded is an ordered factor (this is what `<ord>` at the top of the `clarity` column means when you print out the diamonds tibble) , higher clarities tend to be more rare and expensive.
 
 We've already looked at the relationship between price and carat, and we'd like to see how the relationship varies with clarity. Let's try investigating in a couple of ways.
 
