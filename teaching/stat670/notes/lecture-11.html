@@ -101,11 +101,15 @@ Julia Fukuyama
 than one predictor variable)</p>
 <p>Today: Trivariate data; coplots and interactions</p>
 <p>Questions we will want to answer:</p>
-<ul class="incremental">
-<li><p>How can we describe the dependence of a response variable on two
-predictors?</p></li>
-<li><p>How can we identify interactions between the predictors?</p></li>
-<li><p>How can we model interactions between the predictors?</p></li>
+<ul>
+<li>How can we describe the dependence of a response variable on two
+predictors?</li>
+</ul>
+<ul>
+<li>How can we identify interactions between the predictors?</li>
+</ul>
+<ul>
+<li>How can we model interactions between the predictors?</li>
 </ul>
 </div>
 <div id="recall-interactions-in-a-linear-model"
@@ -128,16 +132,20 @@ continuous?</p>
 <p>Coplots help us answer the question “How does the relationship
 between two variables change given the value of a third variable?”</p>
 <p>A coplot is defined by three variables:</p>
-<ul class="incremental">
-<li><p>response: The variable plotted along the <span
-class="math inline">\(y\)</span>-axis.</p></li>
-<li><p>predictor: The variable plotted along the <span
-class="math inline">\(x\)</span>-axis.</p></li>
-<li><p>given: The variable used for faceting. If the “given” variable is
+<ul>
+<li>response: The variable plotted along the <span
+class="math inline">\(y\)</span>-axis.</li>
+</ul>
+<ul>
+<li>predictor: The variable plotted along the <span
+class="math inline">\(x\)</span>-axis.</li>
+</ul>
+<ul>
+<li>given: The variable used for faceting. If the “given” variable is
 categorical, we facet in the usual way, with one facet for each value of
 the given variable. Otherwise, we break the observations into groups
 that have similar values of the given variable and facet on those
-groups.</p></li>
+groups.</li>
 </ul>
 </div>
 <div id="coplots-with-categorical-variables"
@@ -146,19 +154,23 @@ class="slide section level2">
 <p>We’ve seen coplots for categorical variables before. Remember our
 diamonds example from last time, where we were interested in the three
 variables:</p>
-<ul class="incremental">
-<li><p><code>price</code>: How much the diamond sold for.</p></li>
-<li><p><code>carat</code>: How big the diamond is.</p></li>
-<li><p><code>clarity</code>: How clear it is. This is a factor or
+<ul>
+<li><code>price</code>: How much the diamond sold for.</li>
+</ul>
+<ul>
+<li><code>carat</code>: How big the diamond is.</li>
+</ul>
+<ul>
+<li><code>clarity</code>: How clear it is. This is a factor or
 categorical variable, higher clarities tend to be more rare and
-expensive.</p></li>
+expensive.</li>
 </ul>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(diamonds, <span class="fu">aes</span>(<span class="at">x =</span> carat, <span class="at">y =</span> <span class="fu">sqrt</span>(price))) <span class="sc">+</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="at">size =</span> .<span class="dv">1</span>) <span class="sc">+</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="at">se =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">&quot;Square root of price&quot;</span>) <span class="sc">+</span></span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">facet_wrap</span>(<span class="sc">~</span> clarity)</span></code></pre></div>
-<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<pre><code>## `geom_smooth()` using formula = &#39;y ~ x&#39;</code></pre>
 <p><img src="lecture-11-fig/unnamed-chunk-1-1.png" /></p>
 <p>This allows us to answer the question: “How does the relationship
 between carat and price change with clarity?”</p>
@@ -168,16 +180,20 @@ class="slide section level2">
 <h1>Coplots with continuous variables</h1>
 <p>We saw this example last time, in the <code>ethanol</code> dataset.
 We had the variables</p>
-<ul class="incremental">
-<li><p><code>NOx</code>: Concentration of NO plus NO2 (NOx), divided by
-the amount of work the engine did.</p></li>
-<li><p><code>E</code>: The equivalence ratio at which the engine was
-run, measuring the richness of the mixture of air and fuel (morue fuel =
-higher E).</p></li>
-<li><p><code>C</code>: The compression ratio to which the engine was
-set, that is, the maximum volume inside the cylinder (volume with piston
+<ul>
+<li><code>NOx</code>: Concentration of NO plus NO2 (NOx), divided by the
+amount of work the engine did.</li>
+</ul>
+<ul>
+<li><code>E</code>: The equivalence ratio at which the engine was run,
+measuring the richness of the mixture of air and fuel (morue fuel =
+higher E).</li>
+</ul>
+<ul>
+<li><code>C</code>: The compression ratio to which the engine was set,
+that is, the maximum volume inside the cylinder (volume with piston
 retracted) divided by the minimum volume inside the cylinder (volume
-with piston at maximal penetration).</p></li>
+with piston at maximal penetration).</li>
 </ul>
 </div>
 <div class="slide section level2">
@@ -188,6 +204,10 @@ with piston at maximal penetration).</p></li>
 ##   +.gg   ggplot2</code></pre>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggpairs</span>(ethanol)</span></code></pre></div>
 <p><img src="lecture-11-fig/unnamed-chunk-2-1.png" /></p>
+<p>Important note: The relationship between <code>NOx</code> and
+<code>C</code> is very weak, but as we will see, <code>C</code> is still
+important for modeling <code>NOx</code>. Small marginal correlations
+don’t mean that a variable can be excluded from the model!</p>
 </div>
 <div class="slide section level2">
 
@@ -199,7 +219,7 @@ is technically continuous, it only took five distinct values.</p>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">facet_wrap</span>(<span class="sc">~</span> Cfac) <span class="sc">+</span></span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">guides</span>(<span class="at">color =</span> <span class="fu">guide_legend</span>(<span class="at">title =</span> <span class="st">&quot;C&quot;</span>)) <span class="sc">+</span></span>
 <span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="at">se =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
-<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<pre><code>## `geom_smooth()` using formula = &#39;y ~ x&#39;</code></pre>
 <p><img src="lecture-11-fig/unnamed-chunk-3-1.png" /></p>
 <p>in an attempt to answer the question of how the relationship between
 <code>NOx</code> and <code>E</code> changes given <code>C</code>.</p>
@@ -212,18 +232,22 @@ all the points with a single value of the given variable, we take each
 facet to represent all the points for which the value of the given
 variable lies in a certain interval.</p>
 <p>Concretely:</p>
-<ul class="incremental">
-<li><p>Define <span class="math inline">\(I\)</span> intervals <span
+<ul>
+<li>Define <span class="math inline">\(I\)</span> intervals <span
 class="math inline">\([a_1, b_1], [a_2, b_2], \ldots, [a_I,
-b_I]\)</span>.</p></li>
-<li><p>Facet <span class="math inline">\(i\)</span> of the coplot
-contains all the points for which the value of the given variable falls
-in the <span class="math inline">\(i\)</span>th interval <span
-class="math inline">\([a_i, b_i]\)</span>.</p></li>
-<li><p>Interpretation: facet <span class="math inline">\(i\)</span>
+b_I]\)</span>.</li>
+</ul>
+<ul>
+<li>Facet <span class="math inline">\(i\)</span> of the coplot contains
+all the points for which the value of the given variable falls in the
+<span class="math inline">\(i\)</span>th interval <span
+class="math inline">\([a_i, b_i]\)</span>.</li>
+</ul>
+<ul>
+<li>Interpretation: facet <span class="math inline">\(i\)</span>
 represents the conditional dependence of the response on the predictor
 when the value of the given variable is approximately <span
-class="math inline">\((a_i + b_i) / 2\)</span>.</p></li>
+class="math inline">\((a_i + b_i) / 2\)</span>.</li>
 </ul>
 <p>How to define the intervals is up to you; there are defaults in R, or
 you can choose yourself.</p>
@@ -278,7 +302,7 @@ the coplot is simply a faceted plot where we facet by
 <span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">span =</span> <span class="dv">1</span>, <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">degree =</span> <span class="dv">1</span>)) <span class="sc">+</span></span>
 <span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">7</span>, <span class="dv">19</span>, <span class="at">by=</span><span class="dv">3</span>)) <span class="sc">+</span></span>
 <span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggtitle</span>(<span class="st">&quot;Coplot of NOx ~ C given E&quot;</span>)</span></code></pre></div>
-<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<pre><code>## `geom_smooth()` using formula = &#39;y ~ x&#39;</code></pre>
 <p><img src="lecture-11-fig/unnamed-chunk-5-1.png" /></p>
 </div>
 <div class="slide section level2">
@@ -292,13 +316,17 @@ the coplot is simply a faceted plot where we facet by
 <p>Now suppose we want to build a model that describes NOx as a function
 of E and C.</p>
 <p>Our coplots have told us a couple things about the relationship:</p>
-<ul class="incremental">
-<li><p>There is an interaction between E and C.</p></li>
-<li><p>Conditionally on E, the relationship between NOx and C looks
-roughly linear.</p></li>
-<li><p>Conditionally on C, the relationship between NOx and E is
+<ul>
+<li>There is an interaction between E and C.</li>
+</ul>
+<ul>
+<li>Conditionally on E, the relationship between NOx and C looks roughly
+linear.</li>
+</ul>
+<ul>
+<li>Conditionally on C, the relationship between NOx and E is
 non-linear, and doesn’t look like it belongs to a parametric family at
-all.</p></li>
+all.</li>
 </ul>
 </div>
 <div id="recall-loess-with-one-predictor-variable"
@@ -312,17 +340,17 @@ class="math inline">\(\lambda = 1\)</span> (locally linear fit) at a
 point <span class="math inline">\(x_0\)</span>, we solve for the
 coefficients in the weighted regression problem <span
 class="math display">\[
-\text{min}_{\hat \beta_0, \hat \beta_1} \sum_{i=1}^n w_i(x_0) (y_i -
-(\hat \beta_0 + \hat \beta_1 x_i))^2,
+(\hat \beta_0, \hat \beta_1) = \text{argmin}_{ \beta_0, \beta_1}
+\sum_{i=1}^n w_i(x_0) (y_i - ( \beta_0 + \beta_1 x_i))^2,
 \]</span></p>
 <p>To find the value of the LOESS smoother with <span
 class="math inline">\(\lambda = 2\)</span> (locally quadratic fit) at a
 point <span class="math inline">\(x_0\)</span>, we solve for the
 coefficients in the weighted regression problem <span
 class="math display">\[
-\text{min}_{\hat \beta_0, \hat \beta_1, \hat \beta_2} \sum_{i=1}^n
-w_i(x_0) (y_i - (\hat \beta_0 + \hat \beta_1 x_i + \hat \beta_2
-x_i^2))^2
+( \hat \beta_0, \hat \beta_1, \hat \beta_2 ) = \text{argmin}_{
+\beta_0,  \beta_1,  \beta_2} \sum_{i=1}^n w_i(x_0) (y_i - ( \beta_0
++  \beta_1 x_i +  \beta_2 x_i^2))^2
 \]</span></p>
 <p>The weights are: <span class="math display">\[
 w_i(x_0) = T(\Delta_i(x_0) / \Delta_{(q)}(x_0))
@@ -352,13 +380,15 @@ class="math inline">\(y\)</span>, a predictor variable <span
 class="math inline">\(x = (u, v)\)</span>, and <span
 class="math inline">\(n\)</span> samples.</p>
 <p>The parameters are still:</p>
-<ul class="incremental">
-<li><p><span class="math inline">\(\alpha\)</span>: The span, controls
-the fraction of points that contribute to the local fit.</p></li>
-<li><p><span class="math inline">\(\lambda\)</span>: The degree of the
+<ul>
+<li><span class="math inline">\(\alpha\)</span>: The span, controls the
+fraction of points that contribute to the local fit.</li>
+</ul>
+<ul>
+<li><span class="math inline">\(\lambda\)</span>: The degree of the
 local fit, usually <span class="math inline">\(1\)</span>, corresponding
 to a locally linear fit, or <span class="math inline">\(2\)</span>,
-corresponding to a local quadratic fit.</p></li>
+corresponding to a local quadratic fit.</li>
 </ul>
 </div>
 <div class="slide section level2">
@@ -368,9 +398,9 @@ corresponding to a local quadratic fit.</p></li>
 class="math inline">\(x_0 = (u_0, v_0)\)</span>, we solve for the
 coefficients in the weighted regression problem <span
 class="math display">\[
-\text{min}_{\hat \beta_0, \hat \beta_1, \hat \beta_2} \sum_{i=1}^n
-w_i(x_0) (y_i - (\hat \beta_0 + \hat \beta_1 u_i + \hat \beta_2 v_i
-))^2,
+(\hat \beta_0, \hat \beta_1, \hat \beta_2) = \text{argmin}_{
+\beta_0,  \beta_1,  \beta_2} \sum_{i=1}^n w_i(x_0) (y_i - ( \beta_0
++  \beta_1 u_i +  \beta_2 v_i ))^2,
 \]</span></p>
 <p>The value of the LOESS smoother at <span
 class="math inline">\(x_0\)</span> is then <span
@@ -383,10 +413,11 @@ v_0\)</span>.</p>
 value of the LOESS smoother at a point <span class="math inline">\(x_0 =
 (u_0, v_0)\)</span>, we solve for the coefficients in the weighted
 regression problem <span class="math display">\[
-\text{min}_{\hat \beta_0, \hat \beta_1, \hat \beta_2, \hat \beta_3, \hat
-\beta_4, \hat \beta_5} \sum_{i=1}^n w_i(x_0) (y_i - (\hat \beta_0 + \hat
-\beta_1 u_i + \hat \beta_2 v_i + \hat \beta_3 u_i v_i + \hat \beta_4
-u_i^2 + \hat \beta_5 v_i^2))^2,
+(\hat \beta_0, \hat \beta_1, \hat \beta_2, \hat \beta_3, \hat \beta_4,
+\hat \beta_5) = \text{min}_{
+\beta_0,  \beta_1,  \beta_2,  \beta_3,  \beta_4,  \beta_5} \sum_{i=1}^n
+w_i(x_0) (y_i - ( \beta_0 +  \beta_1 u_i +  \beta_2 v_i +  \beta_3 u_i
+v_i +  \beta_4 u_i^2 +  \beta_5 v_i^2))^2,
 \]</span></p>
 <p>The value of the LOESS smoother at <span
 class="math inline">\(x_0\)</span> is then <span
@@ -400,22 +431,28 @@ class="slide section level2">
 <p>The weights are: <span class="math display">\[
 w_i(x_0) = T(\Delta_i(x_0) / \Delta_{(q)}(x_0))
 \]</span> with</p>
-<ul class="incremental">
-<li><p><span class="math inline">\(\Delta_i(x_0) = \sqrt{(u_i - u_0)^2 +
-(v_i - v_0)^2}\)</span></p></li>
-<li><p><span class="math inline">\(\Delta_{(i)}(x_0)\)</span> are the
+<ul>
+<li><span class="math inline">\(\Delta_i(x_0) = \sqrt{(u_i - u_0)^2 +
+(v_i - v_0)^2}\)</span></li>
+</ul>
+<ul>
+<li><span class="math inline">\(\Delta_{(i)}(x_0)\)</span> are the
 ordered values of <span
-class="math inline">\(\Delta_{i}(x_0)\)</span></p></li>
-<li><p><span class="math inline">\(q = \alpha n\)</span>, rounded to the
-nearest integer.</p></li>
+class="math inline">\(\Delta_{i}(x_0)\)</span></li>
+</ul>
+<ul>
+<li><span class="math inline">\(q = \alpha n\)</span>, rounded to the
+nearest integer.</li>
 </ul>
 <div class="incremental">
 <p>Since the two predictor variables are potentially on different
 scales, they are usually normalized using a robust estimate of the
 spread before the distances are computed. Some options</p>
-<ul class="incremental">
-<li><p>Median absolute deviation.</p></li>
-<li><p>Trimmed standard deviation.</p></li>
+<ul>
+<li>Median absolute deviation.</li>
+</ul>
+<ul>
+<li>Trimmed standard deviation.</li>
 </ul>
 <p>Cleveland suggests using a 10% trimmed standard deviation as the
 measure of spread for normalization.</p>
@@ -441,10 +478,13 @@ the weights.</p>
 the value of the LOESS smoother at a point <span
 class="math inline">\(x_0\)</span>, we find <span
 class="math inline">\(\hat \beta_0, \hat \beta_1, \hat \beta_2, \hat
-\beta_3\)</span> to minimize <span class="math display">\[
-\sum_{i=1}^n w_i(x_0) (y_i - (\hat \beta_0 + \hat \beta_1 u_i + \hat
-\beta_2 v_i + \hat \beta_3 u_i v_i))^2
-\]</span></p>
+\beta_3\)</span> as <span class="math display">\[
+(\hat \beta_0, \hat \beta_1, \hat \beta_2, \hat \beta_3) =
+\text{argmin}_{\beta_0, \beta_1, \beta_2, \beta_3} \sum_{i=1}^n w_i(x_0)
+(y_i - ( \beta_0 +  \beta_1 u_i +  \beta_2 v_i +  \beta_3 u_i v_i))^2
+\]</span> where the weights <span
+class="math inline">\(w_i(x_0)\)</span> only take into account the <span
+class="math inline">\(v\)</span> coordinates.</p>
 <p>The fitted value of the LOESS smoother at <span
 class="math inline">\(x_0\)</span>, <span class="math inline">\(\hat
 g(x_0) = \hat g(u_0, v_0)\)</span>, is then equal to <span
@@ -455,6 +495,8 @@ class="math inline">\(v\)</span> and globally linear in <span
 class="math inline">\(u\)</span>, with different slopes in <span
 class="math inline">\(u\)</span> conditional on different values of
 <span class="math inline">\(v\)</span>.</p>
+<p>To check your understanding: how would the fit change if you didn’t
+include the <span class="math inline">\(u_iv_i\)</span> term?</p>
 </div>
 </div>
 <div class="slide section level2">
@@ -463,12 +505,14 @@ class="math inline">\(u\)</span> conditional on different values of
 a globally quadratic fit in <span class="math inline">\(u\)</span>:</p>
 <p>To find the value of the LOESS smoother at a point <span
 class="math inline">\(x_0\)</span>, we find <span
-class="math inline">\(\hat \beta_0, \ldots, \hat \beta_5\)</span> to
-minimize <span class="math display">\[
-\sum_{i=1}^n w_i(x_0) (y_i - (\hat \beta_0 + \hat \beta_1 u_i + \hat
-\beta_2 v_i + \hat \beta_3 u_i v_i + \hat \beta_4 u_i^2 + \hat \beta_5
-v_i^2))^2
-\]</span></p>
+class="math inline">\(\hat \beta_0, \ldots, \hat \beta_5\)</span> as
+<span class="math display">\[
+(\hat \beta_0, \ldots, \hat \beta_5) = \text{argmin}_{\beta_0, \ldots,
+\beta_5}\sum_{i=1}^n w_i(x_0) (y_i - ( \beta_0 +  \beta_1 u_i +  \beta_2
+v_i +  \beta_3 u_i v_i +  \beta_4 u_i^2 +  \beta_5 v_i^2))^2
+\]</span> where the weights <span
+class="math inline">\(w_i(x_0)\)</span> only take into account the <span
+class="math inline">\(v\)</span> coordinates.</p>
 <p>The fitted value of the LOESS smoother at <span
 class="math inline">\(x_0\)</span>, <span class="math inline">\(\hat
 g(x_0) = \hat g(u_0, v_0)\)</span>, is then equal to <span
@@ -482,11 +526,14 @@ v_i^2\)</span>.</p>
 a globally linear fit in <span class="math inline">\(u\)</span>:</p>
 <p>To find the value of the LOESS smoother at a point <span
 class="math inline">\(x_0\)</span>, we find <span
-class="math inline">\(\hat \beta_0, \ldots, \hat \beta_4\)</span> to
-minimize <span class="math display">\[
-\sum_{i=1}^n w_i(x_0) (y_i - (\hat \beta_0 + \hat \beta_1 u_i + \hat
-\beta_2 v_i + \hat \beta_3 u_i v_i + \hat \beta_4 v_i^2))^2
-\]</span></p>
+class="math inline">\(\hat \beta_0, \ldots, \hat \beta_4\)</span> as
+<span class="math display">\[
+\hat \beta_0, \ldots, \hat \beta_4 = \text{argmin}_{\beta_0, \ldots,
+\beta_4}\sum_{i=1}^n w_i(x_0) (y_i - ( \beta_0 +  \beta_1 u_i +  \beta_2
+v_i +  \beta_3 u_i v_i +  \beta_4 v_i^2))^2
+\]</span> where the weights <span
+class="math inline">\(w_i(x_0)\)</span> only take into account the <span
+class="math inline">\(v\)</span> coordinates.</p>
 <p>The fitted value of the LOESS smoother at <span
 class="math inline">\(x_0\)</span>, <span class="math inline">\(\hat
 g(x_0) = \hat g(u_0, v_0)\)</span>, is then equal to <span
@@ -497,17 +544,21 @@ class="math inline">\(\hat \beta_0 + \hat \beta_1 u_0 + \hat \beta_2 v_0
 <h1>LOESS function in R</h1>
 <p>Now we know what the following arguments in the LOESS function
 do:</p>
-<ul class="incremental">
-<li><p><code>parametric</code>: Default is <code>FALSE</code>. You can
-give the function names of variables that you want LOESS to fit globally
-instead of locall.</p></li>
-<li><p><code>drop.square</code>: Default is <code>FALSE</code>. If you
-have a variable you’re fitting globally instead of locally <em>and</em>
-you want the fit to be linear instead of quadratic, you can specify
-<code>drop.square = TRUE</code>.</p></li>
-<li><p><code>normalize</code>: Default is <code>TRUE</code>. Should the
+<ul>
+<li><code>parametric</code>: Default is <code>FALSE</code>. You can give
+the function names of variables that you want LOESS to fit globally
+instead of locall.</li>
+</ul>
+<ul>
+<li><code>drop.square</code>: Default is <code>FALSE</code>. If you have
+a variable you’re fitting globally instead of locally <em>and</em> you
+want the fit to be linear instead of quadratic, you can specify
+<code>drop.square = TRUE</code>.</li>
+</ul>
+<ul>
+<li><code>normalize</code>: Default is <code>TRUE</code>. Should the
 predictor variables be normalized to have the same spread before
-computing distances?</p></li>
+computing distances?</li>
 </ul>
 </div>
 <div id="loess-on-ethanol-data" class="slide section level2">
@@ -515,16 +566,22 @@ computing distances?</p></li>
 <div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>ethanol_lo <span class="ot">=</span> <span class="fu">loess</span>(NOx <span class="sc">~</span> C <span class="sc">*</span> E, <span class="at">data =</span> ethanol, <span class="at">span =</span> <span class="dv">1</span><span class="sc">/</span><span class="dv">3</span>, <span class="at">parametric =</span> <span class="st">&quot;C&quot;</span>, </span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">drop.square =</span> <span class="st">&quot;C&quot;</span>, <span class="at">family =</span> <span class="st">&quot;symmetric&quot;</span>)</span></code></pre></div>
 <p>What do the parameters mean here?</p>
-<ul class="incremental">
-<li><p><code>C * E</code> means we want interactions between
-<code>C</code> and <code>E</code>.</p></li>
-<li><p><code>parametric = "C"</code> means that conditional on
-<code>E</code>, we want the fitted function to be linear.</p></li>
-<li><p><code>drop.square = "C"</code> means that we don’t want a squared
+<ul>
+<li><code>C * E</code> means we want interactions between <code>C</code>
+and <code>E</code>.</li>
+</ul>
+<ul>
+<li><code>parametric = "C"</code> means that conditional on
+<code>E</code>, we want the fitted function to be linear.</li>
+</ul>
+<ul>
+<li><code>drop.square = "C"</code> means that we don’t want a squared
 term in our conditional model of <code>NOx</code> given
-<code>C</code>.</p></li>
-<li><p><code>family = "symmetric"</code> means we are using a robust
-fit.</p></li>
+<code>C</code>.</li>
+</ul>
+<ul>
+<li><code>family = "symmetric"</code> means we are using a robust
+fit.</li>
 </ul>
 </div>
 <div class="slide section level2">
@@ -553,6 +610,22 @@ fitted value given <code>E</code>.</p>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> E, <span class="at">y =</span> .fitted, <span class="at">color =</span> <span class="fu">factor</span>(C, <span class="at">levels =</span> <span class="fu">unique</span>(C), <span class="at">ordered =</span> <span class="cn">TRUE</span>))) <span class="sc">+</span></span>
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>        <span class="fu">guides</span>(<span class="at">color =</span> <span class="fu">guide_legend</span>(<span class="at">title =</span> <span class="st">&quot;C&quot;</span>))</span></code></pre></div>
 <p><img src="lecture-11-fig/unnamed-chunk-10-1.png" /></p>
+</div>
+<div id="summing-up" class="slide section level2">
+<h1>Summing up</h1>
+<ul>
+<li>Coplots allow us to visualize the relationship between one variable
+and another conditional on a third.</li>
+</ul>
+<ul>
+<li>Loess allows us to fit either completely non-parametric
+relationships between a response and two predictors or a partly
+parametric relationship.</li>
+</ul>
+<ul>
+<li>Next time: Evaluating the fits, more on interactions, more
+examples.</li>
+</ul>
 </div>
 </body>
 </html>

@@ -19,11 +19,11 @@ Today: Trivariate data; coplots and interactions
 
 Questions we will want to answer:
 
-- How can we describe the dependence of a response variable on two predictors?
+> - How can we describe the dependence of a response variable on two predictors?
 
-- How can we identify interactions between the predictors?
+> - How can we identify interactions between the predictors?
 
-- How can we model interactions between the predictors?
+> - How can we model interactions between the predictors?
 
 
 ## Recall interactions in a linear model
@@ -48,22 +48,22 @@ Coplots help us answer the question "How does the relationship between two varia
 
 A coplot is defined by three variables:
 
-- response: The variable plotted along the $y$-axis.
+> - response: The variable plotted along the $y$-axis.
 
-- predictor: The variable plotted along the $x$-axis.
+> - predictor: The variable plotted along the $x$-axis.
 
-- given: The variable used for faceting. If the "given" variable is categorical, we facet in the usual way, with one facet for each value of the given variable. Otherwise, we break the observations into groups that have similar values of the given variable and facet on those groups.
+> - given: The variable used for faceting. If the "given" variable is categorical, we facet in the usual way, with one facet for each value of the given variable. Otherwise, we break the observations into groups that have similar values of the given variable and facet on those groups.
 
 
 ## Coplots with categorical variables
 
 We've seen coplots for categorical variables before. Remember our diamonds example from last time, where we were interested in the three variables:
 
-- `price`: How much the diamond sold for.
+> - `price`: How much the diamond sold for.
 
-- `carat`: How big the diamond is.
+> - `carat`: How big the diamond is.
 
-- `clarity`: How clear it is. This is a factor or categorical variable, higher clarities tend to be more rare and expensive.
+> - `clarity`: How clear it is. This is a factor or categorical variable, higher clarities tend to be more rare and expensive.
 
 ```{r}
 ggplot(diamonds, aes(x = carat, y = sqrt(price))) +
@@ -79,11 +79,11 @@ This allows us to answer the question: "How does the relationship between carat 
 
 We saw this example last time, in the `ethanol` dataset. We had the variables
 
-- `NOx`: Concentration of NO plus NO2 (NOx), divided by the amount of work the engine did.
+> - `NOx`: Concentration of NO plus NO2 (NOx), divided by the amount of work the engine did.
 
-- `E`: The equivalence ratio at which the engine was run, measuring the richness of the mixture of air and fuel (morue fuel = higher E).
+> - `E`: The equivalence ratio at which the engine was run, measuring the richness of the mixture of air and fuel (morue fuel = higher E).
 
-- `C`: The compression ratio to which the engine was set, that is, the maximum volume inside the cylinder (volume with piston retracted) divided by the minimum volume inside the cylinder (volume with piston at maximal penetration).
+> - `C`: The compression ratio to which the engine was set, that is, the maximum volume inside the cylinder (volume with piston retracted) divided by the minimum volume inside the cylinder (volume with piston at maximal penetration).
 
 -----
 
@@ -92,6 +92,7 @@ library(GGally)
 ggpairs(ethanol)
 ```
 
+Important note: The relationship between `NOx` and `C` is very weak, but as we will see, `C` is still important for modeling `NOx`. Small marginal correlations don't mean that a variable can be excluded from the model!
 
 ------
 
@@ -115,11 +116,11 @@ With continuous variables, instead of taking each facet to represent all the poi
 
 Concretely:
 
-- Define $I$ intervals $[a_1, b_1], [a_2, b_2], \ldots, [a_I, b_I]$.
+> - Define $I$ intervals $[a_1, b_1], [a_2, b_2], \ldots, [a_I, b_I]$.
 
-- Facet $i$ of the coplot contains all the points for which the value of the given variable falls in the $i$th interval $[a_i, b_i]$.
+> - Facet $i$ of the coplot contains all the points for which the value of the given variable falls in the $i$th interval $[a_i, b_i]$.
 
-- Interpretation: facet $i$ represents the conditional dependence of the response on the predictor when the value of the given variable is approximately $(a_i + b_i) / 2$.
+> - Interpretation: facet $i$ represents the conditional dependence of the response on the predictor when the value of the given variable is approximately $(a_i + b_i) / 2$.
 
 How to define the intervals is up to you; there are defaults in R, or you can choose yourself.
 
@@ -191,11 +192,11 @@ Now suppose we want to build a model that describes NOx as a function of E and C
 
 Our coplots have told us a couple things about the relationship:
 
-- There is an interaction between E and C.
+> - There is an interaction between E and C.
 
-- Conditionally on E, the relationship between NOx and C looks roughly linear.
+> - Conditionally on E, the relationship between NOx and C looks roughly linear.
 
-- Conditionally on C, the relationship between NOx and E is non-linear, and doesn't look like it belongs to a parametric family at all.
+> - Conditionally on C, the relationship between NOx and E is non-linear, and doesn't look like it belongs to a parametric family at all.
 
 
 ## Recall: LOESS with one predictor variable
@@ -204,12 +205,12 @@ We have a response variable $y$, a predictor variable $x$, and $n$ samples.
 
 To find the value of the LOESS smoother with $\lambda = 1$ (locally linear fit) at a point $x_0$, we solve for the coefficients in the weighted regression problem
 $$
-\text{min}_{\hat \beta_0, \hat \beta_1} \sum_{i=1}^n w_i(x_0) (y_i - (\hat \beta_0 + \hat \beta_1 x_i))^2,
+(\hat \beta_0, \hat \beta_1) = \text{argmin}_{ \beta_0, \beta_1} \sum_{i=1}^n w_i(x_0) (y_i - ( \beta_0 + \beta_1 x_i))^2,
 $$
 
 To find the value of the LOESS smoother with $\lambda = 2$ (locally quadratic fit) at a point $x_0$, we solve for the coefficients in the weighted regression problem
 $$
-\text{min}_{\hat \beta_0, \hat \beta_1, \hat \beta_2} \sum_{i=1}^n w_i(x_0) (y_i - (\hat \beta_0 + \hat \beta_1 x_i + \hat \beta_2 x_i^2))^2
+( \hat \beta_0, \hat \beta_1, \hat \beta_2 ) = \text{argmin}_{ \beta_0,  \beta_1,  \beta_2} \sum_{i=1}^n w_i(x_0) (y_i - ( \beta_0 +  \beta_1 x_i +  \beta_2 x_i^2))^2
 $$
 
 The weights are:
@@ -235,9 +236,9 @@ Now we have a response variable $y$, a predictor variable $x = (u, v)$, and $n$ 
 
 The parameters are still:
 
-- $\alpha$: The span, controls the fraction of points that contribute to the local fit.
+> - $\alpha$: The span, controls the fraction of points that contribute to the local fit.
 
-- $\lambda$: The degree of the local fit, usually $1$, corresponding to a locally linear fit, or $2$, corresponding to a local quadratic fit.
+> - $\lambda$: The degree of the local fit, usually $1$, corresponding to a locally linear fit, or $2$, corresponding to a local quadratic fit.
 
 
 -----
@@ -246,7 +247,7 @@ Suppose $\lambda = 1$
 
 To find the value of the LOESS smoother at a point $x_0 = (u_0, v_0)$, we solve for the coefficients in the weighted regression problem
 $$
-\text{min}_{\hat \beta_0, \hat \beta_1, \hat \beta_2} \sum_{i=1}^n w_i(x_0) (y_i - (\hat \beta_0 + \hat \beta_1 u_i + \hat \beta_2 v_i ))^2,
+(\hat \beta_0, \hat \beta_1, \hat \beta_2) = \text{argmin}_{ \beta_0,  \beta_1,  \beta_2} \sum_{i=1}^n w_i(x_0) (y_i - ( \beta_0 +  \beta_1 u_i +  \beta_2 v_i ))^2,
 $$
 
 The value of the LOESS smoother at $x_0$ is then $\hat \beta_0 + \hat \beta_1 u_0 + \hat \beta_2 v_0$.
@@ -255,7 +256,7 @@ The value of the LOESS smoother at $x_0$ is then $\hat \beta_0 + \hat \beta_1 u_
 
 If $\lambda = 2$, to find the value of the LOESS smoother at a point $x_0 = (u_0, v_0)$, we solve for the coefficients in the weighted regression problem
 $$
-\text{min}_{\hat \beta_0, \hat \beta_1, \hat \beta_2, \hat \beta_3, \hat \beta_4, \hat \beta_5} \sum_{i=1}^n w_i(x_0) (y_i - (\hat \beta_0 + \hat \beta_1 u_i + \hat \beta_2 v_i + \hat \beta_3 u_i v_i + \hat \beta_4 u_i^2 + \hat \beta_5 v_i^2))^2,
+(\hat \beta_0, \hat \beta_1, \hat \beta_2, \hat \beta_3, \hat \beta_4, \hat \beta_5) = \text{min}_{ \beta_0,  \beta_1,  \beta_2,  \beta_3,  \beta_4,  \beta_5} \sum_{i=1}^n w_i(x_0) (y_i - ( \beta_0 +  \beta_1 u_i +  \beta_2 v_i +  \beta_3 u_i v_i +  \beta_4 u_i^2 +  \beta_5 v_i^2))^2,
 $$
 
 The value of the LOESS smoother at $x_0$ is then $\hat \beta_0 + \hat \beta_1 u_0 + \hat \beta_2 v_i + \hat \beta_3 u_0 v_0 + \hat \beta_4 u_0^2 + \hat \beta_5 v_0^2$.
@@ -268,19 +269,19 @@ w_i(x_0) = T(\Delta_i(x_0) / \Delta_{(q)}(x_0))
 $$
 with
 
-- $\Delta_i(x_0) = \sqrt{(u_i - u_0)^2 + (v_i - v_0)^2}$
+> - $\Delta_i(x_0) = \sqrt{(u_i - u_0)^2 + (v_i - v_0)^2}$
 
-- $\Delta_{(i)}(x_0)$ are the ordered values of $\Delta_{i}(x_0)$
+> - $\Delta_{(i)}(x_0)$ are the ordered values of $\Delta_{i}(x_0)$
 
-- $q = \alpha n$, rounded to the nearest integer.
+> - $q = \alpha n$, rounded to the nearest integer.
 
 . . .
 
 Since the two predictor variables are potentially on different scales, they are usually normalized using a robust estimate of the spread before the distances are computed. Some options
 
-- Median absolute deviation.
+> - Median absolute deviation.
 
-- Trimmed standard deviation.
+> - Trimmed standard deviation.
 
 Cleveland suggests using a 10\% trimmed standard deviation as the measure of spread for normalization.
 
@@ -298,23 +299,27 @@ Let $\hat g(u,v)$ be our fitted LOESS surface, and suppose we want $\hat g(u, v)
 To do this, we simply drop the $u_i$'s from our distances when computing the weights.
 
 Suppose we want to modify locally linear LOESS in this way.
-To find the value of the LOESS smoother at a point $x_0$, we find $\hat \beta_0, \hat \beta_1, \hat \beta_2, \hat \beta_3$ to minimize
+To find the value of the LOESS smoother at a point $x_0$, we find $\hat \beta_0, \hat \beta_1, \hat \beta_2, \hat \beta_3$ as
 $$
-\sum_{i=1}^n w_i(x_0) (y_i - (\hat \beta_0 + \hat \beta_1 u_i + \hat \beta_2 v_i + \hat \beta_3 u_i v_i))^2
+(\hat \beta_0, \hat \beta_1, \hat \beta_2, \hat \beta_3) = \text{argmin}_{\beta_0, \beta_1, \beta_2, \beta_3} \sum_{i=1}^n w_i(x_0) (y_i - ( \beta_0 +  \beta_1 u_i +  \beta_2 v_i +  \beta_3 u_i v_i))^2
 $$
+where the weights $w_i(x_0)$ only take into account the $v$ coordinates.
 
 The fitted value of the LOESS smoother at $x_0$, $\hat g(x_0) = \hat g(u_0, v_0)$, is then equal to $\hat \beta_0 + \hat \beta_1 u_0 + \hat \beta_2 v_0 + \hat \beta_3 u_0 v_0$.
 
 This leads to a fit that is locally linear in $v$ and globally linear in $u$, with different slopes in $u$ conditional on different values of $v$.
 
+To check your understanding: how would the fit change if you didn't include the $u_iv_i$ term?
+
 ----
 
 Locally quadratic fit in $v$ with a globally quadratic fit in $u$:
 
-To find the value of the LOESS smoother at a point $x_0$, we find $\hat \beta_0, \ldots, \hat \beta_5$ to minimize
+To find the value of the LOESS smoother at a point $x_0$, we find $\hat \beta_0, \ldots, \hat \beta_5$ as
 $$
-\sum_{i=1}^n w_i(x_0) (y_i - (\hat \beta_0 + \hat \beta_1 u_i + \hat \beta_2 v_i + \hat \beta_3 u_i v_i + \hat \beta_4 u_i^2 + \hat \beta_5 v_i^2))^2
+(\hat \beta_0, \ldots, \hat \beta_5) = \text{argmin}_{\beta_0, \ldots, \beta_5}\sum_{i=1}^n w_i(x_0) (y_i - ( \beta_0 +  \beta_1 u_i +  \beta_2 v_i +  \beta_3 u_i v_i +  \beta_4 u_i^2 +  \beta_5 v_i^2))^2
 $$
+where the weights $w_i(x_0)$ only take into account the $v$ coordinates.
 
 The fitted value of the LOESS smoother at $x_0$, $\hat g(x_0) = \hat g(u_0, v_0)$, is then equal to $\hat \beta_0 + \hat \beta_1 u_0 + \hat \beta_2 v_0 + \hat \beta_3 u_0 v_0 + \hat \beta_4 u_i^2 + \hat \beta_5 v_i^2$.
 
@@ -322,10 +327,11 @@ The fitted value of the LOESS smoother at $x_0$, $\hat g(x_0) = \hat g(u_0, v_0)
 
 Locally quadratic fit in $v$ with a globally linear fit in $u$:
 
-To find the value of the LOESS smoother at a point $x_0$, we find $\hat \beta_0, \ldots, \hat \beta_4$ to minimize
+To find the value of the LOESS smoother at a point $x_0$, we find $\hat \beta_0, \ldots, \hat \beta_4$ as
 $$
-\sum_{i=1}^n w_i(x_0) (y_i - (\hat \beta_0 + \hat \beta_1 u_i + \hat \beta_2 v_i + \hat \beta_3 u_i v_i + \hat \beta_4 v_i^2))^2
+\hat \beta_0, \ldots, \hat \beta_4 = \text{argmin}_{\beta_0, \ldots, \beta_4}\sum_{i=1}^n w_i(x_0) (y_i - ( \beta_0 +  \beta_1 u_i +  \beta_2 v_i +  \beta_3 u_i v_i +  \beta_4 v_i^2))^2
 $$
+where the weights $w_i(x_0)$ only take into account the $v$ coordinates.
 
 The fitted value of the LOESS smoother at $x_0$, $\hat g(x_0) = \hat g(u_0, v_0)$, is then equal to $\hat \beta_0 + \hat \beta_1 u_0 + \hat \beta_2 v_0 + \hat \beta_3 u_0 v_0+ \hat \beta_4 v_i^2$.
 
@@ -334,11 +340,11 @@ The fitted value of the LOESS smoother at $x_0$, $\hat g(x_0) = \hat g(u_0, v_0)
 
 Now we know what the following arguments in the LOESS function do:
 
-- `parametric`: Default is `FALSE`. You can give the function names of variables that you want LOESS to fit globally instead of locall.
+> - `parametric`: Default is `FALSE`. You can give the function names of variables that you want LOESS to fit globally instead of locall.
 
-- `drop.square`: Default is `FALSE`. If you have a variable you're fitting globally instead of locally *and* you want the fit to be linear instead of quadratic, you can specify `drop.square = TRUE`.
+> - `drop.square`: Default is `FALSE`. If you have a variable you're fitting globally instead of locally *and* you want the fit to be linear instead of quadratic, you can specify `drop.square = TRUE`.
 
-- `normalize`: Default is `TRUE`. Should the predictor variables be normalized to have the same spread before computing distances?
+> - `normalize`: Default is `TRUE`. Should the predictor variables be normalized to have the same spread before computing distances?
 
 ## LOESS on ethanol data
 
@@ -348,13 +354,13 @@ ethanol_lo = loess(NOx ~ C * E, data = ethanol, span = 1/3, parametric = "C",
 ```
 What do the parameters mean here?
 
-- `C * E` means we want interactions between `C` and `E`.
+> - `C * E` means we want interactions between `C` and `E`.
 
-- `parametric = "C"` means that conditional on `E`, we want the fitted function to be linear.
+> - `parametric = "C"` means that conditional on `E`, we want the fitted function to be linear.
 
-- `drop.square = "C"` means that we don't want a squared term in our conditional model of `NOx` given `C`.
+> - `drop.square = "C"` means that we don't want a squared term in our conditional model of `NOx` given `C`.
 
-- `family = "symmetric"` means we are using a robust fit.
+> - `family = "symmetric"` means we are using a robust fit.
 
 ------
 
@@ -387,3 +393,11 @@ ggplot(ethanol_preds) +
     geom_line(aes(x = E, y = .fitted, color = factor(C, levels = unique(C), ordered = TRUE))) +
         guides(color = guide_legend(title = "C"))
 ```
+
+## Summing up
+
+> - Coplots allow us to visualize the relationship between one variable and another conditional on a third.
+
+> - Loess allows us to fit either completely non-parametric relationships between a response and two predictors or a partly parametric relationship.
+
+> - Next time: Evaluating the fits, more on interactions, more examples.
