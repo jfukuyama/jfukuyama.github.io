@@ -99,6 +99,174 @@ Julia Fukuyama
 class="slide section level2">
 <h1>Today: building and checking models with trivariate data</h1>
 </div>
+<div id="modifying-loess-for-two-predictor-variables"
+class="slide section level2">
+<h1>Modifying LOESS for two predictor variables</h1>
+<p>Now we have a response variable <span
+class="math inline">\(y\)</span>, a predictor variable <span
+class="math inline">\(x = (u, v)\)</span>, and <span
+class="math inline">\(n\)</span> samples.</p>
+<p>The parameters are still:</p>
+<ul>
+<li><span class="math inline">\(\alpha\)</span>: The span, controls the
+fraction of points that contribute to the local fit.</li>
+</ul>
+<ul>
+<li><span class="math inline">\(\lambda\)</span>: The degree of the
+local fit, usually <span class="math inline">\(1\)</span>, corresponding
+to a locally linear fit, or <span class="math inline">\(2\)</span>,
+corresponding to a local quadratic fit.</li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>Suppose <span class="math inline">\(\lambda = 1\)</span></p>
+<p>To find the value of the LOESS smoother at a point <span
+class="math inline">\(x_0 = (u_0, v_0)\)</span>, we solve for the
+coefficients in the weighted regression problem <span
+class="math display">\[
+(\hat \beta_0, \hat \beta_1, \hat \beta_2) = \text{argmin}_{
+\beta_0,  \beta_1,  \beta_2} \sum_{i=1}^n w_i(x_0) (y_i - ( \beta_0
++  \beta_1 u_i +  \beta_2 v_i ))^2,
+\]</span></p>
+<p>The value of the LOESS smoother at <span
+class="math inline">\(x_0\)</span> is then <span
+class="math inline">\(\hat \beta_0 + \hat \beta_1 u_0 + \hat \beta_2
+v_0\)</span>.</p>
+</div>
+<div class="slide section level2">
+
+<p>If <span class="math inline">\(\lambda = 2\)</span>, to find the
+value of the LOESS smoother at a point <span class="math inline">\(x_0 =
+(u_0, v_0)\)</span>, we solve for the coefficients in the weighted
+regression problem <span class="math display">\[
+(\hat \beta_0, \hat \beta_1, \hat \beta_2, \hat \beta_3, \hat \beta_4,
+\hat \beta_5) = \text{min}_{
+\beta_0,  \beta_1,  \beta_2,  \beta_3,  \beta_4,  \beta_5} \sum_{i=1}^n
+w_i(x_0) (y_i - ( \beta_0 +  \beta_1 u_i +  \beta_2 v_i +  \beta_3 u_i
+v_i +  \beta_4 u_i^2 +  \beta_5 v_i^2))^2,
+\]</span></p>
+<p>The value of the LOESS smoother at <span
+class="math inline">\(x_0\)</span> is then <span
+class="math inline">\(\hat \beta_0 + \hat \beta_1 u_0 + \hat \beta_2 v_i
++ \hat \beta_3 u_0 v_0 + \hat \beta_4 u_0^2 + \hat \beta_5
+v_0^2\)</span>.</p>
+</div>
+<div id="weights-for-loess-with-two-predictors"
+class="slide section level2">
+<h1>Weights for LOESS with two predictors</h1>
+<p>The weights are: <span class="math display">\[
+w_i(x_0) = T(\Delta_i(x_0) / \Delta_{(q)}(x_0))
+\]</span> with</p>
+<ul>
+<li><span class="math inline">\(\Delta_i(x_0) = \sqrt{(u_i - u_0)^2 +
+(v_i - v_0)^2}\)</span></li>
+</ul>
+<ul>
+<li><span class="math inline">\(\Delta_{(i)}(x_0)\)</span> are the
+ordered values of <span
+class="math inline">\(\Delta_{i}(x_0)\)</span></li>
+</ul>
+<ul>
+<li><span class="math inline">\(q = \alpha n\)</span>, rounded to the
+nearest integer.</li>
+</ul>
+<div class="incremental">
+<p>Since the two predictor variables are potentially on different
+scales, they are usually normalized using a robust estimate of the
+spread before the distances are computed. Some options</p>
+<ul>
+<li>Median absolute deviation.</li>
+</ul>
+<ul>
+<li>Trimmed standard deviation.</li>
+</ul>
+<p>Cleveland suggests using a 10% trimmed standard deviation as the
+measure of spread for normalization.</p>
+</div>
+</div>
+<div id="a-useful-modification-of-loess" class="slide section level2">
+<h1>A useful modification of LOESS</h1>
+<p>What if we think some of the conditional relations are from a
+parametric family? For example, the dependence of NOx on C seems to
+always be linear, no matter what value of E we look at.</p>
+<p>We can modify LOESS so that it fits some of the conditional relations
+globally instead of locally.</p>
+<div class="incremental">
+<p>Let <span class="math inline">\(\hat g(u,v)\)</span> be our fitted
+LOESS surface, and suppose we want <span class="math inline">\(\hat g(u,
+v)\)</span>, seen as a function of <span
+class="math inline">\(u\)</span>, to be from a parametric family
+(e.g. linear or quadratic).</p>
+<p>To do this, we simply drop the <span
+class="math inline">\(u_i\)</span>’s from our distances when computing
+the weights.</p>
+<p>Suppose we want to modify locally linear LOESS in this way. To find
+the value of the LOESS smoother at a point <span
+class="math inline">\(x_0\)</span>, we find <span
+class="math inline">\(\hat \beta_0, \hat \beta_1, \hat \beta_2, \hat
+\beta_3\)</span> as <span class="math display">\[
+(\hat \beta_0, \hat \beta_1, \hat \beta_2, \hat \beta_3) =
+\text{argmin}_{\beta_0, \beta_1, \beta_2, \beta_3} \sum_{i=1}^n w_i(x_0)
+(y_i - ( \beta_0 +  \beta_1 u_i +  \beta_2 v_i +  \beta_3 u_i v_i))^2
+\]</span> where the weights <span
+class="math inline">\(w_i(x_0)\)</span> only take into account the <span
+class="math inline">\(v\)</span> coordinates.</p>
+<p>The fitted value of the LOESS smoother at <span
+class="math inline">\(x_0\)</span>, <span class="math inline">\(\hat
+g(x_0) = \hat g(u_0, v_0)\)</span>, is then equal to <span
+class="math inline">\(\hat \beta_0 + \hat \beta_1 u_0 + \hat \beta_2 v_0
++ \hat \beta_3 u_0 v_0\)</span>.</p>
+<p>This leads to a fit that is locally linear in <span
+class="math inline">\(v\)</span> and globally linear in <span
+class="math inline">\(u\)</span>, with different slopes in <span
+class="math inline">\(u\)</span> conditional on different values of
+<span class="math inline">\(v\)</span>.</p>
+<p>To check your understanding: how would the fit change if you didn’t
+include the <span class="math inline">\(u_iv_i\)</span> term?</p>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Locally quadratic fit in <span class="math inline">\(v\)</span> with
+a globally quadratic fit in <span class="math inline">\(u\)</span>:</p>
+<p>To find the value of the LOESS smoother at a point <span
+class="math inline">\(x_0\)</span>, we find <span
+class="math inline">\(\hat \beta_0, \ldots, \hat \beta_5\)</span> as
+<span class="math display">\[
+(\hat \beta_0, \ldots, \hat \beta_5) = \text{argmin}_{\beta_0, \ldots,
+\beta_5}\sum_{i=1}^n w_i(x_0) (y_i - ( \beta_0 +  \beta_1 u_i +  \beta_2
+v_i +  \beta_3 u_i v_i +  \beta_4 u_i^2 +  \beta_5 v_i^2))^2
+\]</span> where the weights <span
+class="math inline">\(w_i(x_0)\)</span> only take into account the <span
+class="math inline">\(v\)</span> coordinates.</p>
+<p>The fitted value of the LOESS smoother at <span
+class="math inline">\(x_0\)</span>, <span class="math inline">\(\hat
+g(x_0) = \hat g(u_0, v_0)\)</span>, is then equal to <span
+class="math inline">\(\hat \beta_0 + \hat \beta_1 u_0 + \hat \beta_2 v_0
++ \hat \beta_3 u_0 v_0 + \hat \beta_4 u_i^2 + \hat \beta_5
+v_i^2\)</span>.</p>
+</div>
+<div class="slide section level2">
+
+<p>Locally quadratic fit in <span class="math inline">\(v\)</span> with
+a globally linear fit in <span class="math inline">\(u\)</span>:</p>
+<p>To find the value of the LOESS smoother at a point <span
+class="math inline">\(x_0\)</span>, we find <span
+class="math inline">\(\hat \beta_0, \ldots, \hat \beta_4\)</span> as
+<span class="math display">\[
+\hat \beta_0, \ldots, \hat \beta_4 = \text{argmin}_{\beta_0, \ldots,
+\beta_4}\sum_{i=1}^n w_i(x_0) (y_i - ( \beta_0 +  \beta_1 u_i +  \beta_2
+v_i +  \beta_3 u_i v_i +  \beta_4 v_i^2))^2
+\]</span> where the weights <span
+class="math inline">\(w_i(x_0)\)</span> only take into account the <span
+class="math inline">\(v\)</span> coordinates.</p>
+<p>The fitted value of the LOESS smoother at <span
+class="math inline">\(x_0\)</span>, <span class="math inline">\(\hat
+g(x_0) = \hat g(u_0, v_0)\)</span>, is then equal to <span
+class="math inline">\(\hat \beta_0 + \hat \beta_1 u_0 + \hat \beta_2 v_0
++ \hat \beta_3 u_0 v_0+ \hat \beta_4 v_i^2\)</span>.</p>
+</div>
 <div id="loess-on-ethanol-data" class="slide section level2">
 <h1>LOESS on ethanol data</h1>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="st">&quot;../../datasets/lattice.RData&quot;</span>)</span>
@@ -116,60 +284,96 @@ class="slide section level2">
 <div class="slide section level2">
 
 <p>Arguments to the <code>loess</code> function:</p>
-<ul class="incremental">
-<li><p>First argument is the formula: we want to model <code>NOx</code>
-as a function of <code>C</code> and <code>E</code>, with an interaction
-between the two variables.</p></li>
-<li><p><code>data</code> gives tha data frame the variables come
-from.</p></li>
-<li><p><code>span</code> gives the fraction of the observations that
-have non-zero weight for each of the local regressions, the same as
-<span class="math inline">\(\alpha\)</span> in the text.</p></li>
-<li><p><code>degree</code> gives the degree of the local polynomial. If
-we have variables <span class="math inline">\(x\)</span> and <span
-class="math inline">\(y\)</span>, degree = <span
+<ul>
+<li>First argument is the formula: we want to model <code>NOx</code> as
+a function of <code>C</code> and <code>E</code>, with an interaction
+between the two variables.</li>
+</ul>
+<ul>
+<li><code>data</code> gives tha data frame the variables come from.</li>
+</ul>
+<ul>
+<li><code>span</code> gives the fraction of the observations that have
+non-zero weight for each of the local regressions, the same as <span
+class="math inline">\(\alpha\)</span> in the text.</li>
+</ul>
+<ul>
+<li><code>degree</code> gives the degree of the local polynomial. If we
+have variables <span class="math inline">\(u\)</span> and <span
+class="math inline">\(v\)</span>, degree = <span
 class="math inline">\(1\)</span> means the local regressions use <span
-class="math inline">\(x\)</span> and <span
-class="math inline">\(y\)</span> as predictors, and degree = <span
+class="math inline">\(u\)</span> and <span
+class="math inline">\(v\)</span> as predictors, and degree = <span
 class="math inline">\(2\)</span> means the local regressions will use
-<span class="math inline">\(x\)</span>, <span
-class="math inline">\(y\)</span>, <span
-class="math inline">\(xy\)</span>, <span
-class="math inline">\(x^2\)</span>, and <span
-class="math inline">\(y^2\)</span> as predictors.</p></li>
-<li><p><code>family</code> is either symmetric or gaussian, gaussian
-means the local regressions are fit by least squares, while symmetric
-means they are fit with robust regression using Tukey’s
-biweight.</p></li>
-<li><p><code>parametric</code>: The names of variables for which we want
-to constrain the fit to be parametric. The parametric fit is achieved by
+<span class="math inline">\(u\)</span>, <span
+class="math inline">\(v\)</span>, <span
+class="math inline">\(uv\)</span>, <span
+class="math inline">\(u^2\)</span>, and <span
+class="math inline">\(v^2\)</span> as predictors.</li>
+</ul>
+<ul>
+<li><code>family</code> is either symmetric or gaussian, gaussian means
+the local regressions are fit by least squares, while symmetric means
+they are fit with robust regression using Tukey’s biweight.</li>
+</ul>
+<ul>
+<li><code>parametric</code>: The names of variables for which we want to
+constrain the fit to be parametric. The parametric fit is achieved by
 excluding these variables from the distance calculations when deciding
-on observation weights in the local regressions.</p></li>
-<li><p><code>drop.square</code>: By default, if degree = <span
+on observation weights in the local regressions.</li>
+</ul>
+<ul>
+<li><code>drop.square</code>: By default, if degree = <span
 class="math inline">\(2\)</span> and one of the variables is constrained
 to be fit parametrically, the parametric fit will be of a degree <span
 class="math inline">\(2\)</span> polynomial. <code>drop.square =
 TRUE</code> changes this so that the parametric fit is linear instead of
-quadratic.</p></li>
+quadratic.</li>
 </ul>
 </div>
 <div class="slide section level2">
 
 <p>What do the fitted values look like? First let’s make a coplot of the
 fitted value given <code>E</code>.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>prediction_grid <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="fu">expand.grid</span>(<span class="at">C =</span> <span class="fu">c</span>(<span class="fl">7.5</span>, <span class="dv">9</span>, <span class="dv">12</span>, <span class="dv">15</span>, <span class="dv">18</span>), <span class="at">E =</span> <span class="fu">seq</span>(<span class="fl">0.6</span>, <span class="fl">1.2</span>, <span class="at">by =</span> .<span class="dv">05</span>)))</span>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>prediction_grid <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="fu">expand.grid</span>(<span class="at">C =</span> <span class="fu">c</span>(<span class="fl">7.5</span>, <span class="dv">9</span>, <span class="dv">12</span>, <span class="dv">15</span>, <span class="dv">18</span>), <span class="at">E =</span> <span class="fu">seq</span>(<span class="fl">0.6</span>, <span class="fl">1.2</span>, <span class="at">length.out =</span> <span class="dv">11</span>)))</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>ethanol_preds <span class="ot">=</span> <span class="fu">augment</span>(ethanol_lo, <span class="at">newdata =</span> prediction_grid)</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(ethanol_preds) <span class="sc">+</span></span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> C, <span class="at">y =</span> .fitted)) <span class="sc">+</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">facet_wrap</span>(<span class="sc">~</span> E, <span class="at">ncol =</span> <span class="dv">7</span>)</span></code></pre></div>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">facet_wrap</span>(<span class="sc">~</span> E, <span class="at">ncol =</span> <span class="dv">11</span>)  <span class="sc">+</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">90</span>, <span class="at">vjust =</span> <span class="fl">0.5</span>, <span class="at">hjust=</span><span class="dv">1</span>)) <span class="sc">+</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="fu">c</span>(<span class="dv">8</span>, <span class="dv">12</span>, <span class="dv">16</span>)) <span class="sc">+</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_y_continuous</span>(<span class="st">&quot;Fitted value of NOx&quot;</span>)</span></code></pre></div>
 <p><img src="lecture-12-fig/unnamed-chunk-3-1.png" /></p>
+<p>Note: The idea behind coplots of fitted values is the same as the
+idea behind coplots of data. Still have:</p>
+<ul>
+<li>Response: This is now the fitted value instead of one of the
+variables in the dataset.</li>
+<li>Predictor: One of the original variables.</li>
+<li>Given: One of the original variables.</li>
+</ul>
+<p>We still:</p>
+<ul>
+<li>Plot the response on the vertical axis, predictor on the horizontal
+axis, and facet by given.</li>
+</ul>
+<p>Difference:</p>
+<ul>
+<li>Data don’t appear everywhere, but we can calculate fits for any
+combination of response, predictor, and given variables.</li>
+<li>Therefore, we don’t have to worry about creating intervals of the
+given variable or anything like that. We can directly plot the fitted
+values as a function of the predictor for any specified value of the
+given variable.</li>
+</ul>
 </div>
 <div class="slide section level2">
 
 <p>Then a coplot of the fitted values given <code>C</code>.</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(ethanol_preds) <span class="sc">+</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> E, <span class="at">y =</span> .fitted)) <span class="sc">+</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">facet_wrap</span>(<span class="sc">~</span> C, <span class="at">ncol =</span> <span class="dv">3</span>)</span></code></pre></div>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">facet_wrap</span>(<span class="sc">~</span> C, <span class="at">ncol =</span> <span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_y_continuous</span>(<span class="st">&quot;Fitted value of NOx&quot;</span>)</span></code></pre></div>
 <p><img src="lecture-12-fig/unnamed-chunk-4-1.png" /></p>
 </div>
 <div class="slide section level2">
@@ -177,7 +381,8 @@ fitted value given <code>E</code>.</p>
 <p>More useful without the faceting:</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(ethanol_preds) <span class="sc">+</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> E, <span class="at">y =</span> .fitted, <span class="at">color =</span> <span class="fu">factor</span>(C, <span class="at">levels =</span> <span class="fu">unique</span>(C), <span class="at">ordered =</span> <span class="cn">TRUE</span>))) <span class="sc">+</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">guides</span>(<span class="at">color =</span> <span class="fu">guide_legend</span>(<span class="at">title =</span> <span class="st">&quot;C&quot;</span>))</span></code></pre></div>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">guides</span>(<span class="at">color =</span> <span class="fu">guide_legend</span>(<span class="at">title =</span> <span class="st">&quot;C&quot;</span>)) <span class="sc">+</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_y_continuous</span>(<span class="st">&quot;Fitted value of NOx&quot;</span>)</span></code></pre></div>
 <p><img src="lecture-12-fig/unnamed-chunk-5-1.png" /></p>
 </div>
 <div id="plotting-residuals" class="slide section level2">
@@ -196,13 +401,15 @@ flexible.</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>ethanol_resid <span class="ot">=</span> <span class="fu">augment</span>(ethanol_lo)</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(ethanol_resid, <span class="fu">aes</span>(<span class="at">x =</span> E, <span class="at">y =</span> .resid)) <span class="sc">+</span></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">degree =</span> <span class="dv">1</span>, <span class="at">family =</span> <span class="st">&quot;symmetric&quot;</span>))</span></code></pre></div>
-<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">degree =</span> <span class="dv">1</span>, <span class="at">family =</span> <span class="st">&quot;symmetric&quot;</span>)) <span class="sc">+</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_y_continuous</span>(<span class="st">&quot;NOx Residual&quot;</span>)</span></code></pre></div>
+<pre><code>## `geom_smooth()` using formula = &#39;y ~ x&#39;</code></pre>
 <p><img src="lecture-12-fig/unnamed-chunk-6-1.png" /></p>
 <div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(ethanol_resid, <span class="fu">aes</span>(<span class="at">x =</span> C, <span class="at">y =</span> .resid)) <span class="sc">+</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">degree =</span> <span class="dv">1</span>, <span class="at">family =</span> <span class="st">&quot;symmetric&quot;</span>))</span></code></pre></div>
-<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">degree =</span> <span class="dv">1</span>, <span class="at">family =</span> <span class="st">&quot;symmetric&quot;</span>))  <span class="sc">+</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_y_continuous</span>(<span class="st">&quot;NOx Residual&quot;</span>)</span></code></pre></div>
+<pre><code>## `geom_smooth()` using formula = &#39;y ~ x&#39;</code></pre>
 <p><img src="lecture-12-fig/unnamed-chunk-7-1.png" /></p>
 </div>
 <div class="slide section level2">
@@ -213,13 +420,15 @@ the loess curve is pulled away from zero by the outliers.</p>
 <div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>ethanol_resid <span class="ot">=</span> <span class="fu">augment</span>(ethanol_lo)</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(ethanol_resid, <span class="fu">aes</span>(<span class="at">x =</span> E, <span class="at">y =</span> .resid)) <span class="sc">+</span></span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">degree =</span> <span class="dv">1</span>))</span></code></pre></div>
-<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">degree =</span> <span class="dv">1</span>)) <span class="sc">+</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_y_continuous</span>(<span class="st">&quot;NOx Residual&quot;</span>)</span></code></pre></div>
+<pre><code>## `geom_smooth()` using formula = &#39;y ~ x&#39;</code></pre>
 <p><img src="lecture-12-fig/unnamed-chunk-8-1.png" /></p>
 <div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(ethanol_resid, <span class="fu">aes</span>(<span class="at">x =</span> C, <span class="at">y =</span> .resid)) <span class="sc">+</span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">degree =</span> <span class="dv">1</span>))</span></code></pre></div>
-<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">degree =</span> <span class="dv">1</span>)) <span class="sc">+</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_y_continuous</span>(<span class="st">&quot;NOx Residual&quot;</span>)</span></code></pre></div>
+<pre><code>## `geom_smooth()` using formula = &#39;y ~ x&#39;</code></pre>
 <p><img src="lecture-12-fig/unnamed-chunk-9-1.png" /></p>
 </div>
 <div class="slide section level2">
@@ -228,8 +437,9 @@ the loess curve is pulled away from zero by the outliers.</p>
 <div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(ethanol_resid, <span class="fu">aes</span>(<span class="at">x =</span> E, <span class="at">y =</span> .resid)) <span class="sc">+</span></span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span></span>
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">facet_grid</span>(<span class="sc">~</span> C) <span class="sc">+</span></span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">degree =</span> <span class="dv">1</span>, <span class="at">family =</span> <span class="st">&quot;symmetric&quot;</span>))</span></code></pre></div>
-<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">degree =</span> <span class="dv">1</span>, <span class="at">family =</span> <span class="st">&quot;symmetric&quot;</span>)) <span class="sc">+</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_y_continuous</span>(<span class="st">&quot;NOx Residual&quot;</span>)</span></code></pre></div>
+<pre><code>## `geom_smooth()` using formula = &#39;y ~ x&#39;</code></pre>
 <p><img src="lecture-12-fig/unnamed-chunk-10-1.png" /></p>
 <p>In all of the residual plots, we see outliers, but not any major
 dependence of the residuals on the predictors.</p>
@@ -239,12 +449,14 @@ class="slide section level2">
 <h1>Residuals to check model assumptions</h1>
 <p>It’s also a good idea to check on homoscedasticity and normality of
 the residuals.</p>
-<p>To check for homoscedasticity, we plot the residuals by the fitted
-value:</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(ethanol_resid, <span class="fu">aes</span>(<span class="at">x =</span> .fitted, <span class="at">y =</span> <span class="fu">sqrt</span>(<span class="fu">abs</span>(.resid)))) <span class="sc">+</span></span>
+<p>To check for homoscedasticity, we plot the absolute value of the
+residuals by the fitted value:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(ethanol_resid, <span class="fu">aes</span>(<span class="at">x =</span> .fitted, <span class="at">y =</span> <span class="fu">abs</span>(.resid))) <span class="sc">+</span></span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">degree =</span> <span class="dv">1</span>, <span class="at">family =</span> <span class="st">&quot;symmetric&quot;</span>))</span></code></pre></div>
-<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">degree =</span> <span class="dv">1</span>, <span class="at">family =</span> <span class="st">&quot;symmetric&quot;</span>)) <span class="sc">+</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_y_continuous</span>(<span class="st">&quot;Absolute value of NOx residual&quot;</span>) <span class="sc">+</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_x_continuous</span>(<span class="st">&quot;NOx fitted value&quot;</span>)</span></code></pre></div>
+<pre><code>## `geom_smooth()` using formula = &#39;y ~ x&#39;</code></pre>
 <p><img src="lecture-12-fig/unnamed-chunk-11-1.png" /></p>
 </div>
 <div class="slide section level2">
@@ -253,22 +465,30 @@ value:</p>
 <div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(ethanol_resid) <span class="sc">+</span> <span class="fu">stat_qq</span>(<span class="fu">aes</span>(<span class="at">sample =</span> .resid))</span></code></pre></div>
 <p><img src="lecture-12-fig/unnamed-chunk-12-1.png" /></p>
 <p>We see that the residuals are quite heavy-tailed. This means:</p>
-<ul class="incremental">
-<li><p>It’s good that we used a robust linear model.</p></li>
-<li><p>We shouldn’t use normal-theory based confidence intervals or
-tests for this data.</p></li>
+<ul>
+<li>It’s good that we used a robust linear model.</li>
+</ul>
+<ul>
+<li>We shouldn’t use normal-theory based confidence intervals or tests
+for this data.</li>
 </ul>
 </div>
 <div id="what-weve-learned" class="slide section level2">
 <h1>What we’ve learned</h1>
-<ul class="incremental">
-<li><p>NOx depends on equivalence ratio in a non-monotonic way.</p></li>
-<li><p>Conditional on equivalence ratio, NOx depends on concentration in
-an approximately linear way.</p></li>
-<li><p>The interaction is important: there’s no real way to remove it
-from the data.</p></li>
-<li><p>The usual inference based on an assumption of normal errors is
-inappropriate.</p></li>
+<ul>
+<li>NOx depends on equivalence ratio in a non-monotonic way.</li>
+</ul>
+<ul>
+<li>Conditional on equivalence ratio, NOx depends on concentration in an
+approximately linear way.</li>
+</ul>
+<ul>
+<li>The interaction is important: there’s no real way to remove it from
+the data.</li>
+</ul>
+<ul>
+<li>The usual inference based on an assumption of normal errors is
+inappropriate.</li>
 </ul>
 </div>
 <div id="rubber-data" class="slide section level2">
@@ -277,43 +497,52 @@ inappropriate.</p></li>
 <p>The data frame rubber in <code>lattice.RData</code> contains three
 measurements on 30 specimens of tire rubber.</p>
 <p>The variables are:</p>
-<ul class="incremental">
-<li><p><code>hardness</code>: How much the rubber rebounds after being
-indented.</p></li>
-<li><p><code>tensile.strength</code>: The force per cross-sectional area
-required to break the rubber (in kg/cm2).</p></li>
-<li><p><code>abrasion.loss</code>: The amount of material lost to
-abrasion when rubbing it per unit energy (in grams per hp-hour). This
-gives you an idea how fast the tire will wear away when you drive. If we
-had to choose a “response” variable, it would be this one.</p></li>
+<ul>
+<li><code>hardness</code>: How much the rubber rebounds after being
+indented.</li>
+</ul>
+<ul>
+<li><code>tensile.strength</code>: The force per cross-sectional area
+required to break the rubber (in kg/cm2).</li>
+</ul>
+<ul>
+<li><code>abrasion.loss</code>: The amount of material lost to abrasion
+when rubbing it per unit energy (in grams per hp-hour). This gives you
+an idea how fast the tire will wear away when you drive. If we had to
+choose a “response” variable, it would be this one.</li>
 </ul>
 </div>
 <div id="pairs-plot-of-the-three-variables"
 class="slide section level2">
 <h1>Pairs plot of the three variables</h1>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(GGally)</span></code></pre></div>
-<pre><code>## Registered S3 method overwritten by &#39;GGally&#39;:
-##   method from   
-##   +.gg   ggplot2</code></pre>
-<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggpairs</span>(rubber[,<span class="fu">c</span>(<span class="st">&quot;hardness&quot;</span>, <span class="st">&quot;tensile.strength&quot;</span>, <span class="st">&quot;abrasion.loss&quot;</span>)])</span></code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(GGally)</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggpairs</span>(rubber[,<span class="fu">c</span>(<span class="st">&quot;hardness&quot;</span>, <span class="st">&quot;tensile.strength&quot;</span>, <span class="st">&quot;abrasion.loss&quot;</span>)])</span></code></pre></div>
 <p><img src="lecture-12-fig/unnamed-chunk-13-1.png" /></p>
 </div>
 <div id="coplot-of-abrasion-loss-and-tensile-strength-given-hardness"
 class="slide section level2">
 <h1>Coplot of abrasion loss and tensile strength given hardness</h1>
-<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>coplot_hardness <span class="ot">=</span> <span class="fu">make_coplot_df</span>(rubber, <span class="st">&quot;hardness&quot;</span>, <span class="at">number_bins =</span> <span class="dv">8</span>)</span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(coplot_hardness, <span class="fu">aes</span>(<span class="at">x =</span> tensile.strength, <span class="at">y =</span> abrasion.loss)) <span class="sc">+</span></span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">facet_wrap</span>(<span class="sc">~</span> interval, <span class="at">ncol =</span> <span class="dv">4</span>) <span class="sc">+</span></span>
-<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="at">se =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
-<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>coplot_hardness <span class="ot">=</span> <span class="fu">make_coplot_df</span>(rubber, <span class="st">&quot;hardness&quot;</span>, <span class="at">number_bins =</span> <span class="dv">8</span>)</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(coplot_hardness, <span class="fu">aes</span>(<span class="at">x =</span> tensile.strength, <span class="at">y =</span> abrasion.loss)) <span class="sc">+</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">facet_wrap</span>(<span class="sc">~</span> interval, <span class="at">ncol =</span> <span class="dv">4</span>) <span class="sc">+</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="at">se =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
+<pre><code>## `geom_smooth()` using formula = &#39;y ~ x&#39;</code></pre>
 <p><img src="lecture-12-fig/unnamed-chunk-14-1.png" /></p>
-<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(coplot_hardness, <span class="fu">aes</span>(<span class="at">x =</span> tensile.strength, <span class="at">y =</span> abrasion.loss)) <span class="sc">+</span></span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">facet_wrap</span>(<span class="sc">~</span> interval, <span class="at">ncol =</span> <span class="dv">4</span>) <span class="sc">+</span></span>
-<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">degree =</span> <span class="dv">1</span>), <span class="at">se =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
-<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(coplot_hardness, <span class="fu">aes</span>(<span class="at">x =</span> tensile.strength, <span class="at">y =</span> abrasion.loss)) <span class="sc">+</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">facet_wrap</span>(<span class="sc">~</span> interval, <span class="at">ncol =</span> <span class="dv">4</span>) <span class="sc">+</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">degree =</span> <span class="dv">1</span>), <span class="at">se =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
+<pre><code>## `geom_smooth()` using formula = &#39;y ~ x&#39;</code></pre>
 <p><img src="lecture-12-fig/unnamed-chunk-14-2.png" /></p>
+<p>An easier way to make a coplot with ggplot is to use the
+<code>cut_number</code> function:</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(rubber, <span class="fu">aes</span>(<span class="at">x =</span> tensile.strength, <span class="at">y =</span> abrasion.loss)) <span class="sc">+</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">facet_grid</span>(. <span class="sc">~</span> <span class="fu">cut_number</span>(hardness, <span class="at">n =</span> <span class="dv">4</span>)) <span class="sc">+</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">degree =</span> <span class="dv">1</span>, <span class="at">span =</span> .<span class="dv">9</span>), <span class="at">se =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
+<pre><code>## `geom_smooth()` using formula = &#39;y ~ x&#39;</code></pre>
+<p><img src="lecture-12-fig/unnamed-chunk-15-1.png" /></p>
 </div>
 <div id="coplot-of-abrasion-loss-and-hardness-given-tensile-strength"
 class="slide section level2">
@@ -323,43 +552,47 @@ class="slide section level2">
 <span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span></span>
 <span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">facet_wrap</span>(<span class="sc">~</span> interval, <span class="at">ncol =</span> <span class="dv">4</span>) <span class="sc">+</span></span>
 <span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="at">se =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
-<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
-<p><img src="lecture-12-fig/unnamed-chunk-15-1.png" /></p>
+<pre><code>## `geom_smooth()` using formula = &#39;y ~ x&#39;</code></pre>
+<p><img src="lecture-12-fig/unnamed-chunk-16-1.png" /></p>
 <div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(coplot_ts, <span class="fu">aes</span>(<span class="at">x =</span> hardness, <span class="at">y =</span> abrasion.loss)) <span class="sc">+</span></span>
 <span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span></span>
 <span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">facet_wrap</span>(<span class="sc">~</span> interval, <span class="at">ncol =</span> <span class="dv">4</span>) <span class="sc">+</span></span>
 <span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">span =</span> .<span class="dv">5</span>, <span class="at">degree =</span> <span class="dv">1</span>), <span class="at">se =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
-<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
-<p><img src="lecture-12-fig/unnamed-chunk-16-1.png" /></p>
+<pre><code>## `geom_smooth()` using formula = &#39;y ~ x&#39;</code></pre>
+<p><img src="lecture-12-fig/unnamed-chunk-17-1.png" /></p>
 <div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(coplot_ts, <span class="fu">aes</span>(<span class="at">x =</span> hardness, <span class="at">y =</span> abrasion.loss, <span class="at">color =</span> interval)) <span class="sc">+</span></span>
 <span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">span =</span> .<span class="dv">5</span>, <span class="at">degree =</span> <span class="dv">1</span>), <span class="at">se =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
-<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
-<p><img src="lecture-12-fig/unnamed-chunk-16-2.png" /></p>
+<pre><code>## `geom_smooth()` using formula = &#39;y ~ x&#39;</code></pre>
+<p><img src="lecture-12-fig/unnamed-chunk-17-2.png" /></p>
 </div>
 <div id="exercises" class="slide section level2">
 <h1>Exercises</h1>
 <p>Try making the following additional plots:</p>
-<ul class="incremental">
-<li><p>Make the same coplot as in the previous slide, but with a loess
+<ul>
+<li>Make the same coplot as in the previous slide, but with a loess
 smooth instead of a linear smooth. What do you think are good parameters
-for the degree and span arguments?</p></li>
-<li><p>It is sometimes easier to compare smoothers to each other if they
+for the degree and span arguments?</li>
+</ul>
+<ul>
+<li>It is sometimes easier to compare smoothers to each other if they
 are on the same plot instead of faceted out. Using the same
 <code>coplot_ts</code> data frame as on the previous slide, make a plot
 with one smoother per <code>tensile.strength</code> interval, i.e., the
 same smoothers as in the previous plot, but not faceted out. Let color
 indicate which <code>tensile.strength</code> interval the smoother
-corresponds to.</p></li>
+corresponds to.</li>
 </ul>
 <p>Questions:</p>
-<ul class="incremental">
-<li><p>What do these plots tell you about the interaction between
+<ul>
+<li>What do these plots tell you about the interaction between
 <code>tensile.strength</code> and <code>hardness</code>? Do you think
-that we need to fit an interaction?</p></li>
-<li><p>Based on the coplots given <code>hardness</code> and given
+that we need to fit an interaction?</li>
+</ul>
+<ul>
+<li>Based on the coplots given <code>hardness</code> and given
 <code>tensile.strength</code>, do you think a linear fit is sufficient
 for predicting <code>abrasion.loss</code>, or do we need to use a
-non-linear function?</p></li>
+non-linear function?</li>
 </ul>
 </div>
 <div id="building-a-model" class="slide section level2">
@@ -367,10 +600,14 @@ non-linear function?</p></li>
 <p>Let’s start off building a model with no interaction but with a
 non-linear function of <code>tensile.strength</code>.</p>
 <p>To do this, we need to:</p>
-<ul class="incremental">
-<li><p>Decide on a non-linear function to use.</p></li>
-<li><p>Implement this function in R.</p></li>
-<li><p>Apply the function to <code>tensile.strength</code>.</p></li>
+<ul>
+<li>Decide on a non-linear function to use.</li>
+</ul>
+<ul>
+<li>Implement this function in R.</li>
+</ul>
+<ul>
+<li>Apply the function to <code>tensile.strength</code>.</li>
 </ul>
 </div>
 <div id="deciding-on-a-function" class="slide section level2">
@@ -405,25 +642,20 @@ set and is exactly this function of <code>tensile.strength</code>).</p>
 class="slide section level2">
 <h1>Fitting and visualizing the model</h1>
 <p>To fit the model:</p>
-<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(MASS)</span></code></pre></div>
-<pre><code>## 
-## Attaching package: &#39;MASS&#39;</code></pre>
-<pre><code>## The following object is masked from &#39;package:dplyr&#39;:
-## 
-##     select</code></pre>
-<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>rubber.rlm <span class="ot">=</span> <span class="fu">rlm</span>(abrasion.loss <span class="sc">~</span> hardness <span class="sc">+</span> ts.low, <span class="at">data =</span> rubber, </span>
-<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">psi =</span> psi.bisquare)</span></code></pre></div>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(MASS)</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>rubber.rlm <span class="ot">=</span> <span class="fu">rlm</span>(abrasion.loss <span class="sc">~</span> hardness <span class="sc">+</span> ts.low, <span class="at">data =</span> rubber, </span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">psi =</span> psi.bisquare)</span></code></pre></div>
 </div>
 <div class="slide section level2">
 
 <p>To visualize the fitted model, we need to get fitted values from the
 model on a grid of values of the two predictors.</p>
-<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(broom)</span>
-<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>rubber.grid <span class="ot">=</span> <span class="fu">expand.grid</span>(<span class="at">hardness =</span> <span class="fu">c</span>(<span class="dv">54</span>, <span class="dv">64</span>, <span class="dv">74</span>, <span class="dv">84</span>),</span>
-<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>                          <span class="at">tensile.strength =</span> <span class="fu">c</span>(<span class="dv">144</span>, <span class="dv">162</span>, <span class="dv">180</span>, <span class="dv">198</span>)) <span class="sc">%&gt;%</span> data.frame</span>
-<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>rubber.grid <span class="ot">=</span> rubber.grid <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">ts.low =</span> <span class="fu">tslow</span>(tensile.strength))</span>
-<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>rubber.predict <span class="ot">=</span> <span class="fu">augment</span>(rubber.rlm, <span class="at">newdata =</span> rubber.grid)</span>
-<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>rubber.predict</span></code></pre></div>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(broom)</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>rubber.grid <span class="ot">=</span> <span class="fu">expand.grid</span>(<span class="at">hardness =</span> <span class="fu">c</span>(<span class="dv">54</span>, <span class="dv">64</span>, <span class="dv">74</span>, <span class="dv">84</span>),</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>                          <span class="at">tensile.strength =</span> <span class="fu">c</span>(<span class="dv">144</span>, <span class="dv">162</span>, <span class="dv">180</span>, <span class="dv">198</span>)) <span class="sc">%&gt;%</span> data.frame</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>rubber.grid <span class="ot">=</span> rubber.grid <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">ts.low =</span> <span class="fu">tslow</span>(tensile.strength))</span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>rubber.predict <span class="ot">=</span> <span class="fu">augment</span>(rubber.rlm, <span class="at">newdata =</span> rubber.grid)</span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>rubber.predict</span></code></pre></div>
 <pre><code>## # A tibble: 16 × 4
 ##    hardness tensile.strength ts.low .fitted
 ##       &lt;dbl&gt;            &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;
@@ -448,14 +680,18 @@ model on a grid of values of the two predictors.</p>
 
 <p>Once we have the fitted values, we can make a coplot of the fitted
 model. We’ll start with <code>hardness</code> as the given variable:</p>
-<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(rubber.predict) <span class="sc">+</span></span>
-<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> tensile.strength, <span class="at">y =</span> .fitted)) <span class="sc">+</span></span>
-<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">facet_grid</span>(<span class="sc">~</span> hardness)</span></code></pre></div>
-<p><img src="lecture-12-fig/unnamed-chunk-21-1.png" /></p>
-<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(rubber.predict) <span class="sc">+</span></span>
-<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> tensile.strength, <span class="at">y =</span> .fitted, <span class="at">color =</span> <span class="fu">factor</span>(hardness, <span class="at">ordered =</span> <span class="cn">TRUE</span>))) <span class="sc">+</span></span>
-<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">guides</span>(<span class="at">color =</span> <span class="fu">guide_legend</span>(<span class="at">title =</span> <span class="st">&quot;Hardness&quot;</span>))</span></code></pre></div>
-<p><img src="lecture-12-fig/unnamed-chunk-21-2.png" /></p>
+<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(rubber.predict) <span class="sc">+</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> tensile.strength, <span class="at">y =</span> .fitted)) <span class="sc">+</span></span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">facet_grid</span>(<span class="sc">~</span> hardness) <span class="sc">+</span></span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_y_continuous</span>(<span class="st">&quot;Fitted abrasion loss&quot;</span>) <span class="sc">+</span></span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">90</span>, <span class="at">vjust =</span> <span class="fl">0.5</span>, <span class="at">hjust=</span><span class="dv">1</span>))</span></code></pre></div>
+<p><img src="lecture-12-fig/unnamed-chunk-22-1.png" /></p>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(rubber.predict) <span class="sc">+</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> tensile.strength, <span class="at">y =</span> .fitted, <span class="at">color =</span> <span class="fu">factor</span>(hardness, <span class="at">ordered =</span> <span class="cn">TRUE</span>))) <span class="sc">+</span></span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">guides</span>(<span class="at">color =</span> <span class="fu">guide_legend</span>(<span class="at">title =</span> <span class="st">&quot;Hardness&quot;</span>)) <span class="sc">+</span></span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_y_continuous</span>(<span class="st">&quot;Fitted abrasion loss&quot;</span>) <span class="sc">+</span></span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">90</span>, <span class="at">vjust =</span> <span class="fl">0.5</span>, <span class="at">hjust=</span><span class="dv">1</span>))</span></code></pre></div>
+<p><img src="lecture-12-fig/unnamed-chunk-22-2.png" /></p>
 <p>Note that the first plot is a coplot, the second doesn’t have a name
 but reports the same information in a different way.</p>
 </div>
@@ -463,48 +699,56 @@ but reports the same information in a different way.</p>
 
 <p>Then a coplot with <code>tensile.strength</code> as the given
 variable:</p>
-<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(rubber.predict) <span class="sc">+</span></span>
-<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> hardness, <span class="at">y =</span> .fitted)) <span class="sc">+</span></span>
-<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">facet_grid</span>(<span class="sc">~</span> tensile.strength)</span></code></pre></div>
-<p><img src="lecture-12-fig/unnamed-chunk-22-1.png" /></p>
-<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(rubber.predict) <span class="sc">+</span></span>
-<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> hardness, <span class="at">y =</span> .fitted, <span class="at">color =</span> <span class="fu">factor</span>(tensile.strength, <span class="at">ordered =</span> <span class="cn">TRUE</span>))) <span class="sc">+</span></span>
-<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">guides</span>(<span class="at">color =</span> <span class="fu">guide_legend</span>(<span class="at">title =</span> <span class="st">&quot;Tensile strength&quot;</span>))</span></code></pre></div>
-<p><img src="lecture-12-fig/unnamed-chunk-22-2.png" /></p>
+<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(rubber.predict) <span class="sc">+</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> hardness, <span class="at">y =</span> .fitted)) <span class="sc">+</span></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">facet_grid</span>(<span class="sc">~</span> tensile.strength) <span class="sc">+</span></span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_y_continuous</span>(<span class="st">&quot;Fitted abrasion loss&quot;</span>) <span class="sc">+</span></span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">90</span>, <span class="at">vjust =</span> <span class="fl">0.5</span>, <span class="at">hjust=</span><span class="dv">1</span>))</span></code></pre></div>
+<p><img src="lecture-12-fig/unnamed-chunk-23-1.png" /></p>
+<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(rubber.predict) <span class="sc">+</span></span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> hardness, <span class="at">y =</span> .fitted, <span class="at">color =</span> <span class="fu">factor</span>(tensile.strength, <span class="at">ordered =</span> <span class="cn">TRUE</span>))) <span class="sc">+</span></span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">guides</span>(<span class="at">color =</span> <span class="fu">guide_legend</span>(<span class="at">title =</span> <span class="st">&quot;Tensile strength&quot;</span>)) <span class="sc">+</span></span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_y_continuous</span>(<span class="st">&quot;Fitted abrasion loss&quot;</span>) <span class="sc">+</span></span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">90</span>, <span class="at">vjust =</span> <span class="fl">0.5</span>, <span class="at">hjust=</span><span class="dv">1</span>))</span></code></pre></div>
+<p><img src="lecture-12-fig/unnamed-chunk-23-2.png" /></p>
 </div>
 <div id="residuals" class="slide section level2">
 <h1>Residuals</h1>
-<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>rubber.resid <span class="ot">=</span> <span class="fu">data.frame</span>(rubber, <span class="at">.resid =</span> <span class="fu">residuals</span>(rubber.rlm))</span>
-<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(rubber.resid, <span class="fu">aes</span>(<span class="at">x =</span> tensile.strength, <span class="at">y =</span> .resid)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
-<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="at">span =</span> <span class="dv">1</span>, <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">degree =</span> <span class="dv">1</span>, <span class="at">family =</span> <span class="st">&quot;symmetric&quot;</span>)) <span class="sc">+</span> </span>
-<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_abline</span>(<span class="at">slope =</span> <span class="dv">0</span>, <span class="at">intercept =</span> <span class="dv">0</span>)</span></code></pre></div>
-<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
-<p><img src="lecture-12-fig/unnamed-chunk-23-1.png" /></p>
+<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>rubber.resid <span class="ot">=</span> <span class="fu">data.frame</span>(rubber, <span class="at">.resid =</span> <span class="fu">residuals</span>(rubber.rlm))</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(rubber.resid, <span class="fu">aes</span>(<span class="at">x =</span> tensile.strength, <span class="at">y =</span> .resid)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="at">span =</span> <span class="dv">1</span>, <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">degree =</span> <span class="dv">1</span>, <span class="at">family =</span> <span class="st">&quot;symmetric&quot;</span>)) <span class="sc">+</span> </span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_abline</span>(<span class="at">slope =</span> <span class="dv">0</span>, <span class="at">intercept =</span> <span class="dv">0</span>) <span class="sc">+</span></span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_y_continuous</span>(<span class="st">&quot;Abrasion loss residuals&quot;</span>)</span></code></pre></div>
+<pre><code>## `geom_smooth()` using formula = &#39;y ~ x&#39;</code></pre>
+<p><img src="lecture-12-fig/unnamed-chunk-24-1.png" /></p>
 </div>
 <div class="slide section level2">
 
-<div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(rubber.resid, <span class="fu">aes</span>(<span class="at">x =</span> hardness, <span class="at">y =</span> .resid)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
-<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="at">span =</span> <span class="dv">1</span>, <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">degree =</span> <span class="dv">1</span>, <span class="at">family =</span> <span class="st">&quot;symmetric&quot;</span>)) <span class="sc">+</span> </span>
-<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_abline</span>(<span class="at">slope =</span> <span class="dv">0</span>, <span class="at">intercept =</span> <span class="dv">0</span>)</span></code></pre></div>
-<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
-<p><img src="lecture-12-fig/unnamed-chunk-24-1.png" /></p>
+<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(rubber.resid, <span class="fu">aes</span>(<span class="at">x =</span> hardness, <span class="at">y =</span> .resid)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="at">span =</span> <span class="dv">1</span>, <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">degree =</span> <span class="dv">1</span>, <span class="at">family =</span> <span class="st">&quot;symmetric&quot;</span>)) <span class="sc">+</span> </span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_abline</span>(<span class="at">slope =</span> <span class="dv">0</span>, <span class="at">intercept =</span> <span class="dv">0</span>) <span class="sc">+</span></span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_y_continuous</span>(<span class="st">&quot;Abrasion loss residuals&quot;</span>)</span></code></pre></div>
+<pre><code>## `geom_smooth()` using formula = &#39;y ~ x&#39;</code></pre>
+<p><img src="lecture-12-fig/unnamed-chunk-25-1.png" /></p>
 </div>
 <div id="coplots-of-the-residuals" class="slide section level2">
 <h1>Coplots of the residuals</h1>
-<div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>resid_co_hardness <span class="ot">=</span> <span class="fu">make_coplot_df</span>(rubber.resid, <span class="at">faceting_variable =</span> <span class="st">&quot;hardness&quot;</span>, <span class="at">number_bins =</span> <span class="dv">4</span>)</span>
-<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(resid_co_hardness, <span class="fu">aes</span>(<span class="at">x =</span> tensile.strength, <span class="at">y =</span> .resid)) <span class="sc">+</span></span>
-<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">facet_grid</span>(<span class="sc">~</span> interval) <span class="sc">+</span></span>
-<span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">degree =</span> <span class="dv">1</span>, <span class="at">family =</span> <span class="st">&quot;symmetric&quot;</span>))</span></code></pre></div>
-<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
-<p><img src="lecture-12-fig/unnamed-chunk-25-1.png" /></p>
-<div class="sourceCode" id="cb51"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>resid_co_ts <span class="ot">=</span> <span class="fu">make_coplot_df</span>(rubber.resid, <span class="at">faceting_variable =</span> <span class="st">&quot;tensile.strength&quot;</span>, <span class="at">number_bins =</span> <span class="dv">4</span>)</span>
-<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(resid_co_ts, <span class="fu">aes</span>(<span class="at">x =</span> hardness, <span class="at">y =</span> .resid)) <span class="sc">+</span></span>
-<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">facet_grid</span>(<span class="sc">~</span> interval) <span class="sc">+</span></span>
-<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">degree =</span> <span class="dv">1</span>, <span class="at">family =</span> <span class="st">&quot;symmetric&quot;</span>))</span></code></pre></div>
-<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<div class="sourceCode" id="cb46"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>resid_co_hardness <span class="ot">=</span> <span class="fu">make_coplot_df</span>(rubber.resid, <span class="at">faceting_variable =</span> <span class="st">&quot;hardness&quot;</span>, <span class="at">number_bins =</span> <span class="dv">4</span>)</span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(resid_co_hardness, <span class="fu">aes</span>(<span class="at">x =</span> tensile.strength, <span class="at">y =</span> .resid)) <span class="sc">+</span></span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">facet_grid</span>(<span class="sc">~</span> interval) <span class="sc">+</span></span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">degree =</span> <span class="dv">1</span>, <span class="at">family =</span> <span class="st">&quot;symmetric&quot;</span>)) <span class="sc">+</span></span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_y_continuous</span>(<span class="st">&quot;Abrasion loss residuals&quot;</span>)</span></code></pre></div>
+<pre><code>## `geom_smooth()` using formula = &#39;y ~ x&#39;</code></pre>
 <p><img src="lecture-12-fig/unnamed-chunk-26-1.png" /></p>
+<div class="sourceCode" id="cb48"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>resid_co_ts <span class="ot">=</span> <span class="fu">make_coplot_df</span>(rubber.resid, <span class="at">faceting_variable =</span> <span class="st">&quot;tensile.strength&quot;</span>, <span class="at">number_bins =</span> <span class="dv">4</span>)</span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(resid_co_ts, <span class="fu">aes</span>(<span class="at">x =</span> hardness, <span class="at">y =</span> .resid)) <span class="sc">+</span></span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">facet_grid</span>(<span class="sc">~</span> interval) <span class="sc">+</span></span>
+<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">degree =</span> <span class="dv">1</span>, <span class="at">family =</span> <span class="st">&quot;symmetric&quot;</span>)) <span class="sc">+</span></span>
+<span id="cb48-6"><a href="#cb48-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_y_continuous</span>(<span class="st">&quot;Abrasion loss residuals&quot;</span>)</span></code></pre></div>
+<pre><code>## `geom_smooth()` using formula = &#39;y ~ x&#39;</code></pre>
+<p><img src="lecture-12-fig/unnamed-chunk-27-1.png" /></p>
 </div>
 <div id="second-round-model" class="slide section level2">
 <h1>Second-round model</h1>
@@ -512,20 +756,42 @@ variable:</p>
 fitting an interaction between <code>tensile.strength</code> and
 hardness.</p>
 <p>Exercises:</p>
-<ul class="incremental">
-<li><p>Refit a linear model that predicts <code>abrasion.loss</code>
-using an interaction between our non-linear transformation of
+<ul>
+<li>Refit a linear model that predicts <code>abrasion.loss</code> using
+an interaction between our non-linear transformation of
 <code>tensile.strength</code> and <code>hardness</code> (i.e., change
 <code>abrasion.loss ~ ts.low + hardness</code> to <code>abrasion.loss ~
-ts.low * hardness</code>).</p></li>
-<li><p>Plot the fitted values from the interaction model on the same
-grid of predictor variables we used in the no-interaction model. How
-does the form of the fits change when you add the interaction? Why is
-this?</p></li>
-<li><p>Make residual plots and coplots for the interaction model in the
-same way we did for the no-interaction model. Do you like this model
-better?</p></li>
+ts.low * hardness</code>).</li>
 </ul>
+<ul>
+<li>Plot the fitted values from the interaction model on the same grid
+of predictor variables we used in the no-interaction model. How does the
+form of the fits change when you add the interaction? Why is this?</li>
+</ul>
+<ul>
+<li>Make residual plots and coplots for the interaction model in the
+same way we did for the no-interaction model. Do you like this model
+better?</li>
+</ul>
+</div>
+<div id="final-plots" class="slide section level2">
+<h1>Final plots</h1>
+<div class="sourceCode" id="cb50"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>coplot_hardness <span class="ot">=</span> coplot_hardness <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">interval_mean =</span> <span class="fu">get_interval_means</span>(interval))</span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>rubber.grid.final <span class="ot">=</span> <span class="fu">expand.grid</span>(<span class="at">hardness =</span> <span class="fu">unique</span>(coplot_hardness<span class="sc">$</span>interval_mean),</span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>                          <span class="at">tensile.strength =</span> <span class="fu">c</span>(<span class="dv">125</span>, <span class="dv">180</span>, <span class="dv">240</span>)) <span class="sc">%&gt;%</span> data.frame</span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>rubber.grid.final <span class="ot">=</span> rubber.grid.final <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">ts.low =</span> <span class="fu">tslow</span>(tensile.strength))</span>
+<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>rubber.predict.final <span class="ot">=</span> <span class="fu">augment</span>(rubber.rlm, <span class="at">newdata =</span> rubber.grid.final)</span>
+<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a>rubber.predict.final <span class="ot">=</span> <span class="fu">merge</span>(rubber.predict.final,</span>
+<span id="cb50-7"><a href="#cb50-7" aria-hidden="true" tabindex="-1"></a>                             <span class="fu">unique</span>(coplot_hardness[,<span class="fu">c</span>(<span class="st">&quot;interval&quot;</span>, <span class="st">&quot;interval_mean&quot;</span>)]),</span>
+<span id="cb50-8"><a href="#cb50-8" aria-hidden="true" tabindex="-1"></a>                             <span class="at">by.x =</span> <span class="st">&quot;hardness&quot;</span>, <span class="at">by.y =</span> <span class="st">&quot;interval_mean&quot;</span>)</span>
+<span id="cb50-9"><a href="#cb50-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-10"><a href="#cb50-10" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(coplot_hardness, <span class="fu">aes</span>(<span class="at">x =</span> tensile.strength, <span class="at">y =</span> abrasion.loss)) <span class="sc">+</span></span>
+<span id="cb50-11"><a href="#cb50-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb50-12"><a href="#cb50-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> tensile.strength, <span class="at">y =</span> .fitted), <span class="at">data =</span> rubber.predict.final) <span class="sc">+</span></span>
+<span id="cb50-13"><a href="#cb50-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">facet_wrap</span>(<span class="sc">~</span> interval, <span class="at">ncol =</span> <span class="dv">4</span>) <span class="sc">+</span></span>
+<span id="cb50-14"><a href="#cb50-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_y_continuous</span>(<span class="st">&quot;Abrasion loss&quot;</span>) <span class="sc">+</span></span>
+<span id="cb50-15"><a href="#cb50-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_x_continuous</span>(<span class="st">&quot;Tensile strength&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-12-fig/unnamed-chunk-28-1.png" /></p>
 </div>
 </body>
 </html>
