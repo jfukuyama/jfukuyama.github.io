@@ -17,15 +17,15 @@ Reading: Cleveland pp. 228-241, 245-248, 257-266, 270
 
 Today: Two new kinds of plots
 
-- Level plots
+> - Level plots
 
-- Contour plots
+> - Contour plots
 
 We'll use them to plot
 
-- Data
+> - Data
 
-- Surfaces (e.g. output from a smoother)
+> - Surfaces (e.g. output from a smoother)
 
 Another theme that runs through the examples today: data is not collected at even intervals, and it helps to look in places where you have data.
 
@@ -35,11 +35,11 @@ We still have three continuous variables, two "explanatory" variables, $u$ and $
 
 Before, we made coplots, with
 
-- $y$ on the vertical axis,
+> - $y$ on the vertical axis,
 
-- $u$ on the horizontal axis,
+> - $u$ on the horizontal axis,
 
-- Facets defined by cuts of $v$.
+> - Facets defined by cuts of $v$.
 
 These are useful for finding interactions, and particularly useful when the interactions you find are simple.
 
@@ -49,11 +49,11 @@ A _level plot_ is very similar in form to a coplot, but the purpose is to visual
 
 In a level plot, we put
 
-- $u$ on the vertical axis,
+> - $u$ on the vertical axis,
 
-- $v$ on the horizontal axis,
+> - $v$ on the horizontal axis,
 
-- Define facets by cuts of $y$.
+> - Define facets by cuts of $y$.
 
 This allows us to see which regions of the explanatory variables correspond to similar values of the response variable.
 
@@ -65,11 +65,11 @@ The data frame galaxy contains 323 measurements of velocity for locations in gal
 
 Variables are:
 
-- `east.west`: Relative position on the east/west axis.
+> - `east.west`: Relative position on the east/west axis.
 
-- `north.south`: Relative position on the north/south axis.
+> - `north.south`: Relative position on the north/south axis.
 
-- `velocity`: Velocity of the galaxy in km/s.
+> - `velocity`: Velocity of the galaxy in km/s.
 
 We would like to model `velocity` as a function of position.
 
@@ -134,12 +134,12 @@ galaxy %>%
 
 Once we have the `angle` and `radial.position` variables, we can look at how velocity changes along each of the trajectories.
 
-```{r}
+```{r, fig.width=4}
 ggplot(galaxy, aes(x = radial.position, y = velocity)) +
     geom_point(,size = .5) +
     stat_smooth(method = "loess") + 
     facet_wrap(~ angle, ncol = 4) +
-    labs(title = "Galaxy position and velocity split by slit angle")
+    labs(title = "Galaxy position and velocity\nsplit by slit angle")
 ```
 
 -------
@@ -158,12 +158,12 @@ Why `normalize = FALSE`?
 
 Making the analogous coplot with loess fitted values, we see a similar but not identical smooth.
 
-```{r, fig.width=7.5}
+```{r, fig.width=4}
 ggplot(augment(galaxy_loess, data = galaxy), aes(x = radial.position, y = velocity)) +
     geom_point(size = .5) + 
     geom_line(aes(y = .fitted), color = "blue") +
     facet_wrap(~ angle, ncol = 4) +
-    labs(title = "Galaxy position and velocity split by slit angle with fitted model")
+    labs(title = "Galaxy position and velocity split by\nslit angle with fitted model")
 ```
 
 ## Level plots for fitted values
@@ -213,21 +213,21 @@ Note: Finding the contours is an inverse problem, and for most functions we want
 
 An algorithm for finding the $a$ contour of a function $f$:
 
-- Evaluate $f$ at a rectangular grid of points covering the region of study.
+> - Evaluate $f$ at a rectangular grid of points covering the region of study.
 
-- Consider all the grid segments (line segments connecting two neighboring grid points) for which one endpoint is at greater than or equal to $a$ and the other endpoint is less than or equal to $a$. Note that if the function $f$ is continuous, the $a$ contour must cross the grid segment.
+> - Consider all the grid segments (line segments connecting two neighboring grid points) for which one endpoint is at greater than or equal to $a$ and the other endpoint is less than or equal to $a$. Note that if the function $f$ is continuous, the $a$ contour must cross the grid segment.
 
-- Approximate the location where the $a$ contour crosses the grid segment by interpolation, and save the point.
+> - Approximate the location where the $a$ contour crosses the grid segment by interpolation, and save the point.
 
-- Draw contours by connecting the points (see pp. 242-244 for one way to do this).
+> - Draw contours by connecting the points (see pp. 242-244 for one way to do this).
 
 ------
 
 Contour plot interpretation
 
-- Closely spaced contours indicate large slope.
+> - Closely spaced contours indicate large slope.
 
-- Parallel, evenly-spaced contours indicate the surface is a plane.
+> - Parallel, evenly-spaced contours indicate the surface is a plane.
 
 
 ## Contour plots for galaxy data
@@ -257,11 +257,11 @@ ggplot(galaxy_smoothed, aes(x = east.west, y = north.south, fill = .fitted, z = 
 
 The `soil` dataset contains measurements of soil resistivity. The variables are:
 
-- `northing`: The position along one axis (not actually north-south).
+> - `northing`: The position along one axis (not actually north-south).
 
-- `easting`: The position along the perpendicular axis (also not east-west).
+> - `easting`: The position along the perpendicular axis (also not east-west).
 
-- `resistivity`: The soil resistivity.
+> - `resistivity`: The soil resistivity.
 
 
 First let's look at where we have measures of resistivity:
@@ -274,9 +274,9 @@ ggplot(soil, aes(x = easting, y = northing)) + geom_point(size=.5) + coord_fixed
 
 The plot above motivates the inclusion of the additional variables:
 
-- `is.ns`: Was the measurement taken from a northing track?
+> - `is.ns`: Was the measurement taken from a northing track?
 
-- `track`: The ID of a track.
+> - `track`: The ID of a track.
 
 We can look at these two variables in a little more detail to see how tracks are defined:
 
@@ -335,3 +335,9 @@ ggplot(soil_smoothed,
     scale_fill_viridis("Fitted resistivity") + 
     coord_fixed()
 ```
+
+## Summing up: Trivariate data visualization
+
+> - Coplots for looking at conditional relationships. Used when the conditional relationships are of interest, usually when the variables measured are qualitatively different from each other.
+
+> - Level plots and contour plots (factor-plane methods). Used when the conditional relationships aren't as interesting (when any slice through the plane of the two explanatory variables is as interesting as any other).
