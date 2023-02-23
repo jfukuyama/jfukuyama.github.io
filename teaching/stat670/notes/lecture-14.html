@@ -7,7 +7,7 @@
   <meta http-equiv="Content-Style-Type" content="text/css" />
   <meta name="generator" content="pandoc" />
   <meta name="author" content="Julia Fukuyama" />
-  <title>Stat 470/670 Lecture 14: Background for Hypervariate Data</title>
+  <title>Stat 470/670 Lecture 14: Model-building with a moderate number of variables</title>
   <style type="text/css">
     code{white-space: pre-wrap;}
     span.smallcaps{font-variant: small-caps;}
@@ -89,371 +89,449 @@
 </head>
 <body>
 <div class="slide titlepage">
-  <h1 class="title">Stat 470/670 Lecture 14: Background for Hypervariate
-Data</h1>
+  <h1 class="title">Stat 470/670 Lecture 14: Model-building with a
+moderate number of variables</h1>
   <p class="author">
 Julia Fukuyama
   </p>
 </div>
-<div id="today" class="slide section level2">
-<h1>Today</h1>
-<ul class="incremental">
-<li><p>Linear algebra review</p></li>
-<li><p>Introduce biplots</p></li>
+<div id="model-building" class="slide section level2">
+<h1>Model building</h1>
+<ul>
+<li>Over the next couple of weeks we’ll get back to building models, and
+we’ll look at models for different kinds of responses (binary, count,
+categorical).</li>
 </ul>
-<p>Reading: Greenacre, Biplots in Practice, Chapter 1. The <a
-href="http://www.multivariatestatistics.org/biplots.html">book
-website</a> contains links to all the chapters, and chapter 1 is linked
-to on the course website for today’s lecture. Also <a
-href="http://www.fbbva.es/TLFU/dat/greenacre_c01_2010.pdf">here</a>.</p>
-</div>
-<div id="vectors-and-matrices" class="slide section level2">
-<h1>Vectors and Matrices</h1>
-<ul class="incremental">
-<li>A <em>vector</em> in <span class="math inline">\(\mathbb
-R^n\)</span> is given by a set of <span class="math inline">\(n\)</span>
-coordinates. We will write a vector <span class="math inline">\(\mathbf
-x \in \mathbb R^n\)</span> as <span class="math inline">\((x_1, x_2,
-\ldots, x_n)\)</span>.</li>
+<ul>
+<li>Today we’ll look at model-building with a moderate number of
+variables. Today will be linear models, but the ideas carry over to
+logistic regression and the generalized linear models we’ll talk about
+later.</li>
 </ul>
-<div class="incremental">
-<ul class="incremental">
-<li>We think of vectors in <span class="math inline">\(\mathbb
-R^2\)</span> as points in the plane, vectors in <span
-class="math inline">\(\mathbb R^3\)</span> as points in 3-dimensional
-space, and vectors in <span class="math inline">\(\mathbb R^n\)</span>
-as points in <span class="math inline">\(n\)</span>-dimensional
-space.</li>
+<ul>
+<li>Note on terminology: for statisticians, “linear model” means that
+your response variable follows a normal distribution. “Generalized
+linear models” will be models for which the response variable follows a
+different sort of distribution.</li>
 </ul>
 </div>
-<div class="incremental">
-<ul class="incremental">
-<li>A <em>matrix</em> in <span class="math inline">\(\mathbb R^{n \times
-p}\)</span> consists of <span class="math inline">\(n\)</span> rows and
-<span class="math inline">\(p\)</span> columns. We will write such a
-matrix as <span class="math display">\[
-\mathbf X = \begin{pmatrix}
-\mathbf X_{11} &amp; \mathbf X_{12} &amp; \cdots &amp; \mathbf X_{1p} \\
-\mathbf X_{21} &amp; \mathbf X_{22} &amp; \cdots &amp; \mathbf X_{2p} \\
-\vdots &amp; \vdots &amp; \ddots &amp; \vdots \\
-\mathbf X_{n1} &amp; \mathbf X_{n2} &amp; \cdots &amp; \mathbf X_{np}
-\end{pmatrix}
-\]</span> so that <span class="math inline">\(\mathbf X_{ij}\)</span>
-represents the element in the <span class="math inline">\(i\)</span>th
-row and <span class="math inline">\(j\)</span>th column of <span
-class="math inline">\(\mathbf X\)</span>.</li>
+<div id="data-prostate-cancer" class="slide section level2">
+<h1>Data: Prostate Cancer</h1>
+<p>We have a data set containing clinical data on patients who were
+about to receive a radical prostatectomy. The relevant variables
+are:</p>
+<p>Variables about sizes:</p>
+<ul>
+<li><code>lcavol</code>: log cancer volume</li>
 </ul>
-</div>
-<div class="incremental">
-<ul class="incremental">
-<li>A <em>column vector</em> is a vector written as an <span
-class="math inline">\(n \times 1\)</span> matrix, and a <em>row
-vector</em> is a vector written as a <span class="math inline">\(1
-\times n\)</span> matrix.</li>
+<ul>
+<li><code>lweight</code>: log prostate weight</li>
 </ul>
-</div>
-</div>
-<div id="scalar-products" class="slide section level2">
-<h1>Scalar products</h1>
-<p>Suppose <span class="math inline">\(\mathbf x\)</span> and <span
-class="math inline">\(\mathbf y\)</span> are vectors in <span
-class="math inline">\(\mathbb R^n\)</span>, then the scalar product of
-<span class="math inline">\(\mathbf x\)</span> and <span
-class="math inline">\(\mathbf y\)</span> is <span
-class="math display">\[
-\mathbf x \cdot \mathbf y = \sum_{i=1}^n x_i y_i
-\]</span></p>
-</div>
-<div id="norm-of-a-vector" class="slide section level2">
-<h1>Norm of a vector</h1>
-<p>Suppose <span class="math inline">\(\mathbf x\)</span> is a vector in
-<span class="math inline">\(\mathbb R^n\)</span>. The <em>norm</em> of
-<span class="math inline">\(\mathbf x\)</span> is defined as <span
-class="math display">\[
-\| \mathbf x\| = \sqrt{\sum_{i=1}^n x_i^2}
-\]</span></p>
-<p>The norm is usually interpreted as a measure of size or length.</p>
-</div>
-<div id="vector-operation-properties" class="slide section level2">
-<h1>Vector operation properties</h1>
-<ul class="incremental">
-<li><p><span class="math inline">\(\frac{\mathbf x \cdot \mathbf y }{
-\|\mathbf x\| \|\mathbf y\|} = \cos(\theta)\)</span>, where <span
-class="math inline">\(\theta\)</span> is the angle between <span
-class="math inline">\(\mathbf x\)</span> and <span
-class="math inline">\(\mathbf y\)</span>.</p></li>
-<li><p><span class="math inline">\(\mathbf x \cdot \mathbf y =
-0\)</span> means that <span class="math inline">\(\mathbf x\)</span> and
-<span class="math inline">\(\mathbf y\)</span> are orthogonal, i.e. that
-the angle between them is 90 degrees.</p></li>
-<li><p>If <span class="math inline">\(\|\mathbf x\| = 1\)</span> and
-<span class="math inline">\(\|\mathbf y\| = 1\)</span> (referred to as
-<em>unit vectors</em>), then <span class="math inline">\(\mathbf x \cdot
-\mathbf y \in [-1, 1]\)</span>.</p></li>
-<li><p>If <span class="math inline">\(\mathbf x\)</span> and <span
-class="math inline">\(\mathbf y\)</span> are unit vectors, then <span
-class="math inline">\(\mathbf x \cdot \mathbf y = 1\)</span> implies the
-angle between the two vectors is <span class="math inline">\(0\)</span>,
-and <span class="math inline">\(\mathbf x \cdot \mathbf y = -1\)</span>
-implies that the angle between the two vectors is <span
-class="math inline">\(180\)</span> degrees. This property motivates the
-interpretation of the scalar product as a measure of
-similarity.</p></li>
+<ul>
+<li><code>lbph</code>: log of the amount of benign prostatic
+hyperplasia</li>
 </ul>
-</div>
-<div id="geometry-projection-of-one-vector-onto-another"
-class="slide section level2">
-<h1>Geometry: Projection of one vector onto another</h1>
-<p><img src="projection.png" /></p>
-<p>The length of the projection of <span class="math inline">\(\mathbf
-x\)</span> onto <span class="math inline">\(\mathbf y\)</span> is <span
-class="math inline">\(\|\mathbf x \| \cos(\theta) = (\mathbf x \cdot
-\mathbf y) / \|\mathbf y\|\)</span>.</p>
-<div class="incremental">
-<p>More useful form: <span class="math display">\[
-\mathbf x \cdot \mathbf y = (\text{length of projection of $\mathbf x$
-onto $\mathbf y$})\|\mathbf y\|
-\]</span></p>
-<p>This result is important for visualization because we can “read off”
-scalar products as projections.</p>
-</div>
-</div>
-<div id="matrix-operations-multiplication" class="slide section level2">
-<h1>Matrix operations: Multiplication</h1>
-<p>Suppose <span class="math inline">\(\mathbf X \in \mathbb R^{a \times
-b}\)</span> and <span class="math inline">\(\mathbf Y \in \mathbb R^{b
-\times c}\)</span>. Then the matrix product of <span
-class="math inline">\(\mathbf X\)</span> and <span
-class="math inline">\(\mathbf Y\)</span> is a matrix <span
-class="math inline">\(\mathbf S \in \mathbb R^{a \times c}\)</span>,
-where the <span class="math inline">\(i, j\)</span> element of <span
-class="math inline">\(\mathbf S\)</span> is <span
-class="math display">\[
-\mathbf S_{ij} = \sum_{k=1}^ b \mathbf X_{i k} \mathbf Y_{k j}
-\]</span></p>
-<div class="incremental">
-<p>Note: For the matrix multiplication operation to be defined for the
-matrices <span class="math inline">\(\mathbf X\)</span> and <span
-class="math inline">\(\mathbf Y\)</span>, the number of columns of <span
-class="math inline">\(\mathbf X\)</span> must be equal to the number of
-rows of <span class="math inline">\(\mathbf Y\)</span>.</p>
-</div>
-</div>
-<div id="matrix-operations-transpose" class="slide section level2">
-<h1>Matrix operations: Transpose</h1>
-<p>The matrix transpose operation flips the row and column indices. That
-is, <span class="math inline">\((\mathbf X^T)_{ij} = \mathbf
-X_{ji}\)</span>.</p>
-</div>
-<div id="matrix-multiplication-written-as-scalar-products"
-class="slide section level2">
-<h1>Matrix multiplication written as scalar products</h1>
-<p>Note that we can write the matrix multiplication operation in terms
-of scalar products.</p>
-<p>As before, suppose we have <span class="math inline">\(\mathbf X \in
-\mathbb R^{a \times b}\)</span> and <span class="math inline">\(\mathbf
-Y \in \mathbb R^{b \times c}\)</span>.</p>
-<p>Let <span class="math inline">\(\mathbf x_1, \ldots, \mathbf
-x_a\)</span> be column vectors containing the rows of <span
-class="math inline">\(\mathbf X\)</span>, so that <span
-class="math display">\[
-\mathbf X = \begin{pmatrix} \mathbf x_1^T \\ \vdots \\ \mathbf x_a^T
-\end{pmatrix}
-\]</span> and let <span class="math inline">\(\mathbf y_1, \ldots,
-\mathbf y_c\)</span> be column vectors containing the columns of <span
-class="math inline">\(\mathbf Y\)</span>, so that <span
-class="math display">\[
-\mathbf Y = \begin{pmatrix} \mathbf y_1 &amp; \cdots &amp; \mathbf y_c
-\end{pmatrix}
-\]</span></p>
-<p>Then if <span class="math inline">\(\mathbf S = \mathbf X \mathbf
-Y\)</span>, <span class="math inline">\(\mathbf S_{ij} = \mathbf x_i
-\cdot \mathbf y_j\)</span>.</p>
-<p><span class="math display">\[
-\mathbf S = \begin{pmatrix}
-\mathbf x_1 \cdot \mathbf y_1 &amp; \mathbf x_1 \cdot \mathbf y_2 &amp;
-\cdots &amp; \mathbf x_1 \cdot \mathbf y_c\\
-\mathbf x_2 \cdot \mathbf y_1&amp; \mathbf x_2 \cdot \mathbf y_2 &amp;
-\cdots &amp; \mathbf x_2 \cdot \mathbf y_c\\
-\vdots &amp; \vdots &amp; \ddots &amp; \vdots \\
-\mathbf x_a \cdot \mathbf y_1&amp; \mathbf x_a \cdot \mathbf y_2&amp;
-\cdots &amp; \mathbf x_a \cdot \mathbf y_c
-\end{pmatrix}
-\]</span></p>
-</div>
-<div id="biplot-the-main-idea" class="slide section level2">
-<h1>Biplot: the main idea</h1>
-<p>Suppose we have a matrix <span class="math inline">\(\mathbf S \in
-\mathbb R^{n \times p}\)</span>.</p>
-<p>The rows of <span class="math inline">\(\mathbf S\)</span> correspond
-to observations, and the columns of <span class="math inline">\(\mathbf
-S\)</span> correspond to the variables measured.</p>
-<p>A biplot is a visualization of the matrix <span
-class="math inline">\(\mathbf S\)</span> that will allow us to read
-off</p>
-<ul class="incremental">
-<li><p>The values of <span class="math inline">\(\mathbf
-S\)</span>,</p></li>
-<li><p>(In some cases) the similarities between the variables,</p></li>
-<li><p>(In most cases) the similarities between the
-observations.</p></li>
+<p>Variables about the individual:</p>
+<ul>
+<li><code>age</code>: Age in years</li>
 </ul>
-<p>To do this, we combine our results about matrix multiplication as
-scalar products with our results describing scalar products in terms of
-projections of one variable onto another.</p>
-</div>
-<div id="biplot-definition" class="slide section level2">
-<h1>Biplot definition</h1>
-<p>Suppose we have a matrix <span class="math inline">\(\mathbf S \in
-\mathbb R^{n \times p}\)</span>. Further suppose that we can write <span
-class="math inline">\(\mathbf S\)</span> as <span
-class="math display">\[
-\mathbf S = \mathbf X \mathbf Y^T,
-\]</span> where <span class="math inline">\(\mathbf X \in \mathbb R^{n
-\times 2}\)</span> and <span class="math inline">\(\mathbf Y \in \mathbb
-R^{p \times 2}\)</span>.</p>
-<p><span class="math inline">\(\mathbf S\)</span> is the <em>target
-matrix</em>, and <span class="math inline">\(\mathbf X\)</span> and
-<span class="math inline">\(\mathbf Y\)</span> are the <em>left</em> and
-<em>right</em> matrices, respectively.</p>
-<p>In a biplot, we plot the rows of <span class="math inline">\(\mathbf
-X\)</span> and the rows of <span class="math inline">\(\mathbf
-Y\)</span>.</p>
-<p>The convention is that</p>
-<ul class="incremental">
-<li><p>Rows of <span class="math inline">\(\mathbf X\)</span> are
-plotted as points, and are referred to as <em>biplot
-points</em>.</p></li>
-<li><p>Rows of <span class="math inline">\(\mathbf Y\)</span> are
-plotted as arrows, and are referred to as <em>biplot
-vectors</em>.</p></li>
+<p>Variables measured by the pathologist:</p>
+<ul>
+<li><code>svi</code>: Seminal vesicle invasion, a measure of how
+advanced the cancer is.</li>
 </ul>
-</div>
-<div id="an-example" class="slide section level2">
-<h1>An example</h1>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>X <span class="ot">=</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">2</span>,<span class="dv">2</span>, <span class="dv">1</span>,<span class="dv">2</span>, <span class="sc">-</span><span class="dv">1</span>,<span class="dv">1</span>, <span class="dv">1</span>,<span class="sc">-</span><span class="dv">1</span>, <span class="dv">2</span>,<span class="sc">-</span><span class="dv">2</span>), <span class="at">ncol =</span> <span class="dv">2</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>Y <span class="ot">=</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">3</span>,<span class="dv">1</span>, <span class="dv">2</span>,<span class="sc">-</span><span class="dv">1</span>, <span class="sc">-</span><span class="dv">1</span>,<span class="dv">2</span>, <span class="sc">-</span><span class="dv">2</span>,<span class="sc">-</span><span class="dv">1</span>), <span class="at">ncol =</span> <span class="dv">2</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="do">## %*% is the matrix multiplication function in R</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>S <span class="ot">=</span> X <span class="sc">%*%</span> <span class="fu">t</span>(Y)</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>X</span></code></pre></div>
-<pre><code>##      [,1] [,2]
-## [1,]    2    2
-## [2,]    1    2
-## [3,]   -1    1
-## [4,]    1   -1
-## [5,]    2   -2</code></pre>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>Y</span></code></pre></div>
-<pre><code>##      [,1] [,2]
-## [1,]    3    1
-## [2,]    2   -1
-## [3,]   -1    2
-## [4,]   -2   -1</code></pre>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>S</span></code></pre></div>
-<pre><code>##      [,1] [,2] [,3] [,4]
-## [1,]    8    2    2   -6
-## [2,]    5    0    3   -4
-## [3,]   -2   -3    3    1
-## [4,]    2    3   -3   -1
-## [5,]    4    6   -6   -2</code></pre>
-</div>
-<div id="a-toy-biplot" class="slide section level2">
-<h1>A toy biplot</h1>
-<p>The arrows are the biplot vectors, or the rows of <span
-class="math inline">\(\mathbf Y\)</span>.</p>
-<p>The points are the byplot points, or the rows of <span
-class="math inline">\(\mathbf X\)</span>.</p>
-<p><img src="lecture-14-fig/unnamed-chunk-2-1.png" /></p>
-<p>How do we use this plot?</p>
-</div>
-<div id="we-can-read-off-the-elements-of-the-original-data-matrix"
-class="slide section level2">
-<h1>We can read off the elements of the original data matrix</h1>
-<p>Remember that we can write S as a matrix of scalar products. <span
-class="math display">\[
-\mathbf S = \mathbf X \mathbf Y^T =
-\begin{pmatrix}
-\mathbf x_1 \cdot \mathbf y_1 &amp; \mathbf x_1 \cdot \mathbf y_2 &amp;
-\cdots &amp; \mathbf x_1 \cdot \mathbf y_p \\
-\mathbf x_2 \cdot \mathbf y_1 &amp; \mathbf x_2 \cdot \mathbf y_2 &amp;
-\cdots &amp; \mathbf x_2 \cdot \mathbf y_p \\
-\vdots &amp; \vdots &amp; \ddots &amp; \vdots\\
-\mathbf x_n \cdot \mathbf y_1 &amp; \mathbf x_n \cdot \mathbf y_2 &amp;
-\cdots &amp; \mathbf x_n \cdot \mathbf y_p
-\end{pmatrix}
-\]</span> where <span class="math inline">\(\mathbf x_i\)</span> are
-vectors denoting the rows of <span class="math inline">\(\mathbf
-X\)</span> and <span class="math inline">\(\mathbf y_i\)</span> are
-vectors denoting the rows of <span class="math inline">\(\mathbf
-Y\)</span></p>
-<p>What this means is that we can reconstruct any element of S by
-looking at the scalar product between the biplot point and the biplot
-vector corresponding to that element.</p>
-<p>Remember that the scalar product between <span
-class="math inline">\(\mathbf x_i\)</span> and <span
-class="math inline">\(\mathbf y_j\)</span> is the length of the
-projection of <span class="math inline">\(\mathbf x_i\)</span> onto
-<span class="math inline">\(\mathbf y_j\)</span> times the length of
-<span class="math inline">\(\mathbf y_j\)</span>.</p>
-</div>
-<div id="biplot-calibration" class="slide section level2">
-<h1>Biplot calibration</h1>
-<p>To read off absolute values, not just relative values, we need to
-calibrate the axes.</p>
-<p>Suppose we are interested in the value in the target matrix for
-observation <span class="math inline">\(i\)</span>, variable <span
-class="math inline">\(j\)</span>.</p>
-<p>Recall that <span class="math display">\[
-\text{length of the projection of point $\mathbf x_i$ onto vector
-$\mathbf y_j$} = (\mathbf x_i \cdot \mathbf y_j) /\|\mathbf y_j\|,
-\]</span> and the value of the target matrix is <span
-class="math display">\[
-\mathbf S_{ij} = \mathbf x_i \cdot \mathbf y_j
-\]</span></p>
-<div class="incremental">
-<p>Therefore, if the value in the target matrix is <span
-class="math inline">\(1\)</span>, the length of the projection of <span
-class="math inline">\(\mathbf x_i\)</span> onto <span
-class="math inline">\(\mathbf y_j\)</span> is <span
-class="math inline">\(1 / \|\mathbf y\|\)</span>. This is the length of
-one unit along the biplot axis, and it tells us that</p>
-<ul class="incremental">
-<li><p>If the biplot vector is long, the intervals between units on the
-biplot vector are short (and so values change quickly as we move along
-that axis).</p></li>
-<li><p>If the biplot vector is short, the intervals between units on the
-biplot vector are long (and so values change slowly as we move along
-that axis).</p></li>
+<ul>
+<li><code>lcp</code>: log of capsular penetration</li>
 </ul>
+<ul>
+<li><code>gleason</code>: A numeric vector giving the <a
+href="https://www.pcf.org/about-prostate-cancer/diagnosis-staging-prostate-cancer/gleason-score-isup-grade/">Gleason
+score</a>. In theory can range from 2-10, in practice ranges from
+6-10.</li>
+</ul>
+<ul>
+<li><code>pgg45</code>: Percent of cells with Gleason score 4 or 5.</li>
+</ul>
+<p>The “response” variable:</p>
+<ul>
+<li><code>lpsa</code>: log of the concentration of prostate-stimulating
+antigen.</li>
+</ul>
+<p>We are primarily interested in <code>lpsa</code>, which is used as a
+marker for prostate cancer. We would like to know whether and how it is
+related to the other variables we have available to us.</p>
 </div>
+<div id="first-we-look-at-the-data" class="slide section level2">
+<h1>First we look at the data</h1>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>prostate <span class="ot">=</span> <span class="fu">read.table</span>(<span class="st">&quot;../../datasets/prostate.txt&quot;</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(prostate)</span></code></pre></div>
+<pre><code>##      lcavol           lweight           age             lbph        
+##  Min.   :-1.3471   Min.   :2.375   Min.   :41.00   Min.   :-1.3863  
+##  1st Qu.: 0.5128   1st Qu.:3.376   1st Qu.:60.00   1st Qu.:-1.3863  
+##  Median : 1.4469   Median :3.623   Median :65.00   Median : 0.3001  
+##  Mean   : 1.3500   Mean   :3.629   Mean   :63.87   Mean   : 0.1004  
+##  3rd Qu.: 2.1270   3rd Qu.:3.876   3rd Qu.:68.00   3rd Qu.: 1.5581  
+##  Max.   : 3.8210   Max.   :4.780   Max.   :79.00   Max.   : 2.3263  
+##       svi              lcp             gleason          pgg45       
+##  Min.   :0.0000   Min.   :-1.3863   Min.   :6.000   Min.   :  0.00  
+##  1st Qu.:0.0000   1st Qu.:-1.3863   1st Qu.:6.000   1st Qu.:  0.00  
+##  Median :0.0000   Median :-0.7985   Median :7.000   Median : 15.00  
+##  Mean   :0.2165   Mean   :-0.1794   Mean   :6.753   Mean   : 24.38  
+##  3rd Qu.:0.0000   3rd Qu.: 1.1787   3rd Qu.:7.000   3rd Qu.: 40.00  
+##  Max.   :1.0000   Max.   : 2.9042   Max.   :9.000   Max.   :100.00  
+##       lpsa           train        
+##  Min.   :-0.4308   Mode :logical  
+##  1st Qu.: 1.7317   FALSE:30       
+##  Median : 2.5915   TRUE :67       
+##  Mean   : 2.4784                  
+##  3rd Qu.: 3.0564                  
+##  Max.   : 5.5829</code></pre>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>prostate <span class="ot">=</span> prostate <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="sc">-</span><span class="st">&quot;train&quot;</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggpairs</span>(prostate, <span class="at">progress =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
+<p><img src="lecture-14-fig/unnamed-chunk-1-1.png" /></p>
+<p>From the <code>ggpairs</code> plot, we see that the distributions of
+the variables are reasonably symmetrical, not that skewed, and that
+there is at least some relationship between most of the variables and
+<code>lpsa</code>.</p>
 </div>
 <div class="slide section level2">
 
-<p><img src="calibration.png" /></p>
+<p>And a side note: this data set has already been transformed for you.
+Many of the variables are logged versions of what were presumably the
+raw measurements. This is actually a really important step: models with
+the logged variables perform substantially better than models with the
+raw variables, as we can see if we un-transform:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>prostate_unlogged <span class="ot">=</span> prostate <span class="sc">%&gt;%</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">cavol =</span> <span class="fu">exp</span>(lcavol), <span class="at">weight =</span> <span class="fu">exp</span>(lweight), <span class="at">bph =</span> <span class="fu">exp</span>(lbph), <span class="at">cp =</span> <span class="fu">exp</span>(lcp)) <span class="sc">%&gt;%</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">-</span><span class="st">&quot;lcavol&quot;</span>, <span class="sc">-</span><span class="st">&quot;lweight&quot;</span>, <span class="sc">-</span><span class="st">&quot;lbph&quot;</span>, <span class="sc">-</span><span class="st">&quot;lcp&quot;</span>)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(<span class="fu">lm</span>(lpsa <span class="sc">~</span> ., <span class="at">data =</span> prostate))</span></code></pre></div>
+<pre><code>## 
+## Call:
+## lm(formula = lpsa ~ ., data = prostate)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -1.76644 -0.35510 -0.00328  0.38087  1.55770 
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  0.181561   1.320568   0.137  0.89096    
+## lcavol       0.564341   0.087833   6.425 6.55e-09 ***
+## lweight      0.622020   0.200897   3.096  0.00263 ** 
+## age         -0.021248   0.011084  -1.917  0.05848 .  
+## lbph         0.096713   0.057913   1.670  0.09848 .  
+## svi          0.761673   0.241176   3.158  0.00218 ** 
+## lcp         -0.106051   0.089868  -1.180  0.24115    
+## gleason      0.049228   0.155341   0.317  0.75207    
+## pgg45        0.004458   0.004365   1.021  0.31000    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.6995 on 88 degrees of freedom
+## Multiple R-squared:  0.6634, Adjusted R-squared:  0.6328 
+## F-statistic: 21.68 on 8 and 88 DF,  p-value: &lt; 2.2e-16</code></pre>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(<span class="fu">lm</span>(lpsa <span class="sc">~</span> ., <span class="at">data =</span> prostate_unlogged))</span></code></pre></div>
+<pre><code>## 
+## Call:
+## lm(formula = lpsa ~ ., data = prostate_unlogged)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -1.78876 -0.40705 -0.00634  0.46725  1.82792 
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  0.759219   1.210444   0.627  0.53214    
+## age         -0.008545   0.012087  -0.707  0.48144    
+## svi          0.769166   0.270646   2.842  0.00557 ** 
+## gleason      0.130183   0.166701   0.781  0.43694    
+## pgg45        0.005412   0.004567   1.185  0.23927    
+## cavol        0.073661   0.014479   5.087 2.03e-06 ***
+## weight       0.012511   0.005322   2.351  0.02095 *  
+## bph          0.056512   0.034547   1.636  0.10546    
+## cp          -0.040047   0.034216  -1.170  0.24499    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.764 on 88 degrees of freedom
+## Multiple R-squared:  0.5985, Adjusted R-squared:  0.562 
+## F-statistic:  16.4 on 8 and 88 DF,  p-value: 1.329e-14</code></pre>
 </div>
-<div id="a-standard-scatterplot-can-also-be-interpreted-as-a-biplot"
+<div class="slide section level2">
+
+<p>If we had started off with the raw data, we would have seen that we
+should log-transform some of the variables by looking at their marginal
+distributions: the variables that were transformed started off quite
+skewed, and the transformation got rid of the skewness.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggpairs</span>(prostate_unlogged, <span class="at">progress =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
+<p><img src="lecture-14-fig/unnamed-chunk-3-1.png" /></p>
+</div>
+<div id="linear-model-with-all-the-predictors"
 class="slide section level2">
-<h1>A standard scatterplot can also be interpreted as a biplot</h1>
-<p>Suppose we have a matrix <span class="math inline">\(\mathbf
-X\)</span> with <span class="math inline">\(n\)</span> rows and 2
-columns.</p>
-<p>We can write <span class="math display">\[
-\mathbf X = \mathbf X \begin{pmatrix} 1 &amp; 0 \\ 0 &amp; 1
-\end{pmatrix}
-\]</span> which is the form we need for a biplot.</p>
+<h1>Linear model with all the predictors</h1>
+<p>As a first step, we can fit a linear model with all the predictors
+and look at the results. We see that a lot of the coefficients are
+within the margin of error of zero, which suggests to us that a model
+with fewer predictors would do better.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>prostate_lm <span class="ot">=</span> <span class="fu">lm</span>(lpsa <span class="sc">~</span> ., <span class="at">data =</span> prostate)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>prostate_coefs <span class="ot">=</span> <span class="fu">tidy</span>(prostate_lm, <span class="at">conf.int =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(prostate_coefs[<span class="sc">-</span><span class="dv">1</span>, ], <span class="fu">aes</span>(<span class="at">x =</span> estimate, <span class="at">y =</span> term, <span class="at">xmin =</span> conf.low, <span class="at">xmax =</span> conf.high)) <span class="sc">+</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">geom_errorbarh</span>() <span class="sc">+</span> <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="dv">0</span>)</span></code></pre></div>
+<p><img src="lecture-14-fig/unnamed-chunk-4-1.png" /></p>
 </div>
-<div id="summing-up" class="slide section level2">
-<h1>Summing up</h1>
-<ul class="incremental">
-<li>Think of a biplot as a generalization of a scatterplot. In a
-scatterplot, you visualize two variables. Points represent observations,
-and you can read off the value each variable takes for each observation.
-In biplots, we can have as many variables as we want; we are no longer
-limited to two.</li>
+<div id="automatic-ways-of-choosing-subsets-of-variables"
+class="slide section level2">
+<h1>Automatic ways of choosing subsets of variables</h1>
+<p>There are a lot of ways of doing variable selection for linear
+models.</p>
+<ul>
+<li>Forward stepwise regression: Predictors are added to the model one
+at a time, stopping when adding a new predictor doesn’t seem to help.
+Computationally efficient.</li>
 </ul>
-<p>However….</p>
-<ul class="incremental">
-<li>We can’t always write our data matrix as the product of two matrices
-with only two columns. What do we do in the general case?</li>
+<ul>
+<li>Backward stepwise regression: Predictors are added to or subtracted
+from the model one at a time, stopping when subtracting an existing
+predictor seems to hurt too much (for backward stepwise). Works if you
+have fewer predictors than observations. Computationally efficient.</li>
+</ul>
+<ul>
+<li>Best subsets: For every potential number of predictors used in the
+model, find the combination of predictors that does the best.
+Computationally intensive.</li>
+</ul>
+<p>With eight predictors and a laptop, we can actually just look through
+all the subsets and see which model performs best.</p>
+<p>This is what the <code>regsubsets</code> in the package
+<code>leaps</code> does for you.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(leaps)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>prostate_best_subset <span class="ot">=</span> <span class="fu">regsubsets</span>(lpsa <span class="sc">~</span> ., <span class="at">data =</span> prostate)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(prostate_best_subset)<span class="sc">$</span>which</span></code></pre></div>
+<pre><code>##   (Intercept) lcavol lweight   age  lbph   svi   lcp gleason pgg45
+## 1        TRUE   TRUE   FALSE FALSE FALSE FALSE FALSE   FALSE FALSE
+## 2        TRUE   TRUE    TRUE FALSE FALSE FALSE FALSE   FALSE FALSE
+## 3        TRUE   TRUE    TRUE FALSE FALSE  TRUE FALSE   FALSE FALSE
+## 4        TRUE   TRUE    TRUE FALSE  TRUE  TRUE FALSE   FALSE FALSE
+## 5        TRUE   TRUE    TRUE  TRUE  TRUE  TRUE FALSE   FALSE FALSE
+## 6        TRUE   TRUE    TRUE  TRUE  TRUE  TRUE FALSE   FALSE  TRUE
+## 7        TRUE   TRUE    TRUE  TRUE  TRUE  TRUE  TRUE   FALSE  TRUE
+## 8        TRUE   TRUE    TRUE  TRUE  TRUE  TRUE  TRUE    TRUE  TRUE</code></pre>
+<p>This shows us that the best one-predictor model uses
+<code>lcavol</code>, the best two-predictor model uses
+<code>lcavol</code> and <code>lweight</code>, the best three-predictor
+model uses <code>lcavol</code>, <code>lweight</code>, and
+<code>svi</code>, and so on.</p>
+<p>We can use this set of models as guidance for what variables to
+include, and build up an interpretable model using some of the tools
+we’ve seen earlier in the course.</p>
+</div>
+<div class="slide section level2">
+
+<p><code>regsubsets</code> also does forward and backward stepwise
+regression. In this case they all give the same results.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>prostate_forward <span class="ot">=</span> <span class="fu">regsubsets</span>(lpsa <span class="sc">~</span> ., <span class="at">data =</span> prostate, <span class="at">method =</span> <span class="st">&quot;forward&quot;</span>)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(prostate_forward)<span class="sc">$</span>which</span></code></pre></div>
+<pre><code>##   (Intercept) lcavol lweight   age  lbph   svi   lcp gleason pgg45
+## 1        TRUE   TRUE   FALSE FALSE FALSE FALSE FALSE   FALSE FALSE
+## 2        TRUE   TRUE    TRUE FALSE FALSE FALSE FALSE   FALSE FALSE
+## 3        TRUE   TRUE    TRUE FALSE FALSE  TRUE FALSE   FALSE FALSE
+## 4        TRUE   TRUE    TRUE FALSE  TRUE  TRUE FALSE   FALSE FALSE
+## 5        TRUE   TRUE    TRUE  TRUE  TRUE  TRUE FALSE   FALSE FALSE
+## 6        TRUE   TRUE    TRUE  TRUE  TRUE  TRUE FALSE   FALSE  TRUE
+## 7        TRUE   TRUE    TRUE  TRUE  TRUE  TRUE  TRUE   FALSE  TRUE
+## 8        TRUE   TRUE    TRUE  TRUE  TRUE  TRUE  TRUE    TRUE  TRUE</code></pre>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>prostate_backward <span class="ot">=</span> <span class="fu">regsubsets</span>(lpsa <span class="sc">~</span> ., <span class="at">data =</span> prostate, <span class="at">method =</span> <span class="st">&quot;backward&quot;</span>)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(prostate_backward)<span class="sc">$</span>which</span></code></pre></div>
+<pre><code>##   (Intercept) lcavol lweight   age  lbph   svi   lcp gleason pgg45
+## 1        TRUE   TRUE   FALSE FALSE FALSE FALSE FALSE   FALSE FALSE
+## 2        TRUE   TRUE    TRUE FALSE FALSE FALSE FALSE   FALSE FALSE
+## 3        TRUE   TRUE    TRUE FALSE FALSE  TRUE FALSE   FALSE FALSE
+## 4        TRUE   TRUE    TRUE FALSE  TRUE  TRUE FALSE   FALSE FALSE
+## 5        TRUE   TRUE    TRUE  TRUE  TRUE  TRUE FALSE   FALSE FALSE
+## 6        TRUE   TRUE    TRUE  TRUE  TRUE  TRUE FALSE   FALSE  TRUE
+## 7        TRUE   TRUE    TRUE  TRUE  TRUE  TRUE  TRUE   FALSE  TRUE
+## 8        TRUE   TRUE    TRUE  TRUE  TRUE  TRUE  TRUE    TRUE  TRUE</code></pre>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">all</span>(<span class="fu">summary</span>(prostate_backward)<span class="sc">$</span>which <span class="sc">==</span> <span class="fu">summary</span>(prostate_forward)<span class="sc">$</span>which)</span></code></pre></div>
+<pre><code>## [1] TRUE</code></pre>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">all</span>(<span class="fu">summary</span>(prostate_backward)<span class="sc">$</span>which <span class="sc">==</span> <span class="fu">summary</span>(prostate_best_subset)<span class="sc">$</span>which)</span></code></pre></div>
+<pre><code>## [1] TRUE</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>We start off looking at the best one-predictor model, with
+<code>lcavol</code> predicting <code>lpsa</code>.</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(prostate, <span class="fu">aes</span>(<span class="at">x =</span> lcavol, <span class="at">y =</span> lpsa)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">geom_smooth</span>()</span></code></pre></div>
+<pre><code>## `geom_smooth()` using method = &#39;loess&#39; and formula = &#39;y ~ x&#39;</code></pre>
+<p><img src="lecture-14-fig/unnamed-chunk-7-1.png" /></p>
+<p>We see that the relationship is pretty close to linear (a line would
+go through the entire confidence band of the smoother), and so we’re ok
+with using a linear function of <code>lcavol</code> to predict
+<code>lpsa</code>.</p>
+<p>If there had been a major non-linearity here, we would have wanted to
+ditch the linear modeling approach and do something non-parametric,
+maybe loess.</p>
+</div>
+<div class="slide section level2">
+
+<p>Then we can move to the two-predictor model, and see what the
+relationship between <code>lcavol</code>, <code>lweight</code>, and
+<code>lpsa</code> looks like.</p>
+<p>We can make a coplot to examine the relationship between
+<code>lpsa</code> and <code>lcavol</code>, with <code>lweight</code>as
+the given variable</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(prostate, <span class="fu">aes</span>(<span class="at">x =</span> lcavol, <span class="at">y =</span> lpsa)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">geom_smooth</span>(<span class="at">span =</span> <span class="dv">1</span>) <span class="sc">+</span> </span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">facet_grid</span>(<span class="sc">~</span><span class="fu">cut_number</span>(lweight, <span class="at">n =</span> <span class="dv">3</span>))</span></code></pre></div>
+<pre><code>## `geom_smooth()` using method = &#39;loess&#39; and formula = &#39;y ~ x&#39;</code></pre>
+<p><img src="lecture-14-fig/unnamed-chunk-8-1.png" /></p>
+<p>Here it seems like there is some non-linearity, but only for the
+observations with a high value of <code>lweight</code>.</p>
+<p>If we had a lot more observations, this might prompt us to move to
+loess, but since the non-linearity is based on just a few points, we
+want to see first whether the non-linearity shows up in other graphs as
+well.</p>
+</div>
+<div class="slide section level2">
+
+<p>The best three-predictor model identified by <code>leaps</code>
+included <code>svi</code> in addition to <code>lcavol</code> and
+<code>lweight</code>, so we next look at those four variables
+together.</p>
+<p><code>svi</code> is binary and there are only 21 cases where
+<code>svi</code> is equal to 1, we can’t make a lot of facets and we
+don’t trust curves that much.</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(prostate<span class="sc">$</span>svi)</span></code></pre></div>
+<pre><code>## 
+##  0  1 
+## 76 21</code></pre>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>prostate<span class="sc">$</span>svi <span class="ot">=</span> <span class="fu">recode</span>(prostate<span class="sc">$</span>svi, <span class="st">`</span><span class="at">1</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Yes&quot;</span>, <span class="st">`</span><span class="at">0</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;No&quot;</span>)</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(prostate, <span class="fu">aes</span>(<span class="at">x =</span> lcavol, <span class="at">y =</span> lpsa, <span class="at">group =</span> svi, <span class="at">color =</span> svi)) <span class="sc">+</span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="at">se =</span> <span class="cn">FALSE</span>) <span class="sc">+</span> <span class="fu">facet_wrap</span>(<span class="sc">~</span> <span class="fu">cut_number</span>(lweight, <span class="at">n =</span> <span class="dv">2</span>))</span></code></pre></div>
+<pre><code>## `geom_smooth()` using formula = &#39;y ~ x&#39;</code></pre>
+<p><img src="lecture-14-fig/unnamed-chunk-9-1.png" /></p>
+<p>The different slopes suggest an interaction, but again, we don’t have
+that much data.</p>
+</div>
+<div class="slide section level2">
+
+<p>Next we try looking at the predictors from the four-predictor model.
+This is pushing the limits of the number of variables we can look at all
+at once, but we will try.</p>
+<p>We can look at the relationship between <code>lpsa</code>,
+<code>lcavol</code>, and <code>svi</code>, with <code>lweight</code> and
+<code>lbph</code> as the given variables.</p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(prostate, <span class="fu">aes</span>(<span class="at">x =</span> lcavol, <span class="at">y =</span> lpsa, <span class="at">group =</span> svi, <span class="at">color =</span> svi)) <span class="sc">+</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="at">se =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>        <span class="fu">facet_grid</span>(<span class="fu">cut_number</span>(lweight, <span class="at">n =</span> <span class="dv">2</span>) <span class="sc">~</span> <span class="fu">cut</span>(lbph, <span class="at">breaks =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">2</span>, <span class="sc">-</span><span class="dv">1</span>, <span class="dv">3</span>)))</span></code></pre></div>
+<pre><code>## `geom_smooth()` using formula = &#39;y ~ x&#39;</code></pre>
+<p><img src="lecture-14-fig/unnamed-chunk-10-1.png" /></p>
+<p>Based on this visualization, we might not be confident about an
+interaction: the blue lines vary in slope, but there’s based on very
+small samples. The red lines have different heights but are similar in
+slope.</p>
+</div>
+<div class="slide section level2">
+
+<p>Automatic ways of choosing model sizes:</p>
+<ul>
+<li><a
+href="https://en.wikipedia.org/wiki/Akaike_information_criterion">AIC</a>:
+<span class="math inline">\(2k - 2 \log(\hat L)\)</span>, where <span
+class="math inline">\(k\)</span> is the number of parameters in the
+model and <span class="math inline">\(\hat L\)</span> is the likelihood
+at the fitted parameter values.</li>
+</ul>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/Mallows%27s_Cp">Mallows’
+Cp</a>: Equivalent to AIC for linear regression.</li>
+</ul>
+<ul>
+<li><a
+href="https://en.wikipedia.org/wiki/Bayesian_information_criterion">BIC</a>:
+<span class="math inline">\(k \log n - 2 \log(\hat L)\)</span>, where
+<span class="math inline">\(k\)</span> is the number of parameters,
+<span class="math inline">\(n\)</span> is the number of observations,
+and <span class="math inline">\(\hat L\)</span> is the likelihood at the
+fitted parameter values.</li>
+</ul>
+<p>With each of these, we choose the model with the lowest value of the
+selection criterion.</p>
+</div>
+<div class="slide section level2">
+
+<p>In EDA we’re not always required to find a “best” model, and even if
+we were we can decide on what best means subjectively.</p>
+<p>If you wanted to fit a linear model with <code>lcavol</code>,
+<code>lweight</code>, and <code>svi</code> as predictors plus
+interactions, you’re free to do so and then call that “best” because of
+the complexity you can get out of a relatively small number of
+variables.</p>
+<p>We can also check what the model selection criteria tell us about how
+many variables to use:</p>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>cp_df <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="at">value  =</span> <span class="fu">summary</span>(prostate_best_subset)<span class="sc">$</span>cp,</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>                   <span class="at">n_params =</span> <span class="fu">seq_along</span>(<span class="fu">summary</span>(prostate_best_subset)<span class="sc">$</span>cp),</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>                   <span class="at">type =</span> <span class="st">&quot;Cp&quot;</span>)</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>bic_df <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="at">value =</span> <span class="fu">summary</span>(prostate_best_subset)<span class="sc">$</span>bic,</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>                    <span class="at">n_params =</span> <span class="fu">seq_along</span>(<span class="fu">summary</span>(prostate_best_subset)<span class="sc">$</span>bic),</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>                    <span class="at">type =</span> <span class="st">&quot;BIC&quot;</span>)</span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>model_selection_criterion_df <span class="ot">=</span> <span class="fu">rbind</span>(cp_df, bic_df)</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(model_selection_criterion_df, <span class="fu">aes</span>(<span class="at">x =</span> n_params, <span class="at">y =</span> value)) <span class="sc">+</span></span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">facet_wrap</span>(<span class="sc">~</span> type, <span class="at">scales =</span> <span class="st">&quot;free_y&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-14-fig/unnamed-chunk-11-1.png" /></p>
+<p>Even though the lowest value of Cp is for 5 predictors (intercept + 4
+variables), the Cp value for 3 predictors is very close to the value for
+5 predictors and BIC has a strong minimum at 5 predictors. The two plots
+suggest that if we don’t believe we need any interactions, we should use
+a model with an intercept and two predictors.</p>
+</div>
+<div id="final-model" class="slide section level2">
+<h1>Final model</h1>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>lm_final <span class="ot">=</span> <span class="fu">lm</span>(lpsa <span class="sc">~</span> lcavol <span class="sc">+</span> lweight, <span class="at">data =</span> prostate)</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>final_fits <span class="ot">=</span> <span class="fu">augment</span>(lm_final)</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>prostate_with_lweight_bins <span class="ot">=</span> prostate <span class="sc">%&gt;%</span></span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">lweight_bins =</span> <span class="fu">cut_number</span>(lweight, <span class="at">n =</span> <span class="dv">3</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">separate</span>(lweight_bins, <span class="at">into =</span> <span class="fu">c</span>(<span class="cn">NA</span>, <span class="st">&quot;lo&quot;</span>, <span class="st">&quot;hi&quot;</span>, <span class="cn">NA</span>), <span class="at">remove =</span> <span class="cn">FALSE</span>, <span class="at">sep =</span> <span class="st">&quot;</span><span class="sc">\\</span><span class="st">[|</span><span class="sc">\\</span><span class="st">(|</span><span class="sc">\\</span><span class="st">)|</span><span class="sc">\\</span><span class="st">]|,&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">bin_mean =</span> (<span class="fu">as.numeric</span>(lo) <span class="sc">+</span> <span class="fu">as.numeric</span>(hi)) <span class="sc">/</span> <span class="dv">2</span>)</span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a>prostate_grid_final <span class="ot">=</span> <span class="fu">expand.grid</span>(<span class="at">lweight =</span> <span class="fu">unique</span>(prostate_with_lweight_bins<span class="sc">$</span>bin_mean),</span>
+<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a>                                  <span class="at">lcavol =</span> <span class="fu">quantile</span>(prostate<span class="sc">$</span>lcavol)) <span class="sc">%&gt;%</span> <span class="fu">data.frame</span>()</span>
+<span id="cb31-11"><a href="#cb31-11" aria-hidden="true" tabindex="-1"></a>prostate_fits_on_grid <span class="ot">=</span> <span class="fu">augment</span>(lm_final, <span class="at">newdata =</span> prostate_grid_final)</span>
+<span id="cb31-12"><a href="#cb31-12" aria-hidden="true" tabindex="-1"></a>prostate_fits_on_grid <span class="ot">=</span> <span class="fu">merge</span>(prostate_fits_on_grid,</span>
+<span id="cb31-13"><a href="#cb31-13" aria-hidden="true" tabindex="-1"></a>                             <span class="fu">unique</span>(prostate_with_lweight_bins[,<span class="fu">c</span>(<span class="st">&quot;lweight_bins&quot;</span>, <span class="st">&quot;bin_mean&quot;</span>)]),</span>
+<span id="cb31-14"><a href="#cb31-14" aria-hidden="true" tabindex="-1"></a>                             <span class="at">by.x =</span> <span class="st">&quot;lweight&quot;</span>, <span class="at">by.y =</span> <span class="st">&quot;bin_mean&quot;</span>)</span>
+<span id="cb31-15"><a href="#cb31-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-16"><a href="#cb31-16" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(prostate_with_lweight_bins, <span class="fu">aes</span>(<span class="at">x =</span> lcavol, <span class="at">y =</span> lpsa, <span class="at">color =</span> lweight_bins)) <span class="sc">+</span></span>
+<span id="cb31-17"><a href="#cb31-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb31-18"><a href="#cb31-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> .fitted), <span class="at">data =</span> prostate_fits_on_grid) <span class="sc">+</span></span>
+<span id="cb31-19"><a href="#cb31-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_x_continuous</span>(<span class="st">&quot;Log Cancer Volume&quot;</span>) <span class="sc">+</span> <span class="fu">scale_y_continuous</span>(<span class="st">&quot;Log PSA&quot;</span>) <span class="sc">+</span></span>
+<span id="cb31-20"><a href="#cb31-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_color_discrete</span>(<span class="st">&quot;Log Weight&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-14-fig/unnamed-chunk-12-1.png" /></p>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(prostate_with_lweight_bins, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">exp</span>(lcavol), <span class="at">y =</span> <span class="fu">exp</span>(lpsa), <span class="at">color =</span> lweight_bins)) <span class="sc">+</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> <span class="fu">exp</span>(.fitted)), <span class="at">data =</span> prostate_fits_on_grid) <span class="sc">+</span></span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_x_continuous</span>(<span class="st">&quot;Cancer Volume&quot;</span>) <span class="sc">+</span> <span class="fu">scale_y_continuous</span>(<span class="st">&quot;PSA&quot;</span>) <span class="sc">+</span> <span class="fu">scale_color_discrete</span>(<span class="st">&quot;Log Weight&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-14-fig/unnamed-chunk-12-2.png" /></p>
+</div>
+<div id="overall" class="slide section level2">
+<h1>Overall</h1>
+<ul>
+<li>There are a couple of automatic ways of choosing the best subsets of
+predictors and the best model sizes.</li>
+</ul>
+<ul>
+<li>These can be used automatically, or they can be used to guide the
+order in which we investigate whether and how to include variables.</li>
+</ul>
+<ul>
+<li>Transformations of the predictors are very important.</li>
+</ul>
+<ul>
+<li>Best subsets/forward stepwise/backward stepwise don’t include
+variables in the same order as the marginal correlations between the
+predictors and response. Don’t just rely on correlations to decide on
+which variables to include!</li>
 </ul>
 </div>
 </body>

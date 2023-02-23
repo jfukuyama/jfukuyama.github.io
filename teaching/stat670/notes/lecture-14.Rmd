@@ -1,4 +1,4 @@
-% Stat 470/670 Lecture 14: Background for Hypervariate Data
+% Stat 470/670 Lecture 14: Model-building with a moderate number of variables
 % Julia Fukuyama
 
 ```{r setup, echo = FALSE, message = FALSE}
@@ -6,255 +6,301 @@ library(knitr)
 opts_chunk$set(fig.cap="", fig.width = 5, fig.height = 3, dpi=175, fig.path="lecture-14-fig/", warning = FALSE)
 library(ggplot2)
 library(ggrepel)
+library(magrittr)
+library(tidyverse)
+library(broom)
+library(GGally)
 set.seed(0)
 ```
 
-## Today
+## Model building
 
-- Linear algebra review
+> - Over the next couple of weeks we'll get back to building models, and we'll look at models for different kinds of responses (binary, count, categorical).
 
-- Introduce biplots
+> - Today we'll look at model-building with a moderate number of variables. Today will be linear models, but the ideas carry over to logistic regression and the generalized linear models we'll talk about later.
 
-Reading: Greenacre, Biplots in Practice, Chapter 1. The [book website](http://www.multivariatestatistics.org/biplots.html) contains links to all the chapters, and chapter 1 is linked to on the course website for today's lecture. Also [here](http://www.fbbva.es/TLFU/dat/greenacre_c01_2010.pdf).
+>  - Note on terminology: for statisticians, "linear model" means that your response variable follows a normal distribution. "Generalized linear models" will be models for which the response variable follows a different sort of distribution.
 
-## Vectors and Matrices
+## Data: Prostate Cancer
 
-- A _vector_ in $\mathbb R^n$ is given by a set of $n$ coordinates. We will write a vector $\mathbf x \in \mathbb R^n$ as $(x_1, x_2, \ldots, x_n)$.
+We have a data set containing clinical data on patients who were about
+to receive a radical prostatectomy. The relevant variables are:
 
-. . .
+Variables about sizes:
 
-- We think of vectors in $\mathbb R^2$ as points in the plane, vectors in $\mathbb R^3$ as points in 3-dimensional space, and vectors in $\mathbb R^n$ as points in $n$-dimensional space.
+> - `lcavol`: log cancer volume
 
-. . .
+> - `lweight`: log prostate weight
 
-- A _matrix_ in $\mathbb R^{n \times p}$ consists of $n$ rows and $p$ columns. We will write such a matrix as
-$$
-\mathbf X = \begin{pmatrix}
-\mathbf X_{11} & \mathbf X_{12} & \cdots & \mathbf X_{1p} \\
-\mathbf X_{21} & \mathbf X_{22} & \cdots & \mathbf X_{2p} \\
-\vdots & \vdots & \ddots & \vdots \\
-\mathbf X_{n1} & \mathbf X_{n2} & \cdots & \mathbf X_{np}
-\end{pmatrix}
-$$
-so that $\mathbf X_{ij}$ represents the element in the $i$th row and $j$th column of $\mathbf X$.
+> - `lbph`: log of the amount of benign prostatic hyperplasia
 
-. . .
+Variables about the individual:
 
-- A _column vector_ is a vector written as an $n \times 1$ matrix, and a _row vector_ is a vector written as a $1 \times n$ matrix.
+> - `age`: Age in years
 
+Variables measured by the pathologist:
 
-## Scalar products
+> - `svi`: Seminal vesicle invasion, a measure of how advanced the cancer is.
 
-Suppose $\mathbf x$ and $\mathbf y$ are vectors in $\mathbb R^n$, then the scalar product of $\mathbf x$ and $\mathbf y$ is
-$$
-\mathbf x \cdot \mathbf y = \sum_{i=1}^n x_i y_i
-$$
+> - `lcp`: log of capsular penetration
 
-## Norm of a vector
+> - `gleason`: A numeric vector giving the [Gleason score](https://www.pcf.org/about-prostate-cancer/diagnosis-staging-prostate-cancer/gleason-score-isup-grade/). In theory can range from 2-10, in practice ranges from 6-10.
 
-Suppose $\mathbf x$ is a vector in $\mathbb R^n$. The _norm_ of $\mathbf x$ is defined as
-$$
-\| \mathbf x\| = \sqrt{\sum_{i=1}^n x_i^2}
-$$
+> - `pgg45`: Percent of cells with Gleason score 4 or 5.
 
-The norm is usually interpreted as a measure of size or length.
+The "response" variable:
 
-## Vector operation properties
+> - `lpsa`: log of the concentration of prostate-stimulating antigen.
 
-- $\frac{\mathbf x \cdot \mathbf y }{ \|\mathbf x\| \|\mathbf y\|} = \cos(\theta)$, where $\theta$ is the angle between $\mathbf x$ and $\mathbf y$.
-
-- $\mathbf x \cdot \mathbf y = 0$ means that $\mathbf x$ and $\mathbf y$ are orthogonal, i.e. that the angle between them is 90 degrees.
-
-- If $\|\mathbf x\| = 1$ and $\|\mathbf y\| = 1$ (referred to as _unit vectors_), then $\mathbf x \cdot \mathbf y \in [-1, 1]$.
-
-- If $\mathbf x$ and $\mathbf y$ are unit vectors, then $\mathbf x \cdot \mathbf y = 1$ implies the angle between the two vectors is $0$, and $\mathbf x \cdot \mathbf y = -1$ implies that the angle between the two vectors is $180$ degrees. This property motivates the interpretation of the scalar product as a measure of similarity.
+We are primarily interested in `lpsa`, which is used as a marker for prostate cancer. We would like to know whether and how it is related to the other variables we have available to us.
 
 
-## Geometry: Projection of one vector onto another
+## First we look at the data
 
-![](projection.png)
+```{r, fig.width = 8, fig.height = 5}
+prostate = read.table("../../datasets/prostate.txt")
+summary(prostate)
+prostate = prostate %>% select(-"train")
+ggpairs(prostate, progress = FALSE)
+```
 
-The length of the projection of $\mathbf x$ onto $\mathbf y$ is $\|\mathbf x \| \cos(\theta) = (\mathbf x \cdot \mathbf y) / \|\mathbf y\|$.
+From the `ggpairs` plot, we see that the distributions of the
+variables are reasonably symmetrical, not that skewed, and that there
+is at least some relationship between most of the variables and `lpsa`.
 
-. . .
-
-More useful form:
-$$
-\mathbf x \cdot \mathbf y = (\text{length of projection of $\mathbf x$ onto $\mathbf y$})\|\mathbf y\|
-$$
-
-This result is important for visualization because we can "read off" scalar products as projections.
+-----
 
 
-## Matrix operations: Multiplication
-
-Suppose $\mathbf X \in \mathbb R^{a \times b}$ and $\mathbf Y \in \mathbb R^{b \times c}$. Then the matrix product of $\mathbf X$ and $\mathbf Y$ is a matrix $\mathbf S \in \mathbb R^{a \times c}$, where the $i, j$ element of $\mathbf S$ is
-$$
-\mathbf S_{ij} = \sum_{k=1}^ b \mathbf X_{i k} \mathbf Y_{k j}
-$$
-
-. . .
-
-Note: For the matrix multiplication operation to be defined for the matrices $\mathbf X$ and $\mathbf Y$, the number of columns of $\mathbf X$ must be equal to the number of rows of $\mathbf Y$.
-
-## Matrix operations: Transpose
-
-The matrix transpose operation flips the row and column indices. That is, $(\mathbf X^T)_{ij} = \mathbf X_{ji}$.
-
-## Matrix multiplication written as scalar products
-
-Note that we can write the matrix multiplication operation in terms of scalar products.
-
-As before, suppose we have $\mathbf X \in \mathbb R^{a \times b}$ and $\mathbf Y \in \mathbb R^{b \times c}$.
-
-Let $\mathbf x_1, \ldots, \mathbf x_a$ be column vectors containing the rows of $\mathbf X$, so that
-$$
-\mathbf X = \begin{pmatrix} \mathbf x_1^T \\ \vdots \\ \mathbf x_a^T \end{pmatrix}
-$$
-and let $\mathbf y_1, \ldots, \mathbf y_c$ be column vectors containing the columns of $\mathbf Y$, so that
-$$
-\mathbf Y = \begin{pmatrix} \mathbf y_1 & \cdots & \mathbf y_c \end{pmatrix}
-$$
-
-Then if $\mathbf S = \mathbf X \mathbf Y$, $\mathbf S_{ij} = \mathbf x_i \cdot \mathbf y_j$.
-
-$$
-\mathbf S = \begin{pmatrix}
-\mathbf x_1 \cdot \mathbf y_1 & \mathbf x_1 \cdot \mathbf y_2 & \cdots & \mathbf x_1 \cdot \mathbf y_c\\
-\mathbf x_2 \cdot \mathbf y_1& \mathbf x_2 \cdot \mathbf y_2 & \cdots & \mathbf x_2 \cdot \mathbf y_c\\
-\vdots & \vdots & \ddots & \vdots \\
-\mathbf x_a \cdot \mathbf y_1& \mathbf x_a \cdot \mathbf y_2& \cdots & \mathbf x_a \cdot \mathbf y_c
-\end{pmatrix}
-$$
-
-## Biplot: the main idea
-
-Suppose we have a matrix $\mathbf S \in \mathbb R^{n \times p}$.
-
-The rows of $\mathbf S$ correspond to observations, and the columns of $\mathbf S$ correspond to the variables measured.
-
-A biplot is a visualization of the matrix $\mathbf S$ that will allow us to read off
-
-- The values of $\mathbf S$,
-
-- (In some cases) the similarities between the variables,
-
-- (In most cases) the similarities between the observations.
-
-To do this, we combine our results about matrix multiplication as scalar products with our results describing scalar products in terms of projections of one variable onto another.
-
-## Biplot definition
-
-Suppose we have a matrix $\mathbf S \in \mathbb R^{n \times p}$. Further suppose that we can write $\mathbf S$ as
-$$
-\mathbf S = \mathbf X \mathbf Y^T,
-$$
-where $\mathbf X \in \mathbb R^{n \times 2}$ and $\mathbf Y \in \mathbb R^{p \times 2}$.
-
-$\mathbf S$ is the _target matrix_, and $\mathbf X$ and $\mathbf Y$ are the _left_ and _right_ matrices, respectively.
-
-In a biplot, we plot the rows of $\mathbf X$ and the rows of $\mathbf Y$.
-
-The convention is that
-
-- Rows of $\mathbf X$ are plotted as points, and are referred to as _biplot points_.
-
-- Rows of $\mathbf Y$ are plotted as arrows, and are referred to as _biplot vectors_.
-
-## An example
+And a side note: this data set has already been transformed for
+you. Many of the variables are logged versions of what were presumably
+the raw measurements. This is actually a really important step: models
+with the logged variables perform substantially better than models
+with the raw variables, as we can see if we un-transform:
 
 ```{r}
-X = matrix(c(2,2, 1,2, -1,1, 1,-1, 2,-2), ncol = 2, byrow = TRUE)
-Y = matrix(c(3,1, 2,-1, -1,2, -2,-1), ncol = 2, byrow = TRUE)
-## %*% is the matrix multiplication function in R
-S = X %*% t(Y)
-X
-Y
-S
+prostate_unlogged = prostate %>%
+    mutate(cavol = exp(lcavol), weight = exp(lweight), bph = exp(lbph), cp = exp(lcp)) %>%
+    select(-"lcavol", -"lweight", -"lbph", -"lcp")
+summary(lm(lpsa ~ ., data = prostate))
+summary(lm(lpsa ~ ., data = prostate_unlogged))
 ```
-
-
-## A toy biplot
-
-The arrows are the biplot vectors, or the rows of $\mathbf Y$.
-
-The points are the byplot points, or the rows of $\mathbf X$.
-
-```{r, echo=FALSE}
-Xplot = data.frame(X)
-Xplot$name = paste("x", 1:nrow(X), sep = "")
-Yplot = data.frame(Y)
-Yplot$name = paste("y", 1:nrow(Y), sep = "")
-ggplot() + geom_text_repel(aes(x = X1, y = X2, label = name), data = Xplot) +
-    geom_point(aes(x = X1, y = X2), data = Xplot) +
-    geom_text_repel(aes(x = X1, y = X2, label = name), data = Yplot) +
-    geom_segment(aes(xend = X1, yend = X2, x = 0, y = 0), data = Yplot, arrow = arrow(length = unit(0.03, "npc"))) +
-        coord_fixed() + xlab("") + ylab("")
-```
-
-How do we use this plot?
 
 -----
 
-## We can read off the elements of the original data matrix
+If we had started off with the raw data, we would have seen that we
+should log-transform some of the variables by looking at their
+marginal distributions: the variables that were transformed started
+off quite skewed, and the transformation got rid of the skewness.
 
-Remember that we can write S as a matrix of scalar products.
-$$
-\mathbf S = \mathbf X \mathbf Y^T =
-\begin{pmatrix}
-\mathbf x_1 \cdot \mathbf y_1 & \mathbf x_1 \cdot \mathbf y_2 & \cdots & \mathbf x_1 \cdot \mathbf y_p \\
-\mathbf x_2 \cdot \mathbf y_1 & \mathbf x_2 \cdot \mathbf y_2 & \cdots & \mathbf x_2 \cdot \mathbf y_p \\
-\vdots & \vdots & \ddots & \vdots\\
-\mathbf x_n \cdot \mathbf y_1 & \mathbf x_n \cdot \mathbf y_2 & \cdots & \mathbf x_n \cdot \mathbf y_p
-\end{pmatrix}
-$$
-where $\mathbf x_i$ are vectors denoting the rows of $\mathbf X$ and $\mathbf y_i$ are vectors denoting the rows of $\mathbf Y$
+```{r, fig.width = 8, fig.height = 5}
+ggpairs(prostate_unlogged, progress = FALSE)
+```
 
-What this means is that we can reconstruct any element of S by looking at the scalar product between the biplot point and the biplot vector corresponding to that element.
+## Linear model with all the predictors
 
-Remember that the scalar product between $\mathbf x_i$ and $\mathbf y_j$ is the length of the projection of $\mathbf x_i$ onto $\mathbf y_j$ times the length of $\mathbf y_j$.
+As a first step, we can fit a linear model with all the predictors and
+look at the results. We see that a lot of the coefficients are within
+the margin of error of zero, which suggests to us that a model with
+fewer predictors would do better.
 
-## Biplot calibration
+```{r}
+prostate_lm = lm(lpsa ~ ., data = prostate)
+prostate_coefs = tidy(prostate_lm, conf.int = TRUE)
+ggplot(prostate_coefs[-1, ], aes(x = estimate, y = term, xmin = conf.low, xmax = conf.high)) +
+    geom_point() + geom_errorbarh() + geom_vline(xintercept = 0)
+```
 
-To read off absolute values, not just relative values, we need to calibrate the axes.
 
-Suppose we are interested in the value in the target matrix for observation $i$, variable $j$.
+## Automatic ways of choosing subsets of variables
 
-Recall that
-$$
-\text{length of the projection of point $\mathbf x_i$ onto vector $\mathbf y_j$} = (\mathbf x_i \cdot \mathbf y_j) /\|\mathbf y_j\|,
-$$
-and the value of the target matrix is
-$$
-\mathbf S_{ij} = \mathbf x_i \cdot \mathbf y_j
-$$
+There are a lot of ways of doing variable selection for linear models.
 
-. . .
+> - Forward stepwise regression: Predictors are added to the model one at a time, stopping when adding a new predictor doesn't seem to help. Computationally efficient.
 
-Therefore, if the value in the target matrix is $1$, the length of the projection of $\mathbf x_i$ onto $\mathbf y_j$ is $1 / \|\mathbf y\|$. This is the length of one unit along the biplot axis, and it tells us that
+> - Backward stepwise regression: Predictors are added to or subtracted from the model one at a time, stopping when  subtracting an existing predictor seems to hurt too much (for backward stepwise). Works if you have fewer predictors than observations. Computationally efficient.
 
-- If the biplot vector is long, the intervals between units on the biplot vector are short (and so values change quickly as we move along that axis).
+> - Best subsets: For every potential number of predictors used in the model, find the combination of predictors that does the best. Computationally intensive.
 
-- If the biplot vector is short, the intervals between units on the biplot vector are long (and so values change slowly as we move along that axis).
+With eight predictors and a laptop, we can actually just look through all the subsets and see which model performs best.
+
+This is what the `regsubsets` in the package `leaps` does for you.
+
+```{r}
+library(leaps)
+prostate_best_subset = regsubsets(lpsa ~ ., data = prostate)
+summary(prostate_best_subset)$which
+```
+
+This shows us that the best one-predictor model uses `lcavol`, the
+best two-predictor model uses `lcavol` and `lweight`, the best
+three-predictor model uses `lcavol`, `lweight`, and `svi`, and so on.
+
+We can use this set of models as guidance for what variables to
+include, and build up an interpretable model using some of the tools
+we've seen earlier in the course.
 
 -----
 
-![](calibration.png)
+`regsubsets` also does forward and backward stepwise regression. In this case they all give the same results.
 
-## A standard scatterplot can also be interpreted as a biplot
+```{r}
+prostate_forward = regsubsets(lpsa ~ ., data = prostate, method = "forward")
+summary(prostate_forward)$which
 
-Suppose we have a matrix $\mathbf X$ with $n$ rows and 2 columns.
+prostate_backward = regsubsets(lpsa ~ ., data = prostate, method = "backward")
+summary(prostate_backward)$which
 
-We can write
-$$
-\mathbf X = \mathbf X \begin{pmatrix} 1 & 0 \\ 0 & 1 \end{pmatrix}
-$$
-which is the form we need for a biplot.
+all(summary(prostate_backward)$which == summary(prostate_forward)$which)
+all(summary(prostate_backward)$which == summary(prostate_best_subset)$which)
+```
 
-## Summing up
 
-- Think of a biplot as a generalization of a scatterplot. In a scatterplot, you visualize two variables. Points represent observations, and you can read off the value each variable takes for each observation. In biplots, we can have as many variables as we want; we are no longer limited to two.
+-----
 
-However....
+We start off looking at the best one-predictor model, with `lcavol`
+predicting `lpsa`.
 
-- We can't always write our data matrix as the product of two matrices with only two columns. What do we do in the general case?
+```{r}
+ggplot(prostate, aes(x = lcavol, y = lpsa)) + geom_point() + geom_smooth()
+```
+
+We see that the relationship is pretty close to linear (a line would
+go through the entire confidence band of the smoother), and so we're
+ok with using a linear function of `lcavol` to predict `lpsa`.
+
+If there had been a major non-linearity here, we would have wanted to
+ditch the linear modeling approach and do something non-parametric,
+maybe loess.
+
+-----
+
+Then we can move to the two-predictor model, and see what the
+relationship between `lcavol`, `lweight`, and `lpsa` looks like.
+
+We can make a coplot to examine the relationship between `lpsa` and
+`lcavol`, with `lweight`as the given variable
+
+```{r}
+ggplot(prostate, aes(x = lcavol, y = lpsa)) + geom_point() + geom_smooth(span = 1) + 
+    facet_grid(~cut_number(lweight, n = 3))
+```
+
+Here it seems like there is some non-linearity, but only for the
+observations with a high value of `lweight`.
+
+If we had a lot more observations, this might prompt us to move to
+loess, but since the non-linearity is based on just a few points, we
+want to see first whether the non-linearity shows up in other graphs
+as well.
+
+-----
+
+The best three-predictor model identified by `leaps` included `svi` in
+addition to `lcavol` and `lweight`, so we next look at those four
+variables together.
+
+`svi` is binary and there are only 21 cases where `svi` is equal to 1,
+we can't make a lot of facets and we don't trust curves that much.
+
+```{r}
+table(prostate$svi)
+prostate$svi = recode(prostate$svi, `1` = "Yes", `0` = "No")
+ggplot(prostate, aes(x = lcavol, y = lpsa, group = svi, color = svi)) +
+    geom_point() + 
+    geom_smooth(method = "lm", se = FALSE) + facet_wrap(~ cut_number(lweight, n = 2))
+```
+
+The different slopes suggest an interaction, but again, we don't have
+that much data.
+
+-----
+
+Next we try looking at the predictors from the four-predictor
+model. This is pushing the limits of the number of variables we can
+look at all at once, but we will try.
+
+We can look at the relationship between `lpsa`, `lcavol`, and `svi`,
+with `lweight` and `lbph` as the given variables.
+
+```{r}
+ggplot(prostate, aes(x = lcavol, y = lpsa, group = svi, color = svi)) +
+    geom_point() + 
+    geom_smooth(method = "lm", se = FALSE) +
+        facet_grid(cut_number(lweight, n = 2) ~ cut(lbph, breaks = c(-2, -1, 3)))
+```
+
+Based on this visualization, we might not be confident about an interaction: the blue lines vary in slope, but there’s based on very small samples. The red lines have different heights but are similar in slope.
+
+-----
+
+Automatic ways of choosing model sizes:
+
+> - [AIC](https://en.wikipedia.org/wiki/Akaike_information_criterion): $2k - 2 \log(\hat L)$, where $k$ is the number of parameters in the model and $\hat L$ is the likelihood at the fitted parameter values.
+
+> - [Mallows' Cp](https://en.wikipedia.org/wiki/Mallows%27s_Cp): Equivalent to AIC for linear regression.
+
+> - [BIC](https://en.wikipedia.org/wiki/Bayesian_information_criterion): $k \log n - 2 \log(\hat L)$, where $k$ is the number of parameters, $n$ is the number of observations, and $\hat L$ is the likelihood at the fitted parameter values.
+
+With each of these, we choose the model with the lowest value of the selection criterion.
+
+-----
+
+In EDA we’re not always required to find a "best" model, and even if we were we can decide on what best means subjectively.
+
+If you wanted to fit a linear model with `lcavol`, `lweight`, and `svi` as predictors plus interactions, you’re free to do so and then call that "best" because of the complexity you can get out of a relatively small number of variables.
+
+We can also check what the model selection criteria tell us about how many variables to use:
+
+```{r}
+cp_df = data.frame(value  = summary(prostate_best_subset)$cp,
+                   n_params = seq_along(summary(prostate_best_subset)$cp),
+                   type = "Cp")
+bic_df = data.frame(value = summary(prostate_best_subset)$bic,
+                    n_params = seq_along(summary(prostate_best_subset)$bic),
+                    type = "BIC")
+model_selection_criterion_df = rbind(cp_df, bic_df)
+ggplot(model_selection_criterion_df, aes(x = n_params, y = value)) +
+    geom_point() + facet_wrap(~ type, scales = "free_y")
+```
+
+Even though the lowest value of Cp is for 5 predictors (intercept + 4 variables), the Cp value for 3 predictors is very close to the value for 5 predictors and BIC has a strong minimum at 5 predictors. The two plots suggest that if we don't believe we need any interactions, we should use a model with an intercept and two predictors.
+
+## Final model
+
+```{r}
+lm_final = lm(lpsa ~ lcavol + lweight, data = prostate)
+final_fits = augment(lm_final)
+
+prostate_with_lweight_bins = prostate %>%
+    mutate(lweight_bins = cut_number(lweight, n = 3)) %>%
+    separate(lweight_bins, into = c(NA, "lo", "hi", NA), remove = FALSE, sep = "\\[|\\(|\\)|\\]|,") %>%
+    mutate(bin_mean = (as.numeric(lo) + as.numeric(hi)) / 2)
+
+prostate_grid_final = expand.grid(lweight = unique(prostate_with_lweight_bins$bin_mean),
+                                  lcavol = quantile(prostate$lcavol)) %>% data.frame()
+prostate_fits_on_grid = augment(lm_final, newdata = prostate_grid_final)
+prostate_fits_on_grid = merge(prostate_fits_on_grid,
+                             unique(prostate_with_lweight_bins[,c("lweight_bins", "bin_mean")]),
+                             by.x = "lweight", by.y = "bin_mean")
+
+ggplot(prostate_with_lweight_bins, aes(x = lcavol, y = lpsa, color = lweight_bins)) +
+    geom_point() +
+    geom_line(aes(y = .fitted), data = prostate_fits_on_grid) +
+    scale_x_continuous("Log Cancer Volume") + scale_y_continuous("Log PSA") +
+    scale_color_discrete("Log Weight")
+
+ggplot(prostate_with_lweight_bins, aes(x = exp(lcavol), y = exp(lpsa), color = lweight_bins)) +
+    geom_point() +
+    geom_line(aes(y = exp(.fitted)), data = prostate_fits_on_grid) +
+    scale_x_continuous("Cancer Volume") + scale_y_continuous("PSA") + scale_color_discrete("Log Weight")
+```
+
+## Overall
+
+> - There are a couple of automatic ways of choosing the best subsets of predictors and the best model sizes.
+
+> - These can be used automatically, or they can be used to guide the order in which we investigate whether and how to include variables.
+
+> - Transformations of the predictors are very important.
+
+> - Best subsets/forward stepwise/backward stepwise don't include variables in the same order as the marginal correlations between the predictors and response. Don't just rely on correlations to decide on which variables to include!
