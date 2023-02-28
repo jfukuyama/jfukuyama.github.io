@@ -46,7 +46,7 @@ The zeroes and NA’s are missing values (this is terrible). Using percentiles a
 in treating it as quantitative.
 
 ```{r}
-ANES = read.csv("../../datasets/anes.csv")
+ANES = read.csv("anes.csv")
 income = ANES$VCF0114
 summary(income)
 table(income) / length(income)
@@ -84,7 +84,7 @@ Republican = vote
 Let's put everything in a data frame, and then filter to just presidential election years:
 ```{r}
 ANES_df = data.frame(year, income, Republican)
-ANES_df = filter(ANES_df, year %in% seq(1948, 2012, 4))
+ANES_df = filter(ANES_df, year %in% seq(1948, 2016, 4))
 summary(ANES_df)
 ```
 
@@ -225,7 +225,7 @@ logit_ANES_subset(my_year = 1992, data = ANES_df)
 
 Once we've checked that it works, we can loop over every presidential election year in our dataset: every four years between 1948 and 2012:
 ```{r}
-years = seq(1948, 2012, 4)
+years = seq(1948, 2016, 4)
 n = length(years)
 income_by_year = data.frame(year = rep(NA, n), income_coef = rep(NA, n), income_se = rep(NA, n))
 for (J in 1:n) {
@@ -241,7 +241,7 @@ We’ll display the results using `ggplot`. `geom_errorbar()` lets us add one st
 ```{r}
 gg = ggplot(income_by_year, aes(x = year, y = income_coef, ymin = income_coef - 
     income_se, ymax = income_coef + income_se))
-gg + geom_errorbar(width=1) + geom_smooth(method.args = list(family = "symmetric")) + 
+gg + geom_errorbar(width=1) + 
     ylab("Coefficient of income in linear model")
 ```
 
@@ -270,7 +270,7 @@ income_prop = income_prop %>%
 
 -----
 
-```{r}
+```{r, fig.width = 6}
 gg = ggplot(income_prop, aes(x = year, y = prop_Republican, group = income_ord, color = income_ord)) +
     geom_point() + geom_line()
 gg + ylab("Proportion of two-party vote\nfor Republicans") + labs(color = "Income percentile")
@@ -286,6 +286,8 @@ We now have a bit more detail on the trends and the aberrant results.
 > - The big coefficient for 1964 (compared to the elections before and after) might be in part an artifact of the logit scale.
 
 > - In 2008 there really was a big difference between income group, which might be attributable to the financial crisis. 
+
+> - Precipitous drop in fraction of the highest-income group voting for Republicans. Possibly education polarization.
 
 -----
 

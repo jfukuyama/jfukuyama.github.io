@@ -135,15 +135,15 @@ new modeling technique.</p>
 percentiles allows comparability between years. Also note that this is
 really an ordinal variable but we might find some advantages in treating
 it as quantitative.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>ANES <span class="ot">=</span> <span class="fu">read.csv</span>(<span class="st">&quot;../../datasets/anes.csv&quot;</span>)</span>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>ANES <span class="ot">=</span> <span class="fu">read.csv</span>(<span class="st">&quot;anes.csv&quot;</span>)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>income <span class="ot">=</span> ANES<span class="sc">$</span>VCF0114</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(income)</span></code></pre></div>
 <pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA&#39;s 
-##   0.000   2.000   3.000   2.663   4.000   5.000    1511</code></pre>
+##    1.00    2.00    3.00    2.87    4.00    5.00    5449</code></pre>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(income) <span class="sc">/</span> <span class="fu">length</span>(income)</span></code></pre></div>
 <pre><code>## income
-##          0          1          2          3          4          5 
-## 0.06870352 0.15793728 0.15086037 0.29829005 0.24875166 0.04831699</code></pre>
+##          1          2          3          4          5 
+## 0.15804751 0.15120779 0.29807821 0.25447084 0.04729414</code></pre>
 </div>
 <div class="slide section level2">
 
@@ -151,7 +151,7 @@ it as quantitative.</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>year <span class="ot">=</span> ANES<span class="sc">$</span>VCF0004</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(year)</span></code></pre></div>
 <pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-##    1948    1970    1984    1983    1998    2012</code></pre>
+##    1948    1970    1986    1985    2002    2016</code></pre>
 </div>
 <div class="slide section level2">
 
@@ -166,7 +166,7 @@ variables for logistic regression).</p>
 <span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>vote <span class="ot">=</span> vote <span class="sc">-</span> <span class="dv">1</span></span>
 <span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(vote)</span></code></pre></div>
 <pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA&#39;s 
-##    0.00    0.00    0.00    0.48    1.00    1.00   33457</code></pre>
+##    0.00    0.00    0.00    0.48    1.00    1.00   35118</code></pre>
 <p>The variable really represents the fraction of the two-party vote
 that was for Republicans now, so for clarity let’s just rename it as
 such.</p>
@@ -177,16 +177,16 @@ such.</p>
 <p>Let’s put everything in a data frame, and then filter to just
 presidential election years:</p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>ANES_df <span class="ot">=</span> <span class="fu">data.frame</span>(year, income, Republican)</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>ANES_df <span class="ot">=</span> <span class="fu">filter</span>(ANES_df, year <span class="sc">%in%</span> <span class="fu">seq</span>(<span class="dv">1948</span>, <span class="dv">2012</span>, <span class="dv">4</span>))</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>ANES_df <span class="ot">=</span> <span class="fu">filter</span>(ANES_df, year <span class="sc">%in%</span> <span class="fu">seq</span>(<span class="dv">1948</span>, <span class="dv">2016</span>, <span class="dv">4</span>))</span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(ANES_df)</span></code></pre></div>
 <pre><code>##       year          income        Republican   
-##  Min.   :1948   Min.   :0.000   Min.   :0.000  
+##  Min.   :1948   Min.   :1.000   Min.   :0.000  
 ##  1st Qu.:1972   1st Qu.:2.000   1st Qu.:0.000  
-##  Median :1988   Median :3.000   Median :0.000  
-##  Mean   :1985   Mean   :2.657   Mean   :0.482  
-##  3rd Qu.:2004   3rd Qu.:4.000   3rd Qu.:1.000  
-##  Max.   :2012   Max.   :5.000   Max.   :1.000  
-##                                 NA&#39;s   :12733</code></pre>
+##  Median :1992   Median :3.000   Median :0.000  
+##  Mean   :1989   Mean   :2.861   Mean   :0.481  
+##  3rd Qu.:2012   3rd Qu.:4.000   3rd Qu.:1.000  
+##  Max.   :2016   Max.   :5.000   Max.   :1.000  
+##                 NA&#39;s   :2524    NA&#39;s   :14394</code></pre>
 </div>
 <div id="visualizing-the-relationship-with-one-predictor"
 class="slide section level2">
@@ -213,12 +213,12 @@ the table or plot those values.</p>
 <pre><code>## # A tibble: 6 × 2
 ##   income republican_fraction
 ##    &lt;int&gt;               &lt;dbl&gt;
-## 1      0               0.433
-## 2      1               0.267
-## 3      2               0.345
-## 4      3               0.404
-## 5      4               0.488
-## 6      5               0.532</code></pre>
+## 1      1               0.267
+## 2      2               0.345
+## 3      3               0.404
+## 4      4               0.488
+## 5      5               0.532
+## 6     NA               0.433</code></pre>
 <div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="do">## zero values for income mean missing</span></span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">subset</span>(republican_fraction_by_income, income <span class="sc">!=</span> <span class="dv">0</span>)) <span class="sc">+</span></span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> income, <span class="at">y =</span> republican_fraction))</span></code></pre></div>
@@ -391,7 +391,7 @@ complex design of the ANES surveys.</p>
 <p>Once we’ve checked that it works, we can loop over every presidential
 election year in our dataset: every four years between 1948 and
 2012:</p>
-<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>years <span class="ot">=</span> <span class="fu">seq</span>(<span class="dv">1948</span>, <span class="dv">2012</span>, <span class="dv">4</span>)</span>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>years <span class="ot">=</span> <span class="fu">seq</span>(<span class="dv">1948</span>, <span class="dv">2016</span>, <span class="dv">4</span>)</span>
 <span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>n <span class="ot">=</span> <span class="fu">length</span>(years)</span>
 <span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>income_by_year <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="at">year =</span> <span class="fu">rep</span>(<span class="cn">NA</span>, n), <span class="at">income_coef =</span> <span class="fu">rep</span>(<span class="cn">NA</span>, n), <span class="at">income_se =</span> <span class="fu">rep</span>(<span class="cn">NA</span>, n))</span>
 <span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (J <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>n) {</span>
@@ -407,9 +407,8 @@ shouldn’t take these too literally, just use them to get a ballpark idea
 of uncertainty.</p>
 <div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>gg <span class="ot">=</span> <span class="fu">ggplot</span>(income_by_year, <span class="fu">aes</span>(<span class="at">x =</span> year, <span class="at">y =</span> income_coef, <span class="at">ymin =</span> income_coef <span class="sc">-</span> </span>
 <span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>    income_se, <span class="at">ymax =</span> income_coef <span class="sc">+</span> income_se))</span>
-<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>gg <span class="sc">+</span> <span class="fu">geom_errorbar</span>(<span class="at">width=</span><span class="dv">1</span>) <span class="sc">+</span> <span class="fu">geom_smooth</span>(<span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">family =</span> <span class="st">&quot;symmetric&quot;</span>)) <span class="sc">+</span> </span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>gg <span class="sc">+</span> <span class="fu">geom_errorbar</span>(<span class="at">width=</span><span class="dv">1</span>) <span class="sc">+</span> </span>
 <span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">&quot;Coefficient of income in linear model&quot;</span>)</span></code></pre></div>
-<pre><code>## `geom_smooth()` using formula = &#39;y ~ x&#39;</code></pre>
 <p><img src="lecture-15-fig/unnamed-chunk-14-1.png" /></p>
 <p>The income coefficient is positive for every election, meaning richer
 people were more likely to vote Republican every time (though 1960 was
@@ -428,7 +427,7 @@ using a for loop.</p>
 <p>To find means, I used use <code>mean()</code> in conjunction with
 <code>summarise()</code> in dplyr. Let’s first work out how to do it for
 the 1992 data.</p>
-<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summarise</span>(<span class="fu">group_by</span>(ANES92, <span class="fu">factor</span>(income)), <span class="at">prop_Republican =</span> <span class="fu">mean</span>(Republican, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summarise</span>(<span class="fu">group_by</span>(ANES92, <span class="fu">factor</span>(income)), <span class="at">prop_Republican =</span> <span class="fu">mean</span>(Republican, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span></code></pre></div>
 <pre><code>## # A tibble: 5 × 2
 ##   `factor(income)` prop_Republican
 ##   &lt;fct&gt;                      &lt;dbl&gt;
@@ -437,22 +436,22 @@ the 1992 data.</p>
 ## 3 3                          0.404
 ## 4 4                          0.488
 ## 5 5                          0.532</code></pre>
-<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>income_prop <span class="ot">=</span> ANES_df <span class="sc">%&gt;%</span></span>
-<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(income, year) <span class="sc">%&gt;%</span></span>
-<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarise</span>(<span class="at">prop_Republican =</span> <span class="fu">mean</span>(Republican, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>income_prop <span class="ot">=</span> ANES_df <span class="sc">%&gt;%</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(income, year) <span class="sc">%&gt;%</span></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarise</span>(<span class="at">prop_Republican =</span> <span class="fu">mean</span>(Republican, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span></code></pre></div>
 <pre><code>## `summarise()` has grouped output by &#39;income&#39;. You can override using the
 ## `.groups` argument.</code></pre>
-<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="do">## clean up a bit</span></span>
-<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>income_prop <span class="ot">=</span> income_prop <span class="sc">%&gt;%</span></span>
-<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">subset</span>(income <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>    <span class="do">## making income an ordered factor will give a nice color scale for us later</span></span>
-<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">income_ord =</span> <span class="fu">factor</span>(income, <span class="at">levels =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="at">ordered =</span> <span class="cn">TRUE</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="do">## clean up a bit</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>income_prop <span class="ot">=</span> income_prop <span class="sc">%&gt;%</span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">subset</span>(income <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>    <span class="do">## making income an ordered factor will give a nice color scale for us later</span></span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">income_ord =</span> <span class="fu">factor</span>(income, <span class="at">levels =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="at">ordered =</span> <span class="cn">TRUE</span>))</span></code></pre></div>
 </div>
 <div class="slide section level2">
 
-<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>gg <span class="ot">=</span> <span class="fu">ggplot</span>(income_prop, <span class="fu">aes</span>(<span class="at">x =</span> year, <span class="at">y =</span> prop_Republican, <span class="at">group =</span> income_ord, <span class="at">color =</span> income_ord)) <span class="sc">+</span></span>
-<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">geom_line</span>()</span>
-<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>gg <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">&quot;Proportion of two-party vote</span><span class="sc">\n</span><span class="st">for Republicans&quot;</span>) <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">color =</span> <span class="st">&quot;Income percentile&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>gg <span class="ot">=</span> <span class="fu">ggplot</span>(income_prop, <span class="fu">aes</span>(<span class="at">x =</span> year, <span class="at">y =</span> prop_Republican, <span class="at">group =</span> income_ord, <span class="at">color =</span> income_ord)) <span class="sc">+</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">geom_line</span>()</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>gg <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">&quot;Proportion of two-party vote</span><span class="sc">\n</span><span class="st">for Republicans&quot;</span>) <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">color =</span> <span class="st">&quot;Income percentile&quot;</span>)</span></code></pre></div>
 <p><img src="lecture-15-fig/unnamed-chunk-17-1.png" /></p>
 <p>We now have a bit more detail on the trends and the aberrant
 results.</p>
@@ -476,15 +475,19 @@ after) might be in part an artifact of the logit scale.</li>
 <li>In 2008 there really was a big difference between income group,
 which might be attributable to the financial crisis.</li>
 </ul>
+<ul>
+<li>Precipitous drop in fraction of the highest-income group voting for
+Republicans. Possibly education polarization.</li>
+</ul>
 </div>
 <div class="slide section level2">
 
 <p>We can also draw lines to connect income groups by year. Because
 there are so many different years, we’ll facet them rather than color
 them.</p>
-<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(income_prop, <span class="fu">aes</span>(<span class="at">x =</span> income, <span class="at">y =</span> prop_Republican)) <span class="sc">+</span></span>
-<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>() <span class="sc">+</span></span>
-<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">facet_wrap</span>(<span class="sc">~</span> year, <span class="at">ncol =</span> <span class="dv">5</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">&quot;Proportion of two-party vote for Republican&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(income_prop, <span class="fu">aes</span>(<span class="at">x =</span> income, <span class="at">y =</span> prop_Republican)) <span class="sc">+</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">facet_wrap</span>(<span class="sc">~</span> year, <span class="at">ncol =</span> <span class="dv">5</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">&quot;Proportion of two-party vote for Republican&quot;</span>)</span></code></pre></div>
 <p><img src="lecture-15-fig/unnamed-chunk-18-1.png" /></p>
 <p>This yields less insight, but still has interesting features: notably
 the big magnitude of the uptick in Republicanism for the highest income
