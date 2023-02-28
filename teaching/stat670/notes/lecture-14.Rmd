@@ -263,37 +263,71 @@ ggplot(model_selection_criterion_df, aes(x = n_params, y = value)) +
     geom_point() + facet_wrap(~ type, scales = "free_y")
 ```
 
-Even though the lowest value of Cp is for 5 predictors (intercept + 4 variables), the Cp value for 3 predictors is very close to the value for 5 predictors and BIC has a strong minimum at 5 predictors. The two plots suggest that if we don't believe we need any interactions, we should use a model with an intercept and two predictors.
+Even though the lowest value of Cp is for 5 predictors, the Cp value for 3 predictors is very close to the value for 5 predictors and BIC has a strong minimum at 5 predictors. The two plots suggest that if we don't believe we need any interactions, we should use a model with an intercept and two predictors.
 
-## Final model
+## Plotting a final model
+
+We would like to do a coplot of `lpsa` as a function of `lcavol` conditioned on `lweight` and `svi` that has fits and predicted values. There are a couple of issues:
+
+> - Since one of the conditioning variables is continuous, we need to cut that variable up into bins (use `cut_number`).
+
+> - We need to get fitted values within each of the bins. Each bin corresponds to a range of values of the conditioning variable `lweight`, so we need to choose one value to compute a fit at in each of the bins (natural thing to do is use the midpoint of the bin).
+
+> - The bins are described by a string, not by their midpoint, so we need to compute the midpoint from the string that describes the bins (can use `separate` and `mutate`, along with regular expressions).
+
+> - We will need to merge the information about the fits with the information about the bins (using `merge`).
+
+----- 
 
 ```{r}
-lm_final = lm(lpsa ~ lcavol + lweight, data = prostate)
+lm_final = lm(lpsa ~ lcavol + lweight + svi, data = prostate)
 final_fits = augment(lm_final)
 
+## get the bins and the bin means
 prostate_with_lweight_bins = prostate %>%
     mutate(lweight_bins = cut_number(lweight, n = 3)) %>%
     separate(lweight_bins, into = c(NA, "lo", "hi", NA), remove = FALSE, sep = "\\[|\\(|\\)|\\]|,") %>%
     mutate(bin_mean = (as.numeric(lo) + as.numeric(hi)) / 2)
 
+## get the grid for prediction
 prostate_grid_final = expand.grid(lweight = unique(prostate_with_lweight_bins$bin_mean),
-                                  lcavol = quantile(prostate$lcavol)) %>% data.frame()
+                                  lcavol = quantile(prostate$lcavol),
+                                  svi = c("Yes", "No")) %>% data.frame()
+## predictions on the grid
 prostate_fits_on_grid = augment(lm_final, newdata = prostate_grid_final)
+## add information about the bins to the fits
 prostate_fits_on_grid = merge(prostate_fits_on_grid,
                              unique(prostate_with_lweight_bins[,c("lweight_bins", "bin_mean")]),
                              by.x = "lweight", by.y = "bin_mean")
+## subset so we don't plot the fits outside the range of the data
+prostate_fits_on_grid = prostate_fits_on_grid %>% subset(!(svi == "Yes" & lcavol < 1))
 
-ggplot(prostate_with_lweight_bins, aes(x = lcavol, y = lpsa, color = lweight_bins)) +
+ggplot(prostate_with_lweight_bins, aes(x = lcavol, y = lpsa, color = svi)) +
     geom_point() +
     geom_line(aes(y = .fitted), data = prostate_fits_on_grid) +
+    facet_wrap(~ lweight_bins) +
     scale_x_continuous("Log Cancer Volume") + scale_y_continuous("Log PSA") +
-    scale_color_discrete("Log Weight")
+    scale_color_discrete("SVI") +
+    ggtitle("Log PSA as a function of log cancer volume,\nfaceted by log weight")
 
-ggplot(prostate_with_lweight_bins, aes(x = exp(lcavol), y = exp(lpsa), color = lweight_bins)) +
+ggplot(prostate_with_lweight_bins, aes(x = exp(lcavol), y = exp(lpsa), color = factor(svi))) +
     geom_point() +
+    facet_wrap(~ lweight_bins) +
     geom_line(aes(y = exp(.fitted)), data = prostate_fits_on_grid) +
-    scale_x_continuous("Cancer Volume") + scale_y_continuous("PSA") + scale_color_discrete("Log Weight")
+    scale_x_continuous("Cancer Volume") + scale_y_continuous("PSA") +
+    scale_color_discrete("SVI") +
+        ggtitle("PSA as a function of cancer volume,\nfaceted by log weight")
 ```
+
+## Some notes about this model
+
+The final plots highlight some of the deficiencies of the additive model.
+
+> - Good case to be made for interaction between SVI and log weight.
+
+> - Looks like at the high values of log weight, there is a non-linear relationship between log PSA and log cancer volume.
+
+Next model to consider might be additive for the low log weights and non-linear with no SVI effect for the high values of log weight.
 
 ## Overall
 

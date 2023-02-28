@@ -479,40 +479,95 @@ many variables to use:</p>
 <span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(model_selection_criterion_df, <span class="fu">aes</span>(<span class="at">x =</span> n_params, <span class="at">y =</span> value)) <span class="sc">+</span></span>
 <span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">facet_wrap</span>(<span class="sc">~</span> type, <span class="at">scales =</span> <span class="st">&quot;free_y&quot;</span>)</span></code></pre></div>
 <p><img src="lecture-14-fig/unnamed-chunk-11-1.png" /></p>
-<p>Even though the lowest value of Cp is for 5 predictors (intercept + 4
-variables), the Cp value for 3 predictors is very close to the value for
-5 predictors and BIC has a strong minimum at 5 predictors. The two plots
-suggest that if we don’t believe we need any interactions, we should use
-a model with an intercept and two predictors.</p>
+<p>Even though the lowest value of Cp is for 5 predictors, the Cp value
+for 3 predictors is very close to the value for 5 predictors and BIC has
+a strong minimum at 5 predictors. The two plots suggest that if we don’t
+believe we need any interactions, we should use a model with an
+intercept and two predictors.</p>
 </div>
-<div id="final-model" class="slide section level2">
-<h1>Final model</h1>
-<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>lm_final <span class="ot">=</span> <span class="fu">lm</span>(lpsa <span class="sc">~</span> lcavol <span class="sc">+</span> lweight, <span class="at">data =</span> prostate)</span>
+<div id="plotting-a-final-model" class="slide section level2">
+<h1>Plotting a final model</h1>
+<p>We would like to do a coplot of <code>lpsa</code> as a function of
+<code>lcavol</code> conditioned on <code>lweight</code> and
+<code>svi</code> that has fits and predicted values. There are a couple
+of issues:</p>
+<ul>
+<li>Since one of the conditioning variables is continuous, we need to
+cut that variable up into bins (use <code>cut_number</code>).</li>
+</ul>
+<ul>
+<li>We need to get fitted values within each of the bins. Each bin
+corresponds to a range of values of the conditioning variable
+<code>lweight</code>, so we need to choose one value to compute a fit at
+in each of the bins (natural thing to do is use the midpoint of the
+bin).</li>
+</ul>
+<ul>
+<li>The bins are described by a string, not by their midpoint, so we
+need to compute the midpoint from the string that describes the bins
+(can use <code>separate</code> and <code>mutate</code>, along with
+regular expressions).</li>
+</ul>
+<ul>
+<li>We will need to merge the information about the fits with the
+information about the bins (using <code>merge</code>).</li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>lm_final <span class="ot">=</span> <span class="fu">lm</span>(lpsa <span class="sc">~</span> lcavol <span class="sc">+</span> lweight <span class="sc">+</span> svi, <span class="at">data =</span> prostate)</span>
 <span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>final_fits <span class="ot">=</span> <span class="fu">augment</span>(lm_final)</span>
 <span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>prostate_with_lweight_bins <span class="ot">=</span> prostate <span class="sc">%&gt;%</span></span>
-<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">lweight_bins =</span> <span class="fu">cut_number</span>(lweight, <span class="at">n =</span> <span class="dv">3</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">separate</span>(lweight_bins, <span class="at">into =</span> <span class="fu">c</span>(<span class="cn">NA</span>, <span class="st">&quot;lo&quot;</span>, <span class="st">&quot;hi&quot;</span>, <span class="cn">NA</span>), <span class="at">remove =</span> <span class="cn">FALSE</span>, <span class="at">sep =</span> <span class="st">&quot;</span><span class="sc">\\</span><span class="st">[|</span><span class="sc">\\</span><span class="st">(|</span><span class="sc">\\</span><span class="st">)|</span><span class="sc">\\</span><span class="st">]|,&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">bin_mean =</span> (<span class="fu">as.numeric</span>(lo) <span class="sc">+</span> <span class="fu">as.numeric</span>(hi)) <span class="sc">/</span> <span class="dv">2</span>)</span>
-<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a>prostate_grid_final <span class="ot">=</span> <span class="fu">expand.grid</span>(<span class="at">lweight =</span> <span class="fu">unique</span>(prostate_with_lweight_bins<span class="sc">$</span>bin_mean),</span>
-<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a>                                  <span class="at">lcavol =</span> <span class="fu">quantile</span>(prostate<span class="sc">$</span>lcavol)) <span class="sc">%&gt;%</span> <span class="fu">data.frame</span>()</span>
-<span id="cb31-11"><a href="#cb31-11" aria-hidden="true" tabindex="-1"></a>prostate_fits_on_grid <span class="ot">=</span> <span class="fu">augment</span>(lm_final, <span class="at">newdata =</span> prostate_grid_final)</span>
-<span id="cb31-12"><a href="#cb31-12" aria-hidden="true" tabindex="-1"></a>prostate_fits_on_grid <span class="ot">=</span> <span class="fu">merge</span>(prostate_fits_on_grid,</span>
-<span id="cb31-13"><a href="#cb31-13" aria-hidden="true" tabindex="-1"></a>                             <span class="fu">unique</span>(prostate_with_lweight_bins[,<span class="fu">c</span>(<span class="st">&quot;lweight_bins&quot;</span>, <span class="st">&quot;bin_mean&quot;</span>)]),</span>
-<span id="cb31-14"><a href="#cb31-14" aria-hidden="true" tabindex="-1"></a>                             <span class="at">by.x =</span> <span class="st">&quot;lweight&quot;</span>, <span class="at">by.y =</span> <span class="st">&quot;bin_mean&quot;</span>)</span>
-<span id="cb31-15"><a href="#cb31-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-16"><a href="#cb31-16" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(prostate_with_lweight_bins, <span class="fu">aes</span>(<span class="at">x =</span> lcavol, <span class="at">y =</span> lpsa, <span class="at">color =</span> lweight_bins)) <span class="sc">+</span></span>
-<span id="cb31-17"><a href="#cb31-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb31-18"><a href="#cb31-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> .fitted), <span class="at">data =</span> prostate_fits_on_grid) <span class="sc">+</span></span>
-<span id="cb31-19"><a href="#cb31-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_x_continuous</span>(<span class="st">&quot;Log Cancer Volume&quot;</span>) <span class="sc">+</span> <span class="fu">scale_y_continuous</span>(<span class="st">&quot;Log PSA&quot;</span>) <span class="sc">+</span></span>
-<span id="cb31-20"><a href="#cb31-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_color_discrete</span>(<span class="st">&quot;Log Weight&quot;</span>)</span></code></pre></div>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a><span class="do">## get the bins and the bin means</span></span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>prostate_with_lweight_bins <span class="ot">=</span> prostate <span class="sc">%&gt;%</span></span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">lweight_bins =</span> <span class="fu">cut_number</span>(lweight, <span class="at">n =</span> <span class="dv">3</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">separate</span>(lweight_bins, <span class="at">into =</span> <span class="fu">c</span>(<span class="cn">NA</span>, <span class="st">&quot;lo&quot;</span>, <span class="st">&quot;hi&quot;</span>, <span class="cn">NA</span>), <span class="at">remove =</span> <span class="cn">FALSE</span>, <span class="at">sep =</span> <span class="st">&quot;</span><span class="sc">\\</span><span class="st">[|</span><span class="sc">\\</span><span class="st">(|</span><span class="sc">\\</span><span class="st">)|</span><span class="sc">\\</span><span class="st">]|,&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">bin_mean =</span> (<span class="fu">as.numeric</span>(lo) <span class="sc">+</span> <span class="fu">as.numeric</span>(hi)) <span class="sc">/</span> <span class="dv">2</span>)</span>
+<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a><span class="do">## get the grid for prediction</span></span>
+<span id="cb31-11"><a href="#cb31-11" aria-hidden="true" tabindex="-1"></a>prostate_grid_final <span class="ot">=</span> <span class="fu">expand.grid</span>(<span class="at">lweight =</span> <span class="fu">unique</span>(prostate_with_lweight_bins<span class="sc">$</span>bin_mean),</span>
+<span id="cb31-12"><a href="#cb31-12" aria-hidden="true" tabindex="-1"></a>                                  <span class="at">lcavol =</span> <span class="fu">quantile</span>(prostate<span class="sc">$</span>lcavol),</span>
+<span id="cb31-13"><a href="#cb31-13" aria-hidden="true" tabindex="-1"></a>                                  <span class="at">svi =</span> <span class="fu">c</span>(<span class="st">&quot;Yes&quot;</span>, <span class="st">&quot;No&quot;</span>)) <span class="sc">%&gt;%</span> <span class="fu">data.frame</span>()</span>
+<span id="cb31-14"><a href="#cb31-14" aria-hidden="true" tabindex="-1"></a><span class="do">## predictions on the grid</span></span>
+<span id="cb31-15"><a href="#cb31-15" aria-hidden="true" tabindex="-1"></a>prostate_fits_on_grid <span class="ot">=</span> <span class="fu">augment</span>(lm_final, <span class="at">newdata =</span> prostate_grid_final)</span>
+<span id="cb31-16"><a href="#cb31-16" aria-hidden="true" tabindex="-1"></a><span class="do">## add information about the bins to the fits</span></span>
+<span id="cb31-17"><a href="#cb31-17" aria-hidden="true" tabindex="-1"></a>prostate_fits_on_grid <span class="ot">=</span> <span class="fu">merge</span>(prostate_fits_on_grid,</span>
+<span id="cb31-18"><a href="#cb31-18" aria-hidden="true" tabindex="-1"></a>                             <span class="fu">unique</span>(prostate_with_lweight_bins[,<span class="fu">c</span>(<span class="st">&quot;lweight_bins&quot;</span>, <span class="st">&quot;bin_mean&quot;</span>)]),</span>
+<span id="cb31-19"><a href="#cb31-19" aria-hidden="true" tabindex="-1"></a>                             <span class="at">by.x =</span> <span class="st">&quot;lweight&quot;</span>, <span class="at">by.y =</span> <span class="st">&quot;bin_mean&quot;</span>)</span>
+<span id="cb31-20"><a href="#cb31-20" aria-hidden="true" tabindex="-1"></a><span class="do">## subset so we don&#39;t plot the fits outside the range of the data</span></span>
+<span id="cb31-21"><a href="#cb31-21" aria-hidden="true" tabindex="-1"></a>prostate_fits_on_grid <span class="ot">=</span> prostate_fits_on_grid <span class="sc">%&gt;%</span> <span class="fu">subset</span>(<span class="sc">!</span>(svi <span class="sc">==</span> <span class="st">&quot;Yes&quot;</span> <span class="sc">&amp;</span> lcavol <span class="sc">&lt;</span> <span class="dv">1</span>))</span>
+<span id="cb31-22"><a href="#cb31-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-23"><a href="#cb31-23" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(prostate_with_lweight_bins, <span class="fu">aes</span>(<span class="at">x =</span> lcavol, <span class="at">y =</span> lpsa, <span class="at">color =</span> svi)) <span class="sc">+</span></span>
+<span id="cb31-24"><a href="#cb31-24" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb31-25"><a href="#cb31-25" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> .fitted), <span class="at">data =</span> prostate_fits_on_grid) <span class="sc">+</span></span>
+<span id="cb31-26"><a href="#cb31-26" aria-hidden="true" tabindex="-1"></a>    <span class="fu">facet_wrap</span>(<span class="sc">~</span> lweight_bins) <span class="sc">+</span></span>
+<span id="cb31-27"><a href="#cb31-27" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_x_continuous</span>(<span class="st">&quot;Log Cancer Volume&quot;</span>) <span class="sc">+</span> <span class="fu">scale_y_continuous</span>(<span class="st">&quot;Log PSA&quot;</span>) <span class="sc">+</span></span>
+<span id="cb31-28"><a href="#cb31-28" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_color_discrete</span>(<span class="st">&quot;SVI&quot;</span>) <span class="sc">+</span></span>
+<span id="cb31-29"><a href="#cb31-29" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggtitle</span>(<span class="st">&quot;Log PSA as a function of log cancer volume,</span><span class="sc">\n</span><span class="st">faceted by log weight&quot;</span>)</span></code></pre></div>
 <p><img src="lecture-14-fig/unnamed-chunk-12-1.png" /></p>
-<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(prostate_with_lweight_bins, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">exp</span>(lcavol), <span class="at">y =</span> <span class="fu">exp</span>(lpsa), <span class="at">color =</span> lweight_bins)) <span class="sc">+</span></span>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(prostate_with_lweight_bins, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">exp</span>(lcavol), <span class="at">y =</span> <span class="fu">exp</span>(lpsa), <span class="at">color =</span> <span class="fu">factor</span>(svi))) <span class="sc">+</span></span>
 <span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> <span class="fu">exp</span>(.fitted)), <span class="at">data =</span> prostate_fits_on_grid) <span class="sc">+</span></span>
-<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_x_continuous</span>(<span class="st">&quot;Cancer Volume&quot;</span>) <span class="sc">+</span> <span class="fu">scale_y_continuous</span>(<span class="st">&quot;PSA&quot;</span>) <span class="sc">+</span> <span class="fu">scale_color_discrete</span>(<span class="st">&quot;Log Weight&quot;</span>)</span></code></pre></div>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">facet_wrap</span>(<span class="sc">~</span> lweight_bins) <span class="sc">+</span></span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> <span class="fu">exp</span>(.fitted)), <span class="at">data =</span> prostate_fits_on_grid) <span class="sc">+</span></span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_x_continuous</span>(<span class="st">&quot;Cancer Volume&quot;</span>) <span class="sc">+</span> <span class="fu">scale_y_continuous</span>(<span class="st">&quot;PSA&quot;</span>) <span class="sc">+</span></span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_color_discrete</span>(<span class="st">&quot;SVI&quot;</span>) <span class="sc">+</span></span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>        <span class="fu">ggtitle</span>(<span class="st">&quot;PSA as a function of cancer volume,</span><span class="sc">\n</span><span class="st">faceted by log weight&quot;</span>)</span></code></pre></div>
 <p><img src="lecture-14-fig/unnamed-chunk-12-2.png" /></p>
+</div>
+<div id="some-notes-about-this-model" class="slide section level2">
+<h1>Some notes about this model</h1>
+<p>The final plots highlight some of the deficiencies of the additive
+model.</p>
+<ul>
+<li>Good case to be made for interaction between SVI and log
+weight.</li>
+</ul>
+<ul>
+<li>Looks like at the high values of log weight, there is a non-linear
+relationship between log PSA and log cancer volume.</li>
+</ul>
+<p>Next model to consider might be additive for the low log weights and
+non-linear with no SVI effect for the high values of log weight.</p>
 </div>
 <div id="overall" class="slide section level2">
 <h1>Overall</h1>

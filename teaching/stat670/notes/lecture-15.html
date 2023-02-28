@@ -7,7 +7,7 @@
   <meta http-equiv="Content-Style-Type" content="text/css" />
   <meta name="generator" content="pandoc" />
   <meta name="author" content="Julia Fukuyama" />
-  <title>Stat 470/670 Lecture 15: Matrix Approximation, the SVD, and Reduced Rank Biplots</title>
+  <title>Stat 470/670 Lecture 15: Binary data and logistic regression</title>
   <style type="text/css">
     code{white-space: pre-wrap;}
     span.smallcaps{font-variant: small-caps;}
@@ -89,382 +89,430 @@
 </head>
 <body>
 <div class="slide titlepage">
-  <h1 class="title">Stat 470/670 Lecture 15: Matrix Approximation, the
-SVD, and Reduced Rank Biplots</h1>
+  <h1 class="title">Stat 470/670 Lecture 15: Binary data and logistic
+regression</h1>
   <p class="author">
 Julia Fukuyama
   </p>
 </div>
-<div id="today" class="slide section level2">
-<h1>Today</h1>
-<ul class="incremental">
-<li><p>Singular Value Decomposition</p></li>
-<li><p>Reduced Rank Biplots</p></li>
+<div id="problem-setup" class="slide section level2">
+<h1>Problem setup</h1>
+<p>We are interested in understanding voting patterns, and in particular
+how vote for president is related to income.</p>
+<p>There is data on this topic in the <a
+href="http://jfukuyama.github.io/teaching/stat670/notes/anes.csv">ANES
+dataset</a>: for each election, they have demographic information on a
+subset of voters plus information about how they voted in the
+presidential elections.</p>
+<p>The variables here have particularly uninformative names, but the
+ones we are interested in describe the year, income, and presidential
+vote. They are coded as:</p>
+<ul>
+<li>Year: VCF0004</li>
 </ul>
-<p>Reading: Greenacre, Biplots in Practice, Chapter 5. The <a
-href="http://www.multivariatestatistics.org/biplots.html">book
-website</a> contains links to all the chapters. Also <a
-href="http://www.fbbva.es/TLFU/dat/greenacre_c05_2010.pdf">here</a>.</p>
-</div>
-<div id="what-to-know-about-biplots" class="slide section level2">
-<h1>What to know about biplots</h1>
-<ul class="incremental">
-<li><p>A biplot is a generalization of a scatterplot to an arbitrary
-number of variables.</p></li>
-<li><p>The value of each observation for each variable is read off of
-the biplot by projecting the point onto the variable “axis”, just as in
-a scatterplot.</p></li>
-<li><p>We can represent a matrix <span class="math inline">\(\mathbf S
-\in \mathbb R^{n \times p}\)</span> as a biplot if we can write <span
-class="math inline">\(\mathbf S = \mathbf L \mathbf R^T\)</span>, where
-<span class="math inline">\(\mathbf L \in \mathbb R^{n \times
-2}\)</span> and <span class="math inline">\(\mathbf R \in \mathbb R^{p
-\times 2}\)</span>.</p></li>
+<ul>
+<li>Income: VCF0114</li>
 </ul>
-</div>
-<div id="rank-of-a-matrix" class="slide section level2">
-<h1>Rank of a matrix</h1>
-<p>One more concept from linear algebra:</p>
-<p>The <em>rank</em> of a matrix is the maximum number of linearly
-independent rows or columns of a matrix.</p>
-<ul class="incremental">
-<li><p>A set of vectors <span class="math inline">\(\mathbf v_1, \ldots,
-\mathbf v_n\)</span> is <em>linearly dependent</em> if there exist a set
-of scalar values <span class="math inline">\(a_1, \ldots, a_n\)</span>
-such that <span class="math inline">\(\sum_{i=1}^n a_i \mathbf v_i =
-\mathbf 0\)</span>, where <span class="math inline">\(\mathbf 0\)</span>
-represents the vector containing all zero values.</p></li>
-<li><p>A set of vectors <span class="math inline">\(\mathbf v_1, \ldots,
-\mathbf v_n\)</span> is <em>linearly independent</em> if it is not
-linearly dependent.</p></li>
+<ul>
+<li>Vote: VCF0704a</li>
 </ul>
-<p>Note: If you’ve had linear algebra this should be familiar to you. If
-you haven’t had linear algebra or don’t particularly remember about
-ranks that’s ok too, the main idea here is going to be that the rank of
-a matrix controls whether we can represent it exactly in two dimensions
-or not.</p>
+<p>The primary difference between our task here and the modeling that
+we’ve done earlier in the semester is that the variable we’re trying to
+predict, vote, is binary. That is, it only takes two values (here vote
+for Republicans vs. vote for Democrats) instead of taking as a value any
+real number. This turns out to be enough of a difference that we need a
+new modeling technique.</p>
 </div>
 <div class="slide section level2">
 
-<p>Properties of the rank:</p>
-<ul class="incremental">
-<li><p>The rank is well defined, for any matrix the number of linearly
-independent rows and the number of linearly independent columns is the
-same.</p></li>
-<li><p>An <span class="math inline">\(n \times p\)</span> matrix has
-rank at most <span class="math inline">\(\text{min}(n,
-p)\)</span>.</p></li>
-<li><p>If a matrix <span class="math inline">\(\mathbf S \in \mathbb
-R^{n \times p}\)</span> has rank <span class="math inline">\(k\)</span>,
-there exist matrices <span class="math inline">\(\mathbf L \in \mathbb
-R^{n \times k}\)</span> and <span class="math inline">\(\mathbf R \in
-\mathbb R^{p \times k}\)</span> such that <span
-class="math inline">\(\mathbf S = \mathbf L \mathbf
-R^T\)</span>.</p></li>
-</ul>
+<p>Income is measured on a scale from 1 to 5:</p>
+<p>1: 0 to 16 percentile</p>
+<p>2: 17 to 33 percentile</p>
+<p>3: 34 to 67 percentile</p>
+<p>4: 68 to 95 percentile</p>
+<p>5: 96 to 100 percentile</p>
+<p>The zeroes and NA’s are missing values (this is terrible). Using
+percentiles allows comparability between years. Also note that this is
+really an ordinal variable but we might find some advantages in treating
+it as quantitative.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>ANES <span class="ot">=</span> <span class="fu">read.csv</span>(<span class="st">&quot;../../datasets/anes.csv&quot;</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>income <span class="ot">=</span> ANES<span class="sc">$</span>VCF0114</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(income)</span></code></pre></div>
+<pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA&#39;s 
+##   0.000   2.000   3.000   2.663   4.000   5.000    1511</code></pre>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(income) <span class="sc">/</span> <span class="fu">length</span>(income)</span></code></pre></div>
+<pre><code>## income
+##          0          1          2          3          4          5 
+## 0.06870352 0.15793728 0.15086037 0.29829005 0.24875166 0.04831699</code></pre>
 </div>
-<div
-id="problem-we-need-to-solve-to-make-a-biplot-of-a-high-dimensional-matrix"
+<div class="slide section level2">
+
+<p>Next we need the year for each observation. This is VCF0004.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>year <span class="ot">=</span> ANES<span class="sc">$</span>VCF0004</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(year)</span></code></pre></div>
+<pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##    1948    1970    1984    1983    1998    2012</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>The coding is that “1” means the Democrat, “2” means the Republican,
+and “0” or “NA” means some other outcome. We want everything to be coded
+as 0, 1, or NA (using 0/1 coding is the standard way to code binary
+variables for logistic regression).</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>vote <span class="ot">=</span> ANES<span class="sc">$</span>VCF0704a</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="do">##  First, change the zeroes to NA’s:</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>vote[vote <span class="sc">==</span> <span class="dv">0</span>] <span class="ot">=</span> <span class="cn">NA</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="do">## Then, to go from 2 representing Republican and 1 representing Democrat to 1 = Republican, 0 = Democrat, we just have to subtract 1</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>vote <span class="ot">=</span> vote <span class="sc">-</span> <span class="dv">1</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(vote)</span></code></pre></div>
+<pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA&#39;s 
+##    0.00    0.00    0.00    0.48    1.00    1.00   33457</code></pre>
+<p>The variable really represents the fraction of the two-party vote
+that was for Republicans now, so for clarity let’s just rename it as
+such.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>Republican <span class="ot">=</span> vote</span></code></pre></div>
+</div>
+<div class="slide section level2">
+
+<p>Let’s put everything in a data frame, and then filter to just
+presidential election years:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>ANES_df <span class="ot">=</span> <span class="fu">data.frame</span>(year, income, Republican)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>ANES_df <span class="ot">=</span> <span class="fu">filter</span>(ANES_df, year <span class="sc">%in%</span> <span class="fu">seq</span>(<span class="dv">1948</span>, <span class="dv">2012</span>, <span class="dv">4</span>))</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(ANES_df)</span></code></pre></div>
+<pre><code>##       year          income        Republican   
+##  Min.   :1948   Min.   :0.000   Min.   :0.000  
+##  1st Qu.:1972   1st Qu.:2.000   1st Qu.:0.000  
+##  Median :1988   Median :3.000   Median :0.000  
+##  Mean   :1985   Mean   :2.657   Mean   :0.482  
+##  3rd Qu.:2004   3rd Qu.:4.000   3rd Qu.:1.000  
+##  Max.   :2012   Max.   :5.000   Max.   :1.000  
+##                                 NA&#39;s   :12733</code></pre>
+</div>
+<div id="visualizing-the-relationship-with-one-predictor"
 class="slide section level2">
-<h1>Problem we need to solve to make a biplot of a high-dimensional
-matrix</h1>
-<p>Suppose we have a matrix <span class="math inline">\(\mathbf S \in
-\mathbb R^{n \times p}\)</span>, and <span class="math inline">\(\mathbf
-S\)</span> has rank greater than 2.</p>
-<p>To make a biplot, we need to have <span class="math inline">\(\mathbf
-S = \mathbf L \mathbf R^T\)</span>, where <span
-class="math inline">\(\mathbf L \in \mathbb R^{n \times 2}\)</span> and
-<span class="math inline">\(\mathbf R \in \mathbb R^{p \times
-2}\)</span>.</p>
-<p>If the rank if <span class="math inline">\(\mathbf S\)</span> is more
-than 2, such matrices don’t exist!</p>
-<div class="incremental">
-<p>Solution: Find the rank-2 matrix <span class="math inline">\(\hat
-{\mathbf S}\)</span> that most closely approximates <span
-class="math inline">\(\mathbf S\)</span>, and use that to make a
-biplot.</p>
-<p><span class="math display">\[
-\hat {\mathbf S} = \text{argmin}_{\mathbf T : \text{rank}(\mathbf T) =
-2} \sum_{i=1}^n \sum_{j=1}^p (\mathbf S_{ij} - \mathbf T_{ij})^2
-\]</span></p>
-</div>
-</div>
-<div id="singular-value-decomposition" class="slide section level2">
-<h1>Singular Value Decomposition</h1>
-<p>The <a
-href="https://en.wikipedia.org/wiki/Singular_value_decomposition">Singular
-Value Decomposition (SVD)</a> is one of the most useful matrix
-decompositions.</p>
-<p>It says that any matrix <span class="math inline">\(\mathbf
-S\)</span> of rank <span class="math inline">\(r\)</span> can be written
-as <span class="math display">\[
-\mathbf S = \mathbf U \mathbf D \mathbf V^T
-\]</span> where:</p>
-<ul class="incremental">
-<li><p><span class="math inline">\(\mathbf U \in \mathbb R^{n \times
-r}\)</span>, with orthogonal columns (the scalar product between any two
-distinct columns is 0, the scalar product between any column and itself
-is 1).</p></li>
-<li><p><span class="math inline">\(\mathbf D \in \mathbb R^{r \times
-r}\)</span> is a diagonal matrix, with positive numbers on the diagonal.
-These are written in decreasing order.</p></li>
-<li><p><span class="math inline">\(\mathbf V \in \mathbb R^{p \times
-r}\)</span>, with orthogonal columns.</p></li>
-</ul>
-</div>
-<div id="matrix-approximation-by-the-svd" class="slide section level2">
-<h1>Matrix Approximation by the SVD</h1>
-<p>We can use the SVD to find the solution to our problem on the
-previous slide:</p>
-<p>We want <span class="math inline">\(\hat{\mathbf S}\)</span> such
-that <span class="math display">\[
-\hat {\mathbf S} = \text{argmin}_{\mathbf T : \text{rank}(\mathbf T) =
-2} \sum_{i=1}^n \sum_{j=1}^p (\mathbf S_{ij} - \mathbf T_{ij})^2
-\]</span></p>
-<div class="incremental">
-<p>It turns out that <span class="math inline">\(\hat{\mathbf S} =
-\mathbf U_{(2)} \mathbf D_{(2)} \mathbf V_{(2)}^T\)</span>, where</p>
-<ul class="incremental">
-<li><p><span class="math inline">\(\mathbf U_{(2)} \in \mathbb R^{n
-\times 2}\)</span> is the matrix containing the first two columns of the
-matrix <span class="math inline">\(\mathbf U\)</span> in the SVD of
-<span class="math inline">\(\mathbf S\)</span></p></li>
-<li><p><span class="math inline">\(\mathbf D_{(2)} \in \mathbb R^{2
-\times 2}\)</span> is the diagonal matrix containing the first two rows
-and columns of <span class="math inline">\(\mathbf D\)</span> in the SVD
-of <span class="math inline">\(\mathbf S\)</span>.</p></li>
-<li><p><span class="math inline">\(\mathbf V_{(2)} \in \mathbb R^{p
-\times 2}\)</span> is the matrix containing the first two columns of the
-matrix <span class="math inline">\(\mathbf V\)</span> in the SVD of
-<span class="math inline">\(\mathbf S\)</span></p></li>
-</ul>
-</div>
-</div>
-<div id="quality-of-the-approximation" class="slide section level2">
-<h1>Quality of the approximation</h1>
-<p>The values in <span class="math inline">\(\mathbf D\)</span> tell us
-about how well <span class="math inline">\(\hat {\mathbf S}\)</span>
-approximates <span class="math inline">\(\mathbf S\)</span>.</p>
-<p>We have</p>
-<p><span class="math display">\[
-1 - \frac{\mathbf D_{11}^2 + \mathbf D_{22}^2}{\sum_{i=1}^r \mathbf
-D_{ii}^2} = \frac{\sum_{i=1}^n \sum_{j=1}^p (\hat {\mathbf S}_{ij} -
-\mathbf S_{ij})^2}{\sum_{i=1}^n \sum_{j=1}^p \mathbf S_{ij}^2}
-\]</span></p>
-<p>This is the quality of a rank-2 approximation because we are
-interested in biplots and representations of <span
-class="math inline">\(\mathbf S\)</span> in the plane, but the analogous
-result holds for approximations of any rank.</p>
-</div>
-<div id="biplot-representation-of-the-svd-approximation"
-class="slide section level2">
-<h1>Biplot representation of the SVD approximation</h1>
-<p><span class="math inline">\(\hat{\mathbf S} = \mathbf U_{(2)} \mathbf
-D_{(2)} \mathbf V_{(2)}^T\)</span> is almost in the right form for a
-biplot, but not quite. We need just a left and a right matrix, and we
-have <span class="math inline">\(\mathbf D_{(2)}\)</span> in the
-middle.</p>
-<p>We have a couple of options:</p>
-<ul class="incremental">
-<li><p>Left matrix <span class="math inline">\(\mathbf U_{(2)}\)</span>,
-right matrix <span class="math inline">\(\mathbf V_{(2)} \mathbf
-D_{(2)}\)</span></p></li>
-<li><p>Left matrix <span class="math inline">\(\mathbf U_{(2)} \mathbf
-D_{(2)}\)</span>, right matrix <span class="math inline">\(\mathbf
-V_{(2)}\)</span></p></li>
-<li><p>Left matrix <span class="math inline">\(\mathbf U_{(2)} \mathbf
-D_{(2)}^{1/2}\)</span>, right matrix <span class="math inline">\(\mathbf
-V_{(2)} \mathbf D_{(2)}^{1/2}\)</span></p></li>
-</ul>
-<p>The last is referred to as the symmetric biplot, and we’ll go with
-that for now.</p>
-</div>
-<div id="example" class="slide section level2">
-<h1>Example</h1>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="do">## HairEyeColor dataset, we&#39;ll just use the women</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>HairEyeColor</span></code></pre></div>
-<pre><code>## , , Sex = Male
-## 
-##        Eye
-## Hair    Brown Blue Hazel Green
-##   Black    32   11    10     3
-##   Brown    53   50    25    15
-##   Red      10   10     7     7
-##   Blond     3   30     5     8
-## 
-## , , Sex = Female
-## 
-##        Eye
-## Hair    Brown Blue Hazel Green
-##   Black    36    9     5     2
-##   Brown    66   34    29    14
-##   Red      16    7     7     7
-##   Blond     4   64     5     8</code></pre>
-</div>
-<div class="slide section level2">
-
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>hec_svd <span class="ot">=</span> <span class="fu">svd</span>(HairEyeColor[,,<span class="dv">2</span>])</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>hec_svd</span></code></pre></div>
-<pre><code>## $d
-## [1] 98.392552 52.703025  9.489478  3.201033
-## 
-## $u
-##            [,1]       [,2]       [,3]        [,4]
-## [1,] -0.3341488  0.3032153  0.8780094  0.15970129
-## [2,] -0.7993476  0.3549164 -0.3697302 -0.31365176
-## [3,] -0.1921516  0.1032077 -0.2788792  0.93522849
-## [4,] -0.4609401 -0.8783183  0.1209359  0.03828508
-## 
-## $v
-##            [,1]        [,2]       [,3]        [,4]
-## [1,] -0.7084325  0.61625080  0.3401477  0.05155421
-## [2,] -0.6202744 -0.77213448  0.1179200 -0.07185294
-## [3,] -0.2896722  0.15444110 -0.8092755 -0.48714583
-## [4,] -0.1716771 -0.01382906 -0.4641847  0.86883155</code></pre>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Quality of the rank-2 approximation:</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(hec_svd<span class="sc">$</span>d[<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>]<span class="sc">^</span><span class="dv">2</span>) <span class="sc">/</span> <span class="fu">sum</span>(hec_svd<span class="sc">$</span>d<span class="sc">^</span><span class="dv">2</span>)</span></code></pre></div>
-<pre><code>## [1] 0.9920139</code></pre>
-</div>
-<div class="slide section level2">
-
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Distribute the singular values evenly between the left and right singular vectors</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>left_matrix <span class="ot">=</span> hec_svd<span class="sc">$</span>u <span class="sc">%*%</span> <span class="fu">diag</span>(hec_svd<span class="sc">$</span>d<span class="sc">^</span>(.<span class="dv">5</span>))</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>right_matrix <span class="ot">=</span> hec_svd<span class="sc">$</span>v <span class="sc">%*%</span> <span class="fu">diag</span>(hec_svd<span class="sc">$</span>d<span class="sc">^</span>(.<span class="dv">5</span>))</span></code></pre></div>
-<div class="incremental">
-<p>Let’s check the quality of the approximations</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>HairEyeColor[,,<span class="dv">2</span>]</span></code></pre></div>
-<pre><code>##        Eye
-## Hair    Brown Blue Hazel Green
-##   Black    36    9     5     2
-##   Brown    66   34    29    14
-##   Red      16    7     7     7
-##   Blond     4   64     5     8</code></pre>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>left_matrix <span class="sc">%*%</span> <span class="fu">t</span>(right_matrix)</span></code></pre></div>
-<pre><code>##      [,1] [,2] [,3] [,4]
-## [1,]   36    9    5    2
-## [2,]   66   34   29   14
-## [3,]   16    7    7    7
-## [4,]    4   64    5    8</code></pre>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(left_matrix[,<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>] <span class="sc">%*%</span> <span class="fu">t</span>(right_matrix[,<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>]), <span class="at">digits =</span> <span class="dv">1</span>)</span></code></pre></div>
-<pre><code>##      [,1] [,2] [,3] [,4]
-## [1,] 33.1  8.1 12.0  5.4
-## [2,] 67.2 34.3 25.7 13.2
-## [3,] 16.7  7.5  6.3  3.2
-## [4,]  3.6 63.9  6.0  8.4</code></pre>
-</div>
-</div>
-<div class="slide section level2">
-
-<p>Set up for making a biplot:</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Change the matrices to data frames and add a column describing the variables</span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>left_df <span class="ot">=</span> <span class="fu">data.frame</span>(left_matrix, <span class="at">HairColor =</span> <span class="fu">paste0</span>(<span class="fu">rownames</span>(HairEyeColor), <span class="st">&quot;Hair&quot;</span>))</span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>right_df <span class="ot">=</span> <span class="fu">data.frame</span>(right_matrix, <span class="at">EyeColor =</span> <span class="fu">paste0</span>(<span class="fu">colnames</span>(HairEyeColor), <span class="st">&quot;Eyes&quot;</span>))</span></code></pre></div>
-<div class="incremental">
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>left_df</span></code></pre></div>
-<pre><code>##          X1         X2         X3          X4 HairColor
-## 1 -3.314523  2.2012479  2.7047077  0.28572844 BlackHair
-## 2 -7.928970  2.5765809 -1.1389536 -0.56116783 BrownHair
-## 3 -1.906010  0.7492551 -0.8590873  1.67325747   RedHair
-## 4 -4.572204 -6.3763140  0.3725429  0.06849748 BlondHair</code></pre>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>right_df</span></code></pre></div>
-<pre><code>##          X1         X2         X3          X4  EyeColor
-## 1 -7.027156  4.4737866  1.0478249  0.09223785 BrownEyes
-## 2 -6.152689 -5.6054530  0.3632527 -0.12855519  BlueEyes
-## 3 -2.873346  1.1211937 -2.4929731 -0.87157352 HazelEyes
-## 4 -1.702917 -0.1003946 -1.4299209  1.55446385 GreenEyes</code></pre>
-</div>
-</div>
-<div class="slide section level2">
-
-<div class="incremental">
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(left_df) <span class="sc">+</span> <span class="fu">geom_text_repel</span>(<span class="fu">aes</span>(<span class="at">x =</span> X1, <span class="at">y =</span> X2, <span class="at">label =</span> HairColor)) <span class="sc">+</span></span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> X1, <span class="at">y =</span> X2)) <span class="sc">+</span></span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">coord_fixed</span>() <span class="sc">+</span></span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">xend =</span> X1, <span class="at">yend =</span> X2, <span class="at">x =</span> <span class="dv">0</span>, <span class="at">y =</span> <span class="dv">0</span>),</span>
-<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>                 <span class="at">data =</span> right_df, <span class="at">arrow =</span> <span class="fu">arrow</span>(<span class="at">length =</span> <span class="fu">unit</span>(<span class="fl">0.03</span>, <span class="st">&quot;npc&quot;</span>))) <span class="sc">+</span></span>
-<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_text_repel</span>(<span class="fu">aes</span>(<span class="at">x =</span> X1, <span class="at">y =</span> X2, <span class="at">label =</span> EyeColor), <span class="at">data =</span> right_df)</span></code></pre></div>
+<h1>Visualizing the relationship with one predictor</h1>
+<p>The first question we can ask is about the relationship between
+income and the probability of voting Republican in 1992. Let’s start off
+just by plotting the two points. It turns out that this isn’t trivial
+because the variables are categorical, and we need to do some work to
+get anything useful. Jittering helps with categorical variables, and we
+use it here:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>ANES92 <span class="ot">=</span> <span class="fu">subset</span>(ANES_df, year <span class="sc">==</span> <span class="dv">1992</span>)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(ANES92, <span class="fu">aes</span>(<span class="at">x =</span> income, <span class="at">y =</span> Republican)) <span class="sc">+</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>()</span></code></pre></div>
+<p><img src="lecture-15-fig/unnamed-chunk-6-1.png" /></p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(ANES92, <span class="fu">aes</span>(<span class="at">x =</span> income, <span class="at">y =</span> Republican)) <span class="sc">+</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_jitter</span>(<span class="at">height =</span> <span class="fl">0.1</span>, <span class="at">width =</span> <span class="fl">0.25</span>, <span class="at">size =</span> .<span class="dv">7</span>)</span></code></pre></div>
+<p><img src="lecture-15-fig/unnamed-chunk-6-2.png" /></p>
+<p>The jittered plot is ok, but here it’s actually more useful to
+compute the fraction of the vote going to Republicans and either look at
+the table or plot those values.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>(<span class="at">republican_fraction_by_income =</span> ANES92 <span class="sc">%&gt;%</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>     <span class="fu">group_by</span>(income) <span class="sc">%&gt;%</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>     <span class="fu">summarise</span>(<span class="at">republican_fraction =</span> <span class="fu">mean</span>(Republican, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)))</span></code></pre></div>
+<pre><code>## # A tibble: 6 × 2
+##   income republican_fraction
+##    &lt;int&gt;               &lt;dbl&gt;
+## 1      0               0.433
+## 2      1               0.267
+## 3      2               0.345
+## 4      3               0.404
+## 5      4               0.488
+## 6      5               0.532</code></pre>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="do">## zero values for income mean missing</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">subset</span>(republican_fraction_by_income, income <span class="sc">!=</span> <span class="dv">0</span>)) <span class="sc">+</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> income, <span class="at">y =</span> republican_fraction))</span></code></pre></div>
 <p><img src="lecture-15-fig/unnamed-chunk-7-1.png" /></p>
 </div>
+<div id="how-could-we-model-this-relationship"
+class="slide section level2">
+<h1>How could we model this relationship?</h1>
+<p>This gives the proportion (out of major party voters) who voted for
+Bush for each income group. Aside from group zero, which represents
+missing values of income, we see a strictly increasing pattern. How do
+we model this? Three options (not the only three) include:</p>
+<ol style="list-style-type: decimal">
+<li>Linear regression with income as a numerical predictor.</li>
+</ol>
+<ol start="2" style="list-style-type: decimal">
+<li>Logistic regression with income as a numerical predictor.</li>
+</ol>
+<ol start="3" style="list-style-type: decimal">
+<li>Regression with income as a categorical (factor) predictor. (In this
+linear and logistic give identical predictions.)</li>
+</ol>
 </div>
 <div class="slide section level2">
 
-<p>We can look at what happens the other way as well:</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Distribute the singular values evenly between the left and right singular vectors</span></span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>left_matrix <span class="ot">=</span> hec_svd<span class="sc">$</span>u</span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>right_matrix <span class="ot">=</span> hec_svd<span class="sc">$</span>v <span class="sc">%*%</span> <span class="fu">diag</span>(hec_svd<span class="sc">$</span>d)</span></code></pre></div>
-<div class="incremental">
-<p>Let’s check the quality of the approximations</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>HairEyeColor[,,<span class="dv">2</span>]</span></code></pre></div>
-<pre><code>##        Eye
-## Hair    Brown Blue Hazel Green
-##   Black    36    9     5     2
-##   Brown    66   34    29    14
-##   Red      16    7     7     7
-##   Blond     4   64     5     8</code></pre>
-<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(left_matrix[,<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>] <span class="sc">%*%</span> <span class="fu">t</span>(right_matrix[,<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>]), <span class="at">digits =</span> <span class="dv">1</span>)</span></code></pre></div>
-<pre><code>##      [,1] [,2] [,3] [,4]
-## [1,] 33.1  8.1 12.0  5.4
-## [2,] 67.2 34.3 25.7 13.2
-## [3,] 16.7  7.5  6.3  3.2
-## [4,]  3.6 63.9  6.0  8.4</code></pre>
-</div>
-</div>
-<div class="slide section level2">
-
-<p>Set up for making a biplot:</p>
-<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Change the matrices to data frames and add a column describing the variables</span></span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>left_df <span class="ot">=</span> <span class="fu">data.frame</span>(left_matrix, <span class="at">HairColor =</span> <span class="fu">paste0</span>(<span class="fu">rownames</span>(HairEyeColor), <span class="st">&quot;Hair&quot;</span>))</span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>right_df <span class="ot">=</span> <span class="fu">data.frame</span>(right_matrix, <span class="at">EyeColor =</span> <span class="fu">paste0</span>(<span class="fu">colnames</span>(HairEyeColor),<span class="st">&quot;Eyes&quot;</span>))</span></code></pre></div>
-<div class="incremental">
-<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>left_df</span></code></pre></div>
-<pre><code>##           X1         X2         X3          X4 HairColor
-## 1 -0.3341488  0.3032153  0.8780094  0.15970129 BlackHair
-## 2 -0.7993476  0.3549164 -0.3697302 -0.31365176 BrownHair
-## 3 -0.1921516  0.1032077 -0.2788792  0.93522849   RedHair
-## 4 -0.4609401 -0.8783183  0.1209359  0.03828508 BlondHair</code></pre>
-<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>right_df</span></code></pre></div>
-<pre><code>##          X1          X2        X3         X4  EyeColor
-## 1 -69.70448  32.4782811  3.227824  0.1650267 BrownEyes
-## 2 -61.03038 -40.6938228  1.119000 -0.2300036  BlueEyes
-## 3 -28.50159   8.1395131 -7.679603 -1.5593696 HazelEyes
-## 4 -16.89175  -0.7288331 -4.404871  2.7811581 GreenEyes</code></pre>
-</div>
-</div>
-<div class="slide section level2">
-
-<div class="incremental">
-<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(left_df) <span class="sc">+</span> <span class="fu">geom_text_repel</span>(<span class="fu">aes</span>(<span class="at">x =</span> X1, <span class="at">y =</span> X2, <span class="at">label =</span> HairColor)) <span class="sc">+</span></span>
-<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> X1, <span class="at">y =</span> X2)) <span class="sc">+</span></span>
-<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">coord_fixed</span>() <span class="sc">+</span></span>
-<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">xend =</span> X1, <span class="at">yend =</span> X2, <span class="at">x =</span> <span class="dv">0</span>, <span class="at">y =</span> <span class="dv">0</span>),</span>
-<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>                 <span class="at">data =</span> right_df, <span class="at">arrow =</span> <span class="fu">arrow</span>(<span class="at">length =</span> <span class="fu">unit</span>(<span class="fl">0.03</span>, <span class="st">&quot;npc&quot;</span>))) <span class="sc">+</span></span>
-<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_text_repel</span>(<span class="fu">aes</span>(<span class="at">x =</span> X1, <span class="at">y =</span> X2, <span class="at">label =</span> EyeColor), <span class="at">data =</span> right_df)</span></code></pre></div>
-<p><img src="lecture-15-fig/unnamed-chunk-12-1.png" /></p>
-</div>
-</div>
-<div class="slide section level2">
-
-<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>p1 <span class="ot">=</span> <span class="fu">ggplot</span>(left_df) <span class="sc">+</span> <span class="fu">geom_text_repel</span>(<span class="fu">aes</span>(<span class="at">x =</span> X1, <span class="at">y =</span> X2, <span class="at">label =</span> HairColor)) <span class="sc">+</span></span>
-<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> X1, <span class="at">y =</span> X2))</span>
-<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>p2 <span class="ot">=</span> <span class="fu">ggplot</span>(right_df) <span class="sc">+</span></span>
-<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">xend =</span> X1, <span class="at">yend =</span> X2, <span class="at">x =</span> <span class="dv">0</span>, <span class="at">y =</span> <span class="dv">0</span>), <span class="at">arrow =</span> <span class="fu">arrow</span>(<span class="at">length =</span> <span class="fu">unit</span>(<span class="fl">0.03</span>, <span class="st">&quot;npc&quot;</span>))) <span class="sc">+</span></span>
-<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">x =</span> X1, <span class="at">y =</span> X2, <span class="at">label =</span> EyeColor), <span class="at">nudge_y =</span> <span class="dv">2</span>, <span class="at">nudge_x =</span> <span class="sc">-</span><span class="dv">30</span>) <span class="sc">+</span> <span class="fu">xlim</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="dv">125</span>, <span class="dv">0</span>))</span>
-<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a><span class="fu">multiplot</span>(p1, p2, <span class="at">cols =</span> <span class="dv">2</span>)</span></code></pre></div>
-<p><img src="lecture-15-fig/unnamed-chunk-13-1.png" /></p>
-</div>
-<div class="slide section level2">
-
-<p>Overall:</p>
-<ul class="incremental">
-<li><p>Not every matrix can be written as the product of two two-column
-matrices.</p></li>
-<li><p>The SVD gives us the best approximation.</p></li>
-<li><p>We have some freedom in how to make the biplot based on the
-SVD.</p></li>
-<li><p>Notice that there is no estimation here: we are trying to
-represent the matrix, both the signal and the noise.</p></li>
+<p>Method 1 is the easiest to interpret: we get a slope that directly
+tells us the change in model probability of voting Republican as income
+goes up one category. However, linear regression for binary responses
+has two big limitations:</p>
+<ul>
+<li>The technical limitation is that it only works well when
+probabilities are far from 0 and 1. Otherwise, if <span
+class="math inline">\(x\)</span> is unbounded, you can end up with
+negative probabilities or probabilities greater than 1.</li>
 </ul>
+<ul>
+<li>There is also a social limitation in that statisticians will be
+quite upset with you and your work if you use linear regression to model
+binary data.</li>
+</ul>
+<p>Method 3 isn’t really a model at all: it just returns the proportion
+within each category who voted for Bush, the same as our
+<code>summarise()</code> call gave us above. There’s something to be
+said for not fitting restrictive models when you don’t have to. However,
+if our goal is to fit more complex models or make comparisons between
+different sets of data, as it eventually will be, then some degree of
+simplification may be useful to understand the patterns in the data. Or
+we might fit a simplifying model first, then go back and look at the
+data in more detail and see if there are any important features our
+model missed. That will be our basic approach here.</p>
+<p>Method 2, logistic regression, should work well. It does require
+treating a predictor that isn’t inherently a numeric variable as
+numeric, and requires a parametric form (effects are linear on a logit
+scale.) However, most of the time, doing this is reasonable as long as
+the pattern of the probability with <span
+class="math inline">\(x\)</span> is monotonic and as long as predictive
+accuracy is not the sole goal.</p>
+</div>
+<div id="logistic-regression-with-one-predictor"
+class="slide section level2">
+<h1>Logistic regression with one predictor</h1>
+<p>We fit such a logistic regression using income as a quantitative
+variable and omitting missing values. Logistic regression is a special
+case of a GLM, so we use the <code>glm()</code> function; specifying a
+binomial family fits a logistic regression by default. Firstly, we can
+just add the fitted curve to the jittered plot:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>ANES92 <span class="ot">=</span> <span class="fu">subset</span>(ANES92, income <span class="sc">&gt;</span> <span class="dv">0</span>)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(ANES92, <span class="fu">aes</span>(<span class="at">x =</span> income, <span class="at">y =</span> Republican)) <span class="sc">+</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_jitter</span>(<span class="at">height =</span> <span class="fl">0.1</span>, <span class="at">width =</span> <span class="fl">0.25</span>) <span class="sc">+</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">&quot;glm&quot;</span>, <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>))</span></code></pre></div>
+<pre><code>## `geom_smooth()` using formula = &#39;y ~ x&#39;</code></pre>
+<p><img src="lecture-15-fig/unnamed-chunk-8-1.png" /></p>
+<p>We can also fit it explicitly:</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>logit_92 <span class="ot">=</span> <span class="fu">glm</span>(Republican <span class="sc">~</span> income, <span class="at">family =</span> binomial, <span class="at">data =</span> ANES92)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(logit_92)</span></code></pre></div>
+<pre><code>## 
+## Call:
+## glm(formula = Republican ~ income, family = binomial, data = ANES92)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -1.2733  -1.0235  -0.9086   1.2096   1.6069  
+## 
+## Coefficients:
+##             Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept) -1.26750    0.17789  -7.125 1.04e-12 ***
+## income       0.29802    0.05379   5.541 3.01e-08 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 1719.1  on 1266  degrees of freedom
+## Residual deviance: 1687.2  on 1265  degrees of freedom
+##   (1014 observations deleted due to missingness)
+## AIC: 1691.2
+## 
+## Number of Fisher Scoring iterations: 4</code></pre>
+<p>The summary gives a lot of information; we’ll focus on the
+coefficients. The summary tells us that</p>
+<p><span class="math display">\[
+\text{logit}[P(\text{Republican})]=−1.27+0.298\times \text{income}
+\]</span></p>
+<p>where the logit function is</p>
+<p><span class="math display">\[
+\text{logit}(x)=\text{log}_e [x/(1−x)]
+\]</span></p>
+<p>To find <span class="math inline">\(P(\text{Republican})\)</span>, we
+invert the logit:</p>
+<p><span class="math display">\[
+P(\text{Republican})=\text{logit}^{-1} (-1.27 + 0.298 \times
+\text{income})
+\]</span></p>
+<p>where <span class="math display">\[
+\text{logit}^{-1}(y) = \frac{e^y}{1+e^y}
+\]</span></p>
+<p>For a quick and dirty interpretation, the “divide by 4” rule is
+useful: the maximum change in probability associated with a one unit
+change in <span class="math inline">\(x\)</span> is the coefficient of
+<span class="math inline">\(x\)</span> divided by four. So going one
+income group changes the model probability by up to about 7.5%. This
+looks like it’s about the increase in the curve from income group 4 to
+group 5.</p>
+<p>We can check how good the approximation is:</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="do">## the package boot has the inv.logit function</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(boot)</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="do">## P(Republican) evaluated at income = 4</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="fu">inv.logit</span>(<span class="sc">-</span><span class="fl">1.27</span> <span class="sc">+</span> <span class="fl">0.298</span> <span class="sc">*</span> <span class="dv">4</span>)</span></code></pre></div>
+<pre><code>## [1] 0.4805099</code></pre>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="do">## P(Republican) evaluated at income = 5</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="fu">inv.logit</span>(<span class="sc">-</span><span class="fl">1.27</span> <span class="sc">+</span> <span class="fl">0.298</span> <span class="sc">*</span> <span class="dv">5</span>)</span></code></pre></div>
+<pre><code>## [1] 0.5547792</code></pre>
+</div>
+<div id="fitting-a-series-of-regressions" class="slide section level2">
+<h1>Fitting a series of regressions</h1>
+<p>We’re not just interested in 1992. We want to know the relationship
+between income and vote for every Presidential election we have data for
+– is the relationship similar for every election, or are some elections
+different? Has there been a consistent change over time?</p>
+<p>In programming terms, the easiest way to fit the same model on many
+subsets of the data is to write a function that subsets the data and
+fits the model, then to write a for loop to fit the model for each
+subset. There are much more computationally efficient approaches, but
+otherwise more efficiency usually isn’t worth the effort.</p>
+<p>Here’s a function to fit our weighted logistic regression of vote on
+income for any given year.</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>logit_ANES_subset <span class="ot">=</span> <span class="cf">function</span>(my_year, data) {</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>    <span class="do">## newdata = the subset of the data corresponding the year in question</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>    newdata <span class="ot">=</span> <span class="fu">subset</span>(data, year <span class="sc">==</span> my_year)</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>    <span class="do">## remove all the income = 0 or missing data</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>    newdata <span class="ot">=</span> <span class="fu">subset</span>(newdata, income <span class="sc">&gt;</span> <span class="dv">0</span>)</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>    <span class="do">## model where the data are a subset corresponding to my_year</span></span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>    model <span class="ot">=</span> <span class="fu">glm</span>(Republican <span class="sc">~</span> income, <span class="at">family =</span> binomial, </span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>        <span class="at">data =</span> newdata)</span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>    <span class="do">## getting just the output from the logistic regression fit that we need</span></span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>    output <span class="ot">=</span> <span class="fu">c</span>(my_year, <span class="fu">summary</span>(model)<span class="sc">$</span>coef[<span class="dv">2</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>])</span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(output)</span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>The function returns the year, the model’s coefficient for income,
+and the standard error of that coefficient. We shouldn’t take the
+standard error too literally, because we haven’t accounted for the
+complex design of the ANES surveys.</p>
+<p>Let’s test the function out on 1992 (Bush-Clinton).</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">logit_ANES_subset</span>(<span class="at">my_year =</span> <span class="dv">1992</span>, <span class="at">data =</span> ANES_df)</span></code></pre></div>
+<pre><code>##                  Estimate   Std. Error 
+## 1.992000e+03 2.980249e-01 5.378931e-02</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>Once we’ve checked that it works, we can loop over every presidential
+election year in our dataset: every four years between 1948 and
+2012:</p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>years <span class="ot">=</span> <span class="fu">seq</span>(<span class="dv">1948</span>, <span class="dv">2012</span>, <span class="dv">4</span>)</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>n <span class="ot">=</span> <span class="fu">length</span>(years)</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>income_by_year <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="at">year =</span> <span class="fu">rep</span>(<span class="cn">NA</span>, n), <span class="at">income_coef =</span> <span class="fu">rep</span>(<span class="cn">NA</span>, n), <span class="at">income_se =</span> <span class="fu">rep</span>(<span class="cn">NA</span>, n))</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (J <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>n) {</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>    my_year <span class="ot">=</span> years[J]</span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>    income_by_year[J, ] <span class="ot">=</span> <span class="fu">logit_ANES_subset</span>(<span class="at">my_year =</span> my_year, <span class="at">data =</span> ANES_df)</span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+<div class="slide section level2">
+
+<p>We’ll display the results using <code>ggplot</code>.
+<code>geom_errorbar()</code> lets us add one standard error bounds. We
+shouldn’t take these too literally, just use them to get a ballpark idea
+of uncertainty.</p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>gg <span class="ot">=</span> <span class="fu">ggplot</span>(income_by_year, <span class="fu">aes</span>(<span class="at">x =</span> year, <span class="at">y =</span> income_coef, <span class="at">ymin =</span> income_coef <span class="sc">-</span> </span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>    income_se, <span class="at">ymax =</span> income_coef <span class="sc">+</span> income_se))</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>gg <span class="sc">+</span> <span class="fu">geom_errorbar</span>(<span class="at">width=</span><span class="dv">1</span>) <span class="sc">+</span> <span class="fu">geom_smooth</span>(<span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">family =</span> <span class="st">&quot;symmetric&quot;</span>)) <span class="sc">+</span> </span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">&quot;Coefficient of income in linear model&quot;</span>)</span></code></pre></div>
+<pre><code>## `geom_smooth()` using formula = &#39;y ~ x&#39;</code></pre>
+<p><img src="lecture-15-fig/unnamed-chunk-14-1.png" /></p>
+<p>The income coefficient is positive for every election, meaning richer
+people were more likely to vote Republican every time (though 1960 was
+close.) The general trend was an increase in the income coefficient from
+1952 to 1984, then a leveling-off. There was a huge drop from 1948 to
+1952; unfortunately we don’t have data from before 1948 to know if the
+election was typical.</p>
+</div>
+<div id="less-modeling-more-detail" class="slide section level2">
+<h1>Less modeling, more detail</h1>
+<p>In our regressions, we treated income as a quantitative variable. A
+simpler approach would be to treat it as a factor, and simply track the
+weighted proportion of each income group that (two-party) voted
+Republican by year. Again, this is easiest to program (if inefficient)
+using a for loop.</p>
+<p>To find means, I used use <code>mean()</code> in conjunction with
+<code>summarise()</code> in dplyr. Let’s first work out how to do it for
+the 1992 data.</p>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summarise</span>(<span class="fu">group_by</span>(ANES92, <span class="fu">factor</span>(income)), <span class="at">prop_Republican =</span> <span class="fu">mean</span>(Republican, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span></code></pre></div>
+<pre><code>## # A tibble: 5 × 2
+##   `factor(income)` prop_Republican
+##   &lt;fct&gt;                      &lt;dbl&gt;
+## 1 1                          0.267
+## 2 2                          0.345
+## 3 3                          0.404
+## 4 4                          0.488
+## 5 5                          0.532</code></pre>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>income_prop <span class="ot">=</span> ANES_df <span class="sc">%&gt;%</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(income, year) <span class="sc">%&gt;%</span></span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarise</span>(<span class="at">prop_Republican =</span> <span class="fu">mean</span>(Republican, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span></code></pre></div>
+<pre><code>## `summarise()` has grouped output by &#39;income&#39;. You can override using the
+## `.groups` argument.</code></pre>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="do">## clean up a bit</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>income_prop <span class="ot">=</span> income_prop <span class="sc">%&gt;%</span></span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">subset</span>(income <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>    <span class="do">## making income an ordered factor will give a nice color scale for us later</span></span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">income_ord =</span> <span class="fu">factor</span>(income, <span class="at">levels =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="at">ordered =</span> <span class="cn">TRUE</span>))</span></code></pre></div>
+</div>
+<div class="slide section level2">
+
+<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>gg <span class="ot">=</span> <span class="fu">ggplot</span>(income_prop, <span class="fu">aes</span>(<span class="at">x =</span> year, <span class="at">y =</span> prop_Republican, <span class="at">group =</span> income_ord, <span class="at">color =</span> income_ord)) <span class="sc">+</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">geom_line</span>()</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>gg <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">&quot;Proportion of two-party vote</span><span class="sc">\n</span><span class="st">for Republicans&quot;</span>) <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">color =</span> <span class="st">&quot;Income percentile&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-15-fig/unnamed-chunk-17-1.png" /></p>
+<p>We now have a bit more detail on the trends and the aberrant
+results.</p>
+<ul>
+<li>The top income group is reliably the most Republican, but the bottom
+income group isn’t always the most Democratic (although it was in the
+middle part of the time period.)</li>
+</ul>
+<ul>
+<li>In 1948 there were pretty big differences between income groups, but
+in the 1950s the differences between all groups except the richest were
+small. It’s guess work whether 1948 was an aberration or whether the
+small income differences from 1952 to 1968 were historically unusual
+(though I suspect it’s the latter.)</li>
+</ul>
+<ul>
+<li>The big coefficient for 1964 (compared to the elections before and
+after) might be in part an artifact of the logit scale.</li>
+</ul>
+<ul>
+<li>In 2008 there really was a big difference between income group,
+which might be attributable to the financial crisis.</li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>We can also draw lines to connect income groups by year. Because
+there are so many different years, we’ll facet them rather than color
+them.</p>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(income_prop, <span class="fu">aes</span>(<span class="at">x =</span> income, <span class="at">y =</span> prop_Republican)) <span class="sc">+</span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">facet_wrap</span>(<span class="sc">~</span> year, <span class="at">ncol =</span> <span class="dv">5</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">&quot;Proportion of two-party vote for Republican&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-15-fig/unnamed-chunk-18-1.png" /></p>
+<p>This yields less insight, but still has interesting features: notably
+the big magnitude of the uptick in Republicanism for the highest income
+group for almost every year.</p>
+</div>
+<div id="data-summaries-vs.-data-models" class="slide section level2">
+<h1>Data summaries vs. data models</h1>
+<p>Both data summaries (like our last plot) and models (like our
+logistic regressions) have their uses.</p>
+<ul>
+<li>Data summaries require fewer assumptions, and often give you a
+fuller picture than a model. However, they can be noisy or just too
+complicated to easily get a grip on.</li>
+</ul>
+<ul>
+<li>Models require assumptions, so in addition to being reductive,
+there’s more potential for things to go horribly wrong. However, models
+can be a easy way into the data: everything gets summarized in a couple
+of parameters, and you can put your effort into understanding what those
+parameters really mean. Furthermore, complexity can easily be added to
+models – for example, it’s easy to build a logistic regression model
+with multiple predictors (as we’ll see in the next lecture.)</li>
+</ul>
+<p>In practice, going back and forth between models and data summaries,
+as we did here, is often very useful in exploratory work. Models can
+usefully simplify the data so you can get the big picture. Then you can
+look a fuller data summary and bear in results that the big picture
+doesn’t explain.</p>
 </div>
 </body>
 </html>
