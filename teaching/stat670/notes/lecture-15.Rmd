@@ -42,8 +42,7 @@ Income is measured on a scale from 1 to 5:
 
 5: 96 to 100 percentile
 
-The zeroes and NA’s are missing values (this is terrible). Using percentiles allows comparability between years. Also note that this is really an ordinal variable but we might find some advantages
-in treating it as quantitative.
+Using percentiles allows comparability between years. Also note that this is really an ordinal variable but we might find some advantages in treating it as quantitative.
 
 ```{r}
 ANES = read.csv("anes.csv")

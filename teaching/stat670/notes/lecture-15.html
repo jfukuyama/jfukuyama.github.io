@@ -131,10 +131,9 @@ new modeling technique.</p>
 <p>3: 34 to 67 percentile</p>
 <p>4: 68 to 95 percentile</p>
 <p>5: 96 to 100 percentile</p>
-<p>The zeroes and NA’s are missing values (this is terrible). Using
-percentiles allows comparability between years. Also note that this is
-really an ordinal variable but we might find some advantages in treating
-it as quantitative.</p>
+<p>Using percentiles allows comparability between years. Also note that
+this is really an ordinal variable but we might find some advantages in
+treating it as quantitative.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>ANES <span class="ot">=</span> <span class="fu">read.csv</span>(<span class="st">&quot;anes.csv&quot;</span>)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>income <span class="ot">=</span> ANES<span class="sc">$</span>VCF0114</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(income)</span></code></pre></div>
