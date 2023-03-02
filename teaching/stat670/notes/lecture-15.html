@@ -284,10 +284,9 @@ variable and omitting missing values. Logistic regression is a special
 case of a GLM, so we use the <code>glm()</code> function; specifying a
 binomial family fits a logistic regression by default. Firstly, we can
 just add the fitted curve to the jittered plot:</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>ANES92 <span class="ot">=</span> <span class="fu">subset</span>(ANES92, income <span class="sc">&gt;</span> <span class="dv">0</span>)</span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(ANES92, <span class="fu">aes</span>(<span class="at">x =</span> income, <span class="at">y =</span> Republican)) <span class="sc">+</span></span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_jitter</span>(<span class="at">height =</span> <span class="fl">0.1</span>, <span class="at">width =</span> <span class="fl">0.25</span>) <span class="sc">+</span></span>
-<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">&quot;glm&quot;</span>, <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(ANES92, <span class="fu">aes</span>(<span class="at">x =</span> income, <span class="at">y =</span> Republican)) <span class="sc">+</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_jitter</span>(<span class="at">height =</span> <span class="fl">0.1</span>, <span class="at">width =</span> <span class="fl">0.25</span>) <span class="sc">+</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">&quot;glm&quot;</span>, <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>))</span></code></pre></div>
 <pre><code>## `geom_smooth()` using formula = &#39;y ~ x&#39;</code></pre>
 <p><img src="lecture-15-fig/unnamed-chunk-8-1.png" /></p>
 <p>We can also fit it explicitly:</p>
@@ -312,7 +311,7 @@ just add the fitted curve to the jittered plot:</p>
 ## 
 ##     Null deviance: 1719.1  on 1266  degrees of freedom
 ## Residual deviance: 1687.2  on 1265  degrees of freedom
-##   (1014 observations deleted due to missingness)
+##   (1218 observations deleted due to missingness)
 ## AIC: 1691.2
 ## 
 ## Number of Fisher Scoring iterations: 4</code></pre>
@@ -367,15 +366,13 @@ income for any given year.</p>
 <div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>logit_ANES_subset <span class="ot">=</span> <span class="cf">function</span>(my_year, data) {</span>
 <span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>    <span class="do">## newdata = the subset of the data corresponding the year in question</span></span>
 <span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>    newdata <span class="ot">=</span> <span class="fu">subset</span>(data, year <span class="sc">==</span> my_year)</span>
-<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>    <span class="do">## remove all the income = 0 or missing data</span></span>
-<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>    newdata <span class="ot">=</span> <span class="fu">subset</span>(newdata, income <span class="sc">&gt;</span> <span class="dv">0</span>)</span>
-<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>    <span class="do">## model where the data are a subset corresponding to my_year</span></span>
-<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>    model <span class="ot">=</span> <span class="fu">glm</span>(Republican <span class="sc">~</span> income, <span class="at">family =</span> binomial, </span>
-<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>        <span class="at">data =</span> newdata)</span>
-<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>    <span class="do">## getting just the output from the logistic regression fit that we need</span></span>
-<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>    output <span class="ot">=</span> <span class="fu">c</span>(my_year, <span class="fu">summary</span>(model)<span class="sc">$</span>coef[<span class="dv">2</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>])</span>
-<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(output)</span>
-<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>    <span class="do">## model where the data are a subset corresponding to my_year</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>    model <span class="ot">=</span> <span class="fu">glm</span>(Republican <span class="sc">~</span> income, <span class="at">family =</span> binomial, </span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>        <span class="at">data =</span> newdata)</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>    <span class="do">## getting just the output from the logistic regression fit that we need</span></span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>    output <span class="ot">=</span> <span class="fu">c</span>(my_year, <span class="fu">summary</span>(model)<span class="sc">$</span>coef[<span class="dv">2</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>])</span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(output)</span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 <p>The function returns the year, the model’s coefficient for income,
 and the standard error of that coefficient. We shouldn’t take the
 standard error too literally, because we haven’t accounted for the
@@ -427,14 +424,15 @@ using a for loop.</p>
 <code>summarise()</code> in dplyr. Let’s first work out how to do it for
 the 1992 data.</p>
 <div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summarise</span>(<span class="fu">group_by</span>(ANES92, <span class="fu">factor</span>(income)), <span class="at">prop_Republican =</span> <span class="fu">mean</span>(Republican, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span></code></pre></div>
-<pre><code>## # A tibble: 5 × 2
+<pre><code>## # A tibble: 6 × 2
 ##   `factor(income)` prop_Republican
 ##   &lt;fct&gt;                      &lt;dbl&gt;
 ## 1 1                          0.267
 ## 2 2                          0.345
 ## 3 3                          0.404
 ## 4 4                          0.488
-## 5 5                          0.532</code></pre>
+## 5 5                          0.532
+## 6 &lt;NA&gt;                       0.433</code></pre>
 <div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>income_prop <span class="ot">=</span> ANES_df <span class="sc">%&gt;%</span></span>
 <span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(income, year) <span class="sc">%&gt;%</span></span>
 <span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarise</span>(<span class="at">prop_Republican =</span> <span class="fu">mean</span>(Republican, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span></code></pre></div>
@@ -442,9 +440,8 @@ the 1992 data.</p>
 ## `.groups` argument.</code></pre>
 <div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="do">## clean up a bit</span></span>
 <span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>income_prop <span class="ot">=</span> income_prop <span class="sc">%&gt;%</span></span>
-<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">subset</span>(income <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>    <span class="do">## making income an ordered factor will give a nice color scale for us later</span></span>
-<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">income_ord =</span> <span class="fu">factor</span>(income, <span class="at">levels =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="at">ordered =</span> <span class="cn">TRUE</span>))</span></code></pre></div>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>    <span class="do">## making income an ordered factor will give a nice color scale for us later</span></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">income_ord =</span> <span class="fu">factor</span>(income, <span class="at">levels =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="at">ordered =</span> <span class="cn">TRUE</span>))</span></code></pre></div>
 </div>
 <div class="slide section level2">
 
@@ -486,7 +483,7 @@ there are so many different years, we’ll facet them rather than color
 them.</p>
 <div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(income_prop, <span class="fu">aes</span>(<span class="at">x =</span> income, <span class="at">y =</span> prop_Republican)) <span class="sc">+</span></span>
 <span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>() <span class="sc">+</span></span>
-<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">facet_wrap</span>(<span class="sc">~</span> year, <span class="at">ncol =</span> <span class="dv">5</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">&quot;Proportion of two-party vote for Republican&quot;</span>)</span></code></pre></div>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">facet_wrap</span>(<span class="sc">~</span> year, <span class="at">ncol =</span> <span class="dv">6</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">&quot;Proportion of two-party vote for Republican&quot;</span>)</span></code></pre></div>
 <p><img src="lecture-15-fig/unnamed-chunk-18-1.png" /></p>
 <p>This yields less insight, but still has interesting features: notably
 the big magnitude of the uptick in Republicanism for the highest income

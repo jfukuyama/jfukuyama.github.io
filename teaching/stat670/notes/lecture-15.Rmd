@@ -138,7 +138,6 @@ Method 2, logistic regression, should work well. It does require treating a pred
 We fit such a logistic regression using income as a quantitative variable and omitting missing values. Logistic regression is a special case of a GLM, so we use the `glm()` function; specifying a binomial family fits a logistic regression by default. Firstly, we can just add the fitted curve to the jittered plot: 
 
 ```{r}
-ANES92 = subset(ANES92, income > 0)
 ggplot(ANES92, aes(x = income, y = Republican)) +
     geom_jitter(height = 0.1, width = 0.25) +
     geom_smooth(method = "glm", method.args = list(family = "binomial"))
@@ -200,8 +199,6 @@ Here’s a function to fit our weighted logistic regression of vote on income fo
 logit_ANES_subset = function(my_year, data) {
     ## newdata = the subset of the data corresponding the year in question
     newdata = subset(data, year == my_year)
-    ## remove all the income = 0 or missing data
-    newdata = subset(newdata, income > 0)
     ## model where the data are a subset corresponding to my_year
     model = glm(Republican ~ income, family = binomial, 
         data = newdata)
@@ -262,7 +259,6 @@ income_prop = ANES_df %>%
     summarise(prop_Republican = mean(Republican, na.rm = TRUE))
 ## clean up a bit
 income_prop = income_prop %>%
-    subset(income > 0) %>%
     ## making income an ordered factor will give a nice color scale for us later
     mutate(income_ord = factor(income, levels = 1:5, ordered = TRUE))
 ```
@@ -293,10 +289,10 @@ We now have a bit more detail on the trends and the aberrant results.
 We can also draw lines to connect income groups by year. Because there are so many different years, we’ll facet them rather than color them. 
 
 
-```{r, fig.height=4}
+```{r, fig.height=4,fig.width=4.5}
 ggplot(income_prop, aes(x = income, y = prop_Republican)) +
     geom_line() +
-    facet_wrap(~ year, ncol = 5) + ylab("Proportion of two-party vote for Republican")
+    facet_wrap(~ year, ncol = 6) + ylab("Proportion of two-party vote for Republican")
 ```
 
 This yields less insight, but still has interesting features: notably the big magnitude of the uptick in Republicanism for the highest income group for almost every year.
