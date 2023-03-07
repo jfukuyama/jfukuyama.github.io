@@ -7,7 +7,7 @@
   <meta http-equiv="Content-Style-Type" content="text/css" />
   <meta name="generator" content="pandoc" />
   <meta name="author" content="Julia Fukuyama" />
-  <title>Stat 470/670 Lecture 17: Multi-Dimensional Scaling</title>
+  <title>Stat 470/670 Lecture 17: Count responses and Poisson regression</title>
   <style type="text/css">
     code{white-space: pre-wrap;}
     span.smallcaps{font-variant: small-caps;}
@@ -89,680 +89,598 @@
 </head>
 <body>
 <div class="slide titlepage">
-  <h1 class="title">Stat 470/670 Lecture 17: Multi-Dimensional
-Scaling</h1>
+  <h1 class="title">Stat 470/670 Lecture 17: Count responses and Poisson
+regression</h1>
   <p class="author">
 Julia Fukuyama
   </p>
 </div>
-<div id="setup-for-multi-dimensional-scaling"
-class="slide section level2">
-<h1>Setup for multi-dimensional scaling</h1>
-<p>Instead of measurements on variables, like in PCA, we have distances
-between the samples.</p>
-<p>The distances can be what was measured initially, or the distance
-could be constructed by the analyst from other variables that were
-measured directly.</p>
-<p>In multi-dimensional scaling, the goal is to make a map of the
-samples in a low-dimensional space (probably 2-dimensional space) so
-that the distances in that map match the distances between the samples
-as closely as possible.</p>
-</div>
-<div id="some-examples-of-inputs-for-multi-dimensional-scaling"
-class="slide section level2">
-<h1>Some examples of inputs for multi-dimensional scaling</h1>
-<ul class="incremental">
-<li><p>Subjective ratings of dissimilarities between objects</p></li>
-<li><p>Distances between politicians based on voting records</p></li>
-<li><p>Travel times between cities</p></li>
+<div id="today" class="slide section level1">
+<h1>Today</h1>
+<ul>
+<li>Poisson regression: definition and examples</li>
+</ul>
+<ul>
+<li>Offsets in Poisson regression: adding predictors whose coefficient
+is constrained to be equal to 1</li>
+</ul>
+<ul>
+<li>Deviance: the equivalent of residual sum of squares for Poisson
+regression</li>
+</ul>
+<ul>
+<li>Residuals: raw residuals are not as useful as they are in a linear
+model.</li>
 </ul>
 </div>
-<div id="fake-data-1" class="slide section level2">
-<h1>Fake Data 1</h1>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>D <span class="ot">=</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="fu">sqrt</span>(<span class="dv">2</span>),</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>             <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>,</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>             <span class="fu">sqrt</span>(<span class="dv">2</span>), <span class="dv">1</span>, <span class="dv">0</span>),</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">nrow =</span> <span class="dv">3</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(D, <span class="at">digits =</span> <span class="dv">2</span>)</span></code></pre></div>
-<pre><code>##      [,1] [,2] [,3]
-## [1,] 0.00    1 1.41
-## [2,] 1.00    0 1.00
-## [3,] 1.41    1 0.00</code></pre>
-<p>Here <code>D</code> is a distance matrix, and the <span
-class="math inline">\((i,j)\)</span> element of <code>D</code> tells us
-the distance between sample <span class="math inline">\(i\)</span> and
-sample <span class="math inline">\(j\)</span>.</p>
-<p>How would you position these samples in space so that the distances
-between them matched the distances in <code>D</code>?</p>
-</div>
-<div id="embedding-into-euclidean-space" class="slide section level2">
-<h1>Embedding into Euclidean space</h1>
-<p>In multi-dimensional scaling, we want to find an <em>embedding</em>
-of the samples into Euclidean space so that the distances between the
-embedded points match the distances between the samples as closely as
-possible.</p>
-<p>This sounds fancy, but all it means is that we create a set of
-coordinates and assign each sample a value along each coordinate so that
-the distances between the samples match the input distances.</p>
-</div>
-<div class="slide section level2">
-
-<p>How does this work on our fake data?</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cmdscale</span>(D)</span></code></pre></div>
-<pre><code>##               [,1]       [,2]
-## [1,]  7.071068e-01  0.2357023
-## [2,] -1.110223e-16 -0.4714045
-## [3,] -7.071068e-01  0.2357023</code></pre>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>mds_points <span class="ot">=</span> <span class="fu">cmdscale</span>(D)</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(mds_points)) <span class="sc">+</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">x =</span> X1, <span class="at">y =</span> X2, <span class="at">label =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>)) <span class="sc">+</span> <span class="fu">coord_fixed</span>()</span></code></pre></div>
-<p><img src="lecture-17-fig/unnamed-chunk-2-1.png" /></p>
-</div>
-<div class="slide section level2">
-
-<p>We can check that the distances match:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="do">## The dist function computes distances (Euclidean</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="do">## by default) between the rows of a data frame</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="fu">dist</span>(mds_points)</span></code></pre></div>
-<pre><code>##          1        2
-## 2 1.000000         
-## 3 1.414214 1.000000</code></pre>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="do">## compare with D, the input distances</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>D</span></code></pre></div>
-<pre><code>##          [,1] [,2]     [,3]
-## [1,] 0.000000    1 1.414214
-## [2,] 1.000000    0 1.000000
-## [3,] 1.414214    1 0.000000</code></pre>
-</div>
-<div id="classical-multi-dimensional-scaling"
-class="slide section level2">
-<h1>Classical Multi-Dimensional Scaling</h1>
-<p>One solution to the multi-dimensional scaling problem is given by
-classical multi-dimensional scaling.</p>
-<p>Let <span class="math inline">\(\mathbf D \in \mathbb R^{n \times
-n}\)</span> be a matrix where <span class="math inline">\(\mathbf
-D_{ij}\)</span> contains the square of the distance between sample <span
-class="math inline">\(i\)</span> and sample <span
-class="math inline">\(j\)</span>.</p>
-<p>Let <span class="math inline">\(\mathbf H \in \mathbb R^{n \times
-n}\)</span> be the centering matrix, <span class="math inline">\(\mathbf
-H = \mathbf I - \frac{1}{n} \mathbf 1 \mathbf 1^T\)</span>.</p>
-<p>Create the doubly-centered distance matrix <span
-class="math inline">\(\mathbf B = -\frac{1}{2} \mathbf H \mathbf D
-\mathbf H\)</span>, and let <span class="math inline">\(\mathbf U
-\mathbf \Lambda \mathbf U^T\)</span> be the singular value decomposition
-of <span class="math inline">\(\mathbf B\)</span>.</p>
-<p>Then the <span class="math inline">\(k\)</span>-dimensional solution
-to the multi-dimensional scaling problem is obtained by taking <span
-class="math inline">\(\mathbf U_{(k)} \mathbf
-\Lambda_{(k)}^{1/2}\)</span>.</p>
-</div>
-<div class="slide section level2">
-
-<p>Idea behind this solution:</p>
-<p>Suppose the distance really did come from a matrix <span
-class="math inline">\(\mathbf X \in \mathbb R^{n \times k}\)</span>,
-where we computed the Euclidean distances between the rows of <span
-class="math inline">\(\mathbf X\)</span>. For definiteness, assume that
-the columns of <span class="math inline">\(\mathbf X\)</span> are
-centered.</p>
-<p>Then it turns out (linear algebra exercise: verify this) that <span
-class="math inline">\((\mathbf H \mathbf X) (\mathbf H \mathbf X)^T =
-\mathbf B\)</span>.</p>
-<p>The top <span class="math inline">\(k\)</span> left singular vectors
-of <span class="math inline">\(\mathbf X\)</span> (which is the same as
-<span class="math inline">\(\mathbf H \mathbf X\)</span> because <span
-class="math inline">\(\mathbf X\)</span> already has centered columns)
-will therefore give the optimal representation of the true embedded
-points that we got the distances from.</p>
-<p>The singular vectors of <span class="math inline">\(\mathbf H \mathbf
-X\)</span> are the same as the singular vectors of <span
-class="math inline">\(\mathbf B\)</span>, so if we start off with <span
-class="math inline">\(\mathbf B\)</span> instead of <span
-class="math inline">\(\mathbf X\)</span>, we can still get the optimal
-low-dimensional embedding by taking the top singular vectors of <span
-class="math inline">\(\mathbf B\)</span>.</p>
-</div>
-<div id="checking-the-quality-of-the-mds-solution"
-class="slide section level2">
-<h1>Checking the quality of the MDS solution</h1>
-<p>Just as in PCA and with the SVD, we have a measure of the quality of
-the approximation.</p>
-<p>In classical multi-dimensional scaling, these are given by the
-eigenvalues of <span class="math inline">\(\mathbf B\)</span>, and
-plotting the eigenvalues tells us how how much of the “variance” is
-explained by the multi-dimensional scaling axes.</p>
-<p>If we can represent the distances perfectly with an embedding into
-<span class="math inline">\(k\)</span>-dimensional space, the top <span
-class="math inline">\(k\)</span> eigenvalues will be non-zero and the
-remainder will be zero.</p>
-<p>We can check this on our fake data, where we constructed the
-distances so that they could be exactly represented in two-dimensional
-space.</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cmdscale</span>(D, <span class="at">eig =</span> <span class="cn">TRUE</span>)<span class="sc">$</span>eig</span></code></pre></div>
-<pre><code>## [1] 1.000000e+00 3.333333e-01 2.220446e-16</code></pre>
-</div>
-<div class="slide section level2">
-
-<p>In general, you won’t be able to get an exact representation in a
-number of dimensions that’s easy to visualize, but you will want to know
-how well you’re doing with the number of dimensions you take.</p>
-<p>We use the eigenvalues to make a scree plot, analogous to the PCA
-scree plot, to measure the quality of the embedding</p>
-<p>Major difference between MDS and PCA:.</p>
-<ul class="incremental">
-<li><p>The eigenvalues can be negative.</p></li>
-<li><p>Negative eigenvalues mean that there is no embedding of the
-points so that the Euclidean distances between them exactly match the
-input distances, and the size of the negative eigenvalues indicate how
-severe the problem is.</p></li>
-<li><p>Not that important, but the terminology is that if you see
-negative eigenvalues, it means that your distances are
-<em>non-Euclidean</em>.</p></li>
+<div id="motivating-example-stop-and-frisk-data"
+class="slide section level1">
+<h1>Motivating example: Stop and frisk data</h1>
+<p>Gelman and Hill have data on police stops in New York City in
+1998–1999, during Giuliani’s mayoralty. There have been accusations that
+some ethnic groups have been stopped at rates not justified by either
+their arrest rate or their location (as measured by precinct.)</p>
+<p>The data, with noise added for confidentiality, is at <a
+href="http://www.stat.columbia.edu/~gelman/arm/examples/police/frisk_with_noise.dat">http://www.stat.columbia.edu/~gelman/arm/examples/police/frisk_with_noise.dat</a></p>
+<p>The data gives counts of police stops for all combinations of</p>
+<ul>
+<li><code>precinct</code>: 75 total</li>
+</ul>
+<ul>
+<li><code>eth</code>: Ethnicity of the person stopped, three
+possibilities (1 = Black, 2 = Hispanic, 3 = white), and</li>
+</ul>
+<ul>
+<li><code>crime</code>: The type of crime, four possibilities (1 =
+violent, 2 = weapons, 3 = property, and 4 = drug)</li>
+</ul>
+<p>This gives a total of <span class="math inline">\(75 \times 3 \times
+4 = 900\)</span> rows.</p>
+<p>There are two other variables in the data set:</p>
+<ul>
+<li><code>pop</code>: population of the ethnic group within the
+precinct, and</li>
+</ul>
+<ul>
+<li><code>past.arrests</code>: the number of arrests of people in that
+ethnic group in that precinct for that type of crime in 1997.</li>
 </ul>
 </div>
-<div id="example-of-non-embeddable-set-of-points"
-class="slide section level2">
-<h1>Example of non-embeddable set of points</h1>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>D <span class="ot">=</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, .<span class="dv">1</span>,</span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>             <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">5</span>,</span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>             <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">5</span>,</span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>             .<span class="dv">1</span>, <span class="dv">5</span>, <span class="dv">5</span>, <span class="dv">0</span>),</span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">nrow =</span> <span class="dv">4</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>D</span></code></pre></div>
-<pre><code>##      [,1] [,2] [,3] [,4]
-## [1,]  0.0    1    1  0.1
-## [2,]  1.0    0    1  5.0
-## [3,]  1.0    1    0  5.0
-## [4,]  0.1    5    5  0.0</code></pre>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>mds_points <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="fu">cmdscale</span>(D))</span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">dist</span>(mds_points)</span></code></pre></div>
-<pre><code>##          1        2        3
-## 2 2.436166                  
-## 3 2.436166 1.000000         
-## 4 2.605269 5.014562 5.014562</code></pre>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(mds_points) <span class="sc">+</span></span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">x =</span> X1, <span class="at">y =</span> X2, <span class="at">label =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>)) <span class="sc">+</span> <span class="fu">coord_fixed</span>()</span></code></pre></div>
+<div class="slide section level1">
+
+<p>The first few rows of this file are a description, so we tell R to
+skip these when reading the data.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>frisk <span class="ot">=</span> <span class="fu">read.table</span>(<span class="st">&quot;http://www.stat.columbia.edu/~gelman/arm/examples/police/frisk_with_noise.dat&quot;</span>, <span class="at">skip =</span> <span class="dv">6</span>, <span class="at">header =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(frisk)</span></code></pre></div>
+<pre><code>## [1] 900</code></pre>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(frisk)</span></code></pre></div>
+<pre><code>##      stops           pop          past.arrests       precinct       eth   
+##  Min.   :   0   Min.   :   321   Min.   :   0.0   Min.   : 1   Min.   :1  
+##  1st Qu.:  26   1st Qu.:  6844   1st Qu.:  53.0   1st Qu.:19   1st Qu.:1  
+##  Median :  72   Median : 18004   Median : 124.0   Median :38   Median :2  
+##  Mean   : 146   Mean   : 30105   Mean   : 262.8   Mean   :38   Mean   :2  
+##  3rd Qu.: 173   3rd Qu.: 46669   3rd Qu.: 287.5   3rd Qu.:57   3rd Qu.:3  
+##  Max.   :1755   Max.   :184345   Max.   :2655.0   Max.   :75   Max.   :3  
+##      crime     
+##  Min.   :1.00  
+##  1st Qu.:1.75  
+##  Median :2.50  
+##  Mean   :2.50  
+##  3rd Qu.:3.25  
+##  Max.   :4.00</code></pre>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>frisk <span class="ot">=</span> <span class="fu">mutate</span>(frisk, <span class="at">eth =</span> <span class="fu">as.factor</span>(eth))</span></code></pre></div>
+</div>
+<div class="slide section level1">
+
+<p>For the purposes of this lecture, we’ll ignore the type of crime, and
+aggregate the number of stops and past arrests over all four types. If
+you’re interested though, you should try a model that includes type of
+crime as well and see if anything changes.</p>
+<p>Aggregating in this way gives us 225 rows (75 precincts by three
+ethnic groups):</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>frisk.sum <span class="ot">=</span> frisk <span class="sc">%&gt;%</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(precinct, eth) <span class="sc">%&gt;%</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarise</span>(<span class="at">stops =</span> <span class="fu">sum</span>(stops), <span class="at">past.arrests =</span> <span class="fu">sum</span>(past.arrests), <span class="at">pop =</span> <span class="fu">mean</span>(pop))</span></code></pre></div>
+<pre><code>## `summarise()` has grouped output by &#39;precinct&#39;. You can override using the
+## `.groups` argument.</code></pre>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(frisk.sum)</span></code></pre></div>
+<pre><code>## [1] 225</code></pre>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(frisk.sum)</span></code></pre></div>
+<pre><code>##     precinct  eth        stops         past.arrests       pop        
+##  Min.   : 1   1:75   Min.   :   7.0   Min.   :  16   Min.   :   321  
+##  1st Qu.:19   2:75   1st Qu.: 133.0   1st Qu.: 312   1st Qu.:  6844  
+##  Median :38   3:75   Median : 385.0   Median : 571   Median : 18004  
+##  Mean   :38          Mean   : 584.1   Mean   :1051   Mean   : 30105  
+##  3rd Qu.:57          3rd Qu.: 824.0   3rd Qu.:1467   3rd Qu.: 46669  
+##  Max.   :75          Max.   :2771.0   Max.   :5667   Max.   :184345</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>Let’s first draw some pictures.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(frisk.sum, <span class="fu">aes</span>(<span class="at">x =</span> stops, <span class="at">color =</span> eth, <span class="at">fill =</span> eth)) <span class="sc">+</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_histogram</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">2800</span>, <span class="dv">50</span>)) <span class="sc">+</span> <span class="fu">facet_wrap</span>(<span class="sc">~</span> eth, <span class="at">ncol =</span> <span class="dv">1</span>)</span></code></pre></div>
+<p><img src="lecture-17-fig/unnamed-chunk-3-1.png" /></p>
+<p>Quite clearly, the distributions of stops for the three ethnicities
+are different from each other. There are multiple potential explanations
+of this phenomenon.</p>
+</div>
+<div class="slide section level1">
+
+<p>Let’s look at the relationship of stops with past arrests. Because of
+skewness, we log both variables.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(frisk.sum, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">log</span>(past.arrests), <span class="at">y =</span> <span class="fu">log</span>(stops), <span class="at">color =</span> eth)) <span class="sc">+</span> <span class="fu">geom_point</span>()</span></code></pre></div>
+<p><img src="lecture-17-fig/unnamed-chunk-4-1.png" /></p>
+<p>There’s certainly a relationship. The question is whether the
+relationship between the two variables is sufficient to explain the
+differences between the stops of the three ethnic groups. You could get
+at this just by adding smoother for the three groups:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(frisk.sum, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">log</span>(past.arrests), <span class="at">y =</span> <span class="fu">log</span>(stops), <span class="at">group =</span> eth, <span class="at">color =</span> eth)) <span class="sc">+</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="dv">1</span>) <span class="sc">+</span> <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">degree =</span> <span class="dv">1</span>), <span class="at">se =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
+<pre><code>## `geom_smooth()` using formula = &#39;y ~ x&#39;</code></pre>
 <p><img src="lecture-17-fig/unnamed-chunk-5-1.png" /></p>
 </div>
-<div class="slide section level2">
+<div id="poisson-regression" class="slide section level1">
+<h1>Poisson regression</h1>
+<p>We’ll model this data using (at first) <em>Poisson regression</em>,
+another form of generalized linear model.</p>
+<p>Poisson regression is used instead of standard linear regression when
+the response variable is a count (0, 1, 2, etc.) instead of a real
+number.</p>
+<p>You <em>could</em> use standard linear regression here (if you put
+the numbers into <code>lm</code> in R it will give you results), but
+Poisson regression can be better because counts tend to have a <a
+href="https://en.wikipedia.org/wiki/Poisson_distribution">Poisson
+distribution</a>, and Poisson distributed variables have a fixed
+relationship between the mean and the variance.</p>
+<p>If <span class="math inline">\(y \sim \text{Pois}(\lambda)\)</span>,
+then <span class="math inline">\(E(y) = \lambda\)</span> and <span
+class="math inline">\(\text{Var}(y) =\lambda\)</span>. This relationship
+is inconsistent with the homoskedasticity assumptions of linear
+regression.</p>
+</div>
+<div class="slide section level1">
 
-<p>As promised, this shows up in negative eigenvalues:</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>mds_eig <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="at">eig =</span> <span class="fu">cmdscale</span>(D, <span class="at">eig =</span> <span class="cn">TRUE</span>)<span class="sc">$</span>eig, <span class="at">index =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>)</span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>mds_eig</span></code></pre></div>
-<pre><code>##         eig index
-## 1 16.987227     1
-## 2  0.500000     2
-## 3  0.000000     3
-## 4 -4.234727     4</code></pre>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(mds_eig) <span class="sc">+</span> <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> index, <span class="at">y =</span> eig)) <span class="sc">+</span> <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>)</span></code></pre></div>
-<p><img src="lecture-17-fig/unnamed-chunk-6-1.png" /></p>
-</div>
-<div id="contrived-example-1-state-locations"
-class="slide section level2">
-<h1>Contrived Example 1: State locations</h1>
-<p>R contains data on state locations, including one called
-<code>state.center</code> that gives the latitude and longitude
-between</p>
-<p>What happens if we compute distances between the centers of the
-states and run multi-dimensional scaling on those distances?</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>state_locations <span class="ot">=</span> <span class="fu">data.frame</span>(state.center)</span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>state_distances <span class="ot">=</span> <span class="fu">dist</span>(state_locations, <span class="at">method =</span> <span class="st">&quot;euclidean&quot;</span>)</span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>state_mds <span class="ot">=</span> <span class="fu">cmdscale</span>(state_distances, <span class="at">eig =</span> <span class="cn">TRUE</span>, <span class="at">k =</span> <span class="dv">2</span>)</span></code></pre></div>
-</div>
-<div class="slide section level2">
-
-<p>Before we get to the MDS plot, let’s look at the scree plot to see
-the quality of the MDS solution.</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(<span class="at">eig =</span> state_mds<span class="sc">$</span>eig, <span class="at">index =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">50</span>)) <span class="sc">+</span></span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> index, <span class="at">y =</span> eig)) <span class="sc">+</span></span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggtitle</span>(<span class="st">&quot;Scree plot for MDS on distances between states&quot;</span>)</span></code></pre></div>
-<p><img src="lecture-17-fig/unnamed-chunk-8-1.png" /></p>
-<p>Why do we only get non-zero eigenvalues for the first two MDS
-axes?</p>
-</div>
-<div class="slide section level2">
-
-<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(state_mds<span class="sc">$</span>points), <span class="fu">aes</span>(<span class="at">x =</span> X1, <span class="at">y =</span> X2, <span class="at">label =</span> state.name)) <span class="sc">+</span></span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_text_repel</span>() <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">coord_fixed</span>()</span></code></pre></div>
-<p><img src="lecture-17-fig/unnamed-chunk-9-1.png" /></p>
-<p>When we plot the MDS solution, we get a map!</p>
-<p>The states all have the correct relative locations, but the
-north-south axis is going the wrong way.</p>
-<p>This is just due to an indeterminacy in the solution: the singular
-value decomposition is only determined up to a sign change for the
-singular vectors.</p>
-<p>More heuristically, since we only provide MDS with distances, we can
-only expect it to give us good approximations to the distances between
-the samples, we can’t expect it to know about north and south.</p>
-</div>
-<div id="non-metric-mds" class="slide section level2">
-<h1>Non-metric MDS</h1>
-<p>Non-metric MDS is a robust alternative to classical MDS, and it is
-used when we want a map that preserves relative distances instead of
-absolute distances.</p>
-<p>The idea is that we want to find a an embedding of the points into a
-lower-dimensional space so that the ranks of the distances are preserved
-as well as possible (the points that are the farthest from each other in
-the embedded space have the largest input distance, the points that are
-closest to each other in the embedded space have the smallest input
-distance, etc.).</p>
-<p>To do this, we find an embedding of the points into a
-lower-dimensional space <em>and</em> a monotonic transformation of the
-embedded distances so that the transformed distances recapitulate the
-input distances as well as possible. The monotone transformation is
-essentially a trick that allows us to match ranks of distances instead
-of absolute distances.</p>
-</div>
-<div class="slide section level2">
-
-<p>Notes:</p>
-<ul class="incremental">
-<li><p>NMDS is more resistant to outliers than classical MDS: if one
-point has a very large distance from all the others, the first classical
-MDS axis will tend to separate that point from the others and not be
-informative about the remaining distances.</p></li>
-<li><p>Unlike classical MDS, NMDS does not give nested solutions: if we
-do NMDS with 2 axes, the first axis will not be equal to the NMDS
-solution with 1 axis.</p></li>
-<li><p>There is no notion of percentage of variation explained by
-individual axes as in classical MDS.</p></li>
-</ul>
-</div>
-<div id="implementation-of-nmds" class="slide section level2">
-<h1>Implementation of NMDS</h1>
-<p>Let <span class="math inline">\(d_i\)</span> contain the input
-distances, and let <span class="math inline">\(f\)</span> be a monotone
-increasing function.</p>
-<p>Note that since <span class="math inline">\(f\)</span> is monotone,
-<span class="math inline">\(d_i &lt; d_j\)</span> implies that <span
-class="math inline">\(f(d_i) &lt; f(d_j)\)</span>, and so the
-<em>relative</em> distances between the points are preserved under <span
-class="math inline">\(f\)</span>.</p>
-<p>In NMDS, we want to minimize the stress function, defined as <span
+<p>In a standard Poisson regression, the response has a Poisson
+distribution with the <em>log</em> of the expected value given by a
+linear function of the predictors.</p>
+<p>In the single-variable case: <span class="math display">\[
+\log(E[Y \mid x]) = \beta_0 + \beta_1 x
+\]</span> and <span class="math display">\[
+Y \sim \text{Pois}(E[Y \mid x])
+\]</span></p>
+<div class="incremental">
+<p>If <span class="math inline">\(x\)</span> is instead a vector of
+<span class="math inline">\(p\)</span> predictors and <span
+class="math inline">\(\beta\)</span> is a vector of <span
+class="math inline">\(p\)</span> coefficients, we have <span
 class="math display">\[
-\text{STRESS}^2 = \frac{\sum_i (f(\tilde d_i) - d_i)^2}{\sum_j d_j^2}
-\]</span> where <span class="math inline">\(d\)</span> represents the
-input distances, and <span class="math inline">\(\tilde d\)</span>
-represent the distances between the embedded points.</p>
-<p>The NMDS algorithm is as follows:</p>
-<ul class="incremental">
-<li><p>Find a random embedding of the samples, e. g. by sampling from a
-normal distribution.</p></li>
-<li><p>Calculate the distances <span class="math inline">\(\tilde
-d\)</span> between the embedded sample points.</p></li>
-<li><p>Find the optimal monotonic transformation of the distances <span
-class="math inline">\(f\)</span> so that <span
-class="math inline">\(f(\tilde d)\)</span> matches <span
-class="math inline">\(d\)</span> as closely as possible.</p></li>
-<li><p>Find the embedding of the samples such that the distances between
-the embedded points matches <span class="math inline">\(f(d)\)</span> as
-closely as possible.</p></li>
-<li><p>Compare the stress to some criterion. If the change in stress is
-small enough then exit the algorithm, otherwise return to to step
-2.</p></li>
+\log(E[Y \mid x]) = \beta_0 + \beta^T x
+\]</span> and <span class="math display">\[
+Y \sim \text{Pois}(E[Y \mid x])
+\]</span></p>
+</div>
+</div>
+<div class="slide section level1">
+
+<p>We’ll start off with a Poission regression model that’s much too
+simple, and build up to a more useful one.</p>
+<p>The simplest model just treats each number of stops as a realization
+of a Poisson random variable.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>constant.glm <span class="ot">=</span> <span class="fu">glm</span>(stops <span class="sc">~</span> <span class="dv">1</span>, <span class="at">family =</span> poisson, <span class="at">data =</span> frisk.sum)</span></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># install.packages(&quot;arm&quot;)</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(arm)</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="co"># display is like summary with a little bit less of the information you don&#39;t use very much</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="fu">display</span>(constant.glm)</span></code></pre></div>
+<pre><code>## glm(formula = stops ~ 1, family = poisson, data = frisk.sum)
+##             coef.est coef.se
+## (Intercept) 6.37     0.00   
+## ---
+##   n = 225, k = 1
+##   residual deviance = 123332.5, null deviance = 123332.5 (difference = 0.0)</code></pre>
+<ul>
+<li>The coefficent estimate (on the log scale) is 6.37,</li>
+</ul>
+<ul>
+<li>Transforming to the original scale gives <span
+class="math inline">\(e^{6.37} = 584\)</span>, that is, the number of
+stops for each ethnic group within each precinct is modeled as a random
+variable with distribution</li>
+</ul>
+<p><span class="math display">\[
+\textrm{Poisson}(584).
+\]</span></p>
+<ul>
+<li>The other number to keep track of is the (residual)
+<em>deviance</em>. Low deviance is good, as long as you’re not
+overfitting.</li>
+</ul>
+<ul>
+<li>Every time you add a degree of freedom, you should expect to reduce
+the deviance by 1 if you’re just adding random noise.</li>
 </ul>
 </div>
-<div id="example-on-colors" class="slide section level2">
-<h1>Example on colors</h1>
-<p>In a psychology study (Ekman, Gosta. 1954. “Dimensions of Color
-Vision.” The Journal of Psychology 38 (2). Taylor &amp; Francis:
-467–74.), the investigator asked subjects to rate similarities between
-colors.</p>
-<p>These were combined to give overall measure of similarities between
-colors, and the results are in <code>ekman.txt</code>.</p>
-<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>ekm <span class="ot">=</span> <span class="fu">read.table</span>(<span class="st">&quot;../../datasets/ekman.txt&quot;</span>, <span class="at">header=</span><span class="cn">TRUE</span>)</span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(ekm) <span class="ot">=</span> <span class="fu">colnames</span>(ekm)</span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="do">## the elements in ekm are similarities, but we</span></span>
-<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="do">## need dissimilarities instead. We can create</span></span>
-<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a><span class="do">## dissimilarities by taking the complement of</span></span>
-<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a><span class="do">## the similarities and setting the diagonal to zero.</span></span>
-<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>ekm_dist <span class="ot">=</span> <span class="dv">1</span> <span class="sc">-</span> ekm <span class="sc">-</span> <span class="fu">diag</span>(<span class="dv">1</span>, <span class="fu">ncol</span>(ekm))</span>
-<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>ekm_dist[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>]</span></code></pre></div>
-<pre><code>##      w434 w445 w465 w472 w490
-## w434 0.00 0.14 0.58 0.58 0.82
-## w445 0.14 0.00 0.50 0.56 0.78
-## w465 0.58 0.50 0.00 0.19 0.53
-## w472 0.58 0.56 0.19 0.00 0.46
-## w490 0.82 0.78 0.53 0.46 0.00</code></pre>
+<div id="offsets" class="slide section level1">
+<h1>Offsets</h1>
+<p>One way this model is inadequate is that we might expect the number
+of stops for an ethnic group in a precinct to be proportional to the
+number of arrests for that ethnicity-precinct.</p>
+<ul>
+<li>In a GLM, we can model this using an <em>offset</em>.</li>
+</ul>
+<ul>
+<li>An offset can be thought of as a predictor whose coefficient is
+constrained to be equal to 1.</li>
+</ul>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>offset.glm <span class="ot">=</span> <span class="fu">glm</span>(stops <span class="sc">~</span> <span class="dv">1</span>, <span class="at">family =</span> poisson, <span class="at">offset =</span> <span class="fu">log</span>(past.arrests), <span class="at">data =</span> frisk.sum)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="fu">display</span>(offset.glm)</span></code></pre></div>
+<pre><code>## glm(formula = stops ~ 1, family = poisson, data = frisk.sum, 
+##     offset = log(past.arrests))
+##             coef.est coef.se
+## (Intercept) -0.59     0.00  
+## ---
+##   n = 225, k = 1
+##   residual deviance = 46120.3, null deviance = 46120.3 (difference = 0.0)</code></pre>
+<p>Since the linear predictor is on the log scale, the offset also has
+to be logged. This gives the following model for each precinct/race
+combination:</p>
+<p><span class="math display">\[
+\log[E(\textrm{stops}|\textrm{past arrests})] = -0.59 +
+\log(\textrm{past arrests})
+\]</span> or (taking the exponential of both sides) <span
+class="math display">\[
+E(\textrm{stops}|\textrm{past arrests}) = e^{-0.59 + \log(\textrm{past
+arrests})} = 0.56 \times \textrm{past arrests}
+\]</span></p>
 </div>
-<div class="slide section level2">
+<div class="slide section level1">
 
-<p>Let’s try classical MDS first:</p>
-<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>ekm_mds <span class="ot">=</span> <span class="fu">cmdscale</span>(ekm_dist, <span class="at">eig =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="do">## we can make a scree plot giving</span></span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="do">## the fraction of variance explained</span></span>
-<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(<span class="at">eig =</span> ekm_mds<span class="sc">$</span>eig,</span>
-<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>                  <span class="at">index =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(ekm_mds<span class="sc">$</span>eig))) <span class="sc">+</span></span>
-<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>                      <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> index, <span class="at">y =</span> eig))</span></code></pre></div>
-<p><img src="lecture-17-fig/unnamed-chunk-11-1.png" /></p>
-<p>Note that the negative eigenvalues at the end indicate that the
-dissimilarities cannot be exactly represented in Euclidean space, but
-the values are not that large and so we aren’t too concerned.</p>
-<p>The top two eigenvalues are quite large, indicating that a
-two-dimensional MDS solution does a reasonable job at recapitulating the
-dissimilarities between the samples.</p>
+<p>To check this, we look at the predicted number of stops for
+precinct/race combinations with 10, 100, and 1000 past arrests
+respectively:</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">augment</span>(offset.glm,</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>        <span class="at">newdata =</span> <span class="fu">data.frame</span>(<span class="at">past.arrests =</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">100</span>, <span class="dv">1000</span>)),</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>        <span class="at">type.predict =</span> <span class="st">&quot;response&quot;</span>)</span></code></pre></div>
+<pre><code>## # A tibble: 3 × 2
+##   past.arrests .fitted
+##          &lt;dbl&gt;   &lt;dbl&gt;
+## 1           10    5.56
+## 2          100   55.6 
+## 3         1000  556.</code></pre>
+<p>Our model has a much lower deviance than the constant model, so we’ve
+improved the fit by a lot.</p>
 </div>
-<div class="slide section level2">
+<div class="slide section level1">
 
-<p>And finally the plot:</p>
-<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Here we&#39;re changing variable names and</span></span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="do">## adding some additional information to</span></span>
-<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a><span class="do">## the data frame we will use to plot the</span></span>
-<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a><span class="do">## MDS solution</span></span>
-<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>ekm_points <span class="ot">=</span> ekm_mds<span class="sc">$</span>points[,<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>] <span class="sc">%&gt;%</span></span>
-<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>    as_tibble <span class="sc">%&gt;%</span></span>
-<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">setNames</span>(<span class="fu">paste0</span>(<span class="st">&quot;MDS&quot;</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
-<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>        <span class="at">name =</span> <span class="fu">rownames</span>(ekm),</span>
-<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>        <span class="at">rgb =</span> photobiology<span class="sc">::</span><span class="fu">w_length2rgb</span>(<span class="fu">as.numeric</span>(<span class="fu">sub</span>(<span class="st">&quot;w&quot;</span>, <span class="st">&quot;&quot;</span>, name))))</span>
-<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(ekm_points, <span class="fu">aes</span>(<span class="at">x =</span> MDS1, <span class="at">y =</span> MDS2)) <span class="sc">+</span></span>
-<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">col =</span> ekm_points<span class="sc">$</span>rgb, <span class="at">size =</span> <span class="dv">2</span>) <span class="sc">+</span> </span>
-<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text_repel</span>(<span class="fu">aes</span>(<span class="at">label =</span> name)) <span class="sc">+</span> <span class="fu">coord_fixed</span>()</span></code></pre></div>
-<p><img src="lecture-17-fig/unnamed-chunk-12-1.png" /></p>
+<p>Now we want to see what happens if we add ethnic group as a
+predictor. Ethnic group is categorical, so we use it as a factor.</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>eth.glm <span class="ot">=</span> <span class="fu">glm</span>(stops <span class="sc">~</span> eth, <span class="at">family =</span> poisson, <span class="at">offset =</span> <span class="fu">log</span>(past.arrests), <span class="at">data =</span> frisk.sum)</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="fu">display</span>(eth.glm)</span></code></pre></div>
+<pre><code>## glm(formula = stops ~ eth, family = poisson, data = frisk.sum, 
+##     offset = log(past.arrests))
+##             coef.est coef.se
+## (Intercept) -0.59     0.00  
+## eth2         0.07     0.01  
+## eth3        -0.16     0.01  
+## ---
+##   n = 225, k = 3
+##   residual deviance = 45437.4, null deviance = 46120.3 (difference = 682.9)</code></pre>
+<p>Notes:</p>
+<ul>
+<li>“Past arrests” doesn’t have a coefficient: the model assumes that
+expected stops are proportional to past arrests.</li>
+</ul>
+<ul>
+<li>The deviance has dropped substantially again.</li>
+</ul>
+<ul>
+<li>On the log scale, we have additive terms for the offset and for
+ethnicity (relative to eth = 1.</li>
+</ul>
+<ul>
+<li>On the original scale, the terms are multiplicative, and we can
+combine the offset and ethnicity terms to get a coefficient for each
+ethnicity. That is, the model is now</li>
+</ul>
+<p><span class="math display">\[
+\begin{align*}
+E(\textrm{stops} | \textrm{ethnic group, past arrests}) &amp;=
+e^{\textrm{intercept} + \textrm{ethnicity coefficient} +
+\textrm{log}(\textrm{past arrests})}\\
+&amp;=  \textrm{multiplier for ethnic group} \times \textrm{past
+arrests}
+\end{align*}
+\]</span></p>
+<p>where the multipliers are</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>eth.co <span class="ot">=</span> <span class="fu">coefficients</span>(eth.glm)</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>multipliers <span class="ot">=</span> <span class="fu">exp</span>(<span class="fu">c</span>(eth.co[<span class="dv">1</span>], eth.co[<span class="dv">1</span>] <span class="sc">+</span> eth.co[<span class="dv">2</span>], eth.co[<span class="dv">1</span>] <span class="sc">+</span> eth.co[<span class="dv">3</span>]))</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(multipliers)</span></code></pre></div>
+<pre><code>## (Intercept) (Intercept) (Intercept) 
+##   0.5553894   0.5957836   0.4725238</code></pre>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>eth.coef <span class="ot">=</span> <span class="fu">tidy</span>(eth.glm)<span class="sc">$</span>estimate</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>multipliers <span class="ot">=</span> <span class="fu">exp</span>(<span class="fu">c</span>(eth.coef[<span class="dv">1</span>],</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>    eth.coef[<span class="dv">1</span>] <span class="sc">+</span> eth.coef[<span class="dv">2</span>],</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>    eth.coef[<span class="dv">1</span>] <span class="sc">+</span> eth.coef[<span class="dv">3</span>]))</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>multipliers</span></code></pre></div>
+<pre><code>## [1] 0.5553894 0.5957836 0.4725238</code></pre>
+<p>for eth = 1, 2, and 3 respectively. We can check this using
+<code>augment()</code>:</p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">augment</span>(eth.glm,</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>        <span class="at">newdata =</span> <span class="fu">data.frame</span>(<span class="at">past.arrests =</span> <span class="dv">1000</span>, <span class="at">eth =</span> <span class="fu">c</span>(<span class="st">&quot;1&quot;</span>, <span class="st">&quot;2&quot;</span>, <span class="st">&quot;3&quot;</span>)),</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>        <span class="at">type.predict =</span> <span class="st">&quot;response&quot;</span>)</span></code></pre></div>
+<pre><code>## # A tibble: 3 × 3
+##   past.arrests eth   .fitted
+##          &lt;dbl&gt; &lt;chr&gt;   &lt;dbl&gt;
+## 1         1000 1        555.
+## 2         1000 2        596.
+## 3         1000 3        473.</code></pre>
 </div>
-<div id="color-data-with-nmds" class="slide section level2">
-<h1>Color data with NMDS</h1>
-<p>Remember that NMDS is a randomized algorithm, so each run can in
-principle give a different solution.</p>
-<p>The <code>metaMDS</code> function (in the package <code>vegan</code>)
-repeats the NMDS algorithm many times (20 by default) and looks for the
-best solution among the results.</p>
-<p>The output here tells us that for each run of the algorithm, the
-stresses are about the same, suggesting that the corresponding solutions
-are the same.</p>
-<p>The part of the output that says <code>Procrustes: rmse
-1.060348e-06  max resid 1.960065e-06</code> is checking for similarity
-between the solutions directly: <code>rmse</code> and <code>max
-resid</code> describe the discrepancies between the solution and the
-previous best solution.</p>
-<p>Here we see that the algorithm converges ot the same solution every
-time.</p>
-<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>ekm_nmds <span class="ot">=</span> <span class="fu">metaMDS</span>(ekm_dist, <span class="at">k =</span> <span class="dv">2</span>, <span class="at">autotransform =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
-<pre><code>## Run 0 stress 0.02310251 
-## Run 1 stress 0.02310251 
-## ... Procrustes: rmse 2.102867e-06  max resid 3.320966e-06 
-## ... Similar to previous best
-## Run 2 stress 0.02310251 
-## ... Procrustes: rmse 7.088863e-06  max resid 1.145484e-05 
-## ... Similar to previous best
-## Run 3 stress 0.02310251 
-## ... Procrustes: rmse 6.438299e-06  max resid 1.040306e-05 
-## ... Similar to previous best
-## Run 4 stress 0.02310251 
-## ... New best solution
-## ... Procrustes: rmse 4.681247e-06  max resid 7.620905e-06 
-## ... Similar to previous best
-## Run 5 stress 0.02310251 
-## ... New best solution
-## ... Procrustes: rmse 3.633134e-06  max resid 6.162556e-06 
-## ... Similar to previous best
-## Run 6 stress 0.02310251 
-## ... Procrustes: rmse 3.021893e-06  max resid 5.156862e-06 
-## ... Similar to previous best
-## Run 7 stress 0.02310251 
-## ... New best solution
-## ... Procrustes: rmse 1.146055e-06  max resid 2.470557e-06 
-## ... Similar to previous best
-## Run 8 stress 0.02310251 
-## ... New best solution
-## ... Procrustes: rmse 9.659437e-07  max resid 2.036998e-06 
-## ... Similar to previous best
-## Run 9 stress 0.02310251 
-## ... Procrustes: rmse 4.787886e-06  max resid 8.130221e-06 
-## ... Similar to previous best
-## Run 10 stress 0.02310251 
-## ... Procrustes: rmse 5.616317e-07  max resid 8.747772e-07 
-## ... Similar to previous best
-## Run 11 stress 0.02310251 
-## ... Procrustes: rmse 5.527651e-07  max resid 1.104713e-06 
-## ... Similar to previous best
-## Run 12 stress 0.02310251 
-## ... Procrustes: rmse 2.855771e-06  max resid 4.601952e-06 
-## ... Similar to previous best
-## Run 13 stress 0.02310251 
-## ... Procrustes: rmse 1.506129e-06  max resid 2.440185e-06 
-## ... Similar to previous best
-## Run 14 stress 0.02310251 
-## ... Procrustes: rmse 6.926222e-06  max resid 1.15127e-05 
-## ... Similar to previous best
-## Run 15 stress 0.02310251 
-## ... Procrustes: rmse 8.158106e-07  max resid 1.29539e-06 
-## ... Similar to previous best
-## Run 16 stress 0.02310251 
-## ... Procrustes: rmse 1.780811e-06  max resid 2.655272e-06 
-## ... Similar to previous best
-## Run 17 stress 0.02310251 
-## ... Procrustes: rmse 6.859623e-07  max resid 1.288504e-06 
-## ... Similar to previous best
-## Run 18 stress 0.02310251 
-## ... Procrustes: rmse 5.879151e-07  max resid 8.94391e-07 
-## ... Similar to previous best
-## Run 19 stress 0.02310251 
-## ... Procrustes: rmse 4.007526e-06  max resid 6.695112e-06 
-## ... Similar to previous best
-## Run 20 stress 0.02310251 
-## ... Procrustes: rmse 3.797161e-06  max resid 5.754955e-06 
-## ... Similar to previous best
-## *** Solution reached</code></pre>
-</div>
-<div class="slide section level2">
+<div class="slide section level1">
 
-<p>We would like an analog of the scree plot so that we can evaluate how
-many dimensions to use.</p>
-<p>One way to do this is to compute the stress function for each number
-of dimensions and plot that.</p>
-<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="do">## since the algorithm is random, it would be</span></span>
-<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="do">## better to do this many times for each value</span></span>
-<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a><span class="do">## of k and take the average</span></span>
-<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>stresses <span class="ot">=</span> <span class="fu">sapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="cf">function</span>(k) <span class="fu">metaMDS</span>(ekm_dist, <span class="at">k =</span> k, <span class="at">autotransform =</span> <span class="cn">FALSE</span>)<span class="sc">$</span>stress)</span></code></pre></div>
-<pre><code>## Run 0 stress 0.2721258 
-## Run 1 stress 0.5212407 
-## Run 2 stress 0.4856468 
-## Run 3 stress 0.490962 
-## Run 4 stress 0.2567348 
-## ... New best solution
-## ... Procrustes: rmse 0.05564529  max resid 0.1384309 
-## Run 5 stress 0.2687508 
-## Run 6 stress 0.4533083 
-## Run 7 stress 0.4373748 
-## Run 8 stress 0.4843117 
-## Run 9 stress 0.5071186 
-## Run 10 stress 0.5291604 
-## Run 11 stress 0.4866729 
-## Run 12 stress 0.4983676 
-## Run 13 stress 0.4942408 
-## Run 14 stress 0.4915839 
-## Run 15 stress 0.4584145 
-## Run 16 stress 0.5006447 
-## Run 17 stress 0.5165007 
-## Run 18 stress 0.5246208 
-## Run 19 stress 0.5003296 
-## Run 20 stress 0.5081357 
-## *** No convergence -- monoMDS stopping criteria:
-##     20: scale factor of the gradient &lt; sfgrmin
-## Run 0 stress 0.02310251 
-## Run 1 stress 0.02310251 
-## ... Procrustes: rmse 1.603649e-06  max resid 2.608348e-06 
-## ... Similar to previous best
-## Run 2 stress 0.02310251 
-## ... New best solution
-## ... Procrustes: rmse 1.283596e-06  max resid 2.203181e-06 
-## ... Similar to previous best
-## Run 3 stress 0.02310251 
-## ... Procrustes: rmse 9.753636e-07  max resid 1.832654e-06 
-## ... Similar to previous best
-## Run 4 stress 0.2925016 
-## Run 5 stress 0.02310251 
-## ... Procrustes: rmse 5.337933e-06  max resid 8.633325e-06 
-## ... Similar to previous best
-## Run 6 stress 0.02310251 
-## ... Procrustes: rmse 1.579965e-06  max resid 3.45673e-06 
-## ... Similar to previous best
-## Run 7 stress 0.02310251 
-## ... Procrustes: rmse 3.284343e-06  max resid 5.161338e-06 
-## ... Similar to previous best
-## Run 8 stress 0.02310251 
-## ... Procrustes: rmse 2.555243e-06  max resid 4.933159e-06 
-## ... Similar to previous best
-## Run 9 stress 0.02310251 
-## ... New best solution
-## ... Procrustes: rmse 1.01295e-06  max resid 2.103083e-06 
-## ... Similar to previous best
-## Run 10 stress 0.02310251 
-## ... Procrustes: rmse 2.232036e-06  max resid 4.119736e-06 
-## ... Similar to previous best
-## Run 11 stress 0.02310251 
-## ... Procrustes: rmse 1.663214e-06  max resid 3.072049e-06 
-## ... Similar to previous best
-## Run 12 stress 0.02310251 
-## ... Procrustes: rmse 2.237823e-06  max resid 4.174616e-06 
-## ... Similar to previous best
-## Run 13 stress 0.02310251 
-## ... New best solution
-## ... Procrustes: rmse 1.327781e-06  max resid 2.668128e-06 
-## ... Similar to previous best
-## Run 14 stress 0.02310251 
-## ... Procrustes: rmse 3.930095e-06  max resid 6.673939e-06 
-## ... Similar to previous best
-## Run 15 stress 0.02310251 
-## ... Procrustes: rmse 1.227083e-06  max resid 2.181569e-06 
-## ... Similar to previous best
-## Run 16 stress 0.02310251 
-## ... Procrustes: rmse 1.61893e-06  max resid 2.611836e-06 
-## ... Similar to previous best
-## Run 17 stress 0.02310251 
-## ... Procrustes: rmse 4.812507e-06  max resid 7.680302e-06 
-## ... Similar to previous best
-## Run 18 stress 0.02310251 
-## ... New best solution
-## ... Procrustes: rmse 9.04642e-07  max resid 1.366657e-06 
-## ... Similar to previous best
-## Run 19 stress 0.02310251 
-## ... Procrustes: rmse 2.685811e-06  max resid 5.192665e-06 
-## ... Similar to previous best
-## Run 20 stress 0.02310251 
-## ... Procrustes: rmse 4.933418e-06  max resid 7.938065e-06 
-## ... Similar to previous best
-## *** Solution reached
-## Run 0 stress 0.01253494 
-## Run 1 stress 0.01703834 
-## Run 2 stress 0.1085453 
-## Run 3 stress 0.01715047 
-## Run 4 stress 0.01483193 
-## Run 5 stress 0.0156638 
-## Run 6 stress 0.01253473 
-## ... New best solution
-## ... Procrustes: rmse 0.000744619  max resid 0.00139024 
-## ... Similar to previous best
-## Run 7 stress 0.01253767 
-## ... Procrustes: rmse 0.0008841715  max resid 0.001456 
-## ... Similar to previous best
-## Run 8 stress 0.01678396 
-## Run 9 stress 0.0171508 
-## Run 10 stress 0.01529306 
-## Run 11 stress 0.01529293 
-## Run 12 stress 0.01253648 
-## ... Procrustes: rmse 0.001276111  max resid 0.002392105 
-## ... Similar to previous best
-## Run 13 stress 0.01619717 
-## Run 14 stress 0.01514985 
-## Run 15 stress 0.01617106 
-## Run 16 stress 0.012539 
-## ... Procrustes: rmse 0.001555727  max resid 0.00261888 
-## ... Similar to previous best
-## Run 17 stress 0.0160428 
-## Run 18 stress 0.01777524 
-## Run 19 stress 0.0140412 
-## Run 20 stress 0.0124441 
-## ... New best solution
-## ... Procrustes: rmse 0.01877198  max resid 0.04687448 
-## *** No convergence -- monoMDS stopping criteria:
-##     11: no. of iterations &gt;= maxit
-##      9: stress ratio &gt; sratmax
-## Run 0 stress 0.006273768 
-## Run 1 stress 0.004990382 
-## ... New best solution
-## ... Procrustes: rmse 0.1007591  max resid 0.1849666 
-## Run 2 stress 0.00487154 
-## ... New best solution
-## ... Procrustes: rmse 0.01068611  max resid 0.02011363 
-## Run 3 stress 0.006313356 
-## Run 4 stress 0.005815049 
-## Run 5 stress 0.005724101 
-## Run 6 stress 0.01109444 
-## Run 7 stress 0.003030431 
-## ... New best solution
-## ... Procrustes: rmse 0.04301309  max resid 0.07967849 
-## Run 8 stress 0.003766835 
-## Run 9 stress 0.002812255 
-## ... New best solution
-## ... Procrustes: rmse 0.007655836  max resid 0.01192655 
-## Run 10 stress 0.002872299 
-## ... Procrustes: rmse 0.01055606  max resid 0.01956895 
-## Run 11 stress 0.006120003 
-## Run 12 stress 0.1316872 
-## Run 13 stress 0.003452073 
-## Run 14 stress 0.005912479 
-## Run 15 stress 0.006849582 
-## Run 16 stress 0.003751898 
-## Run 17 stress 0.006483368 
-## Run 18 stress 0.003709185 
-## Run 19 stress 0.004488317 
-## Run 20 stress 0.002733593 
-## ... New best solution
-## ... Procrustes: rmse 0.008442853  max resid 0.01632713 
-## *** No convergence -- monoMDS stopping criteria:
-##     19: no. of iterations &gt;= maxit
-##      1: stress ratio &gt; sratmax
-## Run 0 stress 0.0009367835 
-## Run 1 stress 0.002131138 
-## Run 2 stress 0.003907969 
-## Run 3 stress 0.001706481 
-## Run 4 stress 0.005466837 
-## Run 5 stress 0.002919591 
-## Run 6 stress 0.00258284 
-## Run 7 stress 0.003337378 
-## Run 8 stress 0.005895784 
-## Run 9 stress 0.001076621 
-## ... Procrustes: rmse 0.09829673  max resid 0.2129623 
-## Run 10 stress 0.002311725 
-## Run 11 stress 0.002533747 
-## Run 12 stress 0.001741355 
-## Run 13 stress 0.002134076 
-## Run 14 stress 0.001557201 
-## Run 15 stress 0.0006962816 
-## ... New best solution
-## ... Procrustes: rmse 0.08041192  max resid 0.1217456 
-## Run 16 stress 0.001892428 
-## Run 17 stress 0.002917626 
-## Run 18 stress 0.001702046 
-## Run 19 stress 0.002460906 
-## Run 20 stress 0.002818138 
-## *** No convergence -- monoMDS stopping criteria:
-##     20: no. of iterations &gt;= maxit</code></pre>
-<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="do">## note about above, autotransform is a parameter</span></span>
-<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="do">## that is specific to ecology data, we want to</span></span>
-<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a><span class="do">## set it to FALSE</span></span>
-<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(stresses, <span class="at">k =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>)) <span class="sc">+</span> <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> k, <span class="at">y =</span> stresses))</span></code></pre></div>
-<p><img src="lecture-17-fig/unnamed-chunk-14-1.png" /></p>
-<p>Here we see that the stress drops substantially going from 1 to 2
-dimensions, and then doesn’t go down that much once we increase the
-number of dimensions further.</p>
-<p>This indicates to us that the two-dimensional solution is likely to
-be pretty good, just as it was with classical MDS.</p>
+<p>So far we have shown that eth 1 and 2 were stopped at a
+proportionately higher fraction of their arrest rate compared to eth
+3.</p>
+<p>However, as the data isn’t from a randomized experiment, there may be
+confounding — it could be that eth 1 and 2 generally live in precincts
+with higher stop rates. (Whether this is in itself evidence of bias is
+again, controversial.)</p>
+<p>Since this is exploratory work, we won’t attempt to prove
+cause-and-effect, but we’ll see whether we can simply explain the
+results by including a precinct variable. If we can, then the NYPD might
+argue that minorities are only stopped more often because they, perhaps
+coincidentally, tend to live in precincts with high stop rates.</p>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>precinct.glm <span class="ot">=</span> <span class="fu">glm</span>(stops <span class="sc">~</span> eth <span class="sc">+</span> <span class="fu">factor</span>(precinct), <span class="at">family =</span> poisson, <span class="at">offset =</span> <span class="fu">log</span>(past.arrests), <span class="at">data =</span> frisk.sum)</span></code></pre></div>
+<p>We won’t print out the full results because we now have a coefficient
+for each precinct. Let’s just first check the deviance has gone down
+significantly:</p>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">deviance</span>(eth.glm)</span></code></pre></div>
+<pre><code>## [1] 45437.35</code></pre>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">deviance</span>(precinct.glm)</span></code></pre></div>
+<pre><code>## [1] 3427.14</code></pre>
 </div>
-<div class="slide section level2">
+<div class="slide section level1">
 
-<p>And the plot:</p>
-<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>nmds_points <span class="ot">=</span> ekm_nmds<span class="sc">$</span>points[,<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>] <span class="sc">%&gt;%</span></span>
-<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>    as_tibble <span class="sc">%&gt;%</span></span>
-<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">setNames</span>(<span class="fu">paste0</span>(<span class="st">&quot;NMDS&quot;</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">bind_cols</span>(<span class="fu">select</span>(ekm_points, rgb, name))</span>
-<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(nmds_points, <span class="fu">aes</span>(<span class="at">x =</span> NMDS1, <span class="at">y =</span> NMDS2)) <span class="sc">+</span></span>
-<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">col =</span> ekm_points<span class="sc">$</span>rgb, <span class="at">size =</span> <span class="dv">2</span>) <span class="sc">+</span> </span>
-<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text_repel</span>(<span class="fu">aes</span>(<span class="at">label =</span> name)) <span class="sc">+</span> <span class="fu">coord_fixed</span>()</span></code></pre></div>
-<p><img src="lecture-17-fig/unnamed-chunk-15-1.png" /></p>
+<p>Now look at the first few coefficients (and their standard
+errors):</p>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tidy</span>(precinct.glm)</span></code></pre></div>
+<pre><code>## # A tibble: 77 × 5
+##    term              estimate std.error statistic   p.value
+##    &lt;chr&gt;                &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;
+##  1 (Intercept)        -1.38     0.0510     -27.0  7.21e-161
+##  2 eth2                0.0102   0.00680      1.50 1.34e-  1
+##  3 eth3               -0.419    0.00943    -44.4  0        
+##  4 factor(precinct)2  -0.149    0.0740      -2.01 4.41e-  2
+##  5 factor(precinct)3   0.560    0.0568       9.87 5.87e- 23
+##  6 factor(precinct)4   1.21     0.0575      21.0  3.03e- 98
+##  7 factor(precinct)5   0.283    0.0568       4.98 6.34e-  7
+##  8 factor(precinct)6   1.14     0.0580      19.7  1.72e- 86
+##  9 factor(precinct)7   0.218    0.0643       3.39 6.96e-  4
+## 10 factor(precinct)8  -0.391    0.0569      -6.87 6.51e- 12
+## # … with 67 more rows</code></pre>
+<p>After controlling for precinct, the differences between the
+coefficients become even bigger.</p>
+</div>
+<div id="checking-the-model-residual-plots"
+class="slide section level1">
+<h1>Checking the model: Residual plots</h1>
+<p>First try: make a residual vs. fitted plot as we have done for linear
+models</p>
+<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>precinct.glm.df <span class="ot">=</span> <span class="fu">augment</span>(precinct.glm, <span class="at">type.predict =</span> <span class="st">&quot;response&quot;</span>)</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(precinct.glm.df, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">log</span>(.fitted), <span class="at">y =</span> stops <span class="sc">-</span> .fitted)) <span class="sc">+</span></span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="at">span =</span> <span class="dv">1</span>, <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">degree =</span> <span class="dv">1</span>))</span></code></pre></div>
+<pre><code>## `geom_smooth()` using formula = &#39;y ~ x&#39;</code></pre>
+<p><img src="lecture-17-fig/unnamed-chunk-17-1.png" /></p>
+<p>What do we see?</p>
+</div>
+<div id="pearson-residuals" class="slide section level1">
+<h1>Pearson residuals</h1>
+<ul>
+<li>In the Poisson model, we assume that the response has a Poisson
+distribution, and so we expect the raw residuals to be
+heteroskedastic.</li>
+</ul>
+<ul>
+<li>To see more subtle patterns, we divide the raw residuals by an
+estimate of the standard deviation.</li>
+</ul>
+<ul>
+<li>This is the “Pearson residual”: <span class="math display">\[
+(y_i - \hat y_i) / \sqrt{exp(\hat y_i)}
+\]</span> Numerator = residual and denominator = estimate of
+variance</li>
+</ul>
+</div>
+<div class="slide section level1">
+
+<p>We can plot pearson residuals instead of raw residuals:</p>
+<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>precinct.glm.df <span class="ot">=</span> <span class="fu">augment</span>(precinct.glm, <span class="at">type.predict =</span> <span class="st">&quot;response&quot;</span>, <span class="at">type.residuals =</span> <span class="st">&quot;pearson&quot;</span>)</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(precinct.glm.df, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">log</span>(.fitted), <span class="at">y =</span> .resid)) <span class="sc">+</span></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="at">span =</span> <span class="dv">1</span>, <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">degree =</span> <span class="dv">1</span>))</span></code></pre></div>
+<pre><code>## `geom_smooth()` using formula = &#39;y ~ x&#39;</code></pre>
+<p><img src="lecture-17-fig/unnamed-chunk-18-1.png" /></p>
+<p>There’s some nonlinearity in the smoother, though the amount is
+relatively small. If prediction was the goal, a nonparametric model
+might provide an improvement.</p>
+</div>
+<div id="overdispersion" class="slide section level1">
+<h1>Overdispersion</h1>
+<p>If we care about more than just the conditional expectation, however,
+we find a bigger problem. If the Poisson model were correct, the
+standardized residuals should be on a similar scale to the standard
+normal – that is, the vast majority should be within <span
+class="math inline">\(\pm 2\)</span>. From the previous graph, that’s
+clearly not the case.</p>
+<p>We need to measure the <em>overdispersion</em> in the data. We could
+do a formal <span class="math inline">\(\chi^2\)</span> test for
+overdispersion, but instead, let’s calculate the typical size of the
+squared residuals. (When we “average”, we divide the sum by the residual
+degrees of freedom.) If the Poisson model is correct, this should be
+close to 1. If it’s much more than 1, we need a better model.</p>
+<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>overdispersion <span class="ot">=</span> <span class="fu">sum</span>(precinct.glm.df<span class="sc">$</span>.resid<span class="sc">^</span><span class="dv">2</span>) <span class="sc">/</span> <span class="fu">df.residual</span>(precinct.glm)</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>overdispersion</span></code></pre></div>
+<pre><code>## [1] 21.88505</code></pre>
+<p>This is much more than 1. In fact, this happens a lot with counts –
+the data is often more dispersed than the Poisson model.</p>
+</div>
+<div id="how-bad-is-it" class="slide section level1">
+<h1>How bad is it?</h1>
+<p>We know there are problems with our model. But are they so bad that
+we can’t draw conclusions from it?</p>
+<p>Strategy:</p>
+<ul>
+<li>Simulate a fake set of data according to the fitted model, and see
+if it closely resembles the actual set.</li>
+</ul>
+<ul>
+<li>Extract the fitted values from the model.</li>
+</ul>
+<ul>
+<li>For each fitted value, simulate a new value using a Poisson
+distribution with the fitted value as the mean.</li>
+</ul>
+<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>precinct.fits <span class="ot">=</span> <span class="fu">augment</span>(precinct.glm, <span class="at">type.predict =</span> <span class="st">&quot;response&quot;</span>)<span class="sc">$</span>.fitted</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>sim1 <span class="ot">=</span> <span class="fu">rpois</span>(<span class="fu">nrow</span>(frisk.sum), <span class="at">lambda =</span> precinct.fits)</span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(frisk.sum<span class="sc">$</span>stops)</span></code></pre></div>
+<pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##     7.0   133.0   385.0   584.1   824.0  2771.0</code></pre>
+<div class="sourceCode" id="cb46"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(sim1)</span></code></pre></div>
+<pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##     9.0   158.0   379.0   583.6   817.0  2728.0</code></pre>
+<div class="sourceCode" id="cb48"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>sim.df <span class="ot">=</span> <span class="fu">data.frame</span>(frisk.sum, sim1)</span></code></pre></div>
+</div>
+<div id="do-the-marginal-distributions-match"
+class="slide section level1">
+<h1>Do the marginal distributions match?</h1>
+<div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>sim.long <span class="ot">=</span> sim.df <span class="sc">%&gt;%</span> <span class="fu">gather</span>(type, number, <span class="fu">c</span>(<span class="st">&quot;stops&quot;</span>, <span class="st">&quot;sim1&quot;</span>))</span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(sim.long, <span class="fu">aes</span>(<span class="at">x =</span> number)) <span class="sc">+</span> <span class="fu">geom_histogram</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">2800</span>, <span class="dv">50</span>)) <span class="sc">+</span> <span class="fu">facet_wrap</span>(<span class="sc">~</span>type, <span class="at">ncol =</span> <span class="dv">1</span>)</span></code></pre></div>
+<p><img src="lecture-17-fig/unnamed-chunk-21-1.png" /></p>
+<div class="sourceCode" id="cb50"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(sim.df) <span class="sc">+</span></span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stat_qq</span>(<span class="fu">aes</span>(<span class="at">sample =</span> stops),</span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>            <span class="at">distribution =</span> <span class="cf">function</span>(p) <span class="fu">quantile</span>(sim.df<span class="sc">$</span>sim1, <span class="at">probs =</span> p))</span></code></pre></div>
+<p><img src="lecture-17-fig/unnamed-chunk-21-2.png" /></p>
+</div>
+<div id="do-the-distributions-of-the-residuals-match"
+class="slide section level1">
+<h1>Do the distributions of the residuals match?</h1>
+<p>Strategy:</p>
+<ul>
+<li>Fit the same model to the simulated data.</li>
+</ul>
+<ul>
+<li>Extract the residuals from the model that used the simulated
+data.</li>
+</ul>
+<ul>
+<li>Make a QQ plot of the residuals in the model fit on simulated data
+vs. the residuals in the model fit on the real data.</li>
+</ul>
+<ul>
+<li>If the model is correct, the QQ plot should be close to a line
+through the origin with slope 1.</li>
+</ul>
+</div>
+<div class="slide section level1">
+
+<p>Real residuals are much farther from the true values than the
+simulated residuals.</p>
+<div class="sourceCode" id="cb51"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>precinct.sim <span class="ot">=</span> <span class="fu">glm</span>(sim1 <span class="sc">~</span> eth <span class="sc">+</span> <span class="fu">factor</span>(precinct), <span class="at">family =</span> poisson, <span class="at">offset =</span> <span class="fu">log</span>(past.arrests), <span class="at">data =</span> sim.df)</span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>resid.df <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="at">real.resid =</span> <span class="fu">augment</span>(precinct.glm, <span class="at">type.predict =</span> <span class="st">&quot;response&quot;</span>)<span class="sc">$</span>.resid,</span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>                      <span class="at">sim.resid =</span> <span class="fu">augment</span>(precinct.sim, <span class="at">type.predict =</span> <span class="st">&quot;response&quot;</span>)<span class="sc">$</span>.resid)</span>
+<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(resid.df) <span class="sc">+</span></span>
+<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stat_qq</span>(<span class="fu">aes</span>(<span class="at">sample =</span> sim.resid),</span>
+<span id="cb51-6"><a href="#cb51-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">distribution =</span> <span class="cf">function</span>(p) <span class="fu">quantile</span>(resid.df<span class="sc">$</span>real.resid, <span class="at">probs =</span> p)) <span class="sc">+</span></span>
+<span id="cb51-7"><a href="#cb51-7" aria-hidden="true" tabindex="-1"></a>        <span class="fu">geom_abline</span>(<span class="at">intercept =</span> <span class="dv">0</span>, <span class="at">slope =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb51-8"><a href="#cb51-8" aria-hidden="true" tabindex="-1"></a>        <span class="fu">xlab</span>(<span class="st">&quot;real residual quantiles&quot;</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">&quot;simulation residual quantiles&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-17-fig/unnamed-chunk-22-1.png" /></p>
+</div>
+<div id="fixing-overdispersion" class="slide section level1">
+<h1>Fixing overdispersion</h1>
+<ul>
+<li>Use the quasipoisson family instead of the Poisson.</li>
+</ul>
+<ul>
+<li>Coefficients will be the same, only thing that changes are standard
+errors.</li>
+</ul>
+<div class="sourceCode" id="cb52"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>precinct.quasi <span class="ot">=</span> <span class="fu">glm</span>(stops <span class="sc">~</span> eth <span class="sc">+</span> <span class="fu">factor</span>(precinct), <span class="at">family =</span> quasipoisson, <span class="at">offset =</span> <span class="fu">log</span>(past.arrests), <span class="at">data =</span> frisk.sum)</span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a><span class="fu">tidy</span>(precinct.quasi)</span></code></pre></div>
+<pre><code>## # A tibble: 77 × 5
+##    term              estimate std.error statistic  p.value
+##    &lt;chr&gt;                &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+##  1 (Intercept)        -1.38      0.239     -5.78  4.33e- 8
+##  2 eth2                0.0102    0.0318     0.320 7.49e- 1
+##  3 eth3               -0.419     0.0441    -9.49  5.49e-17
+##  4 factor(precinct)2  -0.149     0.346     -0.430 6.68e- 1
+##  5 factor(precinct)3   0.560     0.266      2.11  3.66e- 2
+##  6 factor(precinct)4   1.21      0.269      4.50  1.38e- 5
+##  7 factor(precinct)5   0.283     0.266      1.06  2.89e- 1
+##  8 factor(precinct)6   1.14      0.272      4.21  4.35e- 5
+##  9 factor(precinct)7   0.218     0.301      0.725 4.70e- 1
+## 10 factor(precinct)8  -0.391     0.266     -1.47  1.44e- 1
+## # … with 67 more rows</code></pre>
+<div class="sourceCode" id="cb54"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>precinct.fitted <span class="ot">=</span> <span class="fu">augment</span>(precinct.glm, <span class="at">type.predict =</span> <span class="st">&quot;response&quot;</span>)<span class="sc">$</span>.fitted</span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>quasi.fitted <span class="ot">=</span> <span class="fu">augment</span>(precinct.quasi, <span class="at">type.predict =</span> <span class="st">&quot;response&quot;</span>)<span class="sc">$</span>.fitted</span>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(quasi.fitted <span class="sc">-</span> precinct.fitted)</span></code></pre></div>
+<pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##       0       0       0       0       0       0</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>We now back-transform to get intervals for the stop rates by
+ethnicity, after adjusting for arrest rates and precinct.</p>
+<div class="sourceCode" id="cb56"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="do">## 2 and 3 are the rows corresponding to the eth = 2 and eth = 3 coefficients</span></span>
+<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a>eth.co <span class="ot">=</span> <span class="fu">tidy</span>(precinct.quasi)[<span class="dv">2</span><span class="sc">:</span><span class="dv">3</span>,]</span>
+<span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a>eth.co<span class="sc">$</span>ethnicity <span class="ot">=</span> <span class="fu">c</span>(<span class="st">&quot;2&quot;</span>, <span class="st">&quot;3&quot;</span>)</span>
+<span id="cb56-4"><a href="#cb56-4" aria-hidden="true" tabindex="-1"></a>eth.co.plotting <span class="ot">=</span> eth.co <span class="sc">%&gt;%</span></span>
+<span id="cb56-5"><a href="#cb56-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">estimate_rescaled =</span> <span class="fu">exp</span>(estimate),</span>
+<span id="cb56-6"><a href="#cb56-6" aria-hidden="true" tabindex="-1"></a>           <span class="at">lower =</span> <span class="fu">exp</span>(estimate <span class="sc">-</span> <span class="dv">2</span> <span class="sc">*</span> std.error),</span>
+<span id="cb56-7"><a href="#cb56-7" aria-hidden="true" tabindex="-1"></a>           <span class="at">upper =</span> <span class="fu">exp</span>(estimate <span class="sc">+</span> <span class="dv">2</span> <span class="sc">*</span> std.error))</span>
+<span id="cb56-8"><a href="#cb56-8" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(eth.co.plotting) <span class="sc">+</span></span>
+<span id="cb56-9"><a href="#cb56-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_pointrange</span>(<span class="fu">aes</span>(<span class="at">x =</span> ethnicity, <span class="at">y =</span> estimate_rescaled, <span class="at">ymin =</span> lower, <span class="at">ymax =</span> upper)) <span class="sc">+</span></span>
+<span id="cb56-10"><a href="#cb56-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_abline</span>(<span class="at">intercept =</span> <span class="dv">1</span>, <span class="at">slope =</span> <span class="dv">0</span>, <span class="at">color =</span> <span class="st">&quot;red&quot;</span>)<span class="sc">+</span></span>
+<span id="cb56-11"><a href="#cb56-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">&quot;Ratio of stop rate relative to Blacks,</span><span class="sc">\n</span><span class="st">adjusted for past arrests and precinct&quot;</span>) <span class="sc">+</span></span>
+<span id="cb56-12"><a href="#cb56-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggtitle</span>(<span class="st">&quot;Approximate 95% confidence intervals</span><span class="sc">\n</span><span class="st">for NYPD stop rates of minorities&quot;</span>) <span class="sc">+</span></span>
+<span id="cb56-13"><a href="#cb56-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">coord_flip</span>()</span></code></pre></div>
+<p><img src="lecture-17-fig/unnamed-chunk-25-1.png" /></p>
+<p>The confidence interval for comparing to whites doesn’t include 1.
+This would be consistent with a hypothesis of bias against minorities,
+though we should think very carefully about other confounding variables
+before drawing a firm conclusion (e.g. type of crime, which we ignored.)
+The statistics cannot give you a definitive answer, but they can
+constrain what sorts of answers are consistent with the data.</p>
+</div>
+<div id="other-fixes-for-overdispersion-in-poisson-models"
+class="slide section level1">
+<h1>Other fixes for overdispersion in Poisson models</h1>
+<p>There are lots of alternative approaches:</p>
+<ul>
+<li>Negative binomial regression is an alternative to the quasipoisson
+when the count data is overdispersed.</li>
+<li>Nonparametric approaches like loess and GAM can give you a better
+fit for the conditional expectation, at the cost of making inference
+much more complicated.</li>
+<li>A multilevel model has appeal here because of the large number of
+precincts. It can deal with overdispersion as well as regularize the
+estimates for the precincts. These get complicated very quickly
+though..</li>
+</ul>
+</div>
+<div id="overall" class="slide section level1">
+<h1>Overall</h1>
+<ul>
+<li>We saw Poisson regression and how/why to include offsets in a
+Poisson regression model.</li>
+</ul>
+<ul>
+<li>We saw how to compare models using residual deviance.</li>
+</ul>
+<ul>
+<li>We saw why we need to use Pearson residuals instead of raw
+residuals.</li>
+</ul>
 </div>
 </body>
 </html>
