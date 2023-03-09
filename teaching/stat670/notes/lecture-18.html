@@ -7,7 +7,7 @@
   <meta http-equiv="Content-Style-Type" content="text/css" />
   <meta name="generator" content="pandoc" />
   <meta name="author" content="Julia Fukuyama" />
-  <title>Stat 470/670 Lecture 18: Functions in R and some exploratory analysis</title>
+  <title>Stat 470/670 Lecture 18: Categorical data and contingency tables</title>
   <style type="text/css">
     code{white-space: pre-wrap;}
     span.smallcaps{font-variant: small-caps;}
@@ -15,6 +15,69 @@
     div.column{display: inline-block; vertical-align: top; width: 50%;}
     div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
     ul.task-list{list-style: none;}
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
   </style>
   <link rel="stylesheet" type="text/css" media="screen, projection, print"
     href="https://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
@@ -23,142 +86,380 @@
 </head>
 <body>
 <div class="slide titlepage">
-  <h1 class="title">Stat 470/670 Lecture 18: Functions in R and some
-exploratory analysis</h1>
+  <h1 class="title">Stat 470/670 Lecture 18: Categorical data and
+contingency tables</h1>
   <p class="author">
 Julia Fukuyama
   </p>
 </div>
-<div id="today" class="slide section level2">
-<h1>Today</h1>
-<ul class="incremental">
-<li><p>Functions (<a
-href="http://r4ds.had.co.nz/functions.html">Reading</a> in the R for
-Data Science book)</p></li>
-<li><p>Analysis of congressional voting data</p></li>
-<li><p>Additional reading: <a
-href="https://www.datacamp.com/community/tutorials/r-tutorial-apply-family">Data
-Camp tutorial</a> on the apply family of functions (will be useful for
-the mini project).</p></li>
+<div id="goal-today-visualizing-categorical-data"
+class="slide section level1">
+<h1>Goal today: Visualizing categorical data</h1>
+<ul>
+<li>Reading: <a
+href="http://euclid.psych.yorku.ca/datavis.ca/courses/VCD/vcd-tutorial.pdf">vcd
+tutorial</a></li>
+</ul>
+<ul>
+<li>We will mainly use the vcd package.</li>
+</ul>
+<ul>
+<li>Many tools don’t work well (e.g. scatterplots don’t make much sense
+when we have all categorical data)</li>
+</ul>
+<ul>
+<li>Mosaic plot will be the equivalent of a scatterplot</li>
+</ul>
+<ul>
+<li>Cotab plot will be the equivalent of a coplot</li>
+</ul>
+<ul>
+<li>Doubledecker plot for displaying conditional probabilities</li>
 </ul>
 </div>
-<div id="functions" class="slide section level2">
-<h1>Functions</h1>
-<p>The purpose of a function is to tie together related commands into a
-single object.</p>
-<p>You should create a function when you see yourself copying the same
-code, or running very similar chunks of code over and over.</p>
-<p>Tying together the commands into a function allows you to abstract
-away the details and ultimately makes your scripts more readable.</p>
-</div>
-<div id="functions-in-r" class="slide section level2">
-<h1>Functions in R</h1>
-<p>Components:</p>
-<ul class="incremental">
-<li><p>Name</p></li>
-<li><p>Arguments: give the inputs to the function, generally the data
-you want your function to work on and some extra information about the
-details of the computation.</p></li>
-<li><p>Body: Everything in between <code>{</code> and <code>}</code>,
-the set of commands that you need to run.</p></li>
-<li><p>Return value: The end product of the function.</p></li>
+<div id="motivating-example-ucb-admissions-data"
+class="slide section level1">
+<h1>Motivating example: UCB Admissions Data</h1>
+<p>The admissions data is formatted as a three-way <em>contingency
+table</em>.</p>
+<p>In a contingency table, each dimension of the table (rows and columns
+for two-way tables) gives the levels of one variable.</p>
+<p>For the admissions data, we have</p>
+<ul>
+<li><code>Admit</code>: Whether the applicant was admitted, either
+<code>Admitted</code> or <code>Rejected</code>,</li>
 </ul>
-<div class="incremental">
-<p>Function definition syntax in R:</p>
-<pre><code>euclidean_norm = function(arg1, arg2) {
-    y = sqrt(arg1^2 + arg2^2)
-    return(y)
-}</code></pre>
-<p>Function use syntax: If you wanted to compute the
-<code>euclidean_norm</code> function with <code>arg1</code> set to
-<code>1</code> and <code>arg2</code> set to <code>.5</code>, you would
-use</p>
-<pre><code>n = euclidean_norm(arg1 = 1, arg2 = .5)</code></pre>
-</div>
-</div>
-<div id="function-arguments" class="slide section level2">
-<h1>Function arguments</h1>
-<p>Function arguments can be anything, but generally fall into two broad
-classes:</p>
-<ul class="incremental">
-<li><p>Data arguments: gives the function the data to compute
-on</p></li>
-<li><p>Detail arguments: describes how the computation should be
-performed, often given default values.</p></li>
+<ul>
+<li><code>Gender</code>: The gender of the applicant, either
+<code>Male</code> or <code>Female</code>,</li>
 </ul>
-<p>For example:</p>
-<ul class="incremental">
-<li><p><code>log</code>: Two arguments: <code>x</code>, giving the
-number to take the logarithm of, and <code>base</code>, giving the base
-of the logarithm. The default is <code>exp(1)</code>.</p></li>
-<li><p><code>prcomp</code>: Data argument is <code>x</code>, the matrix
-to take the principal components of, and detail arguments
-<code>scale.</code>, <code>center</code>, <code>rank</code> control
-whether we scale the variables, whether we center the variables, and the
-number of principal components to keep.</p></li>
+<ul>
+<li><code>Dept</code>: The academic department the applicant wanted
+admission into, labeled <code>A</code> through <code>F</code>.</li>
 </ul>
+<p>The cells in the table represent the number of observations with each
+combination of values: the <code>[1,1,1]</code> element of
+<code>UCBAdmissions</code> is the number of admitted men to Department
+A, the <code>[2,1,1]</code> element is the number of rejected men to
+Department A, and so on.</p>
 </div>
-<div id="what-the-function-knows-about" class="slide section level2">
-<h1>What the function knows about</h1>
-<p>Each function has its own <em>environment</em>.</p>
-<ul class="incremental">
-<li><p>The function’s environment includes all the variables in the
-global environment (everything you can access when you’re using R), plus
-variables corresponding to the function arguments.</p></li>
-<li><p>If the function arguments have the same name as variables in the
-global environment, the function arguments take precedence.</p></li>
-<li><p>When you assign values to variables inside the function, that
-only affects the environment inside the function, and they won’t be
-accessible outside of the function.</p></li>
-</ul>
-</div>
-<div class="slide section level2">
+<div class="slide section level1">
 
-<p>For example, try this in your R session:</p>
-<pre><code>euclidean_norm = function(x1, x2) {
-    y = x1^2 + x2^2
-    return(y)
-}
-x1 = 0
-y = 0
-euclidean_norm(x1 = 1, x2 = 1)
-x1
-y</code></pre>
-<p>What does <code>euclidean_norm(x1 = 1, x2 = 1)</code> return?</p>
-<p>What happens to the values of <code>x1</code> and <code>y</code>
-after you call the <code>euclidean_norm</code> function?</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(vcd)</span></code></pre></div>
+<pre><code>## Loading required package: grid</code></pre>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(UCBAdmissions)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>UCBAdmissions</span></code></pre></div>
+<pre><code>## , , Dept = A
+## 
+##           Gender
+## Admit      Male Female
+##   Admitted  512     89
+##   Rejected  313     19
+## 
+## , , Dept = B
+## 
+##           Gender
+## Admit      Male Female
+##   Admitted  353     17
+##   Rejected  207      8
+## 
+## , , Dept = C
+## 
+##           Gender
+## Admit      Male Female
+##   Admitted  120    202
+##   Rejected  205    391
+## 
+## , , Dept = D
+## 
+##           Gender
+## Admit      Male Female
+##   Admitted  138    131
+##   Rejected  279    244
+## 
+## , , Dept = E
+## 
+##           Gender
+## Admit      Male Female
+##   Admitted   53     94
+##   Rejected  138    299
+## 
+## , , Dept = F
+## 
+##           Gender
+## Admit      Male Female
+##   Admitted   22     24
+##   Rejected  351    317</code></pre>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="do">## the structable command in vcd lets us re-arrange contingency tables</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">structable</span>(Admit <span class="sc">~</span> Gender, <span class="at">data =</span> UCBAdmissions)</span></code></pre></div>
+<pre><code>##        Admit Admitted Rejected
+## Gender                        
+## Male             1198     1493
+## Female            557     1278</code></pre>
 </div>
-<div id="return-values" class="slide section level2">
-<h1>Return values</h1>
-<p>The function will go through the commands in its body until it
-reaches the end or a <code>return</code> statement, whichever comes
-first.</p>
-<p>If it reaches a <code>return</code> statement before the end of the
-set of commands in the body, it will return the value in the
-<code>return</code> statement.</p>
-<p>Otherwise, it will return the result of the last computation it
-performed.</p>
+<div id="what-questions-do-we-have-here" class="slide section level1">
+<h1>What questions do we have here?</h1>
+<p>For the admissions data (and generally for contingency tables), the
+first thing we want to know is whether the numbers are consistent with
+independence between the variables we measured.</p>
+<p>In particular, for the admissions data, we want to know whether
+admission is independent of gender: if it’s not, we might suspect that
+there is some sort of gender-based discrimination happening in the
+admissions process, and we would want to complain to someone.</p>
+<p>If the variables aren’t independent of each other, we want to know
+what the cause is.</p>
 </div>
-<div class="slide section level2">
+<div id="chi-squared-test-of-independence" class="slide section level1">
+<h1>Chi-squared test of independence</h1>
+<p>If all we care about is testing, we could just use a chi-squared test
+of independence and be done.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">chisq.test</span>(<span class="fu">structable</span>(Admit <span class="sc">~</span> Gender, <span class="at">data =</span> UCBAdmissions), <span class="at">correct =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
+<pre><code>## 
+##  Pearson&#39;s Chi-squared test
+## 
+## data:  structable(Admit ~ Gender, data = UCBAdmissions)
+## X-squared = 92.205, df = 1, p-value &lt; 2.2e-16</code></pre>
+<p>If we do that test, we see that the two factors are not independent,
+but there are still some questions we might have:</p>
+<ul>
+<li>What is the nature of the non-independence?</li>
+</ul>
+<ul>
+<li>What cells in the contingency table are over- or under-represented
+compared to what we would expect under independence of the two
+factors?</li>
+</ul>
+</div>
+<div id="mosaic-plot" class="slide section level1">
+<h1>Mosaic plot</h1>
+<p>A mosaic plot gives a visualization of a two-way contingency
+table.</p>
+<ul>
+<li>Each cell in the contingency table is represented by a tile.</li>
+<li>The area of the tile is proportional to the number of observations
+in the corresponding cell of the contingency table.</li>
+<li>The height of a row is proportional to the marginal probability of
+the category described by that row.</li>
+</ul>
+</div>
+<div class="slide section level1">
 
-<p>For example, how does this function work?</p>
-<pre><code>string_is_yes = function(string) {
-    if(string == &quot;yes&quot;) {
-        return(TRUE)
-    }
-    FALSE
-}</code></pre>
-<div class="incremental">
-<p>A more readable version of this function is</p>
-<pre><code>string_is_yes = function(string) {
-    if(string == &quot;yes&quot;) {
-        return(TRUE)
-    } else {
-        return(FALSE)
-    }
-}</code></pre>
-<p>but the two do the same thing.</p>
+<p>Let’s take a look at the admissions data with a mosaic plot.</p>
+<p>Here we’re looking at admission and gender. The area of each tile
+shows us how many applicants were in each of the four categories: either
+admitted/male, admitted/female, rejected/male, or rejected/female.</p>
+<p>The heights of the tiles represent the overall fraction of applicants
+that were male or female. (If we call the function the other way,
+<code>mosaic(~ Admit + Gender)</code>, the heights of the tiles would
+represent the overall fraction of applicants that were admitted or
+rejected, you can try it out and see.)</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mosaic</span>(<span class="sc">~</span> Gender <span class="sc">+</span> Admit, <span class="at">data =</span> UCBAdmissions)</span></code></pre></div>
+<p><img src="lecture-18-fig/unnamed-chunk-3-1.png" /></p>
 </div>
+<div class="slide section level1">
+
+<p>The really nice thing about mosaic plots is that they tell us about
+departures from independence.</p>
+<p>It turns out (you can try to figure the math out yourself if you’re
+interested) that if the factors were really independent of each other,
+the boundaries of the tiles would match up, and we would have something
+that looks like this:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mosaic</span>(<span class="fu">independence_table</span>(<span class="fu">structable</span>(Admit <span class="sc">~</span> Gender, <span class="at">data =</span> UCBAdmissions)))</span></code></pre></div>
+<p><img src="lecture-18-fig/unnamed-chunk-4-1.png" /></p>
+<p>To the extent that the boundaries of the tiles don’t match, we can
+see which categories are over-represented or under-represented.</p>
+</div>
+<div class="slide section level1">
+
+<p>The R function allows us to color the tiles as an additional way to
+show departures from independence: in the coloring scheme below, blue
+tiles represent cells that have more observations than we would expect
+if the factors were independent, and red tiles represent cells that have
+fewer observations than we would expect if the factors were
+independent.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mosaic</span>(<span class="sc">~</span> Gender <span class="sc">+</span> Admit, <span class="at">data =</span> UCBAdmissions, <span class="at">gp =</span> shading_max)</span></code></pre></div>
+<p><img src="lecture-18-fig/unnamed-chunk-5-1.png" /></p>
+<p>The colors represent residuals from the independence model: how many
+more observations do we have than we would expect if the factors were
+actually independent of each other?</p>
+<p>There are a number of different options for coloring, but they are
+all based on deviations from expected values under the independence
+model.</p>
+</div>
+<div class="slide section level1">
+
+<p>We can check this:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>(<span class="at">E =</span> <span class="fu">independence_table</span>(<span class="fu">structable</span>(Admit <span class="sc">~</span> Gender, <span class="at">data =</span> UCBAdmissions)))</span></code></pre></div>
+<pre><code>##         Admit
+## Gender    Admitted Rejected
+##   Male   1043.4611 1647.539
+##   Female  711.5389 1123.461</code></pre>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>(<span class="at">O =</span> <span class="fu">structable</span>(Admit <span class="sc">~</span> Gender, <span class="at">data =</span> UCBAdmissions))</span></code></pre></div>
+<pre><code>##        Admit Admitted Rejected
+## Gender                        
+## Male             1198     1493
+## Female            557     1278</code></pre>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Recall that this is the Chi-squared test statistic</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>((O <span class="sc">-</span> E)<span class="sc">^</span><span class="dv">2</span> <span class="sc">/</span> E)</span></code></pre></div>
+<pre><code>## [1] 92.20528</code></pre>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="do">## These are the &quot;Pearson residuals&quot;</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>((O <span class="sc">-</span> E)<span class="sc">^</span><span class="dv">2</span> <span class="sc">/</span> E) <span class="sc">*</span> <span class="fu">sign</span>(O <span class="sc">-</span> E)</span></code></pre></div>
+<pre><code>##        Admit  Admitted  Rejected
+## Gender                          
+## Male          4.784093 -3.807325
+## Female       -5.793466  4.610614</code></pre>
+</div>
+<div id="conditional-independence" class="slide section level1">
+<h1>Conditional independence</h1>
+<p>We’ve seen that there’s a lack of independence between gender and
+admission, so we would like to investigate more to see if we can explain
+the non-independence.</p>
+<p>We have one other variable in our contingency table: Department.</p>
+<p>We can look at how the departments differ in their admissions rates
+and in the gender composition of their applicant pools:</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">structable</span>(Dept <span class="sc">~</span> Admit, <span class="at">data =</span> UCBAdmissions)</span></code></pre></div>
+<pre><code>##          Dept   A   B   C   D   E   F
+## Admit                                
+## Admitted      601 370 322 269 147  46
+## Rejected      332 215 596 523 437 668</code></pre>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">structable</span>(Dept <span class="sc">~</span> Gender, <span class="at">data =</span> UCBAdmissions)</span></code></pre></div>
+<pre><code>##        Dept   A   B   C   D   E   F
+## Gender                             
+## Male        825 560 325 417 191 373
+## Female      108  25 593 375 393 341</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>Or, more to the point of this course, we can look at the same
+information graphically:</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mosaic</span>(<span class="sc">~</span> Dept <span class="sc">+</span> Gender, <span class="at">data =</span> UCBAdmissions, <span class="at">gp =</span> shading_max)</span></code></pre></div>
+<p><img src="lecture-18-fig/unnamed-chunk-8-1.png" /></p>
+</div>
+<div class="slide section level1">
+
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mosaic</span>(<span class="sc">~</span> Dept <span class="sc">+</span> Admit, <span class="at">data =</span> UCBAdmissions, <span class="at">gp =</span> shading_max)</span></code></pre></div>
+<p><img src="lecture-18-fig/unnamed-chunk-9-1.png" /></p>
+<p>Note that here, when we plot with <code>Dept</code> on the vertical
+axis, it is easy to compare the conditional probabilities of gender
+given department (from the first plot) or admission given department
+(from the second plot) by comparing the widths of the bars. If we had
+plotted the other way (<code>mosaic(~ Dept + Gender)</code>), we would
+have to compare areas instead of widths, which is much more difficult
+perceptually.</p>
+<p>Since the different departments both admit students at very different
+rates and have very different proportions of male and female applicants,
+it is possible that the relationship between admission and gender is
+very different conditional on department than it is unconditionally.</p>
+</div>
+<div id="cotab-plot" class="slide section level1">
+<h1>Cotab plot</h1>
+<p>Next, we want to know about independence or lack of independence
+conditional on department. A good tool for this is a cotab plot, which
+is the analog of a coplot, but for categorical data.</p>
+<p>A cotab plot tells us about the conditional independence of two
+variables (the two explanatory variables) given a third (the given
+variable).</p>
+<ul>
+<li>Each panel corresponds to a subset of the data that all have the
+same value of the given variable.</li>
+</ul>
+<ul>
+<li>In each panel, we make a mosaic plot describing the relationships
+between the two explanatory variables.</li>
+</ul>
+<p>The cotab plot allows us to see not only whether the variables are
+conditionally independent, but also whether the variables are
+conditionally independent for some values of the given variable. If
+there is a lack of conditional independence, it shows us which
+combinations of factor levels are over- or under-represented.</p>
+</div>
+<div id="cotab-plot-for-admissions-data" class="slide section level1">
+<h1>Cotab plot for admissions data</h1>
+<p>Let’s try this on the admissions data.</p>
+<p>We want to know whether gender and admission are independent
+conditional on department.</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cotabplot</span>(<span class="sc">~</span> Gender <span class="sc">+</span> Admit <span class="sc">|</span> Dept, <span class="at">data =</span> UCBAdmissions, <span class="at">gp =</span> shading_max, <span class="at">margins =</span> <span class="fu">rep</span>(<span class="dv">0</span>, <span class="dv">4</span>))</span></code></pre></div>
+<p><img src="lecture-18-fig/unnamed-chunk-10-1.png" /></p>
+<p>The syntax for the cotab plot is that the variable to the right of
+the <code>|</code> is the given variable (in this case,
+<code>Dept</code>), and the variables to the left of the <code>|</code>
+and to the right of the <code>~</code> are the two explanatory
+variables.</p>
+</div>
+<div id="double-decker-plot" class="slide section level1">
+<h1>Double decker plot</h1>
+<p>When we have one response variable that we are particularly
+interested in, and if we want to see how the conditional probability
+changes with the levels of several other factors, we can also use a
+doubledecker plot.</p>
+<p>A doubledecker plot is like a mosaic plot, but the vertical axis
+gives us the conditional probabilites of the response variable, and the
+horizontal axis gives us the probabilities of all the remaining factor
+combinations.</p>
+<p>This can be helpful when we are more interested in comparing
+conditional probabilities than we are in looking for conditional
+independence.</p>
+</div>
+<div id="double-decker-plot-for-admissions-data"
+class="slide section level1">
+<h1>Double decker plot for admissions data</h1>
+<p>We can try a doubledecker plot on the admissions data.</p>
+<p>Here the height of the first bar gives the conditional probability of
+admission given that the applicant was male and applying to Department
+A, the height of the second bar gives the conditional probability of
+admission given that the applicant was female and applying to Department
+A, and so on.</p>
+<p>The widths of the bars represent the probabilities of the categories:
+the width of the first bar is proportional to the number of male
+applicants to Department A, the width of the second bar is proportional
+to the number of female applicants to Department B, and so on.</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">doubledecker</span>(Admit <span class="sc">~</span> Dept <span class="sc">+</span> Gender, <span class="at">data =</span> UCBAdmissions)</span></code></pre></div>
+<p><img src="lecture-18-fig/unnamed-chunk-11-1.png" /></p>
+</div>
+<div class="slide section level1">
+
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="do">## nitpicky plotting modification: plots go in the same order as</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="do">## the array, so if we want admitted to be on bottom we need to</span></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a><span class="do">## switch the order of admit vs. rejected in the UCBAdmissions array</span></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a><span class="fu">doubledecker</span>(Admit <span class="sc">~</span> Dept <span class="sc">+</span> Gender, <span class="at">data =</span> UCBAdmissions[<span class="dv">2</span><span class="sc">:</span><span class="dv">1</span>,,])</span></code></pre></div>
+<p><img src="lecture-18-fig/unnamed-chunk-12-1.png" /></p>
+<p>The syntax here is that the variable to the left of the
+<code>~</code> is plotted on the vertical axis, and the variables to the
+right of the <code>~</code> are plotted on the vertical axis, with the
+first factor being grouped first, and subsequent factors being grouped
+within the previous factors.</p>
+</div>
+<div class="slide section level1">
+
+<p>The order you put the variables to the left of the <code>~</code>
+makes a big difference in what information you can easily read off the
+plot. When we have <code>Admit ~ Dept + Gender</code>, it’s easy to see
+the differences between male and female admissions within each
+department because those bars are placed next to each other.</p>
+<p>If we do it the other way around, we’re plotting the same
+information, but it’s now easier to read off the differences in
+admission rates by department instead of the differences in admission
+rates by gender.</p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">doubledecker</span>(Admit <span class="sc">~</span> Gender <span class="sc">+</span> Dept, <span class="at">data =</span> UCBAdmissions[<span class="dv">2</span><span class="sc">:</span><span class="dv">1</span>,,])</span></code></pre></div>
+<p><img src="lecture-18-fig/unnamed-chunk-13-1.png" /></p>
+</div>
+<div id="overall" class="slide section level1">
+<h1>Overall</h1>
+<p>When working with categorical data:</p>
+<ul>
+<li>We are often thinking about visualizing departures from
+independence</li>
+</ul>
+<ul>
+<li>Mosaic plots replace scatterplots</li>
+</ul>
+<ul>
+<li>Cotab plots replace coplots</li>
+</ul>
+<ul>
+<li>Doubledecker plots display conditional probabilities, and the
+ordering of the factors is very important</li>
+</ul>
 </div>
 </body>
 </html>
