@@ -7,7 +7,7 @@
   <meta http-equiv="Content-Style-Type" content="text/css" />
   <meta name="generator" content="pandoc" />
   <meta name="author" content="Julia Fukuyama" />
-  <title>Stat 470/670 Lecture 20: Model-building with a moderate number of variables</title>
+  <title>Stat 470/670 Lecture 20: EDA and the Problem of Multiple Comparisons</title>
   <style type="text/css">
     code{white-space: pre-wrap;}
     span.smallcaps{font-variant: small-caps;}
@@ -81,317 +81,452 @@
   </style>
   <link rel="stylesheet" type="text/css" media="screen, projection, print"
     href="https://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js"
+  type="text/javascript"></script>
   <script src="https://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
     charset="utf-8" type="text/javascript"></script>
 </head>
 <body>
 <div class="slide titlepage">
-  <h1 class="title">Stat 470/670 Lecture 20: Model-building with a
-moderate number of variables</h1>
+  <h1 class="title">Stat 470/670 Lecture 20: EDA and the Problem of
+Multiple Comparisons</h1>
   <p class="author">
 Julia Fukuyama
   </p>
 </div>
-<div id="section" class="slide section level2">
-<h1></h1>
-<ul class="incremental">
-<li><p>Over the next couple of weeks we’ll get back to building models,
-and we’ll look at models for different kinds of responses (binary,
-count, categorical).</p></li>
-<li><p>We won’t have that much more on high-dimensional data, although
-it will come up a couple of times.</p></li>
-<li><p>Today we’ll look at model-building with a moderate number of
-variables. Today will be linear models, but the ideas carry over to
-logistic regression and the generalized linear models we’ll talk about
-later.</p></li>
+<div id="eda-and-multiple-comparisons" class="slide section level1">
+<h1>EDA and Multiple Comparisons</h1>
+<p>Optional reading: <a
+href="http://www.stat.columbia.edu/~gelman/research/unpublished/p_hacking.pdf">Gelman
+and Loken</a></p>
+<p>For this lecture, we will talk a little about <span
+class="math inline">\(p\)</span>-values.</p>
+</div>
+<div id="the-standard-multiple-comparison-problem"
+class="slide section level1">
+<h1>The standard multiple comparison problem</h1>
+<p>Suppose a researcher is interested in whether married and unmarried
+men have different opinions on gun laws.</p>
+<p>He asks married and unmarried men whether they are in favor of
+stricter gun laws.</p>
+<p>Overall he didn’t see a difference between the two groups, but he
+also looked at his data state-by-state and gets the following results
+(only the 15 states with the largest absolute differences are
+shown):</p>
+<pre><code>##    State Unmarried Married Difference
+## 36    NJ      0.48    0.42      -0.06
+## 37    CO      0.50    0.57       0.07
+## 38    CT      0.57    0.50      -0.07
+## 39    OR      0.53    0.60       0.07
+## 40    AK      0.49    0.42      -0.07
+## 41    MD      0.51    0.59       0.08
+## 42    VA      0.48    0.57       0.09
+## 43    SC      0.44    0.53       0.09
+## 44    TX      0.42    0.51       0.09
+## 45    IL      0.56    0.47      -0.09
+## 46    OH      0.51    0.61       0.10
+## 47    WV      0.42    0.52       0.10
+## 48    ND      0.41    0.59       0.18
+## 49    IN      0.39    0.58       0.19
+## 50    MI      0.38    0.59       0.21</code></pre>
+<p>When he tests for whether the state-by-state differences are
+significant, he sees that three are: North Dakota, Indiana, and
+Michigan, and in each case married men are more likely to favor stricter
+gun laws.</p>
+<p>What are some possible explanations for these results?</p>
+</div>
+<div class="slide section level1">
+
+<p>In this example, we might worry that there is actually no difference
+in any of the states, and that we saw the three small <span
+class="math inline">\(p\)</span>-values simply by chance.</p>
+<p>We can do a little simulation to see what would happen if the true
+effect was zero in all of the states: In that case, for each state we
+have a <span class="math inline">\(.05\)</span> chance of getting a
+<span class="math inline">\(p\)</span>-value less than <span
+class="math inline">\(.05\)</span> (the definition of a <span
+class="math inline">\(p\)</span>-value).</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">2</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># simulate 50 hypothesis tests at .05</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>rejections <span class="ot">=</span> <span class="fu">rbinom</span>(<span class="dv">50</span>, <span class="dv">1</span>, <span class="at">prob =</span> .<span class="dv">05</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># a value of 1 means we rejected the null, a value of 0 means we failed to reject</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co"># here all of the nulls were true, but we rejected 4 of them</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>rejections</span></code></pre></div>
+<pre><code>##  [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0
+## [39] 0 0 1 0 0 0 0 0 1 0 0 0</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>We can repeat the example above many times to see how many times we
+expect to reject three or more hypotheses out of 50, and we see that
+even when all of the nulls are true, we would expect to reject at least
+three null hypotheses almost half of the time</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>n_rejections <span class="ot">=</span> <span class="fu">rep</span>(<span class="cn">NA</span>, <span class="dv">5000</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5000</span>) {</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    rejections <span class="ot">=</span> <span class="fu">rbinom</span>(<span class="dv">50</span>, <span class="dv">1</span>, <span class="at">prob =</span> .<span class="dv">05</span>)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    n_rejections[i] <span class="ot">=</span> <span class="fu">sum</span>(rejections)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(n_rejections)</span></code></pre></div>
+<pre><code>## n_rejections
+##    0    1    2    3    4    5    6    7    8    9   10   11 
+##  377  979 1340 1102  695  326  119   45   13    1    2    1</code></pre>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(n_rejections <span class="sc">&gt;=</span> <span class="dv">3</span>)</span></code></pre></div>
+<pre><code>## [1] 0.4608</code></pre>
+</div>
+<div id="testing-the-global-null-hypothesis"
+class="slide section level1">
+<h1>Testing the global null hypothesis</h1>
+<p>The hypothesis that all of the individual null hypotheses are true is
+referred to as the <em>global null</em>: if <span
+class="math inline">\(H_{0i}\)</span> refers to the <span
+class="math inline">\(i\)</span>th null hypotheses, the global null
+is</p>
+<p><span class="math display">\[
+H_0 = \cap_{i=1}^n H_{0i},
+\]</span> the intersection of all the individual null hypotheses.</p>
+<div class="incremental">
+<p>Suppose we are interested in testing hypotheses at level <span
+class="math inline">\(\alpha\)</span> (we reject with a <span
+class="math inline">\(p\)</span>-values less than <span
+class="math inline">\(\alpha\)</span>)</p>
+<p>One of the simplest methods for testing the global null hypothesis is
+called <em>Bonferroni’s Method</em>.</p>
+<p>The procedure is as follows:</p>
+<ul>
+<li>Test each of the <span class="math inline">\(n\)</span> individual
+hypotheses <span class="math inline">\(H_{0i}\)</span>, <span
+class="math inline">\(i = 1,\ldots, n\)</span> at level <span
+class="math inline">\(\alpha / n\)</span>.</li>
+</ul>
+<ul>
+<li>Reject the global null, <span class="math inline">\(H_0\)</span>,
+whenever we reject one of the <span
+class="math inline">\(H_{0i}\)</span>’s. If <span
+class="math inline">\(p_i\)</span> is the <span
+class="math inline">\(p\)</span>-value corresponding to hypothesis <span
+class="math inline">\(i\)</span>, this amounts to rejecting the global
+null <span class="math inline">\(H_0\)</span> whenever <span
+class="math inline">\(\text{min} \; p_i \le \alpha / n\)</span>.</li>
 </ul>
 </div>
-<div id="data-prostate-cancer" class="slide section level2">
-<h1>Data: Prostate Cancer</h1>
-<p>We have a data set containing clinical data on patients who were
-about to receive a radical prostatectomy. The relevant variables
-are:</p>
-<ul class="incremental">
-<li><p><code>lcavol</code>: log cancer volume</p></li>
-<li><p><code>lweight</code>: log prostate weight</p></li>
-<li><p><code>age</code>: Age in years</p></li>
-<li><p><code>lbph</code>: log of the amount of benign prostatic
-hyperplasia</p></li>
-<li><p><code>svi</code>: Seminal vesicle invasion, a measure of how
-advanced the cancer is.</p></li>
-<li><p><code>lcp</code>: log of capsular penetration</p></li>
-<li><p><code>gleason</code>: A numeric vector</p></li>
-<li><p><code>pgg45</code>: Percent of Gleason score 4 or 5</p></li>
-<li><p><code>lpsa</code>: log of the concentration of
-prostate-stimulating antigen.</p></li>
+</div>
+<div id="notes" class="slide section level1">
+<h1>Notes</h1>
+<ul>
+<li>Bonferroni’s method has the correct size: if the global null is
+true, and we test at level <span class="math inline">\(\alpha\)</span>,
+we will reject the global null with a rate at most <span
+class="math inline">\(\alpha\)</span>.</li>
 </ul>
-<p>We are primarily interested in <code>lpsa</code>, which is used as a
-marker for prostate cancer. We would like to know whether and how it is
-related to the other variables we have available to us.</p>
+<ul>
+<li>The more tests we run, the smaller the minimum <span
+class="math inline">\(p\)</span>-value has to be for us to reject the
+global null. If we’re “fishing” and looking at a lot of possibilities,
+we need a lot more evidence than if we had decided in advance what
+question we wanted to ask.</li>
+</ul>
+<ul>
+<li>There are other ways of testing the global null, and there is a lot
+of research into multiple testing. Even so, Bonferroni’s method is
+commonly used as a quick and easy way of correcting for multiple
+tests.</li>
+</ul>
 </div>
-<div id="first-we-look-at-the-data" class="slide section level2">
-<h1>First we look at the data</h1>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>prostate <span class="ot">=</span> <span class="fu">read.table</span>(<span class="st">&quot;../../datasets/prostate.txt&quot;</span>)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(prostate)</span></code></pre></div>
-<pre><code>##      lcavol           lweight           age             lbph        
-##  Min.   :-1.3471   Min.   :2.375   Min.   :41.00   Min.   :-1.3863  
-##  1st Qu.: 0.5128   1st Qu.:3.376   1st Qu.:60.00   1st Qu.:-1.3863  
-##  Median : 1.4469   Median :3.623   Median :65.00   Median : 0.3001  
-##  Mean   : 1.3500   Mean   :3.629   Mean   :63.87   Mean   : 0.1004  
-##  3rd Qu.: 2.1270   3rd Qu.:3.876   3rd Qu.:68.00   3rd Qu.: 1.5581  
-##  Max.   : 3.8210   Max.   :4.780   Max.   :79.00   Max.   : 2.3263  
-##       svi              lcp             gleason          pgg45       
-##  Min.   :0.0000   Min.   :-1.3863   Min.   :6.000   Min.   :  0.00  
-##  1st Qu.:0.0000   1st Qu.:-1.3863   1st Qu.:6.000   1st Qu.:  0.00  
-##  Median :0.0000   Median :-0.7985   Median :7.000   Median : 15.00  
-##  Mean   :0.2165   Mean   :-0.1794   Mean   :6.753   Mean   : 24.38  
-##  3rd Qu.:0.0000   3rd Qu.: 1.1787   3rd Qu.:7.000   3rd Qu.: 40.00  
-##  Max.   :1.0000   Max.   : 2.9042   Max.   :9.000   Max.   :100.00  
-##       lpsa           train        
-##  Min.   :-0.4308   Mode :logical  
-##  1st Qu.: 1.7317   FALSE:30       
-##  Median : 2.5915   TRUE :67       
-##  Mean   : 2.4784                  
-##  3rd Qu.: 3.0564                  
-##  Max.   : 5.5829</code></pre>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>prostate <span class="ot">=</span> prostate <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="sc">-</span><span class="st">&quot;train&quot;</span>)</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggpairs</span>(prostate, <span class="at">progress =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
-<p><img src="lecture-20-fig/unnamed-chunk-1-1.png" /></p>
-<p>From the <code>ggpairs</code> plot, we see that the distributions of
-the variables are reasonable symmetrical, not that skewed, and that
-there is at least some relationship between most of the variables and
-<code>lpsa</code>.</p>
+<div id="multiple-comparisons-and-eda" class="slide section level1">
+<h1>Multiple comparisons and EDA</h1>
+<p>Let’s set up a toy example.</p>
+<p>Suppose we are interested in whether two variables, <span
+class="math inline">\(x\)</span> and <span
+class="math inline">\(y\)</span>, are related to each other.</p>
+<p>In reality they are not, but we are equipped with the full power of
+our EDA course and we are able to try out different transformations of
+the variables and different methods to check for the relationship.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="do">## full disclosure: I started the seed at 0 and went up</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="do">## until I got a result with a p-value &lt; .05</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">4</span>)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(broom)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(MASS)</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>x <span class="ot">=</span> <span class="fu">rgamma</span>(<span class="dv">20</span>, <span class="dv">1</span>, <span class="dv">1</span>)</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>y <span class="ot">=</span> <span class="fu">rgamma</span>(<span class="dv">20</span>, <span class="dv">10</span>, <span class="dv">10</span>)</span></code></pre></div>
 </div>
-<div class="slide section level2">
+<div class="slide section level1">
 
-<p>We can also use principal components as a visualization of the
-variables:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>prostate_prcomp <span class="ot">=</span> <span class="fu">prcomp</span>(prostate, <span class="at">scale. =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggbiplot</span>(prostate_prcomp, <span class="at">groups =</span> <span class="fu">factor</span>(prostate<span class="sc">$</span>svi))</span></code></pre></div>
-<p><img src="lecture-20-fig/unnamed-chunk-2-1.png" /></p>
-<p>From the principal components plot, we see that there are two groups
-of variables, one group of which are all highly correlated with
-<code>lpsa</code>.</p>
-</div>
-<div class="slide section level2">
-
-<p>And a side note: this data set has already been transformed for you.
-Many of the variables are logged versions of what were presumably the
-raw measurements. This is actually a really important step: models with
-the logged variables perform substantially better than models with the
-raw variables, as we can see if we un-transform:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>prostate_unlogged <span class="ot">=</span> prostate <span class="sc">%&gt;%</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">cavol =</span> <span class="fu">exp</span>(lcavol), <span class="at">weight =</span> <span class="fu">exp</span>(lweight), <span class="at">bph =</span> <span class="fu">exp</span>(lbph), <span class="at">cp =</span> <span class="fu">exp</span>(lcp)) <span class="sc">%&gt;%</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">-</span><span class="st">&quot;lcavol&quot;</span>, <span class="sc">-</span><span class="st">&quot;lweight&quot;</span>, <span class="sc">-</span><span class="st">&quot;lbph&quot;</span>, <span class="sc">-</span><span class="st">&quot;lcp&quot;</span>)</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(<span class="fu">lm</span>(lpsa <span class="sc">~</span> ., <span class="at">data =</span> prostate))</span></code></pre></div>
-<pre><code>## 
-## Call:
-## lm(formula = lpsa ~ ., data = prostate)
-## 
-## Residuals:
-##      Min       1Q   Median       3Q      Max 
-## -1.76644 -0.35510 -0.00328  0.38087  1.55770 
-## 
-## Coefficients:
-##              Estimate Std. Error t value Pr(&gt;|t|)    
-## (Intercept)  0.181561   1.320568   0.137  0.89096    
-## lcavol       0.564341   0.087833   6.425 6.55e-09 ***
-## lweight      0.622020   0.200897   3.096  0.00263 ** 
-## age         -0.021248   0.011084  -1.917  0.05848 .  
-## lbph         0.096713   0.057913   1.670  0.09848 .  
-## svi          0.761673   0.241176   3.158  0.00218 ** 
-## lcp         -0.106051   0.089868  -1.180  0.24115    
-## gleason      0.049228   0.155341   0.317  0.75207    
-## pgg45        0.004458   0.004365   1.021  0.31000    
-## ---
-## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
-## 
-## Residual standard error: 0.6995 on 88 degrees of freedom
-## Multiple R-squared:  0.6634, Adjusted R-squared:  0.6328 
-## F-statistic: 21.68 on 8 and 88 DF,  p-value: &lt; 2.2e-16</code></pre>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(<span class="fu">lm</span>(lpsa <span class="sc">~</span> ., <span class="at">data =</span> prostate_unlogged))</span></code></pre></div>
-<pre><code>## 
-## Call:
-## lm(formula = lpsa ~ ., data = prostate_unlogged)
-## 
-## Residuals:
-##      Min       1Q   Median       3Q      Max 
-## -1.78876 -0.40705 -0.00634  0.46725  1.82792 
-## 
-## Coefficients:
-##              Estimate Std. Error t value Pr(&gt;|t|)    
-## (Intercept)  0.759219   1.210444   0.627  0.53214    
-## age         -0.008545   0.012087  -0.707  0.48144    
-## svi          0.769166   0.270646   2.842  0.00557 ** 
-## gleason      0.130183   0.166701   0.781  0.43694    
-## pgg45        0.005412   0.004567   1.185  0.23927    
-## cavol        0.073661   0.014479   5.087 2.03e-06 ***
-## weight       0.012511   0.005322   2.351  0.02095 *  
-## bph          0.056512   0.034547   1.636  0.10546    
-## cp          -0.040047   0.034216  -1.170  0.24499    
-## ---
-## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
-## 
-## Residual standard error: 0.764 on 88 degrees of freedom
-## Multiple R-squared:  0.5985, Adjusted R-squared:  0.562 
-## F-statistic:  16.4 on 8 and 88 DF,  p-value: 1.329e-14</code></pre>
-</div>
-<div class="slide section level2">
-
-<p>If we had started off with the raw data, we would have seen that we
-should log-transform some of the variables by looking at their marginal
-distributions: the variables that were transformed started off quite
-skewed, and the transformation got rid of the skewness.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggpairs</span>(prostate_unlogged, <span class="at">progress =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
+<p>We start off by just plotting <span class="math inline">\(x\)</span>
+vs. <span class="math inline">\(y\)</span>:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(x, y), <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y))<span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">&quot;lm&quot;</span>)</span></code></pre></div>
+<pre><code>## `geom_smooth()` using formula = &#39;y ~ x&#39;</code></pre>
 <p><img src="lecture-20-fig/unnamed-chunk-4-1.png" /></p>
+<p>It doesn’t look like there’s much there. However, <span
+class="math inline">\(x\)</span> looks like it has heavy tails, and so
+maybe we should transform it to reduce the skewness.</p>
 </div>
-<div id="linear-model-with-all-the-predictors"
-class="slide section level2">
-<h1>Linear model with all the predictors</h1>
-<p>As a first step, we can fit a linear model with all the predictors
-and look at the results. We see that a lot of the coefficients are
-within the margin of error of zero, which suggests to us that a model
-with fewer predictors would do better.</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>prostate_lm <span class="ot">=</span> <span class="fu">lm</span>(lpsa <span class="sc">~</span> ., <span class="at">data =</span> prostate)</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>prostate_coefs <span class="ot">=</span> <span class="fu">tidy</span>(prostate_lm, <span class="at">conf.int =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(prostate_coefs[<span class="sc">-</span><span class="dv">1</span>, ], <span class="fu">aes</span>(<span class="at">x =</span> estimate, <span class="at">y =</span> term, <span class="at">xmin =</span> conf.low, <span class="at">xmax =</span> conf.high)) <span class="sc">+</span></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">geom_errorbarh</span>() <span class="sc">+</span> <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="dv">0</span>)</span></code></pre></div>
+<div class="slide section level1">
+
+<p>Let’s plot <span class="math inline">\(y\)</span> vs <span
+class="math inline">\(\text{log}(x)\)</span>:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(x, y), <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">log</span>(x), <span class="at">y =</span> y))<span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">&quot;lm&quot;</span>)</span></code></pre></div>
+<pre><code>## `geom_smooth()` using formula = &#39;y ~ x&#39;</code></pre>
 <p><img src="lecture-20-fig/unnamed-chunk-5-1.png" /></p>
+<p>That’s better, but maybe we should also use robust regression because
+we think there might be outliers in <span
+class="math inline">\(y\)</span>.</p>
 </div>
-<div id="best-subset" class="slide section level2">
-<h1>Best subset</h1>
-<p>There are a lot of ways of doing variable selection for linear
-models.</p>
-<p>You might have heard of forward stepwise or backward stepwise
-regression, where predictors are added to or subtracted from the model
-one at a time, stopping when adding a new predictor doesn’t seem to help
-(for forward stepwise) or when subtracting an existing predictor seems
-to hurt too much (for backward stepwise).</p>
-<p>Part of the reason why people used forward or backward stepwise
-regression was due to computational cost though, and what they really
-wanted was to find the set of predictors that gave the best model.</p>
-<p>With eight predictors and a laptop, we can actually just look through
-all the subsets and see which model performs best.</p>
-<p>This is what the <code>regsubsets</code> in the package
-<code>leaps</code> does for you.</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(leaps)</span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>prostate_leaps <span class="ot">=</span> <span class="fu">regsubsets</span>(lpsa <span class="sc">~</span> ., <span class="at">data =</span> prostate)</span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(prostate_leaps)<span class="sc">$</span>which</span></code></pre></div>
-<pre><code>##   (Intercept) lcavol lweight   age  lbph   svi   lcp gleason pgg45
-## 1        TRUE   TRUE   FALSE FALSE FALSE FALSE FALSE   FALSE FALSE
-## 2        TRUE   TRUE    TRUE FALSE FALSE FALSE FALSE   FALSE FALSE
-## 3        TRUE   TRUE    TRUE FALSE FALSE  TRUE FALSE   FALSE FALSE
-## 4        TRUE   TRUE    TRUE FALSE  TRUE  TRUE FALSE   FALSE FALSE
-## 5        TRUE   TRUE    TRUE  TRUE  TRUE  TRUE FALSE   FALSE FALSE
-## 6        TRUE   TRUE    TRUE  TRUE  TRUE  TRUE FALSE   FALSE  TRUE
-## 7        TRUE   TRUE    TRUE  TRUE  TRUE  TRUE  TRUE   FALSE  TRUE
-## 8        TRUE   TRUE    TRUE  TRUE  TRUE  TRUE  TRUE    TRUE  TRUE</code></pre>
-<p>This shows us that the best one-predictor model uses
-<code>lcavol</code>, the best two-predictor model uses
-<code>lcavol</code> and <code>lweight</code>, the best three-predictor
-model uses <code>lcavol</code>, <code>lweight</code>, and
-<code>svi</code>, and so on.</p>
-<p>We can use this set of models as guidance for what variables to
-include, and build up an interpretable model using some of the tools
-we’ve seen earlier in the course.</p>
-</div>
-<div class="slide section level2">
+<div class="slide section level1">
 
-<p>We start off looking at the best one-predictor model, with
-<code>lcavol</code> predicting <code>lpsa</code>.</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(prostate, <span class="fu">aes</span>(<span class="at">x =</span> lcavol, <span class="at">y =</span> lpsa)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">geom_smooth</span>()</span></code></pre></div>
-<pre><code>## `geom_smooth()` using method = &#39;loess&#39; and formula &#39;y ~ x&#39;</code></pre>
-<p><img src="lecture-20-fig/unnamed-chunk-7-1.png" /></p>
-<p>We see that the relationship is pretty close to linear (a line would
-go through the entire confidence band of the smoother), and so we’re ok
-with using a linear function of <code>lcavol</code> to predict
-<code>lpsa</code>.</p>
-<p>If there had been a major non-linearity here, we would have wanted to
-ditch the linear modeling approach and do something non-parametric,
-maybe loess.</p>
+<p>We plot the robust smooth as well:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(x, y), <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">log</span>(x), <span class="at">y =</span> y))<span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">&quot;rlm&quot;</span>)</span></code></pre></div>
+<pre><code>## `geom_smooth()` using formula = &#39;y ~ x&#39;</code></pre>
+<p><img src="lecture-20-fig/unnamed-chunk-6-1.png" /></p>
 </div>
-<div class="slide section level2">
+<div class="slide section level1">
 
-<p>Then we can move to the two-predictor model, and see what the
-relationship between <code>lcavol</code>, <code>lweight</code>, and
-<code>lpsa</code> looks like.</p>
-<p>We can make a coplot to examine the relationship between
-<code>lpsa</code> and <code>lcavol</code>, with <code>lweight</code>as
-the given variable</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(prostate, <span class="fu">aes</span>(<span class="at">x =</span> lcavol, <span class="at">y =</span> lpsa)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">geom_smooth</span>(<span class="at">span =</span> <span class="dv">1</span>) <span class="sc">+</span> </span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">facet_grid</span>(<span class="sc">~</span><span class="fu">cut_number</span>(lweight, <span class="at">n =</span> <span class="dv">3</span>))</span></code></pre></div>
-<pre><code>## `geom_smooth()` using method = &#39;loess&#39; and formula &#39;y ~ x&#39;</code></pre>
-<p><img src="lecture-20-fig/unnamed-chunk-8-1.png" /></p>
-<p>Here it seems like there is some non-linearity, but only for the
-observations with a high value of <code>lweight</code>.</p>
-<p>If we had a lot more observations, this might prompt us to move to
-loess, but since the non-linearity is based on just a few points, we
-want to see first whether the non-linearity shows up in other graphs as
-well.</p>
+<p>In the end, we fit three models. Maybe we changed our minds and
+decided that robust regression wasn’t necessary and that we think the
+linear model with <span class="math inline">\(y\)</span> predicted by
+<span class="math inline">\(\text{log}(x)\)</span> is the best.</p>
+<p>We then want a <span class="math inline">\(p\)</span>-value for our
+collaborators or to publish, and we are happy to see that the
+coefficient is significant:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tidy</span>(<span class="fu">lm</span>(y <span class="sc">~</span> <span class="fu">log</span>(x)))</span></code></pre></div>
+<pre><code>## # A tibble: 2 × 5
+##   term        estimate std.error statistic  p.value
+##   &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+## 1 (Intercept)    0.885    0.0595     14.9  1.51e-11
+## 2 log(x)        -0.141    0.0583     -2.43 2.60e- 2</code></pre>
+<p>What is the problem here?</p>
 </div>
-<div class="slide section level2">
+<div class="slide section level1">
 
-<p>The best three-predictor model identified by <code>leaps</code>
-included <code>svi</code> in addition to <code>lcavol</code> and
-<code>lweight</code>, so we next look at those four variables
-together.</p>
-<p><code>svi</code> is binary and there are only 21 cases where
-<code>svi</code> is equal to 1, we can’t make a lot of facets and we
-don’t trust curves that much.</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(prostate<span class="sc">$</span>svi)</span></code></pre></div>
-<pre><code>## 
-##  0  1 
-## 76 21</code></pre>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>prostate<span class="sc">$</span>svi <span class="ot">=</span> <span class="fu">recode</span>(prostate<span class="sc">$</span>svi, <span class="st">`</span><span class="at">1</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Yes&quot;</span>, <span class="st">`</span><span class="at">0</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;No&quot;</span>)</span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(prostate, <span class="fu">aes</span>(<span class="at">x =</span> lcavol, <span class="at">y =</span> lpsa, <span class="at">group =</span> svi, <span class="at">color =</span> svi)) <span class="sc">+</span></span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="at">se =</span> <span class="cn">FALSE</span>) <span class="sc">+</span> <span class="fu">facet_wrap</span>(<span class="sc">~</span> <span class="fu">cut_number</span>(lweight, <span class="at">n =</span> <span class="dv">2</span>))</span></code></pre></div>
-<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p>Let’s look at the <span class="math inline">\(p\)</span>-values for
+the other two models that we rejected:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tidy</span>(<span class="fu">lm</span>(y <span class="sc">~</span> x))</span></code></pre></div>
+<pre><code>## # A tibble: 2 × 5
+##   term        estimate std.error statistic       p.value
+##   &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;         &lt;dbl&gt;
+## 1 (Intercept)   1.03      0.0901     11.4  0.00000000116
+## 2 x            -0.0859    0.0577     -1.49 0.154</code></pre>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tidy</span>(<span class="fu">rlm</span>(y <span class="sc">~</span> <span class="fu">log</span>(x)))</span></code></pre></div>
+<pre><code>## # A tibble: 2 × 4
+##   term        estimate std.error statistic
+##   &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;
+## 1 (Intercept)    0.880    0.0645     13.6 
+## 2 log(x)        -0.111    0.0631     -1.76</code></pre>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="do">## the corresponding p-value for rlm:</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="fu">pnorm</span>(<span class="fu">abs</span>(<span class="fu">tidy</span>(<span class="fu">rlm</span>(y <span class="sc">~</span> <span class="fu">log</span>(x)))[<span class="dv">2</span>, <span class="st">&quot;statistic&quot;</span>, <span class="at">drop =</span> <span class="cn">TRUE</span>]), <span class="at">lower.tail =</span> <span class="cn">FALSE</span>) <span class="sc">*</span> <span class="dv">2</span></span></code></pre></div>
+<pre><code>## [1] 0.07833073</code></pre>
+<p>Neither of the other two models would have given us a significant
+result at the <span class="math inline">\(.05\)</span> level: the <span
+class="math inline">\(p\)</span>-values were <span
+class="math inline">\(.15\)</span> and <span
+class="math inline">\(.08\)</span>.</p>
+<p>The problem is that if the other models had looked better to us, we
+might have used the <span class="math inline">\(p\)</span>-values from
+them instead of from the model we chose, and so we are implicitly or
+unconsciously performing multiple tests.</p>
+</div>
+<div class="slide section level1">
+
+<p>To see why this invalidates our <span
+class="math inline">\(p\)</span>-values, suppose we ungenerously
+describe the procedure we used to come up with our model as follows:</p>
+<ul>
+<li>Fit a linear model of <span class="math inline">\(y\)</span>
+described by <span class="math inline">\(x\)</span>. If that has a
+significant <span class="math inline">\(p\)</span>-value, stop and
+report that <span class="math inline">\(p\)</span>-value.
+Otherwise…</li>
+</ul>
+<ul>
+<li>Fit a linear model of <span class="math inline">\(y\)</span>
+described by <span class="math inline">\(\text{log}(x)\)</span>. If that
+has a significant <span class="math inline">\(p\)</span>-value, stop and
+report that <span class="math inline">\(p\)</span>-value.
+Otherwise…</li>
+</ul>
+<ul>
+<li>Fit a robust linear model of <span class="math inline">\(y\)</span>
+described by <span class="math inline">\(\text{log}(x)\)</span>. Report
+that <span class="math inline">\(p\)</span>-value because you’re out of
+time.</li>
+</ul>
+<p>What fraction of the time will you reject the null hypothesis?</p>
+</div>
+<div class="slide section level1">
+
+<p>We can see what happens by simulation:</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>pvals <span class="ot">=</span> <span class="fu">rep</span>(<span class="cn">NA</span>, <span class="dv">5000</span>)</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5000</span>) {</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>    x <span class="ot">=</span> <span class="fu">rgamma</span>(<span class="dv">20</span>, <span class="dv">1</span>, <span class="dv">1</span>)</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>    y <span class="ot">=</span> <span class="fu">rgamma</span>(<span class="dv">20</span>, <span class="dv">10</span>, <span class="dv">10</span>)</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>    out.lm <span class="ot">=</span> <span class="fu">lm</span>(y <span class="sc">~</span> x)</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>    pval <span class="ot">=</span> <span class="fu">tidy</span>(out.lm)[<span class="dv">2</span>,<span class="st">&quot;p.value&quot;</span>, drop<span class="ot">=</span><span class="cn">TRUE</span>]</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(pval <span class="sc">&gt;</span> .<span class="dv">05</span>) {</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>        out.lm <span class="ot">=</span> <span class="fu">lm</span>(y <span class="sc">~</span> <span class="fu">log</span>(x))</span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>        pval <span class="ot">=</span> <span class="fu">tidy</span>(out.lm)[<span class="dv">2</span>,<span class="st">&quot;p.value&quot;</span>, drop<span class="ot">=</span><span class="cn">TRUE</span>]</span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(pval <span class="sc">&gt;</span> .<span class="dv">05</span>) {</span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>        out.lm <span class="ot">=</span> <span class="fu">rlm</span>(y <span class="sc">~</span> <span class="fu">log</span>(x))</span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>        pval <span class="ot">=</span> <span class="fu">pnorm</span>(<span class="sc">-</span><span class="fu">abs</span>(<span class="fu">tidy</span>(out.lm)[<span class="dv">2</span>, <span class="st">&quot;statistic&quot;</span>, <span class="at">drop=</span><span class="cn">TRUE</span>])) <span class="sc">*</span> <span class="dv">2</span></span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>    pvals[i] <span class="ot">=</span> pval</span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+<div class="slide section level1">
+
+<p>We reject at the <span class="math inline">\(.05\)</span> level about
+twice as much as we should, and so reporting the nominal <span
+class="math inline">\(p\)</span>-value would be misleading here.</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(pvals <span class="sc">&lt;=</span> .<span class="dv">05</span>)</span></code></pre></div>
+<pre><code>## [1] 0.103</code></pre>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(<span class="at">pval =</span> pvals)) <span class="sc">+</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stat_ecdf</span>(<span class="fu">aes</span>(<span class="at">x =</span> pval)) <span class="sc">+</span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="at">by =</span> .<span class="dv">05</span>)) <span class="sc">+</span></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_y_continuous</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="at">by =</span> .<span class="dv">05</span>)) <span class="sc">+</span> </span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">90</span>, <span class="at">vjust =</span> .<span class="dv">5</span>))</span></code></pre></div>
 <p><img src="lecture-20-fig/unnamed-chunk-9-1.png" /></p>
-<p>The different slopes suggest an interaction, but again, we don’t have
-that much data.</p>
+<p>In our simulation, we made modeling decisions explicitly based on
+<span class="math inline">\(p\)</span>-values. You can invalidate your
+<span class="math inline">\(p\)</span>-values even if you make the
+decisions without actually looking at the <span
+class="math inline">\(p\)</span>-values, it’s just easier to simulate
+this way.</p>
 </div>
-<div class="slide section level2">
-
-<p>Next we try looking at the predictors from the four-predictor model.
-This is pushing the limits of the number of variables we can look at all
-at once, but we will try.</p>
-<p>We can look at the relationship between <code>lpsa</code>,
-<code>lcavol</code>, and <code>svi</code>, with <code>lweight</code> and
-<code>lbph</code> as the given variables.</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(prostate, <span class="fu">aes</span>(<span class="at">x =</span> lcavol, <span class="at">y =</span> lpsa, <span class="at">group =</span> svi, <span class="at">color =</span> svi)) <span class="sc">+</span></span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="at">se =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>        <span class="fu">facet_grid</span>(<span class="fu">cut_number</span>(lweight, <span class="at">n =</span> <span class="dv">2</span>) <span class="sc">~</span> <span class="fu">cut</span>(lbph, <span class="at">breaks =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">2</span>, <span class="sc">-</span><span class="dv">1</span>, <span class="dv">3</span>)))</span></code></pre></div>
-<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
-<p><img src="lecture-20-fig/unnamed-chunk-10-1.png" /></p>
-<p>Based on this visualization, we might not be confident about an
-interaction: the blue lines vary in slope, but there’s based on very
-small samples. The red lines have different heights but are similar in
-slope.</p>
+<div id="note-1" class="slide section level1">
+<h1>Note 1</h1>
+<p>Notice that this isn’t quite as bad as running three independent
+tests: in that case we would expect about <span
+class="math inline">\(14\)</span>% of the <span
+class="math inline">\(p\)</span>-values to be less than <span
+class="math inline">\(.05\)</span>, but here we only get about <span
+class="math inline">\(10\)</span>%.</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="do">## .95^3 is the probability that you fail to reject</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="do">## three null hypotheses at the .05 level, and so the</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a><span class="do">## following is the probability that you reject at</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a><span class="do">## least one of three null hypotheses at the .05 level</span></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span> <span class="sc">-</span> .<span class="dv">95</span><span class="sc">^</span><span class="dv">3</span></span></code></pre></div>
+<pre><code>## [1] 0.142625</code></pre>
 </div>
-<div class="slide section level2">
+<div id="note-2" class="slide section level1">
+<h1>Note 2</h1>
+<p>We only looked at three models/potential tests in the simulation
+here, but the problem can be much, much worse. We have:</p>
+<ul>
+<li>Multiple ways to transform each of the predictors,</li>
+</ul>
+<ul>
+<li>Multiple ways to transform the response,</li>
+</ul>
+<ul>
+<li>Choices about excluding outliers,</li>
+</ul>
+<ul>
+<li>Choices about how to code variables,</li>
+</ul>
+<ul>
+<li>Multiple models to fit,</li>
+</ul>
+<ul>
+<li>Tunable parameters in the models we use (e.g. the span parameter in
+LOESS),</li>
+</ul>
+<ul>
+<li>Decisions about whether and which interactions to fit</li>
+</ul>
+<p>This can lead to an enormous number of potential tests: Suppose you
+have two predictors, four ways of transforming predictors, three
+potential outliers, two coding choices, and five potential models. This
+gives <span class="math display">\[
+4 \times 4 \times 4 \times 2^3 \times 2 \times 5 = 5120
+\]</span> distinct combinations of analysis choices.</p>
+<p>In principle, we could count up all the possible tests and do a
+Bonferroni correction, but in practice the Bonferroni cutoff will be too
+strict for you to ever reject.</p>
+</div>
+<div id="note-3" class="slide section level1">
+<h1>Note 3</h1>
+<p>Exploration doesn’t always invalidate your <span
+class="math inline">\(p\)</span>-values, only if you do it while looking
+at the relationship you want to test.</p>
+<ul>
+<li>You can do anything to the predictors before you see the response
+and still get valid <span class="math inline">\(p\)</span>-values.</li>
+</ul>
+<ul>
+<li>If you make decisions about transformations of the response without
+seeing how it relates to the predictors, you can still have valid <span
+class="math inline">\(p\)</span>-values.</li>
+</ul>
+</div>
+<div class="slide section level1">
 
-<p>In EDA we’re not always required to find a “best” model, and even if
-we were we can decide on what best means subjectively.</p>
-<p>If you wanted to fit a linear model with <code>lcavol</code>,
-<code>lweight</code>, and <code>svi</code> as predictors plus
-interactions, you’re free to do so and then call that “best” because of
-the complexity you can get out of a relatively small number of
-variables.</p>
-<p>On the other hand, if you want a numerical decision for “best”, you
-can just find the model that optimizes your favorite criterion. For
-example, if you like <a
-href="https://en.wikipedia.org/wiki/Mallows%27s_Cp">Mallow’s Cp</a>,
-this is available in <code>leaps</code>:</p>
-<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(prostate_leaps)<span class="sc">$</span>cp</span></code></pre></div>
-<pre><code>## [1] 27.406210 14.747299  6.173546  6.185065  5.816805  6.466493  7.100428
-## [8]  9.000000</code></pre>
-<p>When we use Cp, we look for the model with the lowest value of Cp, so
-here the five-predictor model is “best”.</p>
-<p>The idea behind the Cp statistic is that the RSS underestimates the
-prediction error in a linear model, and the Cp statistic is a corrected
-version of the RSS.</p>
+<p>Let’s try another simulation to illustrate the point above.</p>
+<p>Suppose we have the same setup as in the first simulation, but now we
+decide whether or not to transform <span
+class="math inline">\(x\)</span> and <span
+class="math inline">\(y\)</span> based on how skewed they are instead of
+of based on the significance of the relationship.</p>
+<p>Our procedure:</p>
+<ul>
+<li>If <span class="math inline">\(x\)</span> has a skewness larger than
+<span class="math inline">\(1.5\)</span>, use a log transformation of
+<span class="math inline">\(x\)</span> in the model.</li>
+</ul>
+<ul>
+<li>If <span class="math inline">\(y\)</span> has a skewness larger than
+<span class="math inline">\(1\)</span>, use a log transformation of
+<span class="math inline">\(y\)</span> in the model.</li>
+</ul>
+<ul>
+<li>Fit a linear model and report a <span
+class="math inline">\(p\)</span>-value.</li>
+</ul>
+</div>
+<div class="slide section level1">
+
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>pvals2 <span class="ot">=</span> <span class="fu">rep</span>(<span class="cn">NA</span>, <span class="dv">5000</span>)</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5000</span>){</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>    x <span class="ot">=</span> <span class="fu">rgamma</span>(<span class="dv">20</span>, <span class="dv">1</span>, <span class="dv">1</span>)</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>    y <span class="ot">=</span> <span class="fu">rgamma</span>(<span class="dv">20</span>, <span class="dv">10</span>, <span class="dv">10</span>)</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(<span class="fu">skewness</span>(x) <span class="sc">&gt;</span> <span class="fl">1.5</span>)</span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>        x <span class="ot">=</span> <span class="fu">log</span>(x)</span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(<span class="fu">skewness</span>(y) <span class="sc">&gt;</span> <span class="dv">1</span>)</span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>        y <span class="ot">=</span> <span class="fu">log</span>(y)</span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>    out.lm <span class="ot">=</span> <span class="fu">lm</span>(y <span class="sc">~</span> x)</span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a>    pvals2[i] <span class="ot">=</span> <span class="fu">tidy</span>(out.lm)[<span class="dv">2</span>,<span class="st">&quot;p.value&quot;</span>, drop <span class="ot">=</span> <span class="cn">TRUE</span>]</span>
+<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+<div class="slide section level1">
+
+<p>Now we see that the <span class="math inline">\(p\)</span>-values are
+distributed the way they should be. In this case, looking at the
+variables and transforming them didn’t invalidate our <span
+class="math inline">\(p\)</span>-values.</p>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(pvals2 <span class="sc">&lt;=</span> .<span class="dv">05</span>)</span></code></pre></div>
+<pre><code>## [1] 0.0536</code></pre>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(<span class="at">pval =</span> pvals2)) <span class="sc">+</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stat_ecdf</span>(<span class="fu">aes</span>(<span class="at">x =</span> pval)) <span class="sc">+</span></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="at">by =</span> .<span class="dv">05</span>)) <span class="sc">+</span></span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_y_continuous</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="at">by =</span> .<span class="dv">05</span>)) <span class="sc">+</span> </span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">90</span>, <span class="at">vjust =</span> .<span class="dv">5</span>))</span></code></pre></div>
+<p><img src="lecture-20-fig/unnamed-chunk-11-1.png" /></p>
+</div>
+<div id="remedies" class="slide section level1">
+<h1>Remedies</h1>
+<ul class="incremental">
+<li><p>Report the results as exploratory. Describe all the choices made
+and everything you looked at so that the reader can make his or her own
+judgment about whether the results are real or due to chance.</p></li>
+<li><p>New data: Perform exploratory analysis, identify some hypotheses
+that you would like to test (how you will transform the predictors and
+responses, how you will code variables, what model you will use, what
+tunable parameters you will use, etc.). Test those hypotheses on a new
+dataset that you’ve never seen before.</p></li>
+<li><p>Split the data into exploration and validation sets before you
+begin. Do the exploratory analysis on the exploration set, identify
+specific hypotheses to test, and test them on the validation
+set.</p></li>
+</ul>
 </div>
 </body>
 </html>

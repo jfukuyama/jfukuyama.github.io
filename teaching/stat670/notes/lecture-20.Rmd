@@ -1,262 +1,329 @@
-% Stat 470/670 Lecture 20: Model-building with a moderate number of variables
+% Stat 470/670 Lecture 20: EDA and the Problem of Multiple Comparisons
 % Julia Fukuyama
 
 ```{r setup, echo = FALSE, message = FALSE}
 library(knitr)
-opts_chunk$set(fig.cap="", fig.width = 5, fig.height = 3, dpi=175, fig.path="lecture-20-fig/", warning = FALSE)
+opts_chunk$set(fig.cap="", fig.width = 5, fig.height = 3, dpi=175, fig.path="lecture-20-fig/", warning = FALSE, cache=TRUE)
 library(ggplot2)
-library(ggrepel)
 library(magrittr)
 library(tidyverse)
+library(dplyr)
+library(viridis)
 library(broom)
-library(ggbiplot)
-library(GGally)
+library(moments)
+```
+
+# EDA and Multiple Comparisons
+
+Optional reading: [Gelman and Loken](http://www.stat.columbia.edu/~gelman/research/unpublished/p_hacking.pdf)
+
+For this lecture, we will talk a little about $p$-values.
+
+
+# The standard multiple comparison problem
+
+Suppose a researcher is interested in whether married and unmarried men have different opinions on gun laws.
+
+He asks married and unmarried men whether they are in favor of stricter gun laws.
+
+Overall he didn't see a difference between the two groups, but he also looked at his data state-by-state and gets the following results (only the 15 states with the largest absolute differences are shown):
+
+```{r echo=FALSE}
+data(state)
 set.seed(0)
+probs = data.frame(state.abb, matrix(rbinom(100, size = 100, prob = .5) / 100, ncol = 2))
+colnames(probs) = c("State", "Unmarried", "Married")
+probs %>% mutate("Difference" = Married - Unmarried) %>% arrange(abs(Difference)) %>% tail(n = 15)
 ```
 
-## 
+When he tests for whether the state-by-state differences are significant, he sees that three are: North Dakota, Indiana, and Michigan, and in each case married men are more likely to favor stricter gun laws.
 
-- Over the next couple of weeks we'll get back to building models, and
-we'll look at models for different kinds of responses (binary, count,
-categorical).
-
-- We won't have that much more on high-dimensional data, although it
-will come up a couple of times.
-
-- Today we'll look at model-building with a moderate number of
-variables. Today will be linear models, but the ideas carry
-over to logistic regression and the generalized linear models we'll
-talk about later.
-
-## Data: Prostate Cancer
-
-We have a data set containing clinical data on patients who were about
-to receive a radical prostatectomy. The relevant variables are:
-
-- `lcavol`: log cancer volume
-
-- `lweight`: log prostate weight
-
-- `age`: Age in years
-
-- `lbph`: log of the amount of benign prostatic hyperplasia
-
-- `svi`: Seminal vesicle invasion, a measure of how advanced the
-cancer is.
-
-- `lcp`: log of capsular penetration
-
-- `gleason`: A numeric vector
-
-- `pgg45`: Percent of Gleason score 4 or 5
-
-- `lpsa`: log of the concentration of prostate-stimulating antigen.
-
-We are primarily interested in `lpsa`, which is used as a marker for
-prostate cancer. We would like to know whether and how it is related
-to the other variables we have available to us.
-
-
-## First we look at the data
-
-```{r, fig.width = 8, fig.height = 5}
-prostate = read.table("../../datasets/prostate.txt")
-summary(prostate)
-prostate = prostate %>% select(-"train")
-ggpairs(prostate, progress = FALSE)
-```
-
-From the `ggpairs` plot, we see that the distributions of the
-variables are reasonable symmetrical, not that skewed, and that there
-is at least some relationship between most of the variables and `lpsa`.
+What are some possible explanations for these results?
 
 -----
 
-We can also use principal components as a visualization of the variables:
+In this example, we might worry that there is actually no difference in any of the states, and that we saw the three small $p$-values simply by chance.
+
+We can do a little simulation to see what would happen if the true effect was zero in all of the states: In that case, for each state we have a $.05$ chance of getting a $p$-value less than $.05$ (the definition of a $p$-value).
 
 ```{r}
-prostate_prcomp = prcomp(prostate, scale. = TRUE)
-ggbiplot(prostate_prcomp, groups = factor(prostate$svi))
-```
-
-From the principal components plot, we see that there are two groups
-of variables, one group of which are all highly correlated with
-`lpsa`.
-
-
------
-
-And a side note: this data set has already been transformed for
-you. Many of the variables are logged versions of what were presumably
-the raw measurements. This is actually a really important step: models
-with the logged variables perform substantially better than models
-with the raw variables, as we can see if we un-transform:
-
-```{r}
-prostate_unlogged = prostate %>%
-    mutate(cavol = exp(lcavol), weight = exp(lweight), bph = exp(lbph), cp = exp(lcp)) %>%
-    select(-"lcavol", -"lweight", -"lbph", -"lcp")
-summary(lm(lpsa ~ ., data = prostate))
-summary(lm(lpsa ~ ., data = prostate_unlogged))
+set.seed(2)
+# simulate 50 hypothesis tests at .05
+rejections = rbinom(50, 1, prob = .05)
+# a value of 1 means we rejected the null, a value of 0 means we failed to reject
+# here all of the nulls were true, but we rejected 4 of them
+rejections
 ```
 
 -----
 
-If we had started off with the raw data, we would have seen that we
-should log-transform some of the variables by looking at their
-marginal distributions: the variables that were transformed started
-off quite skewed, and the transformation got rid of the skewness.
+We can repeat the example above many times to see how many times we expect to reject three or more hypotheses out of 50, and we see that even when all of the nulls are true, we would expect to reject at least three null hypotheses almost half of the time
 
-```{r, fig.width = 8, fig.height = 5}
-ggpairs(prostate_unlogged, progress = FALSE)
+
+```{r pval-sim}
+n_rejections = rep(NA, 5000)
+for(i in 1:5000) {
+    rejections = rbinom(50, 1, prob = .05)
+    n_rejections[i] = sum(rejections)
+}
+table(n_rejections)
+mean(n_rejections >= 3)
 ```
 
-## Linear model with all the predictors
+# Testing the global null hypothesis
 
-As a first step, we can fit a linear model with all the predictors and
-look at the results. We see that a lot of the coefficients are within
-the margin of error of zero, which suggests to us that a model with
-fewer predictors would do better.
+The hypothesis that all of the individual null hypotheses are true is referred to as the _global null_: if $H_{0i}$ refers to the $i$th null hypotheses, the global null is
+
+$$
+H_0 = \cap_{i=1}^n H_{0i},
+$$
+the intersection of all the individual null hypotheses.
+
+. . .
+
+
+Suppose we are interested in testing hypotheses at level $\alpha$ (we reject with a $p$-values less than $\alpha$)
+
+One of the simplest methods for testing the global null hypothesis is called _Bonferroni's Method_.
+
+The procedure is as follows:
+
+> - Test each of the $n$ individual hypotheses $H_{0i}$, $i = 1,\ldots, n$ at level $\alpha / n$.
+
+> - Reject the global null, $H_0$, whenever we reject one of the $H_{0i}$'s. If $p_i$ is the $p$-value corresponding to hypothesis $i$, this amounts to rejecting the global null $H_0$ whenever $\text{min} \; p_i  \le \alpha / n$.
+
+
+
+
+# Notes
+
+> - Bonferroni's method has the correct size: if the global null is true, and we test at level $\alpha$, we will reject the global null with a rate at most $\alpha$.
+
+> - The more tests we run, the smaller the minimum $p$-value has to be for us to reject the global null. If we're "fishing" and looking at a lot of possibilities, we need a lot more evidence than if we had decided in advance what question we wanted to ask.
+
+> - There are other ways of testing the global null, and there is a lot of research into multiple testing. Even so, Bonferroni's method is commonly used as a quick and easy way of correcting for multiple tests.
+
+
+# Multiple comparisons and EDA
+
+Let's set up a toy example.
+
+Suppose we are interested in whether two variables, $x$ and $y$, are related to each other.
+
+In reality they are not, but we are equipped with the full power of our EDA course and we are able to try out different transformations of the variables and different methods to check for the relationship.
 
 ```{r}
-prostate_lm = lm(lpsa ~ ., data = prostate)
-prostate_coefs = tidy(prostate_lm, conf.int = TRUE)
-ggplot(prostate_coefs[-1, ], aes(x = estimate, y = term, xmin = conf.low, xmax = conf.high)) +
-    geom_point() + geom_errorbarh() + geom_vline(xintercept = 0)
+## full disclosure: I started the seed at 0 and went up
+## until I got a result with a p-value < .05
+set.seed(4)
+library(broom)
+library(MASS)
+x = rgamma(20, 1, 1)
+y = rgamma(20, 10, 10)
 ```
-
-
-## Best subset
-
-There are a lot of ways of doing variable selection for linear models.
-
-You might have heard of forward stepwise or backward stepwise
-regression, where predictors are added to or subtracted from the model
-one at a time, stopping when adding a new predictor doesn't seem to
-help (for forward stepwise) or when subtracting an existing predictor
-seems to hurt too much (for backward stepwise).
-
-Part of the reason why people used forward or backward stepwise
-regression was due to computational cost though, and what they really
-wanted was to find the set of predictors that gave the best model.
-
-With eight predictors and a laptop, we can actually just look through
-all the subsets and see which model performs best.
-
-This is what the `regsubsets` in the package `leaps` does for you.
-
-```{r}
-library(leaps)
-prostate_leaps = regsubsets(lpsa ~ ., data = prostate)
-summary(prostate_leaps)$which
-```
-
-This shows us that the best one-predictor model uses `lcavol`, the
-best two-predictor model uses `lcavol` and `lweight`, the best
-three-predictor model uses `lcavol`, `lweight`, and `svi`, and so on.
-
-We can use this set of models as guidance for what variables to
-include, and build up an interpretable model using some of the tools
-we've seen earlier in the course.
 
 -----
 
-We start off looking at the best one-predictor model, with `lcavol`
-predicting `lpsa`.
 
+We start off by just plotting $x$ vs. $y$:
 ```{r}
-ggplot(prostate, aes(x = lcavol, y = lpsa)) + geom_point() + geom_smooth()
+ggplot(data.frame(x, y), aes(x = x, y = y))+ geom_point() + stat_smooth(method = "lm")
 ```
 
-We see that the relationship is pretty close to linear (a line would
-go through the entire confidence band of the smoother), and so we're
-ok with using a linear function of `lcavol` to predict `lpsa`.
-
-If there had been a major non-linearity here, we would have wanted to
-ditch the linear modeling approach and do something non-parametric,
-maybe loess.
+It doesn't look like there's much there.
+However, $x$ looks like it has heavy tails, and so maybe we should transform it to reduce the skewness.
 
 -----
 
-Then we can move to the two-predictor model, and see what the
-relationship between `lcavol`, `lweight`, and `lpsa` looks like.
-
-We can make a coplot to examine the relationship between `lpsa` and
-`lcavol`, with `lweight`as the given variable
+Let's plot $y$ vs $\text{log}(x)$:
 
 ```{r}
-ggplot(prostate, aes(x = lcavol, y = lpsa)) + geom_point() + geom_smooth(span = 1) + 
-    facet_grid(~cut_number(lweight, n = 3))
+ggplot(data.frame(x, y), aes(x = log(x), y = y))+ geom_point() + stat_smooth(method = "lm")
 ```
 
-Here it seems like there is some non-linearity, but only for the
-observations with a high value of `lweight`.
-
-If we had a lot more observations, this might prompt us to move to
-loess, but since the non-linearity is based on just a few points, we
-want to see first whether the non-linearity shows up in other graphs
-as well.
+That's better, but maybe we should also use robust regression because we think there might be outliers in $y$.
 
 -----
 
-The best three-predictor model identified by `leaps` included `svi` in
-addition to `lcavol` and `lweight`, so we next look at those four
-variables together.
 
-`svi` is binary and there are only 21 cases where `svi` is equal to 1,
-we can't make a lot of facets and we don't trust curves that much.
+We plot the robust smooth as well:
 
 ```{r}
-table(prostate$svi)
-prostate$svi = recode(prostate$svi, `1` = "Yes", `0` = "No")
-ggplot(prostate, aes(x = lcavol, y = lpsa, group = svi, color = svi)) +
-    geom_point() + 
-    geom_smooth(method = "lm", se = FALSE) + facet_wrap(~ cut_number(lweight, n = 2))
+ggplot(data.frame(x, y), aes(x = log(x), y = y))+ geom_point() + stat_smooth(method = "rlm")
 ```
 
-The different slopes suggest an interaction, but again, we don't have
-that much data.
+----
+
+In the end, we fit three models. Maybe we changed our minds and decided that robust regression wasn't necessary and that we think the linear model with $y$ predicted by $\text{log}(x)$ is the best.
+
+We then want a $p$-value for our collaborators or to publish, and we are happy to see that the coefficient is significant:
+```{r}
+tidy(lm(y ~ log(x)))
+```
+What is the problem here?
+
 
 -----
 
-Next we try looking at the predictors from the four-predictor
-model. This is pushing the limits of the number of variables we can
-look at all at once, but we will try.
-
-We can look at the relationship between `lpsa`, `lcavol`, and `svi`,
-with `lweight` and `lbph` as the given variables.
+Let's look at the $p$-values for the other two models that we rejected:
 
 ```{r}
-ggplot(prostate, aes(x = lcavol, y = lpsa, group = svi, color = svi)) +
-    geom_point() + 
-    geom_smooth(method = "lm", se = FALSE) +
-        facet_grid(cut_number(lweight, n = 2) ~ cut(lbph, breaks = c(-2, -1, 3)))
+tidy(lm(y ~ x))
+tidy(rlm(y ~ log(x)))
+## the corresponding p-value for rlm:
+pnorm(abs(tidy(rlm(y ~ log(x)))[2, "statistic", drop = TRUE]), lower.tail = FALSE) * 2
 ```
 
-Based on this visualization, we might not be confident about an interaction: the blue lines vary in slope, but there’s based on very small samples. The red lines have different heights but are similar in slope.
+Neither of the other two models would have given us a significant result at the $.05$ level: the $p$-values were $.15$ and $.08$.
+
+The problem is that if the other models had looked better to us, we might have used the $p$-values from them instead of from the model we chose, and so we are implicitly or unconsciously performing multiple tests.
+
+------
+
+To see why this invalidates our $p$-values, suppose we ungenerously describe the procedure we used to come up with our model as follows:
+
+> - Fit a linear model of $y$ described by $x$. If that has a significant $p$-value, stop and report that $p$-value. Otherwise...
+
+> - Fit a linear model of $y$ described by $\text{log}(x)$. If that has a significant $p$-value, stop and report that $p$-value. Otherwise...
+
+> - Fit a robust linear model of $y$ described by $\text{log}(x)$. Report that $p$-value because you're out of time.
+
+What fraction of the time will you reject the null hypothesis?
 
 -----
 
-In EDA we’re not always required to find a “best” model, and even if
-we were we can decide on what best means subjectively.
+We can see what happens by simulation:
 
-If you wanted to fit a linear model with `lcavol`, `lweight`, and `svi` as
-predictors plus interactions, you’re free to do so and then call that
-"best" because of the complexity you can get out of a relatively small
-number of variables.
-
-On the other hand, if you want a
-numerical decision for "best", you can just find the model that
-optimizes your favorite criterion. For example, if you like [Mallow’s
-Cp](https://en.wikipedia.org/wiki/Mallows%27s_Cp), this is available in `leaps`:
-
-```{r}
-summary(prostate_leaps)$cp
+```{r sim-1}
+pvals = rep(NA, 5000)
+for(i in 1:5000) {
+    x = rgamma(20, 1, 1)
+    y = rgamma(20, 10, 10)
+    out.lm = lm(y ~ x)
+    pval = tidy(out.lm)[2,"p.value", drop=TRUE]
+    if(pval > .05) {
+        out.lm = lm(y ~ log(x))
+        pval = tidy(out.lm)[2,"p.value", drop=TRUE]
+    }
+    if(pval > .05) {
+        out.lm = rlm(y ~ log(x))
+        pval = pnorm(-abs(tidy(out.lm)[2, "statistic", drop=TRUE])) * 2
+    }
+    pvals[i] = pval
+}
 ```
 
-When we use Cp, we look for the model with the lowest value of Cp, so
-here the five-predictor model is "best".
+-----
 
-The idea behind the Cp statistic is that the RSS underestimates the
-prediction error in a linear model, and the Cp statistic is a
-corrected version of the RSS.
+We reject at the $.05$ level about twice as much as we should, and so reporting the nominal $p$-value would be misleading here.
+
+```{r}
+mean(pvals <= .05)
+ggplot(data.frame(pval = pvals)) +
+    stat_ecdf(aes(x = pval)) +
+    scale_x_continuous(breaks = seq(0, 1, by = .05)) +
+    scale_y_continuous(breaks = seq(0, 1, by = .05)) + 
+    theme(axis.text.x = element_text(angle = 90, vjust = .5))
+```
+
+In our simulation, we made modeling decisions explicitly based on $p$-values. You can invalidate your $p$-values even if you make the decisions without actually looking at the $p$-values, it's just easier to simulate this way.
+
+
+# Note 1
+
+Notice that this isn't quite as bad as running three independent tests: in that case we would expect about $14$% of the $p$-values to be less than $.05$, but here we only get about $10$%.
+```{r}
+## .95^3 is the probability that you fail to reject
+## three null hypotheses at the .05 level, and so the
+## following is the probability that you reject at
+## least one of three null hypotheses at the .05 level
+1 - .95^3
+```
+
+# Note 2
+
+We only looked at three models/potential tests in the simulation here, but the problem can be much, much worse. We have:
+
+> - Multiple ways to transform each of the predictors,
+
+> - Multiple ways to transform the response,
+
+> - Choices about excluding outliers,
+
+> - Choices about how to code variables,
+
+> - Multiple models to fit,
+
+> - Tunable parameters in the models we use (e.g. the span parameter in LOESS),
+
+> - Decisions about whether and which interactions to fit
+
+This can lead to an enormous number of potential tests: Suppose you have two predictors, four ways of transforming predictors, three potential outliers, two coding choices, and five potential models. This gives
+$$
+4 \times 4 \times 4 \times 2^3 \times 2 \times 5 = 5120
+$$
+distinct combinations of analysis choices.
+
+In principle, we could count up all the possible tests and do a Bonferroni correction, but in practice the Bonferroni cutoff will be too strict for you to ever reject.
+
+# Note 3
+
+Exploration doesn't always invalidate your $p$-values, only if you do it while looking at the relationship you want to test.
+
+> - You can do anything to the predictors before you see the response and still get valid $p$-values.
+
+> - If you make decisions about transformations of the response without seeing how it relates to the predictors, you can still have valid $p$-values.
+
+------
+
+Let's try another simulation to illustrate the point above.
+
+Suppose we have the same setup as in the first simulation, but now we decide whether or not to transform $x$ and $y$ based on how skewed they are instead of of based on the significance of the relationship.
+
+Our procedure:
+
+> - If $x$ has a skewness larger than $1.5$, use a log transformation of $x$ in the model.
+
+> - If $y$ has a skewness larger than $1$, use a log transformation of $y$ in the model.
+
+> - Fit a linear model and report a $p$-value.
+
+-----
+
+```{r sim-2}
+pvals2 = rep(NA, 5000)
+for(i in 1:5000){
+    x = rgamma(20, 1, 1)
+    y = rgamma(20, 10, 10)
+    if(skewness(x) > 1.5)
+        x = log(x)
+    if(skewness(y) > 1)
+        y = log(y)
+    out.lm = lm(y ~ x)
+    pvals2[i] = tidy(out.lm)[2,"p.value", drop = TRUE]
+}
+```
+
+-----
+
+Now we see that the $p$-values are distributed the way they should be. In this case, looking at the variables and transforming them didn't invalidate our $p$-values.
+
+```{r}
+mean(pvals2 <= .05)
+ggplot(data.frame(pval = pvals2)) +
+    stat_ecdf(aes(x = pval)) +
+    scale_x_continuous(breaks = seq(0, 1, by = .05)) +
+    scale_y_continuous(breaks = seq(0, 1, by = .05)) + 
+    theme(axis.text.x = element_text(angle = 90, vjust = .5))
+```
+
+# Remedies
+
+- Report the results as exploratory. Describe all the choices made and everything you looked at so that the reader can make his or her own judgment about whether the results are real or due to chance.
+
+
+- New data: Perform exploratory analysis, identify some hypotheses that you would like to test (how you will transform the predictors and responses, how you will code variables, what model you will use, what tunable parameters you will use, etc.). Test those hypotheses on a new dataset that you've never seen before.
+
+
+- Split the data into exploration and validation sets before you begin. Do the exploratory analysis on the exploration set, identify specific hypotheses to test, and test them on the validation set.
+
