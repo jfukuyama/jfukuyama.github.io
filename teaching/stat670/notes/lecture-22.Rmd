@@ -1,512 +1,259 @@
-% Stat 470/670 Lecture 22: Logistic regression with many predictors
+% Stat 470/670 Lecture 22: Matrix Approximation, the SVD, and Reduced Rank Biplots
 % Julia Fukuyama
 
-```{r setup, echo = FALSE, message = FALSE}
+```{r setup, echo = FALSE}
 library(knitr)
 opts_chunk$set(fig.cap="", fig.width = 5, fig.height = 3, dpi=175, fig.path="lecture-22-fig/", warning = FALSE)
 library(ggplot2)
-library(magrittr)
-library(tidyverse)
-library(dplyr)
-library(viridis)
-library(broom)
+library(ggrepel)
 set.seed(0)
 ```
 
-# Arsenic in wells
+## Today
 
-The file `wells.dat` contains data on 3,020 households in Bangladesh whose wells had arsenic levels above the national drinking water standard of 50 micrograms per liter. The variables are:
+> - Singular Value Decomposition
 
-- `switch`: the response: whether or not the household switched after
-being encouraged to do so (after high arsenic was measured.)
+> - Reduced Rank Biplots
 
-- `arsenic`: the arsenic concentration in hundreds of micrograms per
-liter.
+Reading: Greenacre, Biplots in Practice, Chapter 5. The [book website](http://www.multivariatestatistics.org/biplots.html) contains links to all the chapters. Also [here](http://www.fbbva.es/TLFU/dat/greenacre_c05_2010.pdf).
 
-- `dist`: the distance to the nearest safe well in meters.
+## What to know about biplots
 
-- `assoc`: whether anyone in the household is in a community
-association.
+> - A biplot is a generalization of a scatterplot to an arbitrary number of variables.
 
-- `educ`: the years of education of the head of the household.
+> - The value of each observation for each variable is read off of the biplot by projecting the point onto the variable "axis", just as in a scatterplot.
 
------
+> - We can represent a matrix $\mathbf S \in \mathbb R^{n \times p}$ as a biplot if we can write $\mathbf S = \mathbf L \mathbf R^T$, where $\mathbf L \in \mathbb R^{n \times 2}$ and $\mathbf R \in \mathbb R^{p \times 2}$.
 
-We load at the data and look at the numerical summary and a pairs plot:
 
-```{r, message = FALSE}
-library(GGally)
-wells = read.table("../../datasets/wells.dat")
-summary(wells)
-ggpairs(wells)
-```
+## Rank of a matrix
 
-As we might expect, distance and education level are positively
-associated with switching, while arsenic level is negatively
-associated. Surprisingly, the correlation between belong to an
-association and switching is negative, though the relationship is very
-weak.
+One more concept from linear algebra:
+
+The _rank_ of a matrix is the maximum number of linearly independent rows or columns of a matrix.
+
+> - A set of vectors $\mathbf v_1, \ldots, \mathbf v_n$ is _linearly dependent_ if there exist a set of scalar values $a_1, \ldots, a_n$ such that $\sum_{i=1}^n a_i \mathbf v_i = \mathbf 0$, where $\mathbf 0$ represents the vector containing all zero values.
+
+> - A set of vectors $\mathbf v_1, \ldots, \mathbf v_n$ is _linearly independent_ if it is not linearly dependent.
+
+Note: If you've had linear algebra this should be familiar to you. If you haven't had linear algebra or don't particularly remember about ranks that's ok too, the main idea here is going to be that the rank of a matrix controls whether we can represent it exactly in two dimensions or not.
 
 -----
 
-Distance and arsenic levels should be the best predictors, so let's
-look more closely at the distributions of those variables.
+Properties of the rank:
 
-```{r}
-ggplot(wells, aes(x = dist)) +
-    geom_histogram(breaks = seq(0, 340, 10)) +
-    xlab("Distance to nearest safe well (meters)")
-```
+> - The rank is well defined, for any matrix the number of linearly independent rows and the number of linearly independent columns is the same.
 
-We see the distribution of distance peaks around 40--60 meters, then
-is strongly right-skewed. We should keep the possibility of a
-transformation in mind.
+> - An $n \times p$ matrix has rank at most $\text{min}(n, p)$.
 
--------
+> - If a matrix $\mathbf S \in \mathbb R^{n \times p}$ has rank $k$, there exist matrices $\mathbf L \in \mathbb R^{n \times k}$ and $\mathbf R \in \mathbb R^{p \times k}$ such that $\mathbf S = \mathbf L \mathbf R^T$.
 
-Then arsenic:
 
-```{r}
-ggplot(wells, aes(x = arsenic)) +
-    geom_histogram(breaks = seq(0, 10, 0.25)) + xlab("Arsenic concentration (100 mg/liter)")
-```
+## Problem we need to solve to make a biplot of a high-dimensional matrix
 
-There are no observations with arsenic below 0.5, because these are
-considered "safe" and the households don't get advised to switch
-wells. Otherwise, the distribution is against strongly right-skewed,
-suggesting a transformation. 
+Suppose we have a matrix $\mathbf S \in \mathbb R^{n \times p}$, and $\mathbf S$ has rank greater than 2.
 
-Note that the scales of `dist` and `arsenic` are quite
-different. Some authors suggest standardizing the data for
-interpretability, so that predictors are on approximately the same
-scale. That's not a bad idea but we will hold off for now.
+To make a biplot, we need to have $\mathbf S = \mathbf L \mathbf R^T$,  where $\mathbf L \in \mathbb R^{n \times 2}$ and $\mathbf R \in \mathbb R^{p \times 2}$.
 
-------
+If the rank if $\mathbf S$ is more than 2, such matrices don't exist!
 
-And finally education:
+. . .
 
-```{r}
-ggplot(wells, aes(x = educ)) + geom_histogram(breaks = -0.5:17.5) +
-    xlab("Years of education")
-```
-
-The distribution is weird. 0 (no education) and 5 (primary school only) are the magic numbers.
-
-# Starting off simple
-
-One way of approaching EDA is to throw everything into your model and
-then get rid of terms you don't need. Another strategy is to start
-with simple models and gradually build up to complex models. Let's
-take this second approach for now. 
-
-We'll start by predicting switching, using distance as the only
-response. There's no reason why we can't try loess: 
-
-```{r}
-ggplot(wells, aes(x = dist, y = switch)) +
-    geom_jitter(width = 0, height = 0.1) +
-    geom_smooth(method = "loess") +
-    xlab("Distance from nearest safe well") +
-    ylab("Probability of switching")
-```
-
-We can interpret the fit as the probability of switching wells, given
-the distance to the nearest safe well. There's a bump for very low
-distances (which is probably just noise) and then a decline. We could
-play around with the smoothing parameters to get something more
-pleasant-looking. Instead, we'll fit a logistic regression to
-guarantee a decreasing relationship.
-
------
-
-```{r}
-gg = ggplot(wells, aes(x = dist, y = switch)) +
-    geom_jitter(width = 0, height = 0.1) +
-    geom_smooth(method = "loess")
-gg + geom_smooth(method = "glm", method.args = list(family = "binomial"), color = "orange") +
-    xlab("Distance from nearest safe well") +
-    ylab("Probability of switching")
-```
-
-The parametric method imposes a functional form on the data. This aids
-in interpretability: the fit can now be described in a couple of
-parameters, and the weird bump at the beginning is gone. The cost is
-some lack of fit: perhaps the probability should decrease more quickly
-as the distance gets beyond about 60 meters (remember that water is
-heavy and it's tiring to carry buckets back and forth over long
-distances.)
-
------
-
-Let's try the same kind of approach using arsenic concentration as the sole predictor.
-
-```{r}
-gg = ggplot(wells, aes(x = arsenic, y = switch)) +
-    geom_jitter(width = 0, height = 0.1) +
-    geom_smooth(method = "loess")
-gg + geom_smooth(method = "glm", method.args = list(family = "binomial"), color = "orange") +
-    xlab("Arsenic concentration") +
-    ylab("Probability of switching")
-```
-
-The fits diverge at arsenic levels above about 5. That seems to be
-because of a couple of extremely high arsenic observations which led
-to switching. Note however that not much of the data has arsenic above
-5, so it remains to be seen how much this matters.
-
-Also note the difference in fits for low levels of arsenic. This is
-more worrisome than the difference at high levels because there is
-actually a lot of data there. It seems likely that there is a lack of
-fit for the low concentrations that logistic regression can't
-handle. We'll come back to this later.
-
-# Two predictors
-
-We now want to know how the chance of switching depends on distance
-and arsenic simulataneously. Before fitting a model, we plot the data
-to get a feel for it. We'll use color to distinguish between
-households that switch and households that don't. 
-
-```{r}
-ggplot(wells, aes(x = dist, y = arsenic, color = factor(switch))) +
-    geom_point(alpha = 0.5) +
-    xlab("Distance from nearest safe well") +
-    ylab("Arsenic concentration") +
-    labs(color = "Did they switch?") +
-    scale_color_manual(values = c("#E69F00", "#56B4E9"), labels = c("No", "Yes"))
-```
-
-The `alpha = 0.5` makes the points slightly transparent, which can
-help visually when you have a lot of data. Still, it's hard to work
-out how switching depends on the other two variables from this graph;
-that's why we're fitting a model. The main thing to take home from the
-graph is the lack of data in the top right: we have no observations at
-all with both distance above 200 and arsenic above 4, so we should not
-try to generalize to this region.
-
------
-
-Density plots are actually more useful for comparing the two
-distributions, and we can use `geom_density2d` to make such a plot:
-
-```{r}
-ggplot(wells, aes(x = dist, y = arsenic, color = factor(switch))) +
-    geom_density2d() +
-    xlab("Distance from nearest safe well") +
-    ylab("Arsenic concentration") +
-    labs(color = "Did they switch?") +
-    scale_color_manual(values = c("#E69F00", "#56B4E9"), labels = c("No", "Yes"))
-```
-
-We see here that people who didn't switch tend to be at lower arsenic
-levels and larger distances from the nearest safe well, which makes sense.
-
------
-
-Now we'll fit a logistic regression using both distance and arsenic as
-predictors. We first fit an additive model, i.e. with no interaction.
-
-```{r}
-switch.logit = glm(switch ~ dist + arsenic, family = "binomial", data = wells)
-summary(switch.logit)
-```
-
-As always, the coefficients are the most important things here. According to the model,
+Solution: Find the rank-2 matrix $\hat {\mathbf S}$ that most closely approximates $\mathbf S$, and use that to make a biplot.
 
 $$
-\textrm{logit}[P(\textrm{switch}|{\textrm{dist, arsenic}})] = 0.003 - 0.00897 \times \textrm{dist} + 0.4608 \times \textrm{arsenic}.
+\hat {\mathbf S} = \text{argmin}_{\mathbf T : \text{rank}(\mathbf T) = 2} \sum_{i=1}^n \sum_{j=1}^p (\mathbf S_{ij} - \mathbf T_{ij})^2
 $$
 
------
+## Singular Value Decomposition
 
-As in the continuous case, we visualize the fit by drawing multiple
-curves representing different values of one of the predictors. Let's
-display the switching probability as a function of distance for a few
-values of arsenic. Note that when we use the `augment()` function, we
-specify `type.predict = "response"` to get the probabilities and not their
-logits. 
+The [Singular Value Decomposition (SVD)](https://en.wikipedia.org/wiki/Singular_value_decomposition) is one of the most useful matrix decompositions.
 
-```{r}
-dist_df = expand.grid(dist = 0:339, arsenic = seq(0.5, 2.5, 0.5))
-dist_preds = augment(switch.logit, type.predict = "response", newdata = dist_df)
-ggplot(dist_preds, aes(x = dist, y = .fitted, group = arsenic, color = arsenic)) +
-    geom_line() +
-    xlab("Distance from nearest safe well") +
-    ylab("Probability of switching") +
-    labs(color = "Arsenic concentration") +
-    scale_color_viridis()
-```
+It says that any matrix $\mathbf S$ of rank $r$ can be written as
+$$
+\mathbf S = \mathbf U \mathbf D \mathbf V^T
+$$
+where:
 
-The median arsenic level is 1.3. If arsenic is near the median, the
-probability of switching declines from 60-something percent if you're
-right by a safe well to less than 10% if the nearest safe well is
-hundreds of meters away.
+> - $\mathbf U \in \mathbb R^{n \times r}$, with orthogonal columns (the scalar product between any two distinct columns is 0, the scalar product between any column and itself is 1).
 
------
+> - $\mathbf D \in \mathbb R^{r \times r}$ is a diagonal matrix, with positive numbers on the diagonal. These are written in decreasing order.
 
-Now find prediction curves for arsenic for a few different distances:
+> - $\mathbf V \in \mathbb R^{p \times r}$, with orthogonal columns.
 
-```{r}
-arsenic_df = expand.grid(arsenic = seq(0.5, 10, 0.01), dist = seq(0, 100, 25))
-arsenic_pred = augment(switch.logit, type.predict = "response", newdata = arsenic_df)
-ggplot(arsenic_pred, aes(x = arsenic, y = .fitted, group = dist, color = dist)) +
-    geom_line() +
-    xlab("Arsenic concentration") +
-    ylab("Probability of switching") +
-    labs(color = "Distance from nearest safe well") + scale_color_viridis()
-```
+## Matrix Approximation by the SVD
+
+We can use the SVD to find the solution to our problem on the previous slide:
+
+We want $\hat{\mathbf S}$ such that
+$$
+\hat {\mathbf S} = \text{argmin}_{\mathbf T : \text{rank}(\mathbf T) = 2} \sum_{i=1}^n \sum_{j=1}^p (\mathbf S_{ij} - \mathbf T_{ij})^2
+$$
+
+. . .
+
+It turns out that $\hat{\mathbf S} = \mathbf U_{(2)} \mathbf D_{(2)} \mathbf V_{(2)}^T$, where
+
+> - $\mathbf U_{(2)} \in \mathbb R^{n \times 2}$ is the matrix containing the first two columns of the matrix $\mathbf U$ in the SVD of $\mathbf S$
+
+> - $\mathbf D_{(2)} \in \mathbb R^{2 \times 2}$ is the diagonal matrix containing the first two rows and columns of $\mathbf D$ in the SVD of $\mathbf S$.
+
+> - $\mathbf V_{(2)} \in \mathbb R^{p \times 2}$ is the matrix containing the first two columns of the matrix $\mathbf V$ in the SVD of $\mathbf S$
 
 
-The median distance to a safe well is about 37 meters. At that
-distance, if the arsenic level is only just over the safety threshold,
-it's about 50--50 whether a household switched. On the other hand, at
-the highest levels of arsenic, households will almost certainly switch
-even if the nearest safe well is quite far.
+## Quality of the approximation
 
-# Adding an interaction
+The values in $\mathbf D$ tell us about how well $\hat {\mathbf S}$ approximates $\mathbf S$.
 
-We now add an interaction term between distance and arsenic.
+We have
 
-```{r}
-switch_int = glm(switch ~ dist * arsenic, family = "binomial", data = wells)
-summary(switch_int)
-```
+$$
+1 - \frac{\mathbf D_{11}^2 + \mathbf D_{22}^2}{\sum_{i=1}^r \mathbf D_{ii}^2} = \frac{\sum_{i=1}^n \sum_{j=1}^p (\hat {\mathbf S}_{ij} - \mathbf S_{ij})^2}{\sum_{i=1}^n \sum_{j=1}^p \mathbf S_{ij}^2}
+$$
 
-The numbers are a bit hard to interpret. For example, the sign of the
-interaction term is negative, but it's hard to know exactly what this
-means (especially since the signs for distance and arsenic go in
-different directions.) The interpretation is easier if we just plot
-curves.
+This is the quality of a rank-2 approximation because we are interested in biplots and representations of $\mathbf S$ in the plane, but the analogous result holds for approximations of any rank.
 
------
+## Biplot representation of the SVD approximation
 
-```{r}
-dist_int = augment(switch_int, type.predict = "response", newdata = dist_df)
-ggplot(dist_int, aes(x = dist, y = .fitted, group = arsenic, color = arsenic)) +
-    geom_line() +
-    xlab("Distance from nearest safe well") +
-    ylab("Probability of switching") +
-    labs(color = "Arsenic concentration") + scale_color_viridis()
-```
+$\hat{\mathbf S} = \mathbf U_{(2)} \mathbf D_{(2)} \mathbf V_{(2)}^T$ is almost in the right form for a biplot, but not quite. We need just a left and a right matrix, and we have $\mathbf D_{(2)}$ in the middle.
 
-The interaction brings the curves together as distance increases. If
-the nearest safe well is close, it makes a big difference whether the
-arsenic concentration is just over the limit or much bigger. If the
-nearest safe well is far, it makes little difference: people are
-unlikely to switch no matter the concentration. The curves meet up
-beyond 300 meters, though we only have three observations where the
-distance exceeds 300 meters.
+We have a couple of options:
 
------
+> - Left matrix $\mathbf U_{(2)}$, right matrix $\mathbf V_{(2)} \mathbf D_{(2)}$
+
+> - Left matrix $\mathbf U_{(2)} \mathbf D_{(2)}$, right matrix $\mathbf V_{(2)}$
+
+> - Left matrix $\mathbf U_{(2)} \mathbf D_{(2)}^{1/2}$, right matrix $\mathbf V_{(2)} \mathbf D_{(2)}^{1/2}$
+
+The last is referred to as the symmetric biplot, and we'll go with that for now.
+
+## Example
 
 ```{r}
-arsenic_int_pred = augment(switch_int, type.predict = "response", newdata = arsenic_df)
-ggplot(arsenic_int_pred, aes(x = arsenic, y = .fitted, group = dist, color = dist)) +
-    geom_line() +
-    xlab("Arsenic concentration") +
-    ylab("Probability of switching") +
-    labs(color = "Distance from nearest safe well") + scale_color_viridis()
-```
-
-The curves actually get further apart at first as arsenic increases
-(up to a point.) That is, the curves for short distances rise quite
-quickly as arsenic increases, while the curves for long distances rise
-more slowly. Eventually, for exceptionally high levels of arsenic, the
-curves come together (because they can't go any higher than 1.)
-
-# Lots of predictors
-
-Distance and arsenic are both good predictors and there's no reason to
-think there shouldn't be an interaction, so keep the interaction
-term. Now let's add `assoc` and `educ` to the model and see if the fit
-makes sense.
-
-```{r}
-summary(glm(switch ~ dist * arsenic + assoc + educ, family = "binomial", data = wells))
-```
-
-Years of education has a positive coefficient, which makes sense. We
-can keep that in the model.
-
-Association membership has a *negative* coefficient, which doesn't
-make causal sense: it would be strange for association membership to
-make you *less* likely to switch wells, unless you were a member of
-the Association for Arsenic Being Good for You. If our sole goal was
-prediction, we could do a careful cross-validation to see if
-association membership did help predict more accurately. Since we're
-doing EDA, we can drop the association term.
-
-```{r}
-summary(glm(switch ~ dist * arsenic + educ, family = "binomial", data = wells))
-```
-
-----
-
-We now add the remaining two-way interactions. In general, if you only
-have a few terms, you might as well include all the two-way
-interactions unless you have a good reason not to.
-
-```{r}
-switch_model = glm(switch ~ dist + arsenic + educ + dist:arsenic + dist:educ + arsenic:educ,
-    family = "binomial", data = wells)
+## HairEyeColor dataset, we'll just use the women
+HairEyeColor
 ```
 
 -----
 
-At this point our model is too complicated for it to be worth trying
-to interpret the numbers. Let's extract the fitted values and
-residuals, and plot the latter against the former. Note that the
-default of `augment()` is to extract the deviance residuals instead of
-the response residuals, if you know about and prefer deviance
-residuals you can specify them instead.
-
 ```{r}
-switch_model_df = augment(switch_model, type.residuals = "pearson")
-ggplot(switch_model_df, aes(x = .fitted, y = .resid)) +
-    geom_point() +
-    geom_smooth(method = "loess", method.args = list(degree = 1)) +
-    xlab("Fitted values") +
-    ylab("Residuals")
-```
-
-The points on the plot fall exactly on two lines, so look
-at the smooth instead. We see there's a little bit of waviness. This
-is fairly typical for logistic regression: there's no reason why the
-relationship between probability and the predictors should have that
-exact functional form. But the improvement in fit you get from fitting
-a nonparametric model is fairly small.
-
------
-
-Now plot the residuals against distance. What we're looking for here
-is whether the function form is correct, or whether we need more
-flexibility in how we use distance to predict switching.
-
-```{r}
-ggplot(switch_model_df, aes(x = dist, y = .resid)) +
-    geom_point() +
-    geom_smooth(method = "loess", method.args = list(degree = 1)) +
-    xlab("Distance from nearest safe well") +
-    ylab("Residuals")
-```
-
-There's a wiggle, but this is basically fine -- the zero line is
-enclosed in the confidence band.
-
------
-
-Now let's do the same plot with arsenic on
-the $x$-axis:
-
-```{r}
-ggplot(switch_model_df, aes(x = arsenic, y = .resid)) +
-    geom_point() +
-    geom_smooth(method = "loess", method.args = list(degree = 1)) +
-    xlab("Arsenic concentration") +
-    ylab("Residuals")
-```
-
-This is much worse. The curve is too low, then rises too high, then
-declines again. In fact, the extreme left hand side is the biggest
-problem, since the lack is fit is real and the data is dense
-there. The negative average residual there means that for arsenic
-levels just over the threshold, the probability of switching is
-*overestimated* (negative average residuals occur when there are more
-zeroes in the response than the model expects.)
-
------
-
-Education isn't that interesting since the effect is much smaller, but
-let's do it for completeness.
-
-```{r}
-ggplot(switch_model_df, aes(x = educ, y = .resid)) +
-    geom_point() +
-    geom_smooth(method = "loess", method.args = list(degree = 1)) +
-    xlab("Years of education") +
-    ylab("Residuals")
-```
-
-Again, the fit is imperfect.
-
------
-
-Remember when we said we might need to transform? The last couple of
-graphs suggest that while a transformation of distance is unnecessary,
-a transformation of arsenic is.  A transformation of education would
-probably help too, but since the variable is weird and not that
-important we won't bother. We'll take the log arsenic and refit the
-model.
-
-```{r}
-wells$log.arsenic = log(wells$arsenic)
-log_arsenic_model = glm(switch ~ dist + log.arsenic + educ + dist:log.arsenic + dist:educ + log.arsenic:educ, family = "binomial", data = wells)
-log_arsenic_model_df = augment(log_arsenic_model, type.residuals = "pearson", type.predict = "response")
+hec_svd = svd(HairEyeColor[,,2])
+hec_svd
+## Quality of the rank-2 approximation:
+sum(hec_svd$d[1:2]^2) / sum(hec_svd$d^2)
 ```
 
 -----
 
-Now plot the residuals of this new model against log arsenic:
-
 ```{r}
-ggplot(log_arsenic_model_df, aes(x = log.arsenic, y = .resid)) +
-    geom_point() +
-    geom_smooth(method = "loess", method.args = list(degree = 1))  +
-    xlab("Log arsenic concentration") +
-    ylab("Residuals")
+## Distribute the singular values evenly between the left and right singular vectors
+left_matrix = hec_svd$u[,1:2] %*% diag(hec_svd$d[1:2]^(.5))
+right_matrix = hec_svd$v[,1:2] %*% diag(hec_svd$d[1:2]^(.5))
 ```
 
-It's a lot better. I'm fairly happy with the model at this
-point. 
+. . .
 
------
-
-Let's take a look at the fit. Fix education at its median, and
-draw arsenic curves for several distances:
-
+Let's check the quality of the approximations
 ```{r}
-switch_grid = expand.grid(arsenic = seq(0.5, 10, 0.01), dist = seq(0, 100, 25), educ = 5)
-switch_grid$log.arsenic = log(switch_grid$arsenic)
-log_arsenic_pred_grid = augment(log_arsenic_model, newdata = switch_grid,
-    type.predict = "response", type.residuals = "pearson")
-ggplot(log_arsenic_pred_grid, aes(x = arsenic, y = .fitted, group = dist, color = dist)) +
-    geom_line() +
-    xlab("Arsenic concentration") +
-    ylab("Probability of switching") + scale_color_viridis()
+HairEyeColor[,,2]
+round(left_matrix %*% t(right_matrix), digits = 1)
 ```
 
 -----
 
-There are 3! ways you can assign the three variables to $x$-axis,
-conditioning variable, and fixed. You probably get the idea at this
-point, though, so let's just do one more:
+Set up for making a biplot:
+```{r}
+## Change the matrices to data frames and add a column describing the variables
+left_df = data.frame(left_matrix, HairColor = paste0(rownames(HairEyeColor), "Hair"))
+right_df = data.frame(right_matrix, EyeColor = paste0(colnames(HairEyeColor), "Eyes"))
+```
+. . .
 
 ```{r}
-switch_grid_2 = expand.grid(arsenic = seq(0.5, 10, 0.01), dist = median(wells$dist), educ = c(0, 5, 10))
-switch_grid_2$log.arsenic = log(switch_grid_2$arsenic)
-log_arsenic_pred_grid_2 = augment(log_arsenic_model, newdata = switch_grid_2,
-    type.predict = "response", type.residuals = "pearson")
-ggplot(log_arsenic_pred_grid_2,
-       aes(x = arsenic, y = .fitted, group = educ, color = factor(educ))) +
-    geom_line() +
-    xlab("Arsenic concentration") +
-    ylab("Probability of switching") +
-    labs(color = "Education") +
-    scale_color_manual(values = c("#999999", "#E69F00", "#56B4E9"),
-                       labels = c("0 years", "5 years", "10 years"))
+left_df
+right_df
 ```
 
 
-# Improving the model
 
-If you really care about prediction but still want to be able to
-interpret the model, try a nonparametric model such as a generalized
-additive model (GAM) or loess. To overgeneralize, GAM is often
-better/easier when you have lots of predictors, while loess is often
-better/easier when you have complex interactions. You can learn more
-about these in S425/625.
+-----
 
-If you really, really care about predictions then you can use machine
-learning techniques. The improvement in prediction is usually quite
-small, however, and you'll lose a lot or all the interpretability.
+. . .
+```{r, fig.height=4.5}
+ggplot(left_df) + geom_text_repel(aes(x = X1, y = X2, label = HairColor)) +
+    geom_point(aes(x = X1, y = X2)) +
+    coord_fixed() +
+    geom_segment(aes(xend = X1, yend = X2, x = 0, y = 0),
+                 data = right_df, arrow = arrow(length = unit(0.03, "npc"))) +
+    geom_text_repel(aes(x = X1, y = X2, label = EyeColor), data = right_df)
+```
 
+
+-----
+
+We can look at what happens the other way as well:
+
+```{r}
+## Distribute the singular values only to the right singular vectors
+left_matrix = hec_svd$u[,1:2]
+right_matrix = hec_svd$v[,1:2] %*% diag(hec_svd$d[1:2])
+```
+
+. . .
+
+Let's check the quality of the approximations
+```{r}
+HairEyeColor[,,2]
+round(left_matrix %*% t(right_matrix), digits = 1)
+```
+
+-----
+
+Set up for making a biplot:
+```{r}
+## Change the matrices to data frames and add a column describing the variables
+left_df = data.frame(left_matrix, HairColor = paste0(rownames(HairEyeColor), "Hair"))
+right_df = data.frame(right_matrix, EyeColor = paste0(colnames(HairEyeColor),"Eyes"))
+```
+. . .
+
+```{r}
+left_df
+right_df
+```
+
+-----
+
+. . .
+```{r, fig.height=3.5, fig.width=4.5}
+ggplot(left_df) + geom_text_repel(aes(x = X1, y = X2, label = HairColor)) +
+    geom_point(aes(x = X1, y = X2)) +
+    coord_fixed() +
+    geom_segment(aes(xend = X1, yend = X2, x = 0, y = 0),
+                 data = right_df, arrow = arrow(length = unit(0.03, "npc"))) +
+    geom_text_repel(aes(x = X1, y = X2, label = EyeColor), data = right_df)
+```
+
+-----
+
+```{r, fig.height = 3, fig.width = 5}
+p1 = ggplot(left_df) + geom_text_repel(aes(x = X1, y = X2, label = HairColor)) +
+    geom_point(aes(x = X1, y = X2))
+
+p2 = ggplot(right_df) +
+    geom_segment(aes(xend = X1, yend = X2, x = 0, y = 0), arrow = arrow(length = unit(0.03, "npc"))) +
+    geom_text(aes(x = X1, y = X2, label = EyeColor), nudge_y = 2, nudge_x = -30) + xlim(c(-125, 0))
+multiplot(p1, p2, cols = 2)
+```
+
+-----
+
+Overall:
+
+> - Not every matrix can be written as the product of two two-column matrices.
+
+> - The SVD gives us the best approximation in terms of MSE.
+
+> - We have some freedom in how to make the biplot based on the SVD.
+
+> - Notice that there is no estimation here: we are trying to represent the matrix, both the signal and the noise.
