@@ -161,9 +161,9 @@ Why is this?
 
 Following up on what we talked about regarding correlations between variables, note the following two relationships:
 
-> - If $\mathbf X$ has centered columns, then $\mathbf X \mathbf X^T$ is the sample covariance matrix.
+> - If $\mathbf X$ has centered columns, then $\mathbf X^T \mathbf X$ is proportional to the sample covariance matrix.
 
-> - If $\mathbf X = \mathbf U \mathbf D \mathbf V^T$, then $\mathbf X \mathbf X^T = \mathbf V \mathbf D^2 \mathbf V^T$.
+> - If $\mathbf X = \mathbf U \mathbf D \mathbf V^T$, then $\mathbf X^T \mathbf X = \mathbf V \mathbf D^2 \mathbf V^T$.
 
 Therefore, the columns of $\mathbf V \mathbf D$ can be seen as giving us both biplot points and biplot axes for approximating the _covariance_ matrix, and projections of one biplot axis onto another biplot axis tells us about the covariance between the two variables.
 
