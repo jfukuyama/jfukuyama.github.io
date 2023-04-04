@@ -7,7 +7,7 @@
   <meta http-equiv="Content-Style-Type" content="text/css" />
   <meta name="generator" content="pandoc" />
   <meta name="author" content="Julia Fukuyama" />
-  <title>Stat 470/670 Lecture 23: Count responses and Poisson regression</title>
+  <title>Stat 470/670 Lecture 23: Principal Components</title>
   <style type="text/css">
     code{white-space: pre-wrap;}
     span.smallcaps{font-variant: small-caps;}
@@ -89,531 +89,430 @@
 </head>
 <body>
 <div class="slide titlepage">
-  <h1 class="title">Stat 470/670 Lecture 23: Count responses and Poisson
-regression</h1>
+  <h1 class="title">Stat 470/670 Lecture 23: Principal Components</h1>
   <p class="author">
 Julia Fukuyama
   </p>
 </div>
-<div id="stop-and-frisk-data" class="slide section level1">
-<h1>Stop and frisk data</h1>
-<p>Gelman and Hill have data on police stops in New York City in
-1998–1999, during Giuliani’s mayoralty. There have been accusations that
-some ethnic groups have been stopped at rates not justified by either
-their arrest rate or their location (as measured by precinct.)</p>
-<p>The data, with noise added for confidentiality, is at <a
-href="http://www.stat.columbia.edu/~gelman/arm/examples/police/frisk_with_noise.dat">http://www.stat.columbia.edu/~gelman/arm/examples/police/frisk_with_noise.dat</a></p>
-<p>The data gives counts of police stops for all combinations of</p>
-<ul class="incremental">
-<li><p><code>precinct</code>: 75 total</p></li>
-<li><p><code>eth</code>: Ethnicity of the person stopped, three
-possibilities (1 = Black, 2 = Hispanic, 3 = white), and</p></li>
-<li><p><code>crime</code>: The type of crime, four possibilities (1 =
-violent, 2 = weapons, 3 = property, and 4 = drug)</p></li>
+<div id="today" class="slide section level2">
+<h1>Today</h1>
+<p>Today: PCA</p>
+<ul>
+<li>Intuition</li>
 </ul>
-<p>This gives a total of <span class="math inline">\(75 \times 3 \times
-4 = 900\)</span> rows.</p>
-<p>There are two other variables in the data set:</p>
-<ul class="incremental">
-<li><p><code>pop</code>: population of the ethnic group within the
-precinct, and</p></li>
-<li><p><code>past.arrests</code>: the number of arrests of people in
-that ethnic group in that precinct for that type of crime in
-1997.</p></li>
+<ul>
+<li>Math</li>
+</ul>
+<ul>
+<li>Examples</li>
 </ul>
 </div>
-<div class="slide section level1">
-
-<p>The first few rows of this file are a description, so we tell R to
-skip these when reading the data.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>frisk <span class="ot">=</span> <span class="fu">read.table</span>(<span class="st">&quot;http://www.stat.columbia.edu/~gelman/arm/examples/police/frisk_with_noise.dat&quot;</span>, <span class="at">skip =</span> <span class="dv">6</span>, <span class="at">header =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(frisk)</span></code></pre></div>
-<pre><code>## [1] 900</code></pre>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(frisk)</span></code></pre></div>
-<pre><code>##      stops           pop          past.arrests       precinct       eth   
-##  Min.   :   0   Min.   :   321   Min.   :   0.0   Min.   : 1   Min.   :1  
-##  1st Qu.:  26   1st Qu.:  6844   1st Qu.:  53.0   1st Qu.:19   1st Qu.:1  
-##  Median :  72   Median : 18004   Median : 124.0   Median :38   Median :2  
-##  Mean   : 146   Mean   : 30105   Mean   : 262.8   Mean   :38   Mean   :2  
-##  3rd Qu.: 173   3rd Qu.: 46669   3rd Qu.: 287.5   3rd Qu.:57   3rd Qu.:3  
-##  Max.   :1755   Max.   :184345   Max.   :2655.0   Max.   :75   Max.   :3  
-##      crime     
-##  Min.   :1.00  
-##  1st Qu.:1.75  
-##  Median :2.50  
-##  Mean   :2.50  
-##  3rd Qu.:3.25  
-##  Max.   :4.00</code></pre>
-<p>Having numerical ethnicity is annoying, so recode:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>frisk<span class="sc">$</span>eth <span class="ot">=</span> <span class="fu">recode_factor</span>(frisk<span class="sc">$</span>eth, <span class="st">`</span><span class="at">1</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Black&quot;</span>, <span class="st">`</span><span class="at">2</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Hispanic&quot;</span>, <span class="st">`</span><span class="at">3</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;white&quot;</span>)</span></code></pre></div>
+<div id="a-contrived-example" class="slide section level2">
+<h1>A contrived example</h1>
+<p>Suppose we have a 3-dimensional object that we want to
+investigate.</p>
+<p>Due to some strange set of constraints, we are only allowed to see
+its shadow.</p>
+<p>Without knowing anything about the object, what sort of a shadow
+would you expect to be most useful?</p>
 </div>
-<div class="slide section level1">
+<div class="slide section level2">
 
-<p>For the purposes of this lecture, we’ll ignore the type of crime, and
-aggregate the number of stops and past arrests over all four types. If
-you’re interested though, you should try a model that includes type of
-crime as well and see if anything changes.</p>
-<p>Aggregating in this way gives us 225 rows (75 precincts by three
-ethnic groups):</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>frisk.sum <span class="ot">=</span> frisk <span class="sc">%&gt;%</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(precinct, eth) <span class="sc">%&gt;%</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarise</span>(<span class="at">stops =</span> <span class="fu">sum</span>(stops), <span class="at">past.arrests =</span> <span class="fu">sum</span>(past.arrests), <span class="at">pop =</span> <span class="fu">mean</span>(pop))</span></code></pre></div>
-<pre><code>## `summarise()` has grouped output by &#39;precinct&#39;. You can override using the
-## `.groups` argument.</code></pre>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(frisk.sum)</span></code></pre></div>
-<pre><code>## [1] 225</code></pre>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(frisk.sum)</span></code></pre></div>
-<pre><code>##     precinct        eth         stops         past.arrests       pop        
-##  Min.   : 1   Black   :75   Min.   :   7.0   Min.   :  16   Min.   :   321  
-##  1st Qu.:19   Hispanic:75   1st Qu.: 133.0   1st Qu.: 312   1st Qu.:  6844  
-##  Median :38   white   :75   Median : 385.0   Median : 571   Median : 18004  
-##  Mean   :38                 Mean   : 584.1   Mean   :1051   Mean   : 30105  
-##  3rd Qu.:57                 3rd Qu.: 824.0   3rd Qu.:1467   3rd Qu.: 46669  
-##  Max.   :75                 Max.   :2771.0   Max.   :5667   Max.   :184345</code></pre>
+<p><img src="camel1.png" /></p>
 </div>
-<div class="slide section level1">
+<div class="slide section level2">
 
-<p>Let’s first draw some pictures.</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(frisk.sum, <span class="fu">aes</span>(<span class="at">x =</span> stops, <span class="at">color =</span> eth, <span class="at">fill =</span> eth)) <span class="sc">+</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_histogram</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">2800</span>, <span class="dv">50</span>)) <span class="sc">+</span> <span class="fu">facet_wrap</span>(<span class="sc">~</span>eth, <span class="at">ncol =</span> <span class="dv">1</span>)</span></code></pre></div>
-<p><img src="lecture-23-fig/unnamed-chunk-4-1.png" /></p>
-<p>Quite clearly, the distributions of stops for Black and Hispanic
-people are very different from the distribution for white people, though
-there may be multiple explanations for this.</p>
+<p><img src="camel2.png" /></p>
 </div>
-<div class="slide section level1">
+<div class="slide section level2">
 
-<p>Let’s look at the relationship of stops with past arrests. Because of
-skewness, we log both variables.</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(frisk.sum, <span class="fu">aes</span>(<span class="at">x =</span> (past.arrests), <span class="at">y =</span> (stops), <span class="at">color =</span> eth)) <span class="sc">+</span> <span class="fu">geom_point</span>()</span></code></pre></div>
-<p><img src="lecture-23-fig/unnamed-chunk-5-1.png" /></p>
-<p>There’s certainly a relationship. The question is whether the
-relationship between the two variables is sufficient to explain the
-differences between the stops of the three ethnic groups. You could get
-at this just by adding smoother for the three groups:</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(frisk.sum, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">log</span>(past.arrests), <span class="at">y =</span> <span class="fu">log</span>(stops), <span class="at">group =</span> eth, <span class="at">color =</span> eth)) <span class="sc">+</span> <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="dv">1</span>) <span class="sc">+</span> <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">degree =</span> <span class="dv">1</span>))</span></code></pre></div>
-<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
-<p><img src="lecture-23-fig/unnamed-chunk-6-1.png" /></p>
-<p>Since this is an important topic, however, we should be a bit more
-careful and construct a model.</p>
+<p>It seems like the most useful shadow is the biggest one: If we were
+only allowed one view, we would ask for the one that took up the most
+space.</p>
+<p>It’s easy to come up with examples where this isn’t the most useful,
+but it’s a good place to start if you don’t know anything about the
+data.</p>
+<p>The same will be true of PCA.</p>
 </div>
-<div id="poisson-regression" class="slide section level1">
-<h1>Poisson regression</h1>
-<p>We’ll model this data using (at first) <em>Poisson regression</em>,
-another form of generalized linear model.</p>
-<p>Poisson regression is used instead of standard linear regression when
-the response variable is a count (0, 1, 2, etc.) instead of a real
-number.</p>
-<p>You <em>could</em> use standard linear regression here (if you put
-the numbers into <code>lm</code> in R it will give you results), but
-Poisson regression can be better because counts tend to have a <a
-href="https://en.wikipedia.org/wiki/Poisson_distribution">Poisson
-distribution</a>, and Poisson distributed variables have a fixed
-relationship between the mean and the variance.</p>
-<p>If <span class="math inline">\(y \sim \text{Pois}(\lambda)\)</span>,
-then <span class="math inline">\(E(y) = \lambda\)</span> and <span
-class="math inline">\(\text{Var}(y) =\lambda\)</span>. This relationship
-is inconsistent with the homoskedasticity assumptions of linear
-regression.</p>
+<div id="pca-as-variance-maximization" class="slide section level2">
+<h1>PCA as variance maximization</h1>
+<p>In PCA, we have a data matrix <span class="math inline">\(\mathbf X
+\in \mathbb R^{n \times p}\)</span> with centered columns.</p>
+<p>We think of the rows of <span class="math inline">\(\mathbf
+X\)</span> as points in <span
+class="math inline">\(p\)</span>-dimensional space, and we want to
+project the points down into a lower-dimensional space so we can
+visualize them.</p>
+<p>There are a lot of different ways we could do this, but in PCA we
+want to find the projection that maximizes the variance of the projected
+points.</p>
 </div>
-<div class="slide section level1">
+<div id="the-pca-optimization-problem" class="slide section level2">
+<h1>The PCA optimization problem</h1>
+<p>First consider projecting the points onto a line.</p>
+<p>The PCA problem is to find <span class="math display">\[
+\mathbf w_{(1)} = \text{arg max}_{\mathbf w : \|\mathbf w \| = 1}
+\sum_{i=1}^n (\mathbf x_i \cdot \mathbf w)^2
+\]</span> where <span class="math inline">\(\mathbf x_i\)</span> is the
+<span class="math inline">\(i\)</span>th row of <span
+class="math inline">\(\mathbf X\)</span>.</p>
+<p><span class="math inline">\(\mathbf w_{(1)}\)</span> is then the
+first principal component.</p>
+</div>
+<div class="slide section level2">
 
-<p>In a standard Poisson regression, the response has a Poisson
-distribution with the <em>log</em> of the expected value given by a
-linear function of the predictors.</p>
-<p>In the single-variable case: <span class="math display">\[
-\log(E[Y \mid x]) = \beta_0 + \beta_1 x
-\]</span> and <span class="math display">\[
-Y \sim \text{Pois}(E[Y \mid x])
+<p>If we want projections into higher-dimensional spaces, we take more
+principal components.</p>
+<p>We find the <span class="math inline">\(k\)</span>th principal
+component as <span class="math display">\[
+\mathbf w_{(k)} = \text{arg max}_{\mathbf w :\| \mathbf w \| = 1,
+\mathbf w^T \mathbf w_{(j)} = 0, j = 1, \ldots, k-1} \sum_{i=1}^n
+(\mathbf x_i \cdot \mathbf w)^2
 \]</span></p>
+<p>The constraint that <span class="math inline">\(\mathbf w^T \mathbf
+w_{(k)} = 0, j = 1,\ldots, k-1\)</span> means that the <span
+class="math inline">\(k\)</span>th principal component is orthogonal to
+all the previous principal components, and is needed to ensure a unique
+solution to the problem.</p>
 </div>
-<div class="slide section level1">
-
-<p>We’ll start off with a Poission regression model that’s much too
-simple, and build up to a more useful one.</p>
-<p>The simplest model just treats each number of stops as a realization
-of a Poisson random variable.</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>constant.glm <span class="ot">=</span> <span class="fu">glm</span>(stops <span class="sc">~</span> <span class="dv">1</span>, <span class="at">family =</span> poisson, <span class="at">data =</span> frisk.sum)</span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(constant.glm)</span></code></pre></div>
+<div id="solution-to-the-pca-problem" class="slide section level2">
+<h1>Solution to the PCA problem</h1>
+<p>The solution to the PCA is given by the SVD.</p>
+<p>If <span class="math inline">\(\mathbf X\)</span> has centered
+columns and <span class="math inline">\(\mathbf X = \mathbf U \mathbf D
+\mathbf V^T\)</span> is the SVD of <span class="math inline">\(\mathbf
+X\)</span>, then</p>
+<ul>
+<li>The <span class="math inline">\(k\)</span>th principal component is
+the <span class="math inline">\(k\)</span>th column of <span
+class="math inline">\(\mathbf V\)</span>.</li>
+</ul>
+<ul>
+<li>The projections of the points onto the <span
+class="math inline">\(k\)</span>th principal component are given by the
+<span class="math inline">\(k\)</span>th row of <span
+class="math inline">\(\mathbf U \mathbf D\)</span>.</li>
+</ul>
+</div>
+<div id="example" class="slide section level2">
+<h1>Example</h1>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(devtools)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">install_github</span>(<span class="st">&quot;vqv/ggbiplot&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ade4)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggbiplot)</span></code></pre></div>
+<pre><code>## Loading required package: plyr</code></pre>
+<pre><code>## Loading required package: scales</code></pre>
+<pre><code>## Loading required package: grid</code></pre>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(viridis)</span></code></pre></div>
+<pre><code>## Loading required package: viridisLite</code></pre>
 <pre><code>## 
-## Call:
-## glm(formula = stops ~ 1, family = poisson, data = frisk.sum)
+## Attaching package: &#39;viridis&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:scales&#39;:
 ## 
-## Deviance Residuals: 
-##     Min       1Q   Median       3Q      Max  
-## -33.049  -22.552   -8.788    9.343   65.227  
-## 
-## Coefficients:
-##             Estimate Std. Error z value Pr(&gt;|z|)    
-## (Intercept) 6.370053   0.002758    2309   &lt;2e-16 ***
-## ---
-## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
-## 
-## (Dispersion parameter for poisson family taken to be 1)
-## 
-##     Null deviance: 123333  on 224  degrees of freedom
-## Residual deviance: 123333  on 224  degrees of freedom
-## AIC: 125041
-## 
-## Number of Fisher Scoring iterations: 5</code></pre>
+##     viridis_pal</code></pre>
 </div>
-<div class="slide section level1">
+<div class="slide section level2">
 
-<p>By now you might be sick of all the cruft that gets displayed when we
-use <code>summary()</code> on a GLM. Let’s use Gelman et al.’s
-<code>display()</code> function in package <code>arm</code> instead.</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># install.packages(&quot;arm&quot;)</span></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(arm)</span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="fu">display</span>(constant.glm)</span></code></pre></div>
-<pre><code>## glm(formula = stops ~ 1, family = poisson, data = frisk.sum)
-##             coef.est coef.se
-## (Intercept) 6.37     0.00   
-## ---
-##   n = 225, k = 1
-##   residual deviance = 123332.5, null deviance = 123332.5 (difference = 0.0)</code></pre>
-<p>This pares away most of the low value information. We see the
-coefficent estimate (on the log scale) is 6.37, which gives <span
-class="math inline">\(e^{6.37} = 584\)</span> on the original scale.
-That is, the number of stops for each ethnic group within each precinct
-is modeled as a random variable with distribution</p>
-<p><span class="math display">\[
-\textrm{Poisson}(584).
-\]</span></p>
-<p>The other number to keep track of is the (residual)
-<em>deviance</em>. Low deviance is good, as long as you’re not
-overfitting. In particular, every time you add a degree of freedom, you
-should expect to reduce the deviance by 1 if you’re just adding random
-noise. So if you’re not overfitting when you fit a complex model, you
-should expect to reduce the deviance by more than you increase the
-degrees of freedom.</p>
+<p>Olympic dataset</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(olympic)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(olympic<span class="sc">$</span>tab)</span></code></pre></div>
+<pre><code>##       100             long            poid            haut      
+##  Min.   :10.62   Min.   :6.220   Min.   :10.27   Min.   :1.790  
+##  1st Qu.:11.02   1st Qu.:7.000   1st Qu.:13.15   1st Qu.:1.940  
+##  Median :11.18   Median :7.090   Median :14.12   Median :1.970  
+##  Mean   :11.20   Mean   :7.133   Mean   :13.98   Mean   :1.983  
+##  3rd Qu.:11.43   3rd Qu.:7.370   3rd Qu.:14.97   3rd Qu.:2.030  
+##  Max.   :11.57   Max.   :7.720   Max.   :16.60   Max.   :2.270  
+##       400             110             disq            perc      
+##  Min.   :47.44   Min.   :14.18   Min.   :34.36   Min.   :4.000  
+##  1st Qu.:48.34   1st Qu.:14.72   1st Qu.:39.08   1st Qu.:4.600  
+##  Median :49.15   Median :15.00   Median :42.32   Median :4.700  
+##  Mean   :49.28   Mean   :15.05   Mean   :42.35   Mean   :4.739  
+##  3rd Qu.:49.98   3rd Qu.:15.38   3rd Qu.:44.80   3rd Qu.:4.900  
+##  Max.   :51.28   Max.   :16.20   Max.   :50.66   Max.   :5.700  
+##       jave            1500      
+##  Min.   :49.52   Min.   :256.6  
+##  1st Qu.:55.42   1st Qu.:266.4  
+##  Median :59.48   Median :272.1  
+##  Mean   :59.44   Mean   :276.0  
+##  3rd Qu.:64.00   3rd Qu.:286.0  
+##  Max.   :72.60   Max.   :303.2</code></pre>
 </div>
-<div class="slide section level1">
+<div class="slide section level2">
 
-<p>Now this model is obviously inadequate. We might, for example, think
-that the number of stops for an ethnic group in a precinct should be
-proportional to the number of arrests for that ethnicity-precinct
-(though this is controversial.) In a GLM, we can model this using an
-<em>offset</em>:</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>offset.glm <span class="ot">=</span> <span class="fu">glm</span>(stops <span class="sc">~</span> <span class="dv">1</span>, <span class="at">family =</span> poisson, <span class="at">offset =</span> <span class="fu">log</span>(past.arrests), <span class="at">data =</span> frisk.sum)</span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="fu">display</span>(offset.glm)</span></code></pre></div>
-<pre><code>## glm(formula = stops ~ 1, family = poisson, data = frisk.sum, 
-##     offset = log(past.arrests))
-##             coef.est coef.se
-## (Intercept) -0.59     0.00  
-## ---
-##   n = 225, k = 1
-##   residual deviance = 46120.3, null deviance = 46120.3 (difference = 0.0)</code></pre>
-<p>Since the linear predictor is on the log scale, the offset also has
-to be logged. This gives the following model for each precinct/race
-combination:</p>
-<p><span class="math display">\[
-\log[E(\textrm{stops}|\textrm{past arrests})] = -0.59 +
-\log(\textrm{past arrests})
-\]</span> or (taking the exponential of both sides) <span
-class="math display">\[
-E(\textrm{stops}|\textrm{past arrests}) = e^{-0.59 + \log(\textrm{past
-arrests})} = 0.56 \times \textrm{past arrests}
-\]</span></p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>oly_noscale <span class="ot">=</span> <span class="fu">prcomp</span>(olympic<span class="sc">$</span>tab, <span class="at">scale. =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>oly_noscale<span class="sc">$</span>rotation[,<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>]</span></code></pre></div>
+<pre><code>##                PC1          PC2
+## 100  -0.0045042348  0.005632863
+## long  0.0084964324 -0.013772028
+## poid -0.0294931259 -0.155510542
+## haut  0.0007153041 -0.002667193
+## 400  -0.0455887408 -0.001324105
+## 110  -0.0050441978  0.010836485
+## disq -0.1184059716 -0.352166545
+## perc  0.0003427802 -0.019704006
+## jave -0.0525411029 -0.917592971
+## 1500 -0.9900266310  0.095301595</code></pre>
 </div>
-<div class="slide section level1">
+<div id="pca-biplots" class="slide section level2">
+<h1>PCA Biplots</h1>
+<p>Two types of biplots, <em>form</em> and <em>covariance</em>. Let’s
+start off with the <em>form</em> biplot.</p>
+<ul>
+<li>For each sample we plot a point with the sample scores along the
+principal axes.</li>
+</ul>
+<ul>
+<li>For each variable, we make an arrow with the variable weights along
+the principal axes.</li>
+</ul>
+<p>This allows us to read off the sample scores along the principal axes
+and the variable weights along the principal axes.</p>
+<div class="incremental">
+<p>However, there’s another way to interpret the PCA biplot:</p>
+<ul>
+<li>Since the PCA solution is given by the SVD, the biplot is the same
+as the reduced-rank biplot (up to choices of how to scale the biplot
+points and biplot axes).</li>
+</ul>
+<ul>
+<li>In particular, the form biplot is a reduced-rank biplot where we use
+<span class="math inline">\(\mathbf U_{(2)} \mathbf D_{(2)}\)</span> to
+plot the biplot points, and <span class="math inline">\(\mathbf
+V_{(2)}\)</span> to plot the biplot axes.</li>
+</ul>
+<ul>
+<li>Therefore, we can read the PCA biplot as giving us an approximation
+to the centered data matrix <span class="math inline">\(\mathbf
+X\)</span></li>
+</ul>
+</div>
+</div>
+<div id="pca-biplot-for-the-olympic-data" class="slide section level2">
+<h1>PCA biplot for the olympic data</h1>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="do">## scale = 0 means form biplot</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggbiplot</span>(oly_noscale, <span class="at">scale =</span> <span class="dv">0</span>) <span class="sc">+</span> <span class="fu">ylim</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="dv">17</span>, <span class="dv">10</span>))</span></code></pre></div>
+<p><img src="lecture-23-fig/unnamed-chunk-5-1.png" /></p>
+</div>
+<div id="covariance-biplot" class="slide section level2">
+<h1>Covariance biplot</h1>
+<p>The <em>covariance</em> biplot is very subtly different from the form
+biplot, the difference being how the singular values are allocated.</p>
+<p>In the covariance biplot, we use</p>
+<ul>
+<li><span class="math inline">\(\mathbf U_{(2)}\)</span> for the biplot
+points</li>
+</ul>
+<ul>
+<li><span class="math inline">\(\mathbf V_{(2)} \mathbf D_{(2)}\)</span>
+for the biplot axes.</li>
+</ul>
+<p>In this form of the biplot, angles between biplot axes give us
+approximations of the covariances.</p>
+<p>Why is this?</p>
+</div>
+<div class="slide section level2">
 
-<p>To check this, we look at the predicted number of stops for
-precinct/race combinations with 10, 100, and 1000 past arrests
-respectively:</p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">augment</span>(offset.glm,</span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>        <span class="at">newdata =</span> <span class="fu">data.frame</span>(<span class="at">past.arrests =</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">100</span>, <span class="dv">1000</span>)),</span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>        <span class="at">type.predict =</span> <span class="st">&quot;response&quot;</span>)</span></code></pre></div>
-<pre><code>## # A tibble: 3 × 2
-##   past.arrests .fitted
-##          &lt;dbl&gt;   &lt;dbl&gt;
-## 1           10    5.56
-## 2          100   55.6 
-## 3         1000  556.</code></pre>
-<p>Our model has a much lower deviance than the constant model, so we’ve
-improved the fit by a lot.</p>
+<p>Following up on what we talked about regarding correlations between
+variables, note the following two relationships:</p>
+<ul>
+<li>If <span class="math inline">\(\mathbf X\)</span> has centered
+columns, then <span class="math inline">\(\mathbf X \mathbf X^T\)</span>
+is the sample covariance matrix.</li>
+</ul>
+<ul>
+<li>If <span class="math inline">\(\mathbf X = \mathbf U \mathbf D
+\mathbf V^T\)</span>, then <span class="math inline">\(\mathbf X \mathbf
+X^T = \mathbf V \mathbf D^2 \mathbf V^T\)</span>.</li>
+</ul>
+<p>Therefore, the columns of <span class="math inline">\(\mathbf V
+\mathbf D\)</span> can be seen as giving us both biplot points and
+biplot axes for approximating the <em>covariance</em> matrix, and
+projections of one biplot axis onto another biplot axis tells us about
+the covariance between the two variables.</p>
 </div>
-<div class="slide section level1">
+<div id="covariance-biplot-1" class="slide section level2">
+<h1>Covariance biplot</h1>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="do">## scale = 1 means covariance biplot</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggbiplot</span>(oly_noscale, <span class="at">scale =</span> <span class="dv">1</span>)</span></code></pre></div>
+<p><img src="lecture-23-fig/unnamed-chunk-6-1.png" /></p>
+</div>
+<div id="correlation-based-pca" class="slide section level2">
+<h1>Correlation-based PCA</h1>
+<p>The example above suggests that doing PCA when the variables are on
+different scales isn’t always that useful.</p>
+<p>When the variables are on different scales and measure different
+things, we often standardize the columns of <span
+class="math inline">\(\mathbf X\)</span> (divide each column by its
+standard deviation) before performing PCA.</p>
+<p>This is sometimes referred to as correlation-based PCA, as opposed to
+covariance-based PCA.</p>
+</div>
+<div id="correlation-based-pca-biplot" class="slide section level2">
+<h1>Correlation-based PCA biplot</h1>
+<p>Analogous to the covariance-based PCA biplot:</p>
+<ul>
+<li>Sample points represent the scores on the principal axes.</li>
+</ul>
+<ul>
+<li>Variable points represent variable weights on the principal
+axes.</li>
+</ul>
+<p>Interpretation as a reduced-rank biplot:</p>
+<ul>
+<li>Correlation-based PCA biplot is just a reduced-rank biplot
+approximating a centered and scaled data matrix.</li>
+</ul>
+<ul>
+<li>We still have biplot points and axes, and they describe the elements
+of the centered and scaled data matrix.</li>
+</ul>
+<p>Relationships between the variables:</p>
+<ul>
+<li>Projections of biplot axes onto each other now describe correlations
+between variables instead of covariances.</li>
+</ul>
+</div>
+<div class="slide section level2">
 
-<p>Now we want to see what happens if we add ethnic group as a
-predictor. Ethnic group is categorical, so we use it as a factor.</p>
-<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>eth.glm <span class="ot">=</span> <span class="fu">glm</span>(stops <span class="sc">~</span> eth, <span class="at">family =</span> poisson, <span class="at">offset =</span> <span class="fu">log</span>(past.arrests), <span class="at">data =</span> frisk.sum)</span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="fu">display</span>(eth.glm)</span></code></pre></div>
-<pre><code>## glm(formula = stops ~ eth, family = poisson, data = frisk.sum, 
-##     offset = log(past.arrests))
-##             coef.est coef.se
-## (Intercept) -0.59     0.00  
-## ethHispanic  0.07     0.01  
-## ethwhite    -0.16     0.01  
-## ---
-##   n = 225, k = 3
-##   residual deviance = 45437.4, null deviance = 46120.3 (difference = 682.9)</code></pre>
-<p>Note that “past arrests” doesn’t have a coefficient: the model
-assumes that expected stops are proportional to past arrests (where the
-constant of proportionality may depend on other stuff.) The deviance has
-dropped substantially again. On the log scale, we have additive terms
-for the offset and for ethnicity (relative to Black, which is taken as
-the baseline due to alphabetical order.) On the original scale, the
-terms are multiplicative, and we can combine the offset and ethnicity
-terms to get a coefficient for each ethnicity. That is, the model is
-now</p>
-<p><span class="math display">\[
-\begin{align*}
-E(\textrm{stops} | \textrm{ethnic group, past arrests}) &amp;=
-e^{\textrm{intercept} + \textrm{ethnicity coefficient} +
-\textrm{log}(\textrm{past arrests})}\\
-&amp;=  \textrm{multiplier for ethnic group} \times \textrm{past
-arrests}
-\end{align*}
-\]</span></p>
-<p>where the multipliers are</p>
-<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>eth.co <span class="ot">=</span> <span class="fu">coefficients</span>(eth.glm)</span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>multipliers <span class="ot">=</span> <span class="fu">exp</span>(<span class="fu">c</span>(eth.co[<span class="dv">1</span>], eth.co[<span class="dv">1</span>] <span class="sc">+</span> eth.co[<span class="dv">2</span>], eth.co[<span class="dv">1</span>] <span class="sc">+</span> eth.co[<span class="dv">3</span>]))</span>
-<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(multipliers)</span></code></pre></div>
-<pre><code>## (Intercept) (Intercept) (Intercept) 
-##   0.5553894   0.5957836   0.4725238</code></pre>
-<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>eth.coef <span class="ot">=</span> <span class="fu">tidy</span>(eth.glm)<span class="sc">$</span>estimate</span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>multipliers <span class="ot">=</span> <span class="fu">exp</span>(<span class="fu">c</span>(eth.coef[<span class="dv">1</span>],</span>
-<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>    eth.coef[<span class="dv">1</span>] <span class="sc">+</span> eth.coef[<span class="dv">2</span>],</span>
-<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>    eth.coef[<span class="dv">1</span>] <span class="sc">+</span> eth.coef[<span class="dv">3</span>]))</span>
-<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>multipliers</span></code></pre></div>
-<pre><code>## [1] 0.5553894 0.5957836 0.4725238</code></pre>
-<p>for Black, Hispanic, and white respectively. We can check this using
-<code>augment()</code>:</p>
-<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">augment</span>(eth.glm,</span>
-<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>        <span class="at">newdata =</span> <span class="fu">data.frame</span>(<span class="at">past.arrests =</span> <span class="dv">1000</span>, <span class="at">eth =</span> <span class="fu">c</span>(<span class="st">&quot;Black&quot;</span>, <span class="st">&quot;Hispanic&quot;</span>, <span class="st">&quot;white&quot;</span>)),</span>
-<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>        <span class="at">type.predict =</span> <span class="st">&quot;response&quot;</span>)</span></code></pre></div>
-<pre><code>## # A tibble: 3 × 3
-##   past.arrests eth      .fitted
-##          &lt;dbl&gt; &lt;chr&gt;      &lt;dbl&gt;
-## 1         1000 Black       555.
-## 2         1000 Hispanic    596.
-## 3         1000 white       473.</code></pre>
+<p>Covariance PCA biplot based on correlations, with some extra
+information:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>oly_scale <span class="ot">=</span> <span class="fu">prcomp</span>(olympic<span class="sc">$</span>tab, <span class="at">scale. =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="do">## scale = 1 means covariance biplot</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ggbiplot</span>(oly_scale, <span class="at">scale =</span> <span class="dv">1</span>)</span></code></pre></div>
+<p><img src="lecture-23-fig/unnamed-chunk-7-1.png" /></p>
+<p>How would you interpret the first principal component?</p>
 </div>
-<div class="slide section level1">
+<div class="slide section level2">
 
-<p>So far we have shown that Black and Hispanic people were stopped at a
-proportionately higher fraction of their arrest rate compared to white
-people.</p>
-<p>However, as the data isn’t from a randomized experiment, there may be
-confounding — it could be that Black and Hispanic people generally live
-in precincts with higher stop rates. (Whether this is in itself evidence
-of bias is again, controversial.)</p>
-<p>Since this is exploratory work, we won’t attempt to prove
-cause-and-effect, but we’ll see whether we can simply explain the
-results by including a precinct variable. If we can, then the NYPD might
-argue that minorities are only stopped more often because they, perhaps
-coincidentally, tend to live in precincts with high stop rates.</p>
-<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>precinct.glm <span class="ot">=</span> <span class="fu">glm</span>(stops <span class="sc">~</span> eth <span class="sc">+</span> <span class="fu">factor</span>(precinct), <span class="at">family =</span> poisson, <span class="at">offset =</span> <span class="fu">log</span>(past.arrests), <span class="at">data =</span> frisk.sum)</span></code></pre></div>
-<p>We won’t print out the full results because we now have a coefficient
-for each precinct. Let’s just first check the deviance has gone down
-significantly:</p>
-<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">deviance</span>(eth.glm)</span></code></pre></div>
-<pre><code>## [1] 45437.35</code></pre>
-<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">deviance</span>(precinct.glm)</span></code></pre></div>
-<pre><code>## [1] 3427.14</code></pre>
+<p>Covariance PCA biplot based on correlations, with some extra
+information:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="do">## scale = 1 means covariance biplot</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggbiplot</span>(oly_scale, <span class="at">scale =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">color =</span> olympic<span class="sc">$</span>score)) <span class="sc">+</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_color_viridis</span>(<span class="st">&quot;Score&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-23-fig/unnamed-chunk-8-1.png" /></p>
 </div>
-<div class="slide section level1">
+<div id="wine-example" class="slide section level2">
+<h1>Wine example</h1>
+<p>Wine dataset</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ggbiplot is not on cran, so you have to use</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="co"># library(devtools)</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="co"># install_github(&quot;vqv/ggbiplot&quot;)</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggbiplot)</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(wine)</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(wine)</span></code></pre></div>
+<pre><code>## [1] 178</code></pre>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(wine)</span></code></pre></div>
+<pre><code>##     Alcohol        MalicAcid          Ash            AlcAsh     
+##  Min.   :11.03   Min.   :0.740   Min.   :1.360   Min.   :10.60  
+##  1st Qu.:12.36   1st Qu.:1.603   1st Qu.:2.210   1st Qu.:17.20  
+##  Median :13.05   Median :1.865   Median :2.360   Median :19.50  
+##  Mean   :13.00   Mean   :2.336   Mean   :2.367   Mean   :19.49  
+##  3rd Qu.:13.68   3rd Qu.:3.083   3rd Qu.:2.558   3rd Qu.:21.50  
+##  Max.   :14.83   Max.   :5.800   Max.   :3.230   Max.   :30.00  
+##        Mg            Phenols           Flav       NonFlavPhenols  
+##  Min.   : 70.00   Min.   :0.980   Min.   :0.340   Min.   :0.1300  
+##  1st Qu.: 88.00   1st Qu.:1.742   1st Qu.:1.205   1st Qu.:0.2700  
+##  Median : 98.00   Median :2.355   Median :2.135   Median :0.3400  
+##  Mean   : 99.74   Mean   :2.295   Mean   :2.029   Mean   :0.3619  
+##  3rd Qu.:107.00   3rd Qu.:2.800   3rd Qu.:2.875   3rd Qu.:0.4375  
+##  Max.   :162.00   Max.   :3.880   Max.   :5.080   Max.   :0.6600  
+##       Proa           Color             Hue               OD       
+##  Min.   :0.410   Min.   : 1.280   Min.   :0.4800   Min.   :1.270  
+##  1st Qu.:1.250   1st Qu.: 3.220   1st Qu.:0.7825   1st Qu.:1.938  
+##  Median :1.555   Median : 4.690   Median :0.9650   Median :2.780  
+##  Mean   :1.591   Mean   : 5.058   Mean   :0.9574   Mean   :2.612  
+##  3rd Qu.:1.950   3rd Qu.: 6.200   3rd Qu.:1.1200   3rd Qu.:3.170  
+##  Max.   :3.580   Max.   :13.000   Max.   :1.7100   Max.   :4.000  
+##     Proline      
+##  Min.   : 278.0  
+##  1st Qu.: 500.5  
+##  Median : 673.5  
+##  Mean   : 746.9  
+##  3rd Qu.: 985.0  
+##  Max.   :1680.0</code></pre>
+</div>
+<div class="slide section level2">
 
-<p>Now look at the first few coefficients (and their standard
-errors):</p>
-<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tidy</span>(precinct.glm)</span></code></pre></div>
-<pre><code>## # A tibble: 77 × 5
-##    term              estimate std.error statistic   p.value
-##    &lt;chr&gt;                &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;
-##  1 (Intercept)        -1.38     0.0510     -27.0  7.21e-161
-##  2 ethHispanic         0.0102   0.00680      1.50 1.34e-  1
-##  3 ethwhite           -0.419    0.00943    -44.4  0        
-##  4 factor(precinct)2  -0.149    0.0740      -2.01 4.41e-  2
-##  5 factor(precinct)3   0.560    0.0568       9.87 5.87e- 23
-##  6 factor(precinct)4   1.21     0.0575      21.0  3.03e- 98
-##  7 factor(precinct)5   0.283    0.0568       4.98 6.34e-  7
-##  8 factor(precinct)6   1.14     0.0580      19.7  1.72e- 86
-##  9 factor(precinct)7   0.218    0.0643       3.39 6.96e-  4
-## 10 factor(precinct)8  -0.391    0.0569      -6.87 6.51e- 12
-## # … with 67 more rows</code></pre>
-<p>After controlling for precinct, the differences between the white and
-minority coefficients becomes even bigger.</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>wine.pca <span class="ot">=</span> <span class="fu">prcomp</span>(wine, <span class="at">scale. =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>wine.pca<span class="sc">$</span>rotation[, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>]</span></code></pre></div>
+<pre><code>##                         PC1          PC2
+## Alcohol        -0.144329395  0.483651548
+## MalicAcid       0.245187580  0.224930935
+## Ash             0.002051061  0.316068814
+## AlcAsh          0.239320405 -0.010590502
+## Mg             -0.141992042  0.299634003
+## Phenols        -0.394660845  0.065039512
+## Flav           -0.422934297 -0.003359812
+## NonFlavPhenols  0.298533103  0.028779488
+## Proa           -0.313429488  0.039301722
+## Color           0.088616705  0.529995672
+## Hue            -0.296714564 -0.279235148
+## OD             -0.376167411 -0.164496193
+## Proline        -0.286752227  0.364902832</code></pre>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>wine.pca<span class="sc">$</span>x[<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>]</span></code></pre></div>
+<pre><code>##             PC1        PC2
+##  [1,] -3.307421  1.4394023
+##  [2,] -2.203250 -0.3324551
+##  [3,] -2.509661  1.0282507
+##  [4,] -3.746497  2.7486184
+##  [5,] -1.006070  0.8673840
+##  [6,] -3.041674  2.1164309
+##  [7,] -2.442201  1.1715453
+##  [8,] -2.053644  1.6044371
+##  [9,] -2.503811  0.9154885
+## [10,] -2.745882  0.7872170</code></pre>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>principal_axes <span class="ot">=</span> <span class="fu">data.frame</span>(wine.pca<span class="sc">$</span>rotation)</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>scores <span class="ot">=</span> <span class="fu">data.frame</span>(wine.pca<span class="sc">$</span>x)</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(principal_axes) <span class="sc">+</span> <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">x =</span> PC1, <span class="at">y =</span> PC2, <span class="at">xend =</span> <span class="dv">0</span>, <span class="at">yend =</span> <span class="dv">0</span>))</span></code></pre></div>
+<p><img src="lecture-23-fig/unnamed-chunk-10-1.png" /></p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(scores) <span class="sc">+</span> <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> PC1, <span class="at">y =</span> PC2))</span></code></pre></div>
+<p><img src="lecture-23-fig/unnamed-chunk-10-2.png" /></p>
 </div>
-<div id="checking-the-model" class="slide section level1">
-<h1>Checking the model</h1>
-<p>As usual, our first plot for checking the model is to plot the
-residuals against the fitted values and see what happens.</p>
-<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>precinct.glm.df <span class="ot">=</span> <span class="fu">augment</span>(precinct.glm, <span class="at">type.predict =</span> <span class="st">&quot;response&quot;</span>, <span class="at">type.residuals =</span> <span class="st">&quot;pearson&quot;</span>)</span>
-<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(precinct.glm.df, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">log</span>(.fitted), <span class="at">y =</span> .resid)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="at">span =</span> <span class="dv">1</span>, <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">degree =</span> <span class="dv">1</span>))</span></code></pre></div>
-<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
-<p><img src="lecture-23-fig/unnamed-chunk-18-1.png" /></p>
-<p>There’s some nonlinearity in the smoother, though the amount is
-relatively small. If prediction was the goal, a nonparametric model
-might provide an improvement.</p>
-</div>
-<div id="overdispersion" class="slide section level1">
-<h1>Overdispersion</h1>
-<p>If we care about more than just the conditional expectation, however,
-we find a bigger problem. If the Poisson model were correct, the
-standardized residuals should be on a similar scale to the standard
-normal – that is, the vast majority should be within <span
-class="math inline">\(\pm 2\)</span>. From the previous graph, that’s
-clearly not the case.</p>
-<p>We need to measure the <em>overdispersion</em> in the data. We could
-do a formal <span class="math inline">\(\chi^2\)</span> test for
-overdispersion, but instead, let’s calculate the typical size of the
-squared residuals. (When we “average”, we divide the sum by the residual
-degrees of freedom.) If the Poisson model is correct, this should be
-close to 1. If it’s much more than 1, we need a better model.</p>
-<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>overdispersion <span class="ot">=</span> <span class="fu">sum</span>(precinct.glm.df<span class="sc">$</span>.resid<span class="sc">^</span><span class="dv">2</span>) <span class="sc">/</span> <span class="fu">df.residual</span>(precinct.glm)</span>
-<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>overdispersion</span></code></pre></div>
-<pre><code>## [1] 21.88505</code></pre>
-<p>This is much more than 1. In fact, this happens a lot with counts –
-the data is often more dispersed than the Poisson model.</p>
-</div>
-<div id="how-bad-is-it" class="slide section level1">
-<h1>How bad is it?</h1>
-<p>We know there are problems with our model. But are they so bad that
-we can’t draw conclusions from it?</p>
-<p>One simple way of checking is to simulate a fake set of data, and see
-if it closely resembles the actual set.</p>
-<p>For a Poisson model, this is easy. We know according to the model,
-each observation is a realization of a Poisson random variable, whose
-parameter is given by the fitted value. Then we can use
-<code>rpois()</code> to do simulation and do numerical summaries and
-plots.</p>
-<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>precinct.fits <span class="ot">=</span> <span class="fu">augment</span>(precinct.glm, <span class="at">type.predict =</span> <span class="st">&quot;response&quot;</span>)<span class="sc">$</span>.fitted</span>
-<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>sim1 <span class="ot">=</span> <span class="fu">rpois</span>(<span class="fu">nrow</span>(frisk.sum), <span class="at">lambda =</span> precinct.fits)</span>
-<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(frisk.sum<span class="sc">$</span>stops)</span></code></pre></div>
-<pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-##     7.0   133.0   385.0   584.1   824.0  2771.0</code></pre>
-<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(sim1)</span></code></pre></div>
-<pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-##     9.0   158.0   379.0   583.6   817.0  2728.0</code></pre>
-<div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>sim.df <span class="ot">=</span> <span class="fu">data.frame</span>(frisk.sum, sim1)</span>
-<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
-<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>sim.long <span class="ot">=</span> sim.df <span class="sc">%&gt;%</span> <span class="fu">gather</span>(type, number, <span class="fu">c</span>(<span class="st">&quot;stops&quot;</span>, <span class="st">&quot;sim1&quot;</span>))</span>
-<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(sim.long, <span class="fu">aes</span>(<span class="at">x =</span> number)) <span class="sc">+</span> <span class="fu">geom_histogram</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">2800</span>, <span class="dv">50</span>)) <span class="sc">+</span> <span class="fu">facet_wrap</span>(<span class="sc">~</span>type, <span class="at">ncol =</span> <span class="dv">1</span>)</span></code></pre></div>
-<p><img src="lecture-23-fig/unnamed-chunk-20-1.png" /></p>
-</div>
-<div class="slide section level1">
+<div class="slide section level2">
 
-<p>If we look at the histograms, there doesn’t seem to be much
-difference. But what happens if we fit a model to the simulated data and
-look at its residuals? We’ll find these and do a two-sample QQ plot of
-them against the original residuals.</p>
-<div class="sourceCode" id="cb48"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>precinct.sim <span class="ot">=</span> <span class="fu">glm</span>(sim1 <span class="sc">~</span> eth <span class="sc">+</span> <span class="fu">factor</span>(precinct), <span class="at">family =</span> poisson, <span class="at">offset =</span> <span class="fu">log</span>(past.arrests), <span class="at">data =</span> sim.df)</span>
-<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>resid.df <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="at">real.resid =</span> <span class="fu">augment</span>(precinct.glm, <span class="at">type.predict =</span> <span class="st">&quot;response&quot;</span>)<span class="sc">$</span>.resid,</span>
-<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>                      <span class="at">sim.resid =</span> <span class="fu">augment</span>(precinct.sim, <span class="at">type.predict =</span> <span class="st">&quot;response&quot;</span>)<span class="sc">$</span>.resid)</span>
-<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(resid.df) <span class="sc">+</span></span>
-<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stat_qq</span>(<span class="fu">aes</span>(<span class="at">sample =</span> sim.resid),</span>
-<span id="cb48-6"><a href="#cb48-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">distribution =</span> <span class="cf">function</span>(p) <span class="fu">quantile</span>(resid.df<span class="sc">$</span>real.resid, <span class="at">probs =</span> p)) <span class="sc">+</span></span>
-<span id="cb48-7"><a href="#cb48-7" aria-hidden="true" tabindex="-1"></a>        <span class="fu">geom_abline</span>(<span class="at">intercept =</span> <span class="dv">0</span>, <span class="at">slope =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
-<span id="cb48-8"><a href="#cb48-8" aria-hidden="true" tabindex="-1"></a>        <span class="fu">xlab</span>(<span class="st">&quot;real residual quantiles&quot;</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">&quot;simulation residual quantiles&quot;</span>)</span></code></pre></div>
-<p><img src="lecture-23-fig/unnamed-chunk-21-1.png" /></p>
-<p>If the model were correct, this QQ plot should be close to a line
-through the origin with slope 1, and this is not. The real residuals are
-much more spread out/have much larger variance than the residuals in the
-simulation.</p>
-<p>The simulation here is overkill, since we understand the Poisson
-fairly well and already know the data is overdispersed. However, the
-more complicated your model gets, the more useful this kind of
-simulation is as a sanity check.</p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggbiplot</span>(wine.pca, <span class="at">scale =</span> <span class="dv">1</span>, <span class="at">var.axes =</span> <span class="cn">FALSE</span>, <span class="at">groups =</span> wine.class)</span></code></pre></div>
+<p><img src="lecture-23-fig/unnamed-chunk-11-1.png" /></p>
 </div>
-<div id="fixing-overdispersion" class="slide section level1">
-<h1>Fixing overdispersion</h1>
-<p>The quickest fix is to use the quasipoisson family instead of the
-Poisson.</p>
-<div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>precinct.quasi <span class="ot">=</span> <span class="fu">glm</span>(stops <span class="sc">~</span> eth <span class="sc">+</span> <span class="fu">factor</span>(precinct), <span class="at">family =</span> quasipoisson, <span class="at">offset =</span> <span class="fu">log</span>(past.arrests), <span class="at">data =</span> frisk.sum)</span>
-<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a><span class="fu">tidy</span>(precinct.quasi)</span></code></pre></div>
-<pre><code>## # A tibble: 77 × 5
-##    term              estimate std.error statistic  p.value
-##    &lt;chr&gt;                &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
-##  1 (Intercept)        -1.38      0.239     -5.78  4.33e- 8
-##  2 ethHispanic         0.0102    0.0318     0.320 7.49e- 1
-##  3 ethwhite           -0.419     0.0441    -9.49  5.49e-17
-##  4 factor(precinct)2  -0.149     0.346     -0.430 6.68e- 1
-##  5 factor(precinct)3   0.560     0.266      2.11  3.66e- 2
-##  6 factor(precinct)4   1.21      0.269      4.50  1.38e- 5
-##  7 factor(precinct)5   0.283     0.266      1.06  2.89e- 1
-##  8 factor(precinct)6   1.14      0.272      4.21  4.35e- 5
-##  9 factor(precinct)7   0.218     0.301      0.725 4.70e- 1
-## 10 factor(precinct)8  -0.391     0.266     -1.47  1.44e- 1
-## # … with 67 more rows</code></pre>
-<p>Note that the coefficients look the same as they were in the standard
-Poisson case. However, their standard errors have been inflated by the
-square root of their overdispersion. We can confirm that the fitted
-values haven’t changed:</p>
-<div class="sourceCode" id="cb51"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>precinct.fitted <span class="ot">=</span> <span class="fu">augment</span>(precinct.glm, <span class="at">type.predict =</span> <span class="st">&quot;response&quot;</span>)<span class="sc">$</span>.fitted</span>
-<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>quasi.fitted <span class="ot">=</span> <span class="fu">augment</span>(precinct.quasi, <span class="at">type.predict =</span> <span class="st">&quot;response&quot;</span>)<span class="sc">$</span>.fitted</span>
-<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(quasi.fitted <span class="sc">-</span> precinct.fitted)</span></code></pre></div>
-<pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-##       0       0       0       0       0       0</code></pre>
-<p>So the quasipoission doesn’t change the fit, only the variance and
-the standard errors.</p>
-</div>
-<div class="slide section level1">
+<div class="slide section level2">
 
-<p>For interpretation, it may be useful to refit the model changing the
-order of levels in <code>eth</code> to use whites as a baseline.</p>
-<div class="sourceCode" id="cb53"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>frisk.sum.relev <span class="ot">=</span> frisk.sum <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">eth.releveled =</span> <span class="fu">factor</span>(eth, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">&quot;white&quot;</span>, <span class="st">&quot;Black&quot;</span>, <span class="st">&quot;Hispanic&quot;</span>)))</span>
-<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>precinct.quasi2 <span class="ot">=</span> <span class="fu">glm</span>(stops <span class="sc">~</span> eth.releveled <span class="sc">+</span> <span class="fu">factor</span>(precinct),</span>
-<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">family =</span> quasipoisson, <span class="at">offset =</span> <span class="fu">log</span>(past.arrests),</span>
-<span id="cb53-4"><a href="#cb53-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> frisk.sum.relev)</span>
-<span id="cb53-5"><a href="#cb53-5" aria-hidden="true" tabindex="-1"></a><span class="fu">tidy</span>(precinct.quasi2)</span></code></pre></div>
-<pre><code>## # A tibble: 77 × 5
-##    term                  estimate std.error statistic  p.value
-##    &lt;chr&gt;                    &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
-##  1 (Intercept)             -1.80     0.241     -7.46  6.81e-12
-##  2 eth.releveledBlack       0.419    0.0441     9.49  5.49e-17
-##  3 eth.releveledHispanic    0.429    0.0449     9.57  3.49e-17
-##  4 factor(precinct)2       -0.149    0.346     -0.430 6.68e- 1
-##  5 factor(precinct)3        0.560    0.266      2.11  3.66e- 2
-##  6 factor(precinct)4        1.21     0.269      4.50  1.38e- 5
-##  7 factor(precinct)5        0.283    0.266      1.06  2.89e- 1
-##  8 factor(precinct)6        1.14     0.272      4.21  4.35e- 5
-##  9 factor(precinct)7        0.218    0.301      0.725 4.70e- 1
-## 10 factor(precinct)8       -0.391    0.266     -1.47  1.44e- 1
-## # … with 67 more rows</code></pre>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggbiplot</span>(wine.pca, <span class="at">scale =</span> <span class="dv">1</span>, <span class="at">var.axes =</span> <span class="cn">TRUE</span>, <span class="at">groups =</span> wine.class) <span class="sc">+</span> <span class="fu">xlim</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>))</span></code></pre></div>
+<p><img src="lecture-23-fig/unnamed-chunk-12-1.png" /></p>
 </div>
-<div class="slide section level1">
-
-<p>We now back-transform to get intervals for the stop rates of Blacks
-and Hispanics relative to whites, after adjusting for arrest rates and
-precinct.</p>
-<div class="sourceCode" id="cb55"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="do">## 2 and 3 are the rows corresponding to the Black and hispanic coefficients</span></span>
-<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>eth.co <span class="ot">=</span> <span class="fu">tidy</span>(precinct.quasi2)[<span class="dv">2</span><span class="sc">:</span><span class="dv">3</span>,]</span>
-<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a>eth.co<span class="sc">$</span>ethnicity <span class="ot">=</span> <span class="fu">c</span>(<span class="st">&quot;Black&quot;</span>, <span class="st">&quot;Hispanic&quot;</span>)</span>
-<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a>eth.co.plotting <span class="ot">=</span> eth.co <span class="sc">%&gt;%</span></span>
-<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">estimate_rescaled =</span> <span class="fu">exp</span>(estimate),</span>
-<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a>           <span class="at">lower =</span> <span class="fu">exp</span>(estimate <span class="sc">-</span> <span class="dv">2</span> <span class="sc">*</span> std.error),</span>
-<span id="cb55-7"><a href="#cb55-7" aria-hidden="true" tabindex="-1"></a>           <span class="at">upper =</span> <span class="fu">exp</span>(estimate <span class="sc">+</span> <span class="dv">2</span> <span class="sc">*</span> std.error))</span>
-<span id="cb55-8"><a href="#cb55-8" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(eth.co.plotting) <span class="sc">+</span></span>
-<span id="cb55-9"><a href="#cb55-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_pointrange</span>(<span class="fu">aes</span>(<span class="at">x =</span> ethnicity, <span class="at">y =</span> estimate_rescaled, <span class="at">ymin =</span> lower, <span class="at">ymax =</span> upper)) <span class="sc">+</span></span>
-<span id="cb55-10"><a href="#cb55-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylim</span>(<span class="dv">1</span>,<span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb55-11"><a href="#cb55-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_abline</span>(<span class="at">intercept =</span> <span class="dv">1</span>, <span class="at">slope =</span> <span class="dv">0</span>, <span class="at">color =</span> <span class="st">&quot;red&quot;</span>)<span class="sc">+</span></span>
-<span id="cb55-12"><a href="#cb55-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">&quot;Ratio of stop rate to that of whites,</span><span class="sc">\n</span><span class="st">adjusted for past arrests and precinct&quot;</span>) <span class="sc">+</span></span>
-<span id="cb55-13"><a href="#cb55-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggtitle</span>(<span class="st">&quot;Approximate 95% confidence intervals</span><span class="sc">\n</span><span class="st">for NYPD stop rates of minorities&quot;</span>) <span class="sc">+</span></span>
-<span id="cb55-14"><a href="#cb55-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">coord_flip</span>()</span></code></pre></div>
-<p><img src="lecture-23-fig/unnamed-chunk-25-1.png" /></p>
-<p>The confidence intervals don’t include 1. This would be consistent
-with a hypothesis of bias against minorities, though we should think
-very carefully about other confounding variables before drawing a firm
-conclusion (e.g. type of crime, which we ignored.) You should check your
-model very thoroughly. The statistics cannot give you a definitive
-answer, but they can constrain what sorts of answers are consistent with
-the data.</p>
-</div>
-<div id="other-fixes" class="slide section level1">
-<h1>Other fixes</h1>
-<p>There are lots of alternative approaches:</p>
-<ul class="incremental">
-<li>Negative binomial regression is an alternative to the quasipoisson
-when the count data is overdispersed.</li>
-<li>Nonparametric approaches like loess and GAM can give you a better
-fit for the conditional expectation, at the cost of making inference
-much more complicated.</li>
-<li>A multilevel model has appeal here because of the large number of
-precincts. It can deal with overdispersion as well as regularize the
-estimates for the precincts. These get complicated very quickly
-though..</li>
+<div id="summing-up" class="slide section level2">
+<h1>Summing up</h1>
+<p>Interpretation of PCA:</p>
+<ul>
+<li>Visualization of the elements of the matrix</li>
+</ul>
+<ul>
+<li>Visualization of the correlation/covariance among the variables</li>
+</ul>
+<p>Two kinds of PCA:</p>
+<ul>
+<li>Covariance-based PCA: columns of the data matrix are centered but
+not scaled, implemented with <code>scale. = FALSE</code> in
+<code>prcomp</code> (the default)</li>
+</ul>
+<ul>
+<li>Correlation-based PCA: columns of the data matrix are centered and
+scaled, implemented with <code>scale. = TRUE</code> in
+<code>prcomp</code></li>
+</ul>
+<p>Two kinds of PCA biplot:</p>
+<ul>
+<li>Form biplot: Plot <span class="math inline">\(\mathbf U_{(2)}
+\mathbf D_{(2)}\)</span> and <span class="math inline">\(\mathbf
+V_{(2)}\)</span>, implemented with <code>scale = 0</code> in
+<code>ggbiplot</code></li>
+</ul>
+<ul>
+<li>Covariance biplot: Plot <span class="math inline">\(\mathbf
+U_{(2)}\)</span> and <span class="math inline">\(\mathbf V_{(2)} \mathbf
+D_{(2)}\)</span>, implemented with <code>scale = 1</code> in
+<code>ggbiplot</code></li>
 </ul>
 </div>
 </body>
