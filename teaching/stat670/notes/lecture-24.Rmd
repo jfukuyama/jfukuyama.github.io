@@ -1,226 +1,333 @@
-% Stat 470/670 Lecture 24: Categorical data and contingency tables
+% Stat 470/670 Lecture 24: Scree plots and choosing the number of dimensions
 % Julia Fukuyama
 
-```{r setup, echo = FALSE, message = FALSE}
+```{r setup, echo = FALSE}
 library(knitr)
 opts_chunk$set(fig.cap="", fig.width = 5, fig.height = 3, dpi=175, fig.path="lecture-24-fig/", warning = FALSE)
 library(ggplot2)
+library(ggrepel)
+library(mvtnorm)
+library(RMTstat)
+library(EFAtools)
+library(ggbiplot)
 library(magrittr)
 library(tidyverse)
-library(dplyr)
-library(viridis)
-library(broom)
+library(plyr)
+library(paran)
 set.seed(0)
 ```
 
+## Today
+
+- Scree plot and how we interpret it
+
+- What does the scree plot look like when the data matrix is just noise
+
+- How do we choose a good number of dimensions for PCA
+
+## Scree plots
+
+In a _scree plot_, we plot the eigenvalues in decreasing order.
+
+It is used to help us choose the number of "important" principal components.
+
+
+## Scree plot: Advice
+
+> - Look for an elbow (the plot is supposed to look like a [scree](https://en.wikipedia.org/wiki/Scree)).
+
+> - Take as many components as necessary to get to at least some pre-determined fraction of variance explained.
+
+> - Compare eigenvalues to a null distribution.
+
+## Three simulated examples
+
+> - Simulation A: All of the variables are highly correlated with each other. Interpretation: all of the variables are measuring the same underlying quantity.
+
+> - Simulation B: There are two blocks of variables, with high correlations within each block. Interpretation: there are two independent underlying factors, and each of the variables measures one of them.
+
+> - Simulation C: All of the variables are independent. Interpretation: there is no lower-dimensional structure to uncover with PCA.
+
+## Simulation A
+
+```{r}
+n = 50; p = 20
+cov.mat = matrix(.99, nrow = p, ncol = p)
+diag(cov.mat) = 1
+X = rmvnorm(n = n, sigma = cov.mat)
+colnames(X) = letters[1:p]
+out_prcomp = prcomp(X, center = TRUE, scale. = FALSE)
+ggbiplot(out_prcomp)
+plot(out_prcomp$sdev^2 / sum(out_prcomp$sdev^2),
+     ylab = "Fraction of variance explained", xlab = "Component")
+```
+
+## Simulation B
+
+```{r}
+cov.mat = matrix(0, nrow = p, ncol = p)
+cov.mat[1:(p/2), 1:(p/2)] = cov.mat[(p/2 + 1):p, (p/2 + 1):p] = .99
+diag(cov.mat) = 1
+X = rmvnorm(n = n, sigma = cov.mat)
+colnames(X) = letters[1:p]
+out_prcomp = prcomp(X, center = TRUE, scale. = TRUE)
+ggbiplot(out_prcomp)
+plot(out_prcomp$sdev^2 / sum(out_prcomp$sdev^2),
+     ylab = "Fraction of variance explained", xlab = "Component")
+```
+
+## Simulation C
+
+```{r}
+X = matrix(rnorm(n * p), nrow = n)
+colnames(X) = letters[1:p]
+out_prcomp = prcomp(X, center = TRUE, scale. = TRUE)
+ggbiplot(out_prcomp)
+plot(out_prcomp$sdev^2 / sum(out_prcomp$sdev^2),
+     ylab = "Fraction of variance explained", xlab = "Component")
+```
+
+## Comparing to a null distribution
+
+> - Assuming the elements of the data matrix are iid Gaussians or the sample covariance matrix has a Wishart distribution, the limiting distributions of the eigenvalues have been worked out.
+
+> - The distribution of the largest eigenvalue follows the [Tracy-Widom law](https://en.wikipedia.org/wiki/Tracy%E2%80%93Widom_distribution). (Also: [an article in Quanta](https://www.quantamagazine.org/beyond-the-bell-curve-a-new-universal-law-20141015/))
+
+> - The empirical distribution of the eigenvalues will converge to the [Marcenko-Pastur](https://en.wikipedia.org/wiki/Marchenko%E2%80%93Pastur_distribution) distribution.
+
+> - These limits are a bit different than what you see in your other statistical theory courses, they are based on taking both the number of samples and the number of variables to infinity in a fixed ratio.
+
+> - The package `RMTstat` contains the relevant distributions, we will use `pWishartMax` for the distribution of the maximum eigenvalue of a Wishart matrix.
+
+
+## Simulation A
+
+```{r}
+n = 50; p = 20
+cov.mat = matrix(.99, nrow = p, ncol = p)
+diag(cov.mat) = 1
+X = rmvnorm(n = n, sigma = cov.mat)
+colnames(X) = letters[1:p]
+out_prcomp = prcomp(X, center = TRUE, scale. = FALSE)
+ggbiplot(out_prcomp)
+plot(out_prcomp$sdev^2 / sum(out_prcomp$sdev^2),
+     ylab = "Fraction of variance explained", xlab = "Component")
+pWishartMax(out_prcomp$sdev[1]^2, ndf = n, pdim = p, lower.tail = FALSE)
+```
+
+## Simulation B
+
+```{r}
+cov.mat = matrix(0, nrow = p, ncol = p)
+cov.mat[1:(p/2), 1:(p/2)] = cov.mat[(p/2 + 1):p, (p/2 + 1):p] = .99
+diag(cov.mat) = 1
+X = rmvnorm(n = n, sigma = cov.mat)
+colnames(X) = letters[1:p]
+out_prcomp = prcomp(X, center = TRUE, scale. = TRUE)
+ggbiplot(out_prcomp)
+plot(out_prcomp$sdev^2 / sum(out_prcomp$sdev^2),
+     ylab = "Fraction of variance explained", xlab = "Component")
+pWishartMax(out_prcomp$sdev[1]^2, ndf = n, pdim = p, lower.tail = FALSE)
+```
+
+## Simulation C
+
+```{r}
+X = matrix(rnorm(n * p), nrow = n)
+colnames(X) = letters[1:p]
+out_prcomp = prcomp(X, center = TRUE, scale. = TRUE)
+ggbiplot(out_prcomp)
+plot(out_prcomp$sdev^2 / sum(out_prcomp$sdev^2),
+     ylab = "Fraction of variance explained", xlab = "Component")
+pWishartMax(out_prcomp$sdev[1]^2, ndf = n, pdim = p, lower.tail = FALSE)
+```
+
+## Comparing to a null distirbution: Parallel analysis
+
+Suppose you don't want to assume that the elements of the data matrix are iid Gaussian, or you don't have a large number of samples/variables. You can use parallel analysis.
+
+Procedure:
+
+> - Permute each of the columns of the matrix.
+
+> - Compute the eigenvalues for the permuted data matrix.
+
+> - Repeat many times.
+
+> - Compare observed eigenvalues to the eigenvalues computed from the permuted data matrix.
+
+This procedure gives the distribution of the eigenvalues assuming that the variables are uncorrelated and can tell you whether the eigenvalues you observed are bigger than you would expect if all the variables were uncorrelated.
+
+Note: the plots will have "adjusted" eigenvalues, for a description of these see [https://alexisdinno.com/Software/files/PA_for_PCA_vs_FA.pdf](https://alexisdinno.com/Software/files/PA_for_PCA_vs_FA.pdf)
 
 
 
-# Motivating example: UCB Admissions Data
+## Simulation A
 
-Reading: [vcd tutorial](https://cran.r-project.org/web/packages/vcdExtra/vignettes/vcd-tutorial.pdf)
+```{r}
+n = 50; p = 20
+cov.mat = matrix(.99, nrow = p, ncol = p)
+diag(cov.mat) = 1
+X = rmvnorm(n = n, sigma = cov.mat)
+colnames(X) = letters[1:p]
+out_prcomp = prcomp(X, center = TRUE, scale. = FALSE)
+ggbiplot(out_prcomp)
+plot(out_prcomp$sdev^2 / sum(out_prcomp$sdev^2),
+     ylab = "Fraction of variance explained", xlab = "Component")
+paran(X, graph = TRUE)
+```
 
-The admissions data is formatted as a three-way _contingency table_.
+## Simulation B
 
-In a contingency table, each dimension of the table (rows and columns for two-way tables) gives the levels of one variable.
+```{r}
+cov.mat = matrix(0, nrow = p, ncol = p)
+cov.mat[1:(p/2), 1:(p/2)] = cov.mat[(p/2 + 1):p, (p/2 + 1):p] = .99
+diag(cov.mat) = 1
+X = rmvnorm(n = n, sigma = cov.mat)
+colnames(X) = letters[1:p]
+out_prcomp = prcomp(X, center = TRUE, scale. = TRUE)
+ggbiplot(out_prcomp)
+plot(out_prcomp$sdev^2 / sum(out_prcomp$sdev^2),
+     ylab = "Fraction of variance explained", xlab = "Component")
+paran(X, graph = TRUE)
+```
 
-For the admissions data, we have
+## Simulation C
 
-- `Admit`: Whether the applicant was admitted, either `Admitted` or `Rejected`,
+```{r}
+X = matrix(rnorm(n * p), nrow = n)
+colnames(X) = letters[1:p]
+out_prcomp = prcomp(X, center = TRUE, scale. = TRUE)
+ggbiplot(out_prcomp)
+plot(out_prcomp$sdev^2 / sum(out_prcomp$sdev^2),
+     ylab = "Fraction of variance explained", xlab = "Component")
+paran(X, graph = TRUE)
+```
 
-- `Gender`: The gender of the applicant, either `Male` or `Female`,
 
-- `Dept`: The academic department the applicant wanted admission into, labeled `A` through `F`.
+## Example: Congressional voting data
 
-The cells in the table represent the number of observations with each combination of values: the `[1,1,1]` element of `UCBAdmissions` is the number of admitted men to Department A, the `[2,1,1]` element is the number of rejected men to Department A, and so on.
+A dataset containing information about votes taken by Senators in the 1999 session.
+
+Information split across three different csvs, one giving the votes, one giving information about the members, and one giving information about the bills being voted on.
+
+```{r}
+# read in the three data sets
+vote_descriptions = read.csv("../../datasets/congress_1999/bills.csv")
+members = read.csv("../../datasets/congress_1999/members.csv")
+votes = read.csv("../../datasets/congress_1999/votes.csv")
+## match the column names of votes and the vote_id column in vote_descriptions
+vote_descriptions = vote_descriptions %>%
+    mutate(vote_id = str_replace(vote_id, "-", "."))
+
+## match names and orders for members and votes
+joined = join(members, votes, by = "id")
+votes = joined[,(-1:-6)]
+members = joined[,1:6]
+
+## Look at the vote_descriptions data frame
+table(vote_descriptions$category)
+```
+
 
 -----
+
+We would like to perform PCA, so we need te recode the votes from Yea/Nay to a number.
+
+```{r}
+## Decide how to recode the variables
+recode_votes = function(vote) {
+    if(is.na(vote)) {
+        return(0)
+    } else if(vote == "Yea") {
+        return(1)
+    } else if(vote == "Nay") {
+        return(-1)
+    } else {
+        return(0)
+    }
+}
+votes_numeric = apply(votes, 1:2, recode_votes)
+## These votes are going to cause problems for parallel analysis, so we remove them
+votes_to_remove = which(apply(votes_numeric, 2, sd) == 0)
+votes_numeric = votes_numeric[,-votes_to_remove]
+vote_descriptions = vote_descriptions[-votes_to_remove,]
+
+## PCA
+out_prcomp = prcomp(votes_numeric)
+
+## scree plot
+plot(out_prcomp$sdev^2 / sum(out_prcomp$sdev^2),
+     xlab = "Component", ylab = "Fraction of variance explained")
+```
+
+```{r, fig.width = 8, fig.height=4}
+paran(votes_numeric, graph = TRUE, iterations = 100)
+```
+
+```{r}
+## let's look at who the senators are
+members_and_scores = data.frame(members, out_prcomp$x)
+ggplot(members_and_scores, aes(x = PC1, y = PC2)) +
+    geom_point(aes(color = party)) +
+    geom_text_repel(aes(label = display_name))
+
+```
+
+## Looking at just the "passage" votes
+
+```{r}
+out_prcomp_passage = prcomp(votes_numeric[,vote_descriptions$category == "passage"])
+plot(out_prcomp_passage$sdev^2 / sum(out_prcomp_passage$sdev^2),
+     ylab = "Fraction of variance explained", xlab = "Component")
+out_prcomp_passage$sdev[1]^2 / sum(out_prcomp_passage$sdev^2)
+```
+
+```{r, fig.width=8, fig.height=4}
+paran(votes_numeric[,vote_descriptions$category == "passage"], graph = TRUE, iterations = 100)
+```
+
+```{r}
+members_and_scores_passage = data.frame(members, out_prcomp_passage$x)
+ggplot(members_and_scores_passage, aes(x = PC1, y = PC2)) +
+    geom_point(aes(color = party)) +
+    geom_text_repel(aes(label = display_name))
+```
+
+## Looking at just the "procedural" votes
+```{r}
+out_prcomp_procedural = prcomp(votes_numeric[,vote_descriptions$category == "procedural"])
+plot(out_prcomp_procedural$sdev^2 / sum(out_prcomp_procedural$sdev^2),
+     ylab = "Fraction of variance explained", xlab = "Component")
+out_prcomp_procedural$sdev[1]^2 / sum(out_prcomp_procedural$sdev^2)
+```
+
+```{r, fig.width=8, fig.height=4}
+paran(votes_numeric[,vote_descriptions$category == "procedural"], graph = TRUE, iterations = 100)
+```
 
 
 ```{r}
-library(vcd)
-data(UCBAdmissions)
-UCBAdmissions
-## the structable command in vcd lets us re-arrange contingency tables
-structable(Admit ~ Gender, data = UCBAdmissions)
+members_and_scores_procedural = data.frame(members, out_prcomp_procedural$x)
+ggplot(members_and_scores_procedural, aes(x = PC1, y = PC2)) +
+    geom_point(aes(color = party)) +
+    geom_text_repel(aes(label = display_name))
 ```
 
-# What questions do we have here?
+## What did we learn?
 
-For the admissions data (and generally for contingency tables), the first thing we want to know is whether the numbers are consistent with independence between the variables we measured.
+> - We always see one dimension that explains a very large fraction of the variance.
 
-In particular, for the admissions data, we want to know whether admission is independent of gender: if it's not, we might suspect that there is some sort of gender-based discrimination happening in the admissions process, and we would want to complain to someone.
+> - In both the votes overall and in the passage votes, we get five dimensions that have more information than we would expect if all the votes were uncorrelated with each other.
 
-If the variables aren't independent of each other, we want to know what the cause is.
+> - In just the procedural votes, the first dimension explains more of the variance and there are only two dimensions that have more information than we would expect if all the votes were uncorrelated with each other.
 
-# Chi-squared test of independence
+## Overall
 
-If all we care about is testing, we could just use a chi-squared test of independence and be done.
+> - Important to look at the scree plot
 
-```{r}
-chisq.test(structable(Admit ~ Gender, data = UCBAdmissions), correct = FALSE)
-```
+> - Comparing to a null distribution can help with interpretation. Parallel analysis is probably the most useful, but you can also use the random matrix theory-based results as well.
 
-If we do that test, we see that the two factors are not independent, but there are still some questions we might have: 
+> - Parallel analysis usually more accurate.
 
-- What is the nature of the non-independence? 
-- What cells in the contingency table are over- or under-represented compared to what we would expect under independence of the two factors?
-
-# Mosaic plot
-
-A mosaic plot gives a visualization of a two-way contingency table.
-
-- Each cell in the contingency table is represented by a tile.
--  The area of the tile is proportional to the number of observations in the corresponding cell of the contingency table.
-- The height of a row is proportional to the marginal probability of the category described by that row.
-
------
-
-Let's take a look at the admissions data with a mosaic plot.
-
-Here we're looking at admission and gender. The area of each tile shows us how many applicants were in each of the four categories: either admitted/male, admitted/female, rejected/male, or rejected/female.
-
-The heights of the tiles represent the overall fraction of applicants that were male or female. (If we call the function the other way, `mosaic(~ Admit + Gender)`, the heights of the tiles would represent the overall fraction of applicants that were admitted or rejected, you can try it out and see.)
-
-
-```{r, fig.width = 10, fig.height=7, dpi=100}
-mosaic(~ Gender + Admit, data = UCBAdmissions)
-```
-
------
-
-The really nice thing about mosaic plots is that they tell us about departures from independence.
-
-It turns out (you can try to figure the math out yourself if you're interested) that if the factors were really independent of each other, the boundaries of the tiles would match up, and we would have something that looks like this:
-
-```{r, fig.width = 10, fig.height=7, dpi=100}
-mosaic(independence_table(structable(Admit ~ Gender, data = UCBAdmissions)))
-```
-
-To the extent that the boundaries of the tiles don't match, we can see which categories are over-represented or under-represented.
-
-
------
-
-The R function allows us to color the tiles as an additional way to show departures from independence: in the coloring scheme below, blue tiles represent cells that have more observations than we would expect if the factors were independent, and red tiles represent cells that have fewer observations than we would expect if the factors were independent.
-
-```{r, fig.width = 10, fig.height=7, dpi = 100}
-mosaic(~ Gender + Admit, data = UCBAdmissions, gp = shading_max)
-```
-
-The colors represent residuals from the independence model: how many more observations do we have than we would expect if the factors were actually independent of each other?
-
-
-
-There are a number of different options for coloring, but they are all based on deviations from expected values under the independence model.
-
------
-
-We can check this:
-
-```{r}
-(E = independence_table(structable(Admit ~ Gender, data = UCBAdmissions)))
-(O = structable(Admit ~ Gender, data = UCBAdmissions))
-## Recall that this is the Chi-squared test statistic
-sum((O - E)^2 / E)
-## These are the "Pearson residuals"
-sqrt((O - E)^2 / E) * sign(O - E)
-```
-
-# Conditional independence
-
-We've seen that there's a lack of independence between gender and admission, so we would like to investigate more to see if we can explain the non-independence.
-
-We have one other variable in our contingency table: Department.
-
-We can look at how the departments differ in their admissions rates and in the gender composition of their applicant pools:
-
-```{r}
-structable(Dept ~ Admit, data = UCBAdmissions)
-structable(Dept ~ Gender, data = UCBAdmissions)
-```
-
------
-
-Or, more to the point of this course, we can look at the same information graphically:
-
-```{r, fig.width = 10, fig.height=7, dpi=100}
-mosaic(~ Dept + Gender, data = UCBAdmissions, gp = shading_max)
-```
-
------
-
-```{r, fig.width=10, fig.height=7, dpi=100}
-mosaic(~ Dept + Admit, data = UCBAdmissions, gp = shading_max)
-```
-
-Note that here, when we plot with `Dept` on the vertical axis, it is easy to compare the conditional probabilities of gender given department (from the first plot) or admission given department (from the second plot) by comparing the widths of the bars. If we had plotted the other way (`mosaic(~ Dept + Gender)`), we would have to compare areas instead of widths, which is much more difficult perceptually.
-
-Since the different departments both admit students at very different rates and have very different proportions of male and female applicants, it is possible that the relationship between admission and gender is very different conditional on department than it is unconditionally.
-
-
-# Cotab plot
-
-Next, we want to know about independence or lack of independence conditional on department. A good tool for this is a cotab plot, which is the analog of a coplot, but for categorical data.
-
-A cotab plot tells us about the conditional independence of two variables (the two explanatory variables) given a third (the given variable).
-
-- Each panel corresponds to a subset of the data that all have the same value of the given variable.
-
-- In each panel, we make a mosaic plot describing the relationships between the two explanatory variables.
-
-The cotab plot allows us to see not only whether the variables are conditionally independent, but also whether the variables are conditionally independent for some values of the given variable. If there is a lack of conditional independence, it shows us which combinations of factor levels are over- or under-represented.
-
-# Cotab plot for admissions data
-
-Let's try this on the admissions data.
-
-We want to know whether gender and admission are independent conditional on department. 
-
-```{r, fig.width=16, fig.height=8, dpi=75}
-cotabplot(~ Gender + Admit | Dept, data = UCBAdmissions, gp = shading_max, margins = rep(0, 4))
-```
-
-The syntax for the cotab plot is that the variable to the right of the `|` is the given variable (in this case, `Dept`), and the variables to the left of the `|` and to the right of the `~` are the two explanatory variables.
-
-
-# Double decker plot
-
-When we have one response variable that we are particularly interested in, and if we want to see how the conditional probability changes with the levels of several other factors, we can also use a doubledecker plot.
-
-A doubledecker plot is like a mosaic plot, but the vertical axis gives us the conditional probabilites of the response variable, and the horizontal axis gives us the probabilities of all the remaining factor combinations.
-
-This can be helpful when we are more interested in comparing conditional probabilities than we are in looking for conditional independence.
-
-# Double decker plot for admissions data
-
-We can try a doubledecker plot on the admissions data.
-
-Here the height of the first bar gives the conditional probability of admission given that the applicant was male and applying to Department A, the height of the second bar gives the conditional probability of admission given that the applicant was female and applying to Department A, and so on.
-
-The widths of the bars represent the probabilities of the categories: the width of the first bar is proportional to the number of male applicants to Department A, the width of the second bar is proportional to the number of female applicants to Department B, and so on.
-
-```{r, fig.width = 10, fig.height=5, dpi=100}
-doubledecker(Admit ~ Dept + Gender, data = UCBAdmissions)
-```
-
------
-
-```{r, fig.width = 10, fig.height=5, dpi=100}
-## nitpicky plotting modification: plots go in the same order as
-## the array, so if we want admitted to be on bottom we need to
-## switch the order of admit vs. rejected in the UCBAdmissions array
-doubledecker(Admit ~ Dept + Gender, data = UCBAdmissions[2:1,,])
-```
-
-The syntax here is that the variable to the left of the `~` is plotted on the vertical axis, and the variables to the right of the `~` are plotted on the vertical axis, with the first factor being grouped first, and subsequent factors being grouped within the previous factors.
-
------
-
-The order you put the variables to the left of the `~` makes a big difference in what information you can easily read off the plot. When we have `Admit ~ Dept + Gender`, it's easy to see the differences between male and female admissions within each department because those bars are placed next to each other.
-
-If we do it the other way around, we're plotting the same information, but it's now easier to read off the differences in admission rates by department instead of the differences in admission rates by gender.
-
-```{r, fig.width = 10, fig.height=5, dpi=100}
-doubledecker(Admit ~ Gender + Dept, data = UCBAdmissions[2:1,,])
-```
+> - RMT results faster.
