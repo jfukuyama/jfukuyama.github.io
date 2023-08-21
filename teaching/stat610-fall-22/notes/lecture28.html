@@ -1,0 +1,443 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title>lecture28</title>
+  <style type="text/css">
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <style type="text/css">
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="https://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-AMS_CHTML-full" type="text/javascript"></script>
+  <script src="https://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div id="neural-netsdeep-learning" class="slide section level2">
+<h1>Neural nets/Deep learning</h1>
+<p>Agenda today:</p>
+<ul>
+<li>More nets</li>
+</ul>
+<ul>
+<li>Cross validation</li>
+</ul>
+<p>Reading: Elements of Statistical Learning, Chapter 11.3-11.8</p>
+</div>
+<div id="example-zip-code-data" class="slide section level2">
+<h1>Example: zip code data</h1>
+<p><img src="zip-code-data.png" /></p>
+<p>Goal: Given images representing digits, classify them correctly.</p>
+<p>Input data, <span class="math inline">\(x_i\)</span>, are <span class="math inline">\(16 \times 16\)</span> grayscale images, represented as vectors in <span class="math inline">\(\mathbb R^{256}\)</span></p>
+<p>Responses <span class="math inline">\(y_i\)</span> give the digit in the image.</p>
+<p>Encode this as a classification problem, use neural nets with different architectures to fit</p>
+</div>
+<div id="some-net-architectures" class="slide section level2">
+<h1>Some net architectures</h1>
+<p><img src="zip-code-architectures.png" /></p>
+<p>All cases: 10 output units, corresponding to the 10 possible digits. In all cases the output unit is sigmoidal.</p>
+<ul class="incremental">
+<li><p>Net 1: No hidden layer, equivalent to multinomial logistic regression</p></li>
+<li><p>Net 2: One hidden layer, 12 hidden units. Each of the hidden units is connected to each of the 256 input variables and to each of the 10 output variables.</p></li>
+<li><p>Net 3: Two hidden layers</p>
+<ul>
+<li>First hidden layer: 64 hidden units arranged in an 8 x 8 grid. Each hidden unit is connected to a 3x3 patch of the input variables.</li>
+</ul>
+<ul>
+<li>Secand hidden layer: 16 hidden units arranged in a 4 x 4 grid. Each hidden unit is connected to a 5 x 5 patch in the first hidden layer.</li>
+</ul></li>
+<li><p>Net 4: Two hidden layers with weight sharing in the first layer.</p>
+<ul>
+<li>First hidden layer: 128 hidden units, conceptualized as two 8 x 8 grids, each connected to a 3x3 patch of the input variables, similar to Net 3. Additional constraint that each of the units within the 8 x 8 feature map have the same set of 9 weights.</li>
+</ul>
+<ul>
+<li>Second hidden layer: 16 hidden units arranged in a 4 x 4 grid, each connected to a 5 x 5 patch in each of the two 8 x 8 grids in the first hidden layer (so each hidden unit connected to 50 units in the first hidden layer).</li>
+</ul></li>
+<li><p>Net 5: Two hidden layers with weight sharing in both layers:</p>
+<ul>
+<li>First hidden layer: Same is in Net 4.</li>
+</ul>
+<ul>
+<li>Second hidden layer: 64 hidden units arranged as four 4 x 4 grids. Each unit connected to a 5 x 5 patch of the fisrt hidden layer, and within each 4 x 4 grid, the weights connecting that unit to the previous input unit are the same.</li>
+</ul></li>
+</ul>
+<p>Idea behind weight constraints: Each unit computes the same functional of the previous layer, so they are extracting the same features from different parts of the image. A net with this sort of weight sharing is referred to as a <em>convolutional</em> network.</p>
+</div>
+<div class="slide section level2">
+
+<p><img src="zip-code-training.png" /></p>
+</div>
+<div id="if-you-want-to-play-with-this-in-r" class="slide section level2">
+<h1>If you want to play with this in R</h1>
+<ul>
+<li>R package called <a href="https://keras.rstudio.com/">keras</a></li>
+</ul>
+<ul>
+<li>This is an interface to the python version of <a href="https://keras.io/">keras</a></li>
+</ul>
+<ul>
+<li>Which is itself a frontend for a couple of lower-level packages (TensorFlow, CNTK, Theano)</li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>Example: the same zip code data</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="co">## if you want to do this you&#39;ll have to install some the python version of keras first, which requires you to have TensorFlow, CNTK, or Theano installed as well</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="kw">library</span>(keras)</span>
+<span id="cb1-3"><a href="#cb1-3"></a>mnist =<span class="st"> </span><span class="kw">dataset_mnist</span>()</span>
+<span id="cb1-4"><a href="#cb1-4"></a>img_rows =<span class="st"> </span>img_cols =<span class="st"> </span><span class="dv">28</span></span>
+<span id="cb1-5"><a href="#cb1-5"></a>num_classes =<span class="st"> </span><span class="dv">10</span></span>
+<span id="cb1-6"><a href="#cb1-6"></a>x_train =<span class="st"> </span>mnist<span class="op">$</span>train<span class="op">$</span>x</span>
+<span id="cb1-7"><a href="#cb1-7"></a>x_train =<span class="st"> </span><span class="kw">array_reshape</span>(x_train, <span class="kw">c</span>(<span class="kw">nrow</span>(x_train), img_rows, img_cols, <span class="dv">1</span>))</span>
+<span id="cb1-8"><a href="#cb1-8"></a>y_train =<span class="st"> </span>mnist<span class="op">$</span>train<span class="op">$</span>y</span>
+<span id="cb1-9"><a href="#cb1-9"></a>y_train_matrix =<span class="st"> </span><span class="kw">to_categorical</span>(y_train, <span class="dt">num_classes =</span> num_classes)</span>
+<span id="cb1-10"><a href="#cb1-10"></a>x_test =<span class="st"> </span>mnist<span class="op">$</span>test<span class="op">$</span>x</span>
+<span id="cb1-11"><a href="#cb1-11"></a>y_test =<span class="st"> </span>mnist<span class="op">$</span>test<span class="op">$</span>y</span></code></pre></div>
+</div>
+<div class="slide section level2">
+
+<p>Let’s look at some of the images:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="co">## function to rearrange things so that we can plot them</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a>flip_image =<span class="st"> </span><span class="cf">function</span>(x) {</span>
+<span id="cb2-3"><a href="#cb2-3"></a>    n =<span class="st"> </span><span class="kw">nrow</span>(x)</span>
+<span id="cb2-4"><a href="#cb2-4"></a>    <span class="kw">return</span>(<span class="kw">t</span>(x[n<span class="op">:</span><span class="dv">1</span>,]))</span>
+<span id="cb2-5"><a href="#cb2-5"></a>}</span>
+<span id="cb2-6"><a href="#cb2-6"></a><span class="kw">par</span>(<span class="dt">mfrow =</span> <span class="kw">c</span>(<span class="dv">3</span>,<span class="dv">3</span>))</span>
+<span id="cb2-7"><a href="#cb2-7"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="dv">9</span>) {</span>
+<span id="cb2-8"><a href="#cb2-8"></a>    <span class="kw">image</span>(<span class="kw">flip_image</span>(x_train[i,,,]), <span class="dt">col =</span> <span class="kw">topo.colors</span>(<span class="dv">100</span>), <span class="dt">axes =</span> <span class="ot">FALSE</span>,</span>
+<span id="cb2-9"><a href="#cb2-9"></a>          <span class="dt">main =</span> y_train[i])</span>
+<span id="cb2-10"><a href="#cb2-10"></a>}</span></code></pre></div>
+<p><img src="lecture-28-fig/unnamed-chunk-2-1.png" /></p>
+</div>
+<div class="slide section level2">
+
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>model =<span class="st"> </span><span class="kw">keras_model_sequential</span>()</span>
+<span id="cb3-2"><a href="#cb3-2"></a>model <span class="op">%&gt;%</span></span>
+<span id="cb3-3"><a href="#cb3-3"></a><span class="st">  </span><span class="kw">layer_flatten</span>(<span class="dt">input_shape =</span> <span class="kw">c</span>(img_rows, img_cols)) <span class="op">%&gt;%</span></span>
+<span id="cb3-4"><a href="#cb3-4"></a><span class="st">  </span><span class="kw">layer_dense</span>(<span class="dt">units =</span> <span class="dv">128</span>, <span class="dt">activation =</span> <span class="st">&#39;relu&#39;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a><span class="st">  </span><span class="kw">layer_dense</span>(<span class="dt">units =</span> num_classes, <span class="dt">activation =</span> <span class="st">&#39;softmax&#39;</span>)</span>
+<span id="cb3-6"><a href="#cb3-6"></a>model <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">compile</span>(</span>
+<span id="cb3-7"><a href="#cb3-7"></a>    <span class="dt">optimizer =</span> <span class="st">&#39;adam&#39;</span>, </span>
+<span id="cb3-8"><a href="#cb3-8"></a>    <span class="dt">loss =</span> loss_categorical_crossentropy,</span>
+<span id="cb3-9"><a href="#cb3-9"></a>    <span class="dt">metrics =</span> <span class="st">&#39;accuracy&#39;</span></span>
+<span id="cb3-10"><a href="#cb3-10"></a>)</span>
+<span id="cb3-11"><a href="#cb3-11"></a>model</span></code></pre></div>
+<pre><code>## Model
+## Model: &quot;sequential_5&quot;
+## ________________________________________________________________________________
+## Layer (type)                        Output Shape                    Param #     
+## ================================================================================
+## flatten_5 (Flatten)                 (None, 784)                     0           
+## ________________________________________________________________________________
+## dense_10 (Dense)                    (None, 128)                     100480      
+## ________________________________________________________________________________
+## dense_11 (Dense)                    (None, 10)                      1290        
+## ================================================================================
+## Total params: 101,770
+## Trainable params: 101,770
+## Non-trainable params: 0
+## ________________________________________________________________________________</code></pre>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="co">## number of parameters for the first layer: each hidden unit has a weight associated with each of the 784 predictor units, plus a bias term</span></span>
+<span id="cb5-2"><a href="#cb5-2"></a>(<span class="dv">784</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span>) <span class="op">*</span><span class="st"> </span><span class="dv">128</span></span></code></pre></div>
+<pre><code>## [1] 100480</code></pre>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="co">## number of parameters for the second layer: each output unit has a weight associated with each of the 128 hidden units, plus a bias term</span></span>
+<span id="cb7-2"><a href="#cb7-2"></a>(<span class="dv">128</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span>)<span class="op">*</span><span class="st"> </span><span class="dv">10</span></span></code></pre></div>
+<pre><code>## [1] 1290</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>Fit the model, look at the predictions:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a>model <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">fit</span>(<span class="dt">x =</span> x_train, <span class="dt">y =</span> y_train_matrix, <span class="dt">epochs =</span> <span class="dv">15</span>)</span>
+<span id="cb9-2"><a href="#cb9-2"></a>test_predictions =<span class="st"> </span>model <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">predict_classes</span>(x_test)</span>
+<span id="cb9-3"><a href="#cb9-3"></a><span class="kw">par</span>(<span class="dt">mfrow =</span> <span class="kw">c</span>(<span class="dv">3</span>,<span class="dv">3</span>))</span>
+<span id="cb9-4"><a href="#cb9-4"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="dv">9</span>) {</span>
+<span id="cb9-5"><a href="#cb9-5"></a>    <span class="kw">image</span>(<span class="kw">flip_image</span>(x_test[i,,]), <span class="dt">col =</span> <span class="kw">topo.colors</span>(<span class="dv">100</span>), <span class="dt">axes =</span> <span class="ot">FALSE</span>,</span>
+<span id="cb9-6"><a href="#cb9-6"></a>          <span class="dt">main =</span> <span class="kw">sprintf</span>(<span class="st">&quot;True digit: %i, Prediction: %i&quot;</span>, y_test[i], test_predictions[i]))</span>
+<span id="cb9-7"><a href="#cb9-7"></a>}</span></code></pre></div>
+<p><img src="lecture-28-fig/unnamed-chunk-4-1.png" /></p>
+</div>
+<div class="slide section level2">
+
+<p>More elaborate architectures do much better, for example the <a href="https://keras.rstudio.com/articles/examples/mnist_cnn.html">convolutional model</a>.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a>model_conv &lt;-<span class="st"> </span><span class="kw">keras_model_sequential</span>() <span class="op">%&gt;%</span></span>
+<span id="cb10-2"><a href="#cb10-2"></a><span class="st">    </span><span class="kw">layer_conv_2d</span>(<span class="dt">filters =</span> <span class="dv">32</span>, <span class="dt">kernel_size =</span> <span class="kw">c</span>(<span class="dv">3</span>,<span class="dv">3</span>), <span class="dt">activation =</span> <span class="st">&#39;relu&#39;</span>,</span>
+<span id="cb10-3"><a href="#cb10-3"></a>                  <span class="dt">input_shape =</span> <span class="kw">c</span>(img_rows,img_cols,<span class="dv">1</span>)) <span class="op">%&gt;%</span></span>
+<span id="cb10-4"><a href="#cb10-4"></a><span class="st">    </span><span class="kw">layer_conv_2d</span>(<span class="dt">filters =</span> <span class="dv">64</span>, <span class="dt">kernel_size =</span> <span class="kw">c</span>(<span class="dv">3</span>,<span class="dv">3</span>), <span class="dt">activation =</span> <span class="st">&#39;relu&#39;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb10-5"><a href="#cb10-5"></a><span class="st">    </span><span class="kw">layer_max_pooling_2d</span>(<span class="dt">pool_size =</span> <span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">2</span>)) <span class="op">%&gt;%</span></span>
+<span id="cb10-6"><a href="#cb10-6"></a><span class="st">    </span><span class="kw">layer_dropout</span>(<span class="dt">rate =</span> <span class="fl">0.25</span>) <span class="op">%&gt;%</span></span>
+<span id="cb10-7"><a href="#cb10-7"></a><span class="st">    </span><span class="kw">layer_flatten</span>() <span class="op">%&gt;%</span></span>
+<span id="cb10-8"><a href="#cb10-8"></a><span class="st">    </span><span class="kw">layer_dense</span>(<span class="dt">units =</span> <span class="dv">128</span>, <span class="dt">activation =</span> <span class="st">&#39;relu&#39;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb10-9"><a href="#cb10-9"></a><span class="st">    </span><span class="kw">layer_dropout</span>(<span class="dt">rate =</span> <span class="fl">0.5</span>) <span class="op">%&gt;%</span></span>
+<span id="cb10-10"><a href="#cb10-10"></a><span class="st">    </span><span class="kw">layer_dense</span>(<span class="dt">units =</span> num_classes, <span class="dt">activation =</span> <span class="st">&#39;softmax&#39;</span>)</span>
+<span id="cb10-11"><a href="#cb10-11"></a>model_conv <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">compile</span>(</span>
+<span id="cb10-12"><a href="#cb10-12"></a>  <span class="dt">loss =</span> loss_categorical_crossentropy,</span>
+<span id="cb10-13"><a href="#cb10-13"></a>  <span class="dt">optimizer =</span> <span class="st">&#39;adam&#39;</span>,</span>
+<span id="cb10-14"><a href="#cb10-14"></a>  <span class="dt">metrics =</span> <span class="kw">c</span>(<span class="st">&#39;accuracy&#39;</span>)</span>
+<span id="cb10-15"><a href="#cb10-15"></a>  )</span>
+<span id="cb10-16"><a href="#cb10-16"></a>model_conv</span>
+<span id="cb10-17"><a href="#cb10-17"></a>model_conv <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">fit</span>(<span class="dt">x =</span> x_train, <span class="dt">y =</span> y_train_matrix, <span class="dt">epochs =</span> <span class="dv">15</span>)</span></code></pre></div>
+</div>
+<div id="part-2-cross-validation" class="slide section level2">
+<h1>Part 2: Cross validation</h1>
+<p>We have:</p>
+<ul>
+<li>Data <span class="math inline">\(X_1, \ldots, X_n\)</span>.</li>
+</ul>
+<ul>
+<li>A set of models for the data.</li>
+</ul>
+<ul>
+<li>A function <span class="math inline">\(L\)</span> that takes a fitted model and a data point and returns a measure of model quality.</li>
+</ul>
+<p>We would like to choose one model from the set of candidate models.</p>
+</div>
+<div id="example-neural-nets" class="slide section level2">
+<h1>Example: Neural nets</h1>
+<ul>
+<li>Data: Pairs of predictors and response variables, <span class="math inline">\((y_i, X_i)\)</span>, <span class="math inline">\(i = 1,\ldots, n\)</span>, <span class="math inline">\(y_i \in \mathbb R\)</span>, <span class="math inline">\(X_i \in \mathbb R^p\)</span></li>
+</ul>
+<ul>
+<li>Models: The two models we defined in the first half of lecture.</li>
+</ul>
+<ul>
+<li>Model quality: Squared-error loss. If <span class="math inline">\(\hat f_1\)</span> and <span class="math inline">\(\hat f_2\)</span> are the functions corresponding to the fitted neural nets, model quality is measured by <span class="math display">\[
+L(\hat \beta_\theta, (y_i, X_i)) = (y_i - \hat f_\theta(X_i))^2, \quad \theta = 1,2
+\]</span></li>
+</ul>
+<p>We want ot decide whether the first or the second neural net is better at explaining the response.</p>
+<div class="incremental">
+<p>Naive solution: Find the model that has the lowest value for the squared-error loss.</p>
+</div>
+</div>
+<div id="example-regression" class="slide section level2">
+<h1>Example: Regression</h1>
+<ul>
+<li>Data: Pairs of predictors and response variables, <span class="math inline">\((y_i, X_i)\)</span>, <span class="math inline">\(i = 1,\ldots, n\)</span>, <span class="math inline">\(y_i \in \mathbb R\)</span>, <span class="math inline">\(X_i \in \mathbb R^p\)</span></li>
+</ul>
+<ul>
+<li>Models: <span class="math inline">\(y_i = X \beta + \epsilon\)</span>, <span class="math inline">\(\beta_j = 0, j \in S_\theta\)</span>, where <span class="math inline">\(S_\theta \subseteq \{1,\ldots, p\}\)</span>.</li>
+</ul>
+<ul>
+<li>Model quality: Squared-error loss. If <span class="math inline">\(\hat \beta_\theta\)</span> are our estimates of the regression coefficients in model <span class="math inline">\(\theta\)</span>, model quality is measured by <span class="math display">\[
+L(\hat \beta_\theta, (y_i, X_i)) = (y_i - X_i^T \hat \beta_\theta)^2
+\]</span></li>
+</ul>
+<p>We want to choose a subset of the predictors that do the best job of explaining the response.</p>
+<div class="incremental">
+<p>Naive solution: Find the model that has the lowest value for the squared-error loss.</p>
+<p>Why doesn’t this work?</p>
+</div>
+</div>
+<div id="example-mixture-models" class="slide section level2">
+<h1>Example: Mixture models</h1>
+<ul>
+<li>Data: <span class="math inline">\(x_1,\ldots, x_n\)</span>, <span class="math inline">\(x_i \in \mathbb R\)</span></li>
+</ul>
+<ul>
+<li>Models: Gaussian mixture models with <span class="math inline">\(\theta\)</span> mixture components.</li>
+</ul>
+<ul>
+<li>Model quality: Log likelihood of the data. If <span class="math inline">\(\hat p_\theta\)</span> is the density of the fitted model with <span class="math inline">\(\theta\)</span> components, model quality is measured by <span class="math inline">\(L(\hat p_\theta, x_i) = \log \hat p_\theta(x_i)\)</span>.</li>
+</ul>
+<p>We want to choose the number of mixture components that best explains the data.</p>
+<div class="incremental">
+<p>Naive solution: Choose the number of mixture components that maximizes the log likelihood of the data.</p>
+</div>
+</div>
+<div id="better-solution-cross-validation" class="slide section level2">
+<h1>Better Solution: Cross validation</h1>
+<p>Idea: Instead of measuring model quality on the same data we used to fit the model, we estimate model quality on new data.</p>
+<p>If we knew the true distribution of the data, we could simulate new data and use a Monte Carlo estimate based on the simulations.</p>
+<p>We can’t actually get new data, and so we hold some back when we fit the model and then pretend that the held back data is new data.</p>
+</div>
+<div class="slide section level2">
+
+<p>Procedure:</p>
+<ul>
+<li>Divide the data into <span class="math inline">\(K\)</span> folds</li>
+</ul>
+<ul>
+<li>Let <span class="math inline">\(X^{(k)}\)</span> denote the data in fold <span class="math inline">\(k\)</span>, and let <span class="math inline">\(X^{(-k)}\)</span> denote the data in all the folds except for <span class="math inline">\(k\)</span>.</li>
+</ul>
+<ul>
+<li>For each fold and each value of the tuning parameter <span class="math inline">\(\theta\)</span>, fit the model on <span class="math inline">\(X^{(-k)}\)</span> to get <span class="math inline">\(\hat f_\theta^{(k)}\)</span></li>
+</ul>
+<ul>
+<li>Compute <span class="math display">\[
+\text{CV}(\theta) = \frac{1}{n} \sum_{k=1}^K \sum_{x \in X^{(k)}} L(\hat f_\theta^{(k)}, x)
+\]</span></li>
+</ul>
+<ul>
+<li>Choose <span class="math inline">\(\hat \theta = \text{argmin}_{\theta} \text{CV}(\theta)\)</span></li>
+</ul>
+</div>
+<div id="example" class="slide section level2">
+<h1>Example</h1>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a>n =<span class="st"> </span><span class="dv">100</span></span>
+<span id="cb11-2"><a href="#cb11-2"></a>p =<span class="st"> </span><span class="dv">20</span></span>
+<span id="cb11-3"><a href="#cb11-3"></a>X =<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">rnorm</span>(n <span class="op">*</span><span class="st"> </span>p), <span class="dt">nrow =</span> n)</span>
+<span id="cb11-4"><a href="#cb11-4"></a>y =<span class="st"> </span><span class="kw">rnorm</span>(n)</span>
+<span id="cb11-5"><a href="#cb11-5"></a>get_rss_submodels =<span class="st"> </span><span class="cf">function</span>(n_predictors, y, X) {</span>
+<span id="cb11-6"><a href="#cb11-6"></a>    <span class="cf">if</span>(n_predictors <span class="op">==</span><span class="st"> </span><span class="dv">0</span>) {</span>
+<span id="cb11-7"><a href="#cb11-7"></a>        lm_submodel =<span class="st"> </span><span class="kw">lm</span>(y <span class="op">~</span><span class="st"> </span><span class="dv">0</span>)</span>
+<span id="cb11-8"><a href="#cb11-8"></a>    } <span class="cf">else</span> {</span>
+<span id="cb11-9"><a href="#cb11-9"></a>        lm_submodel =<span class="st"> </span><span class="kw">lm</span>(y <span class="op">~</span><span class="st"> </span><span class="dv">0</span> <span class="op">+</span><span class="st"> </span>X[,<span class="dv">1</span><span class="op">:</span>n_predictors, <span class="dt">drop =</span> <span class="ot">FALSE</span>])</span>
+<span id="cb11-10"><a href="#cb11-10"></a>    }</span>
+<span id="cb11-11"><a href="#cb11-11"></a>    <span class="kw">return</span>(<span class="kw">sum</span>(<span class="kw">residuals</span>(lm_submodel)<span class="op">^</span><span class="dv">2</span>))</span>
+<span id="cb11-12"><a href="#cb11-12"></a>}</span>
+<span id="cb11-13"><a href="#cb11-13"></a>p_vec =<span class="st"> </span><span class="dv">0</span><span class="op">:</span>p</span>
+<span id="cb11-14"><a href="#cb11-14"></a>rss =<span class="st"> </span><span class="kw">sapply</span>(p_vec, get_rss_submodels, y, X)</span>
+<span id="cb11-15"><a href="#cb11-15"></a><span class="kw">plot</span>(rss <span class="op">~</span><span class="st"> </span>p_vec)</span></code></pre></div>
+<p><img src="lecture-28-fig/unnamed-chunk-6-1.png" /></p>
+</div>
+<div class="slide section level2">
+
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a>get_cv_error =<span class="st"> </span><span class="cf">function</span>(n_predictors, y, X, folds) {</span>
+<span id="cb12-2"><a href="#cb12-2"></a>    cv_vec =<span class="st"> </span><span class="kw">numeric</span>(<span class="kw">length</span>(<span class="kw">unique</span>(folds)))</span>
+<span id="cb12-3"><a href="#cb12-3"></a>    <span class="cf">for</span>(f <span class="cf">in</span> <span class="kw">unique</span>(folds)) {</span>
+<span id="cb12-4"><a href="#cb12-4"></a>        cv_vec[f] =<span class="st"> </span><span class="kw">rss_on_held_out</span>(</span>
+<span id="cb12-5"><a href="#cb12-5"></a>                  n_predictors,</span>
+<span id="cb12-6"><a href="#cb12-6"></a>                  <span class="dt">y_train =</span> y[folds <span class="op">!=</span><span class="st"> </span>f],</span>
+<span id="cb12-7"><a href="#cb12-7"></a>                  <span class="dt">X_train =</span> X[folds <span class="op">!=</span><span class="st"> </span>f,],</span>
+<span id="cb12-8"><a href="#cb12-8"></a>                  <span class="dt">y_test =</span> y[folds <span class="op">==</span><span class="st"> </span>f],</span>
+<span id="cb12-9"><a href="#cb12-9"></a>                  <span class="dt">X_test =</span> X[folds <span class="op">==</span><span class="st"> </span>f,])</span>
+<span id="cb12-10"><a href="#cb12-10"></a>    }</span>
+<span id="cb12-11"><a href="#cb12-11"></a>    <span class="kw">return</span>(<span class="kw">mean</span>(cv_vec))</span>
+<span id="cb12-12"><a href="#cb12-12"></a>}</span>
+<span id="cb12-13"><a href="#cb12-13"></a></span>
+<span id="cb12-14"><a href="#cb12-14"></a>rss_on_held_out =<span class="st"> </span><span class="cf">function</span>(n_predictors, y_train, X_train, y_test, X_test) {</span>
+<span id="cb12-15"><a href="#cb12-15"></a>    <span class="cf">if</span>(n_predictors <span class="op">==</span><span class="st"> </span><span class="dv">0</span>) {</span>
+<span id="cb12-16"><a href="#cb12-16"></a>        lm_submodel =<span class="st"> </span><span class="kw">lm</span>(y_train <span class="op">~</span><span class="st"> </span><span class="dv">0</span>)</span>
+<span id="cb12-17"><a href="#cb12-17"></a>        preds_on_test =<span class="st"> </span><span class="kw">rep</span>(<span class="dv">0</span>, <span class="kw">length</span>(y_test))</span>
+<span id="cb12-18"><a href="#cb12-18"></a>    } <span class="cf">else</span> {</span>
+<span id="cb12-19"><a href="#cb12-19"></a>        lm_submodel =<span class="st"> </span><span class="kw">lm</span>(y_train <span class="op">~</span><span class="st"> </span><span class="dv">0</span> <span class="op">+</span><span class="st"> </span>X_train[,<span class="dv">1</span><span class="op">:</span>n_predictors, <span class="dt">drop =</span> <span class="ot">FALSE</span>])</span>
+<span id="cb12-20"><a href="#cb12-20"></a>        preds_on_test =<span class="st"> </span>X_test[,<span class="dv">1</span><span class="op">:</span>n_predictors, drop=<span class="st"> </span><span class="ot">FALSE</span>] <span class="op">%*%</span><span class="st"> </span><span class="kw">coef</span>(lm_submodel)</span>
+<span id="cb12-21"><a href="#cb12-21"></a>    }</span>
+<span id="cb12-22"><a href="#cb12-22"></a></span>
+<span id="cb12-23"><a href="#cb12-23"></a>    <span class="kw">return</span>(<span class="kw">sum</span>((y_test <span class="op">-</span><span class="st"> </span>preds_on_test)<span class="op">^</span><span class="dv">2</span>))</span>
+<span id="cb12-24"><a href="#cb12-24"></a>}</span>
+<span id="cb12-25"><a href="#cb12-25"></a>K =<span class="st"> </span><span class="dv">5</span></span>
+<span id="cb12-26"><a href="#cb12-26"></a><span class="co">## normally you would do this at random</span></span>
+<span id="cb12-27"><a href="#cb12-27"></a>folds =<span class="st"> </span><span class="kw">rep</span>(<span class="dv">1</span><span class="op">:</span>K, <span class="dt">each =</span> n <span class="op">/</span><span class="st"> </span>K)</span>
+<span id="cb12-28"><a href="#cb12-28"></a>p_vec =<span class="st"> </span><span class="dv">0</span><span class="op">:</span>p</span>
+<span id="cb12-29"><a href="#cb12-29"></a>cv_errors =<span class="st"> </span><span class="kw">sapply</span>(p_vec, get_cv_error, y, X, folds)</span>
+<span id="cb12-30"><a href="#cb12-30"></a><span class="kw">plot</span>(cv_errors <span class="op">~</span><span class="st"> </span>p_vec)</span></code></pre></div>
+<p><img src="lecture-28-fig/unnamed-chunk-7-1.png" /></p>
+</div>
+<div id="choice-of-k" class="slide section level2">
+<h1>Choice of <span class="math inline">\(K\)</span></h1>
+<p>Considerations:</p>
+<ul>
+<li>Larger <span class="math inline">\(K\)</span> means more computation (although sometimes there is a shortcut for leave-one-out cross validation)</li>
+</ul>
+<ul>
+<li>Larger <span class="math inline">\(K\)</span> means less bias in the estimate of model accuracy</li>
+</ul>
+<ul>
+<li>Larger <span class="math inline">\(K\)</span> also means more variance in the estimate, so we don’t necessarily want <span class="math inline">\(K = n\)</span></li>
+</ul>
+<ul>
+<li>Usually choose <span class="math inline">\(K = 5\)</span> or <span class="math inline">\(K = 10\)</span></li>
+</ul>
+<ul>
+<li>If your problem is structured (e.g. time series, spatial), you should choose the folds to respect the structure.</li>
+</ul>
+</div>
+<div id="summing-up" class="slide section level2">
+<h1>Summing up</h1>
+<ul>
+<li>Deep learning = neural nets with more than one hidden layer. In practice, these work better than the single-hidden-layer networks.</li>
+</ul>
+<ul>
+<li>Think of as predictors that can fit complex functions of the input variables</li>
+</ul>
+<ul>
+<li>Also able to handle other kinds of output, e.g. sequences (natural language processing, machine translation)</li>
+</ul>
+<ul>
+<li>Good when you have a lot of data, are interested solely in prediction</li>
+</ul>
+<ul>
+<li>Not as good when you don’t have so much data or need an interpretation of the relationship between the predictors and response.</li>
+</ul>
+<ul>
+<li>No measure of uncertainty: the models look like regression models, but standard nets don’t give measures of predictive accuracy.</li>
+</ul>
+<ul>
+<li>Cross-validation a way to choose between models.</li>
+</ul>
+</div>
+</body>
+</html>

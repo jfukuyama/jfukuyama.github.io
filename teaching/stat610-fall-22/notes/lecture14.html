@@ -1,0 +1,507 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title>lecture14</title>
+  <style type="text/css">
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="https://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="https://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div id="lecture-14-version-control-and-git-part-2"
+class="slide section level1">
+<h1>Lecture 14: Version control and git part 2</h1>
+<ul class="incremental">
+<li>Reading (if you want more detail): <a
+href="https://git-scm.com/book/en/v2">Pro Git</a>, Chapters 1, 2, 3,
+10.</li>
+</ul>
+</div>
+<div id="remember-commits-and-branches" class="slide section level1">
+<h1>Remember: Commits and Branches</h1>
+<ul class="incremental">
+<li><p>A <em>commit</em> is a snapshot of the project at a certain point
+in time.</p></li>
+<li><p>A <em>branch</em> is a pointer to a commit.</p></li>
+<li><p>Each commit is stored as a file, containing a hash of the tree
+for the top-level directory, hash of the parent commit, and
+meta-information about the commit.</p></li>
+<li><p>By default, a commit has as its parent the commit that HEAD was
+pointing to when you made the commit.</p></li>
+</ul>
+</div>
+<div id="merging-and-rebasing" class="slide section level1">
+<h1>Merging and rebasing</h1>
+<p>Setup:</p>
+<ul class="incremental">
+<li><p>You have a branching commit history</p></li>
+<li><p>You want to incorporate changes made in two different
+branches</p></li>
+</ul>
+<div class="incremental">
+<p>Solutions:</p>
+<ul class="incremental">
+<li><p>Merge: Make a new commit with two parents</p></li>
+<li><p>Rebase: Applies changes from one branch onto another</p></li>
+</ul>
+</div>
+</div>
+<div id="fast-forward-merge" class="slide section level1">
+<h1>Fast-forward merge</h1>
+<p>Setup: We have two commits, <code>branch1</code> and
+<code>branch2</code>, and <code>branch1</code> is an ancestor of
+<code>branch2</code>.</p>
+<p>We would like to update so that <code>branch1</code> points to the
+same commit as <code>branch2</code>.</p>
+<p>Solution: fast-forward merge</p>
+<pre><code>git checkout branch1
+git merge branch2</code></pre>
+<p>What happens?</p>
+<ul class="incremental">
+<li><code>branch1</code> moves to point to the same commit as
+<code>branch2</code></li>
+</ul>
+</div>
+<div id="for-example" class="slide section level1">
+<h1>For example</h1>
+<p><img src="basic-branching-4.png" /></p>
+</div>
+<div class="slide section level1">
+
+<p>After running</p>
+<pre><code>$ git checkout master
+$ git merge hotfix
+Updating f42c576..3a0874c
+Fast-forward
+ index.html | 2 ++
+ 1 file changed, 2 insertions(+)</code></pre>
+</div>
+<div class="slide section level1">
+
+<p><img src="basic-branching-5.png" /></p>
+</div>
+<div id="basic-merge" class="slide section level1">
+<h1>Basic merge</h1>
+<p>Setup: We have a diverged work history with <code>branch1</code> and
+<code>branch2</code>.</p>
+<p>We want to integrate the changes represented by both branches.</p>
+<p>We can <em>merge</em> the two branches:</p>
+<pre><code>git checkout branch1
+git merge branch2</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>What happens?</p>
+<ul class="incremental">
+<li><p>Find the most recent common ancestor of <code>branch1</code> and
+<code>branch2</code></p></li>
+<li><p>Find all the differences between <code>branch2</code> and the
+most recent common ancestor</p></li>
+<li><p>Apply those changes to <code>branch1</code> to get a new
+commit</p></li>
+<li><p>The new commit is special in that it has two parents: the commit
+that <code>branch1</code> was pointing to <em>and</em> the commit that
+<code>branch2</code> was pointing to.</p></li>
+</ul>
+</div>
+<div class="slide section level1">
+
+<p>Starting out:</p>
+<p><img src="merge_1.png" /></p>
+</div>
+<div class="slide section level1">
+
+<p>How we want the merge to look:</p>
+<p><img src="merge_2.png" /></p>
+</div>
+<div class="slide section level1">
+
+<p>After running</p>
+<pre><code>git checkout master
+git merge iss53</code></pre>
+<p><img src="merge_3.png" /></p>
+</div>
+<div id="merge-conflicts" class="slide section level1">
+<h1>Merge conflicts</h1>
+<p>Sometimes merging doesn’t work automatically, usually because you
+made different changes to the same file on different branches.</p>
+<p>If this happens, you’ll get a message telling you that the merge
+can’t be performed automatically:</p>
+<pre><code>$ git merge iss53
+Auto-merging index.html
+CONFLICT (content): Merge conflict in index.html
+Automatic merge failed; fix conflicts and then commit the result.</code></pre>
+<p>If you run <code>git status</code>, you get instructions about what
+to do:</p>
+<pre><code>$ git status
+On branch master
+You have unmerged paths.
+  (fix conflicts and run &quot;git commit&quot;)
+
+Unmerged paths:
+  (use &quot;git add &lt;file&gt;...&quot; to mark resolution)
+
+    both modified:      index.html
+
+no changes added to commit (use &quot;git add&quot; and/or &quot;git commit -a&quot;)</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>In this case, the file <code>index.html</code> will contain a section
+that looks like this:</p>
+<pre><code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD:index.html
+&lt;div id=&quot;footer&quot;&gt;contact : email.support@github.com&lt;/div&gt;
+=======
+&lt;div id=&quot;footer&quot;&gt;
+ please contact us at support@github.com
+&lt;/div&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; iss53:index.html</code></pre>
+<ul class="incremental">
+<li><p>The version in HEAD is in the first section (between
+<code>&lt;&lt;&lt;</code> and <code>===</code>), and the version in
+<code>iss53</code> is in the second section (between <code>===</code>
+and <code>&gt;&gt;&gt;</code>).</p></li>
+<li><p>Git doesn’t know which changes you want in the final merge, so
+you have to choose which one to keep (or do something else
+entirely).</p></li>
+</ul>
+</div>
+<div class="slide section level1">
+
+<p>Resolving the conflict:</p>
+<ul class="incremental">
+<li><p>Edit the file(s) with the merge conflicts.</p></li>
+<li><p>Run <code>git add</code> on those files.</p></li>
+<li><p>Run <code>git commit</code> to make the merge commit.</p></li>
+</ul>
+</div>
+<div class="slide section level1">
+
+<p>After fixing merge conflicts and running <code>git add
+index.html</code>:</p>
+<pre><code>$ git status
+On branch master
+All conflicts fixed but you are still merging.
+  (use &quot;git commit&quot; to conclude merge)
+
+Changes to be committed:
+
+    modified:   index.html</code></pre>
+</div>
+<div id="rebase" class="slide section level1">
+<h1>Rebase</h1>
+<p>Setup: We have a diverged work history with <code>branch1</code> and
+<code>branch2</code>.</p>
+<p>We want to integrate the changes represented by both branches.</p>
+<p>One solution is rebasing <code>branch2</code> onto
+<code>branch1</code>:</p>
+<pre><code>git checkout branch2
+git rebase branch1</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>What happens?</p>
+<ul class="incremental">
+<li><p>Find the most recent common ancestor of <code>branch1</code> and
+<code>branch2</code></p></li>
+<li><p>Find all the differences between <code>branch2</code> and the
+most recent common ancestor</p></li>
+<li><p>Apply those changes to <code>branch1</code> to get the new
+commit</p></li>
+</ul>
+<p>Same result as what we would get from a merge commit, but the history
+is different.</p>
+</div>
+<div class="slide section level1">
+
+<p>Starting out:</p>
+<p><img src="rebase_1.png" /></p>
+</div>
+<div class="slide section level1">
+
+<p>After running:</p>
+<pre><code>git checkout experiment
+git rebase master</code></pre>
+<p><img src="rebase_2.png" /></p>
+</div>
+<div class="slide section level1">
+
+<p>After running:</p>
+<pre><code>git checkout master
+git merge experiment</code></pre>
+<p><img src="rebase_3.png" /></p>
+</div>
+<div id="remotes" class="slide section level1">
+<h1>Remotes</h1>
+<ul class="incremental">
+<li><p>A <em>remote repository</em> is a version of the project that is
+hosted somewhere else (e.g. GitHub).</p></li>
+<li><p>Just like your local repository, the remote repository is a
+collection of commits and branches.</p></li>
+<li><p>Reading from and writing to remote repositories is how people
+collaborate on projects with git.</p></li>
+<li><p>You can have more than one remote repository for a
+project.</p></li>
+<li><p>Main issues in working with remotes are reading and writing
+commits and branches, and being able to refer to branches on the
+remote.</p></li>
+<li><p>We will have a lot of different kinds of branches:</p>
+<ul class="incremental">
+<li>Local branches (last time)</li>
+<li>Remote branches (Branches on the remote)</li>
+<li>Remote-tracking branches (How you refer to branches on the
+remote)</li>
+<li>Tracking branches (Allows you to push to and pull from branches on
+the remote automatically)</li>
+</ul></li>
+</ul>
+</div>
+<div id="showing-the-remotes" class="slide section level1">
+<h1>Showing the remotes</h1>
+<p>To see the remote servers corresponding to your project that you have
+set up, use <code>git remote</code>, or <code>git remote -v</code>.</p>
+<p>For example:</p>
+<pre><code>$ git clone https://github.com/schacon/ticgit
+Cloning into &#39;ticgit&#39;...
+remote: Reusing existing pack: 1857, done.
+remote: Total 1857 (delta 0), reused 0 (delta 0)
+Receiving objects: 100% (1857/1857), 374.35 KiB | 268.00 KiB/s, done.
+Resolving deltas: 100% (772/772), done.
+Checking connectivity... done.
+$ cd ticgit
+$ git remote
+origin</code></pre>
+<pre><code>$ git remote -v
+origin  https://github.com/schacon/ticgit (fetch)
+origin  https://github.com/schacon/ticgit (push)</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>If you had multiple remotes, you might get something like this:</p>
+<pre><code>$ cd grit
+$ git remote -v
+bakkdoor  https://github.com/bakkdoor/grit (fetch)
+bakkdoor  https://github.com/bakkdoor/grit (push)
+cho45     https://github.com/cho45/grit (fetch)
+cho45     https://github.com/cho45/grit (push)
+defunkt   https://github.com/defunkt/grit (fetch)
+defunkt   https://github.com/defunkt/grit (push)
+koke      git://github.com/koke/grit.git (fetch)
+koke      git://github.com/koke/grit.git (push)
+origin    git@github.com:mojombo/grit.git (fetch)
+origin    git@github.com:mojombo/grit.git (push)</code></pre>
+</div>
+<div id="adding-remote-repositories" class="slide section level1">
+<h1>Adding remote repositories</h1>
+<p>With <code>git clone</code>:</p>
+<ul class="incremental">
+<li><p>By default, if you run <code>git clone &lt;url&gt;</code>, git
+will add <code>&lt;url&gt;</code> as a remote repository with the name
+<code>origin</code>.</p></li>
+<li><p>Nothing special about the name <code>origin</code></p></li>
+</ul>
+<p>With <code>git remote add</code>:</p>
+<ul class="incremental">
+<li><code>git remote add &lt;shortname&gt; &lt;url&gt;</code> will add
+<code>&lt;url&gt;</code> as a remote repository with the name
+<code>&lt;shortname&gt;</code></li>
+</ul>
+</div>
+<div id="fetching-from-remote-repositories"
+class="slide section level1">
+<h1>Fetching from remote repositories</h1>
+<p>To get new commits that have been added to a remote repository, run
+<code>git fetch &lt;remote&gt;</code></p>
+<p>What happens?</p>
+<ul class="incremental">
+<li><p>Any commits that are on <code>&lt;remote&gt;</code> that you
+don’t have are downloaded and added to your repository.</p></li>
+<li><p>Remote-tracking branches are updated</p></li>
+</ul>
+</div>
+<div class="slide section level1">
+
+<p><img src="remote-branches-1.png" /></p>
+</div>
+<div class="slide section level1">
+
+<p><img src="remote-branches-2.png" /></p>
+</div>
+<div class="slide section level1">
+
+<p><img src="remote-branches-3.png" /></p>
+</div>
+<div id="remote-tracking-branches" class="slide section level1">
+<h1>Remote-tracking branches</h1>
+<p>Problem: how do we refer to branches in the remote? There’s nothing
+preventing the remote from having branches with the same name as our
+local branches but that point to different commits.</p>
+<p>Solution: remote-tracking branches:</p>
+<ul class="incremental">
+<li><p>Have names of the form
+<code>&lt;remote&gt;/&lt;branch-name&gt;</code>.</p></li>
+<li><p>You can’t modify these, they refer to a branch in the remote
+repository.</p></li>
+</ul>
+</div>
+<div id="inspecting-remotes" class="slide section level1">
+<h1>Inspecting remotes</h1>
+<p>If you want more information about a remote, you can use <code>git
+remote show &lt;remote-name&gt;</code>.</p>
+<p>For example:</p>
+<pre><code>$ git remote show origin
+* remote origin
+  Fetch URL: https://github.com/schacon/ticgit
+  Push  URL: https://github.com/schacon/ticgit
+  HEAD branch: master
+  Remote branches:
+    master                               tracked
+    dev-branch                           tracked
+  Local branch configured for &#39;git pull&#39;:
+    master merges with remote master
+  Local ref configured for &#39;git push&#39;:
+    master pushes to master (up to date)</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>A more complicated example:</p>
+<pre><code>$ git remote show origin
+* remote origin
+  URL: https://github.com/my-org/complex-project
+  Fetch URL: https://github.com/my-org/complex-project
+  Push  URL: https://github.com/my-org/complex-project
+  HEAD branch: master
+  Remote branches:
+    master                           tracked
+    dev-branch                       tracked
+    markdown-strip                   tracked
+    issue-43                         new (next fetch will store in remotes/origin)
+    issue-45                         new (next fetch will store in remotes/origin)
+    refs/remotes/origin/issue-11     stale (use &#39;git remote prune&#39; to remove)
+  Local branches configured for &#39;git pull&#39;:
+    dev-branch merges with remote dev-branch
+    master     merges with remote master
+  Local refs configured for &#39;git push&#39;:
+    dev-branch                     pushes to dev-branch                     (up to date)
+    markdown-strip                 pushes to markdown-strip                 (up to date)
+    master                         pushes to master                         (up to date)</code></pre>
+</div>
+<div id="tracking-branches" class="slide section level1">
+<h1>Tracking branches</h1>
+<p>Tracking branches: not the same as remote-tracking branches</p>
+<ul class="incremental">
+<li><p>A local branch that has a relationship with a remote-tracking
+branch.</p></li>
+<li><p>The branch it tracks is called the ‘upstream’.</p></li>
+</ul>
+<p>When/how are they created?</p>
+<ul class="incremental">
+<li><p>By default, all of the branches in the remote repository will be
+available to you with names
+<code>&lt;remote&gt;/&lt;branch-name&gt;</code>.</p></li>
+<li><p>Also by default, when you clone a repository, git will
+automatically create a branch <code>master</code> that tracks
+<code>origin/master</code>.</p></li>
+<li><p>If you want to track other remote branches, you can use <code>git
+checkout -b &lt;branch&gt; &lt;remote&gt;/&lt;branch&gt;</code> or
+<code>git checkout --track &lt;remote&gt;/&lt;branch-name&gt;</code>,
+which will create a local branch called <code>&lt;branch-name&gt;</code>
+that tracks <code>&lt;remote&gt;/&lt;branch-name&gt;</code>.</p></li>
+</ul>
+<p>What are they for?</p>
+<ul class="incremental">
+<li><p>Setting defaults for pushing</p></li>
+<li><p>Setting defaults for pulling</p></li>
+</ul>
+</div>
+<div id="pushing-to-remote-repositories" class="slide section level1">
+<h1>Pushing to remote repositories</h1>
+<p>Method 1: Explicitly naming the local and remote branches</p>
+<ul class="incremental">
+<li><p><code>git push
+&lt;local-branch-name&gt;:&lt;remote-branch-name&gt;</code> will push
+the commits in <code>&lt;local-branch-name&gt;</code>to
+<code>&lt;remote&gt;/&lt;remote-branch-name&gt;</code></p></li>
+<li><p>Take my local branch <code>&lt;local-branch-name&gt;</code> and
+make it the remote’s branch
+<code>&lt;remote-branch-name&gt;</code></p></li>
+<li><p>You can use shorthands: if the two branches have the same name,
+can just use <code>git push &lt;branch-name&gt;</code>.</p></li>
+</ul>
+<p>Method 2: If you are on a tracking branch</p>
+<ul class="incremental">
+<li><p>Can use <code>git push</code> with no extra arguments</p></li>
+<li><p>This is equivalent to pushing the tracking branch you are
+currently on to the tracking branch’s upstream branch in the
+remote</p></li>
+</ul>
+<p>Note:</p>
+<ul class="incremental">
+<li><p>This only works if nobody has pushed to the branch you’re pushing
+to since you last fetched from the remote.</p></li>
+<li><p>If someone else has pushed in the meantime, you need to fetch
+their commits and integrate their work with yours (by e.g. merging or
+rebasing your commits).</p></li>
+</ul>
+</div>
+<div id="pulling" class="slide section level1">
+<h1>Pulling</h1>
+<p>Setup: You are on a tracking branch, and you want to get any new
+commits from the upstream branch on the remote.</p>
+<p>You can use <code>git pull</code>, which is usually equivalent to
+<code>git fetch</code> plus <code>git merge &lt;tracking-branch&gt;
+&lt;remote&gt;/&lt;upstream&gt;</code>, where
+<code>&lt;tracking-branch&gt;</code> is the branch that you are
+currently on, and <code>&lt;remote&gt;/&lt;upstream&gt;</code> is the
+upstream branch that your <code>&lt;tracking-branch&gt;</code>
+tracks.</p>
+</div>
+<div id="back-to-the-example" class="slide section level1">
+<h1>Back to the example</h1>
+<pre><code>$ git remote show origin
+* remote origin
+  URL: https://github.com/my-org/complex-project
+  Fetch URL: https://github.com/my-org/complex-project
+  Push  URL: https://github.com/my-org/complex-project
+  HEAD branch: master
+  Remote branches:
+    master                           tracked
+    dev-branch                       tracked
+    markdown-strip                   tracked
+    issue-43                         new (next fetch will store in remotes/origin)
+    issue-45                         new (next fetch will store in remotes/origin)
+    refs/remotes/origin/issue-11     stale (use &#39;git remote prune&#39; to remove)
+  Local branches configured for &#39;git pull&#39;:
+    dev-branch merges with remote dev-branch
+    master     merges with remote master
+  Local refs configured for &#39;git push&#39;:
+    dev-branch                     pushes to dev-branch                     (up to date)
+    markdown-strip                 pushes to markdown-strip                 (up to date)
+    master                         pushes to master                         (up to date)</code></pre>
+</div>
+<div id="summing-up" class="slide section level1">
+<h1>Summing up</h1>
+<ul class="incremental">
+<li><p>Both local and remote repositories are just sets of commits and
+branches.</p></li>
+<li><p>Primary problem is how to refer to branches in the
+remote.</p></li>
+<li><p>Defaults for pushing and pulling sometimes make things
+confusing.</p></li>
+</ul>
+</div>
+</body>
+</html>

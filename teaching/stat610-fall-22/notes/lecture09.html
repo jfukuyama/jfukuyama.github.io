@@ -1,0 +1,869 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title>lecture09</title>
+  <style type="text/css">
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="https://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="https://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div
+id="more-on-data-manipulation-shape-changing-merging-transformations"
+class="slide section level2">
+<h1>More on data manipulation, shape changing, merging,
+transformations</h1>
+<p>Reading: Hadley Wickham, <a
+href="http://vita.had.co.nz/papers/tidy-data.pdf">“Tidy Data”</a> and <a
+href="http://had.co.nz/reshape/introduction.pdf">“Reshaping data with
+the reshape package”</a></p>
+<p>Agenda for today:</p>
+<ul class="incremental">
+<li><p>Reshaping/tidy data/wide vs. long format</p></li>
+<li><p>Merging</p></li>
+</ul>
+</div>
+<div id="tidy-data" class="slide section level2">
+<h1>Tidy data</h1>
+<p>We usually want our data in the folowing form:</p>
+<ul class="incremental">
+<li><p>In a rectangular data frame</p></li>
+<li><p>One row per observation</p></li>
+</ul>
+<p>Data don’t always come this way!</p>
+<div class="incremental">
+<p>Even if the data do satisfy the “one row per observation” rule for
+one analysis, they don’t necessarily do so for another, and we often
+need to change the “shape” of the data.</p>
+</div>
+</div>
+<div id="data-semantics" class="slide section level2">
+<h1>Data semantics</h1>
+<p>Three concepts:</p>
+<ul class="incremental">
+<li><p>Values</p></li>
+<li><p>Variables</p></li>
+<li><p>Observations</p></li>
+</ul>
+<p>Datasets contain <em>values</em>, each of which belongs to a
+<em>variable</em> and an <em>observation</em>.</p>
+</div>
+<div class="slide section level2">
+
+<p>Datasets can encode these in a lot of different ways. The “tidy” way
+is to have</p>
+<ul class="incremental">
+<li><p>Each variable a column</p></li>
+<li><p>Each observation a row</p></li>
+<li><p>Each cell a value</p></li>
+</ul>
+<p>This is usually the way that other functions want the data to come
+in.</p>
+</div>
+<div class="slide section level2">
+
+<p>For example:</p>
+<p><img src="treatment-wide.png" /></p>
+<p>What is easy to do with data in this format?</p>
+<ul class="incremental">
+<li><p>See which treatment worked better for each individual.</p></li>
+<li><p>Run a paired t-test on treatment a vs. treatment b.</p></li>
+</ul>
+<p>What is hard to do with data in this format?</p>
+<ul class="incremental">
+<li><p>Run a linear model with result modeled as a function of
+treatment.</p></li>
+<li><p>Subset the data to the observations corresponding to a specific
+treatment (not hard so much as not programmatically nice).</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>Same information:</p>
+<p><img src="treatment-long.png" /></p>
+<p>What is easy to do with data in this format?</p>
+<ul class="incremental">
+<li><p>Run a linear model with result modeled as a function of
+treatment.</p></li>
+<li><p>Subset to observations corresponding to one treatment.</p></li>
+</ul>
+<p>What is hard?</p>
+<ul class="incremental">
+<li><p>Compute treatment a - treatment b.</p></li>
+<li><p>Run a paired t-test.</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>Another example:</p>
+<p><img src="tb-wide.png" /></p>
+<p>Easy:</p>
+<ul class="incremental">
+<li><p>See overall numbers of cases for each country.</p></li>
+<li><p>Compare some of the age ranges.</p></li>
+</ul>
+<p>Hard:</p>
+<ul class="incremental">
+<li><p>Plot cases as a function of sex, age, country, year.</p></li>
+<li><p>Model cases as a function of sex, age, country, year.</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p><img src="tb-long.png" /></p>
+<p>Easy:</p>
+<ul class="incremental">
+<li><p>Plot cases as a function of sex, age, country, year.</p></li>
+<li><p>Model cases as a function of sex, age, country, year.</p></li>
+</ul>
+<p>Hard:</p>
+<ul class="incremental">
+<li><p>Compute differences between number of cases in different
+categories (e.g. differences in cases between males and females holding
+all the other categories constant).</p></li>
+<li><p>See overall number of cases (not as compact as the other
+way).</p></li>
+</ul>
+</div>
+<div id="general-rules-of-thumb" class="slide section level2">
+<h1>General rules of thumb</h1>
+<ul class="incremental">
+<li><p>Columns are all special (accessed by name) and rows are not
+special (accessed programmatically).</p></li>
+<li><p>Easy to define functional relationships between variables
+(e.g. difference between two variables)/hard to define functional
+relationships between rows.</p></li>
+<li><p>Easy to subset rows/hard to subset columns.</p></li>
+<li><p>Easy to aggregate over rows/hard to aggregate over
+columns.</p></li>
+</ul>
+</div>
+<div id="reshaping" class="slide section level2">
+<h1>Reshaping</h1>
+<p>The term for transforming these datasets into each other is called
+“reshaping”, and pretty much all reshaping can be done with a
+combination of two operations: melting and casting.</p>
+<ul class="incremental">
+<li><p>Melting: Taking a wide dataset and making it long.</p></li>
+<li><p>Casting: Taking a melted dataset and making it wide.</p></li>
+</ul>
+<p>The mneumonic is that you first “melt” the data set and then you
+“cast” it. The “molten” data isn’t usually the final form you want it to
+be in, but it allows you to change it into other shapes easily.</p>
+</div>
+<div id="melting-data" class="slide section level2">
+<h1>Melting data</h1>
+<p>The <code>melt</code> function takes data from wide form to long
+form.</p>
+<p>Conceptually, we have two sets of variables:</p>
+<ul class="incremental">
+<li><p>Identification variables, that describe the observations,
+and</p></li>
+<li><p>Measurement variables, which are the quantities that are measured
+for each observed.</p></li>
+</ul>
+<p>To melt a dateset, you need to decide what these are.</p>
+</div>
+<div class="slide section level2">
+
+<p>What does a molten data table look like?</p>
+<ul class="incremental">
+<li><p>Columns (potentially more than one) for id variables.</p></li>
+<li><p>If there is more than one measured variable, one column
+describing the variable measured.</p></li>
+<li><p>One column for the value of the measured variable on the
+corresponding observation.</p></li>
+</ul>
+</div>
+<div id="melting" class="slide section level2">
+<h1>Melting</h1>
+<p>Based on what we said before, we will need to provide data, id
+variables, and measurement variables, but in practice we have two
+distinct situations:</p>
+<ul class="incremental">
+<li><p>Matrix or array input: here we assume that the id variables are
+the dimensions of the matrix or array, and the measurement variables are
+the elements of the matrix or the array. Therefore, we don’t actually
+specify id variables or measurement variables.</p></li>
+<li><p>Data frame input: id variables and measurement variables have to
+be specified.</p></li>
+</ul>
+</div>
+<div id="melting-data-frames" class="slide section level2">
+<h1>Melting data frames</h1>
+<p>Let’s see an example. (Actually a very interesting study, can read <a
+href="https://www.researchgate.net/publication/226555631_Frying_Performance_of_No-trans_Low-Linolenic_Acid_Soybean_Oils">here</a>.)</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(french_fries)</span></code></pre></div>
+<pre><code>##    time treatment subject rep potato buttery grassy rancid painty
+## 61    1         1       3   1    2.9     0.0    0.0    0.0    5.5
+## 25    1         1       3   2   14.0     0.0    0.0    1.1    0.0
+## 62    1         1      10   1   11.0     6.4    0.0    0.0    0.0
+## 26    1         1      10   2    9.9     5.9    2.9    2.2    0.0
+## 63    1         1      15   1    1.2     0.1    0.0    1.1    5.1
+## 27    1         1      15   2    8.8     3.0    3.6    1.5    2.3</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>We want to melt this data frame so that</p>
+<ul class="incremental">
+<li><p><code>id.vars</code> are time, treatment, subject, rep</p></li>
+<li><p><code>measure.vars</code> are the remainder: potato, buttery,
+grassy, rancid, painty</p></li>
+</ul>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">melt</span>(french_fries, <span class="at">id.vars =</span> <span class="fu">c</span>(<span class="st">&quot;time&quot;</span>, <span class="st">&quot;treatment&quot;</span>, <span class="st">&quot;subject&quot;</span>, <span class="st">&quot;rep&quot;</span>),</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>     <span class="at">measure.vars =</span> <span class="fu">c</span>(<span class="st">&quot;potato&quot;</span>, <span class="st">&quot;buttery&quot;</span>, <span class="st">&quot;grassy&quot;</span>, <span class="st">&quot;rancid&quot;</span>, <span class="st">&quot;painty&quot;</span>)))</span></code></pre></div>
+<pre><code>##   time treatment subject rep variable value
+## 1    1         1       3   1   potato   2.9
+## 2    1         1       3   2   potato  14.0
+## 3    1         1      10   1   potato  11.0
+## 4    1         1      10   2   potato   9.9
+## 5    1         1      15   1   potato   1.2
+## 6    1         1      15   2   potato   8.8</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>You can specify just one of <code>id.vars</code> and
+<code>measure.vars</code>, in which case the function will assume that
+all the other variables should be in the other class.</p>
+<p>You can also specify the variables by number instead of by name.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">melt</span>(french_fries, <span class="at">id.vars =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>))</span></code></pre></div>
+<pre><code>##   time treatment subject rep variable value
+## 1    1         1       3   1   potato   2.9
+## 2    1         1       3   2   potato  14.0
+## 3    1         1      10   1   potato  11.0
+## 4    1         1      10   2   potato   9.9
+## 5    1         1      15   1   potato   1.2
+## 6    1         1      15   2   potato   8.8</code></pre>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">melt</span>(french_fries, <span class="at">measure.vars =</span> <span class="dv">5</span><span class="sc">:</span><span class="dv">9</span>))</span></code></pre></div>
+<pre><code>##   time treatment subject rep variable value
+## 1    1         1       3   1   potato   2.9
+## 2    1         1       3   2   potato  14.0
+## 3    1         1      10   1   potato  11.0
+## 4    1         1      10   2   potato   9.9
+## 5    1         1      15   1   potato   1.2
+## 6    1         1      15   2   potato   8.8</code></pre>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<p>If you don’t specify either, the function will assume that all the
+factor variables should be id variables and all of the numeric variables
+should be measured variables.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>plyr<span class="sc">::</span><span class="fu">ldply</span>(french_fries, class)</span></code></pre></div>
+<pre><code>##         .id      V1
+## 1      time  factor
+## 2 treatment  factor
+## 3   subject  factor
+## 4       rep numeric
+## 5    potato numeric
+## 6   buttery numeric
+## 7    grassy numeric
+## 8    rancid numeric
+## 9    painty numeric</code></pre>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">melt</span>(french_fries))</span></code></pre></div>
+<pre><code>## Using time, treatment, subject as id variables</code></pre>
+<pre><code>##   time treatment subject variable value
+## 1    1         1       3      rep     1
+## 2    1         1       3      rep     2
+## 3    1         1      10      rep     1
+## 4    1         1      10      rep     2
+## 5    1         1      15      rep     1
+## 6    1         1      15      rep     2</code></pre>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>You can make the output slightly nicer by specifying variable names
+and value names:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">melt</span>(french_fries, <span class="at">id.vars =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>, <span class="at">variable.name =</span> <span class="st">&quot;flavor&quot;</span>, <span class="at">value.name =</span> <span class="st">&quot;flavor_intensity&quot;</span>))</span></code></pre></div>
+<pre><code>##   time treatment subject rep flavor flavor_intensity
+## 1    1         1       3   1 potato              2.9
+## 2    1         1       3   2 potato             14.0
+## 3    1         1      10   1 potato             11.0
+## 4    1         1      10   2 potato              9.9
+## 5    1         1      15   1 potato              1.2
+## 6    1         1      15   2 potato              8.8</code></pre>
+</div>
+<div id="melting-arrays" class="slide section level2">
+<h1>Melting arrays</h1>
+<ul class="incremental">
+<li><p>Assume that the id variables are the dimensions of the
+array</p></li>
+<li><p>Assume the measured variable is stored as elements in the
+array.</p></li>
+<li><p>We don’t specify id variables or measurement variables.</p></li>
+</ul>
+<p>Therefore, the syntax is simply <code>melt(array)</code></p>
+</div>
+<div class="slide section level2">
+
+<p>For example:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>HairEyeColor</span></code></pre></div>
+<pre><code>## , , Sex = Male
+## 
+##        Eye
+## Hair    Brown Blue Hazel Green
+##   Black    32   11    10     3
+##   Brown    53   50    25    15
+##   Red      10   10     7     7
+##   Blond     3   30     5     8
+## 
+## , , Sex = Female
+## 
+##        Eye
+## Hair    Brown Blue Hazel Green
+##   Black    36    9     5     2
+##   Brown    66   34    29    14
+##   Red      16    7     7     7
+##   Blond     4   64     5     8</code></pre>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">melt</span>(HairEyeColor)</span></code></pre></div>
+<pre><code>##     Hair   Eye    Sex value
+## 1  Black Brown   Male    32
+## 2  Brown Brown   Male    53
+## 3    Red Brown   Male    10
+## 4  Blond Brown   Male     3
+## 5  Black  Blue   Male    11
+## 6  Brown  Blue   Male    50
+## 7    Red  Blue   Male    10
+## 8  Blond  Blue   Male    30
+## 9  Black Hazel   Male    10
+## 10 Brown Hazel   Male    25
+## 11   Red Hazel   Male     7
+## 12 Blond Hazel   Male     5
+## 13 Black Green   Male     3
+## 14 Brown Green   Male    15
+## 15   Red Green   Male     7
+## 16 Blond Green   Male     8
+## 17 Black Brown Female    36
+## 18 Brown Brown Female    66
+## 19   Red Brown Female    16
+## 20 Blond Brown Female     4
+## 21 Black  Blue Female     9
+## 22 Brown  Blue Female    34
+## 23   Red  Blue Female     7
+## 24 Blond  Blue Female    64
+## 25 Black Hazel Female     5
+## 26 Brown Hazel Female    29
+## 27   Red Hazel Female     7
+## 28 Blond Hazel Female     5
+## 29 Black Green Female     2
+## 30 Brown Green Female    14
+## 31   Red Green Female     7
+## 32 Blond Green Female     8</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>There are a couple of optional arguments for making the output a
+little nicer, like giving a different name to the column in the output
+describing the measured value:</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">melt</span>(HairEyeColor, <span class="at">value.name =</span> <span class="st">&quot;number&quot;</span>)</span></code></pre></div>
+<pre><code>##     Hair   Eye    Sex number
+## 1  Black Brown   Male     32
+## 2  Brown Brown   Male     53
+## 3    Red Brown   Male     10
+## 4  Blond Brown   Male      3
+## 5  Black  Blue   Male     11
+## 6  Brown  Blue   Male     50
+## 7    Red  Blue   Male     10
+## 8  Blond  Blue   Male     30
+## 9  Black Hazel   Male     10
+## 10 Brown Hazel   Male     25
+## 11   Red Hazel   Male      7
+## 12 Blond Hazel   Male      5
+## 13 Black Green   Male      3
+## 14 Brown Green   Male     15
+## 15   Red Green   Male      7
+## 16 Blond Green   Male      8
+## 17 Black Brown Female     36
+## 18 Brown Brown Female     66
+## 19   Red Brown Female     16
+## 20 Blond Brown Female      4
+## 21 Black  Blue Female      9
+## 22 Brown  Blue Female     34
+## 23   Red  Blue Female      7
+## 24 Blond  Blue Female     64
+## 25 Black Hazel Female      5
+## 26 Brown Hazel Female     29
+## 27   Red Hazel Female      7
+## 28 Blond Hazel Female      5
+## 29 Black Green Female      2
+## 30 Brown Green Female     14
+## 31   Red Green Female      7
+## 32 Blond Green Female      8</code></pre>
+</div>
+<div id="casting" class="slide section level2">
+<h1>Casting</h1>
+<p>reshape2 uses <code>*cast</code>: either <code>dcast</code> or
+<code>acast</code> for data frame or array output, respectively.</p>
+<p>Syntax: <code>*cast(data = mdata, formula = row_var_1 + ... +
+row_var_n ~ col_var_1 + ... + col_var_m, value.var)</code></p>
+<ul class="incremental">
+<li><p><code>mdata</code> should be a molten data set</p></li>
+<li><p>The columns of the output will be all the combinations of
+<code>col_var_1</code>, …, <code>col_var_n</code></p></li>
+<li><p>The rows of the output will be all the combinations of
+<code>row_var_1</code>, …, <code>row_var_n</code></p></li>
+<li><p><code>value.var</code> is the value variable, the values that
+should go in the cells of the output. If you don’t specify it,
+<code>melt</code> will guess.</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>Example</p>
+<div class="incremental">
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>ff_m <span class="ot">&lt;-</span> <span class="fu">melt</span>(french_fries, <span class="at">id.vars =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>, <span class="at">variable.name =</span> <span class="st">&quot;flavor&quot;</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(ff_m)</span></code></pre></div>
+<pre><code>##   time treatment subject rep flavor value
+## 1    1         1       3   1 potato   2.9
+## 2    1         1       3   2 potato  14.0
+## 3    1         1      10   1 potato  11.0
+## 4    1         1      10   2 potato   9.9
+## 5    1         1      15   1 potato   1.2
+## 6    1         1      15   2 potato   8.8</code></pre>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>cast_ex_1 <span class="ot">&lt;-</span> <span class="fu">dcast</span>(ff_m, time <span class="sc">+</span> treatment <span class="sc">~</span> subject <span class="sc">+</span> rep <span class="sc">+</span> flavor, <span class="at">value.var =</span> <span class="st">&quot;value&quot;</span>)</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>cast_ex_1[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>,<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>]</span></code></pre></div>
+<pre><code>##   time treatment 3_1_potato 3_1_buttery 3_1_grassy
+## 1    1         1        2.9         0.0        0.0
+## 2    1         2       13.9         0.0        0.0
+## 3    1         3       14.1         0.0        0.0
+## 4    2         1        9.0         0.3        0.1
+## 5    2         2       14.1         0.9        0.3</code></pre>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="do">## check to see if the numbers match</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="fu">subset</span>(ff_m, time <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> subject <span class="sc">==</span> <span class="st">&quot;3&quot;</span> <span class="sc">&amp;</span>  rep <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> flavor <span class="sc">==</span> <span class="st">&quot;potato&quot;</span>)</span></code></pre></div>
+<pre><code>##    time treatment subject rep flavor value
+## 1     1         1       3   1 potato   2.9
+## 25    1         2       3   1 potato  13.9
+## 49    1         3       3   1 potato  14.1</code></pre>
+</div>
+</div>
+<div id="aggregation-and-casting" class="slide section level2">
+<h1>Aggregation and casting</h1>
+<p>When you cast data, you often don’t use all of the variables.</p>
+<p>This means that each element of the cast table will correspond to
+more than one measurement, and so they need to be aggregated in some
+way.</p>
+<div class="incremental">
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(ff_m)</span></code></pre></div>
+<pre><code>##   time treatment subject rep flavor value
+## 1    1         1       3   1 potato   2.9
+## 2    1         1       3   2 potato  14.0
+## 3    1         1      10   1 potato  11.0
+## 4    1         1      10   2 potato   9.9
+## 5    1         1      15   1 potato   1.2
+## 6    1         1      15   2 potato   8.8</code></pre>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dcast</span>(ff_m, time <span class="sc">~</span> flavor, <span class="at">value.var =</span> <span class="st">&quot;value&quot;</span>)</span></code></pre></div>
+<pre><code>## Aggregation function missing: defaulting to length</code></pre>
+<pre><code>##    time potato buttery grassy rancid painty
+## 1     1     72      72     72     72     72
+## 2     2     72      72     72     72     72
+## 3     3     72      72     72     72     72
+## 4     4     72      72     72     72     72
+## 5     5     71      71     71     71     71
+## 6     6     72      72     72     72     72
+## 7     7     72      71     72     72     72
+## 8     8     72      70     72     72     71
+## 9     9     60      60     60     60     60
+## 10   10     60      60     60     60     60</code></pre>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>The aggregation function is specified with
+<code>fun.aggregate</code>:</p>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dcast</span>(ff_m, time <span class="sc">~</span> flavor, <span class="at">value.var =</span> <span class="st">&quot;value&quot;</span>, <span class="at">fun.aggregate =</span> mean)</span></code></pre></div>
+<pre><code>##    time   potato  buttery    grassy   rancid   painty
+## 1     1 8.562500 2.236111 0.9416667 2.358333 1.645833
+## 2     2 8.059722 2.722222 1.1819444 2.845833 1.444444
+## 3     3 7.797222 2.102778 0.7500000 3.715278 1.311111
+## 4     4 7.713889 1.801389 0.7416667 3.602778 1.372222
+## 5     5 7.328169 1.642254 0.6352113 3.529577 2.015493
+## 6     6 6.670833 1.752778 0.6736111 4.075000 2.341667
+## 7     7 6.168056 1.369014 0.4208333 3.886111 2.683333
+## 8     8 5.431944 1.182857 0.3805556 4.272222 3.938028
+## 9     9 5.673333 1.586667 0.2766667 4.670000 3.873333
+## 10   10 5.703333 1.765000 0.5566667 6.068333 5.291667</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>A couple of other notes:</p>
+<ul class="incremental">
+<li><p>You can use <code>.</code> to represent all the other variables
+in the formula.</p></li>
+<li><p>The order that you specify the variables in the formula matters
+for the way the output is ordered: the first variables change most
+slowly, and the later ones change more quickly. This is mainly important
+for looking at the data.</p></li>
+<li><p><code>acast</code> will give you array output instead of data
+frame output.</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>Example of different orders:</p>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dcast</span>(ff_m, time <span class="sc">+</span> treatment <span class="sc">~</span> flavor, <span class="at">fun.aggregate =</span> mean)</span></code></pre></div>
+<pre><code>##    time treatment   potato   buttery    grassy   rancid    painty
+## 1     1         1 7.925000 1.7958333 0.9041667 2.758333 2.1500000
+## 2     1         2 8.775000 2.4916667 0.9958333 1.716667 0.8083333
+## 3     1         3 8.987500 2.4208333 0.9250000 2.600000 1.9791667
+## 4     2         1 7.591667 2.5250000 1.0041667 3.900000 1.9750000
+## 5     2         2 8.537500 3.1250000 0.9500000 2.141667 0.6625000
+## 6     2         3 8.050000 2.5166667 1.5916667 2.495833 1.6958333
+## 7     3         1 7.770833 2.2958333 0.8166667 4.650000 1.1166667
+## 8     3         2 7.637500 2.0791667 0.7250000 2.895833 1.5625000
+## 9     3         3 7.983333 1.9333333 0.7083333 3.600000 1.2541667
+## 10    4         1 8.404167 1.9791667 1.0250000 2.079167 0.4666667
+## 11    4         2 8.204167 1.6083333 0.6416667 3.512500 1.8583333
+## 12    4         3 6.533333 1.8166667 0.5583333 5.216667 1.7916667
+## 13    5         1 7.741667 1.3666667 0.7708333 4.279167 3.0083333
+## 14    5         2 6.933333 1.8583333 0.5833333 3.641667 0.7375000
+## 15    5         3 7.308696 1.7043478 0.5478261 2.630435 2.3130435
+## 16    6         1 6.079167 1.8250000 0.4666667 4.337500 2.5541667
+## 17    6         2 7.016667 2.0541667 0.9208333 3.841667 2.7500000
+## 18    6         3 6.916667 1.3791667 0.6333333 4.045833 1.7208333
+## 19    7         1 6.283333 1.2416667 0.1625000 3.204167 2.1958333
+## 20    7         2 5.729167 1.3565217 0.5500000 3.837500 3.0416667
+## 21    7         3 6.491667 1.5083333 0.5500000 4.616667 2.8125000
+## 22    8         1 5.175000 0.9869565 0.6333333 5.387500 4.5875000
+## 23    8         2 5.641667 1.5826087 0.3958333 3.825000 3.8652174
+## 24    8         3 5.479167 0.9875000 0.1125000 3.604167 3.3583333
+## 25    9         1 6.070000 1.8300000 0.1350000 3.950000 2.9050000
+## 26    9         2 5.470000 1.6650000 0.0800000 5.240000 4.0450000
+## 27    9         3 5.480000 1.2650000 0.6150000 4.820000 4.6700000
+## 28   10         1 5.465000 1.9600000 0.4550000 6.495000 5.4000000
+## 29   10         2 5.580000 1.7950000 0.6950000 6.310000 6.1700000
+## 30   10         3 6.065000 1.5400000 0.5200000 5.400000 4.3050000</code></pre>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dcast</span>(ff_m, treatment <span class="sc">+</span> time <span class="sc">~</span> flavor, <span class="at">fun.aggregate =</span> mean)</span></code></pre></div>
+<pre><code>##    treatment time   potato   buttery    grassy   rancid    painty
+## 1          1    1 7.925000 1.7958333 0.9041667 2.758333 2.1500000
+## 2          1    2 7.591667 2.5250000 1.0041667 3.900000 1.9750000
+## 3          1    3 7.770833 2.2958333 0.8166667 4.650000 1.1166667
+## 4          1    4 8.404167 1.9791667 1.0250000 2.079167 0.4666667
+## 5          1    5 7.741667 1.3666667 0.7708333 4.279167 3.0083333
+## 6          1    6 6.079167 1.8250000 0.4666667 4.337500 2.5541667
+## 7          1    7 6.283333 1.2416667 0.1625000 3.204167 2.1958333
+## 8          1    8 5.175000 0.9869565 0.6333333 5.387500 4.5875000
+## 9          1    9 6.070000 1.8300000 0.1350000 3.950000 2.9050000
+## 10         1   10 5.465000 1.9600000 0.4550000 6.495000 5.4000000
+## 11         2    1 8.775000 2.4916667 0.9958333 1.716667 0.8083333
+## 12         2    2 8.537500 3.1250000 0.9500000 2.141667 0.6625000
+## 13         2    3 7.637500 2.0791667 0.7250000 2.895833 1.5625000
+## 14         2    4 8.204167 1.6083333 0.6416667 3.512500 1.8583333
+## 15         2    5 6.933333 1.8583333 0.5833333 3.641667 0.7375000
+## 16         2    6 7.016667 2.0541667 0.9208333 3.841667 2.7500000
+## 17         2    7 5.729167 1.3565217 0.5500000 3.837500 3.0416667
+## 18         2    8 5.641667 1.5826087 0.3958333 3.825000 3.8652174
+## 19         2    9 5.470000 1.6650000 0.0800000 5.240000 4.0450000
+## 20         2   10 5.580000 1.7950000 0.6950000 6.310000 6.1700000
+## 21         3    1 8.987500 2.4208333 0.9250000 2.600000 1.9791667
+## 22         3    2 8.050000 2.5166667 1.5916667 2.495833 1.6958333
+## 23         3    3 7.983333 1.9333333 0.7083333 3.600000 1.2541667
+## 24         3    4 6.533333 1.8166667 0.5583333 5.216667 1.7916667
+## 25         3    5 7.308696 1.7043478 0.5478261 2.630435 2.3130435
+## 26         3    6 6.916667 1.3791667 0.6333333 4.045833 1.7208333
+## 27         3    7 6.491667 1.5083333 0.5500000 4.616667 2.8125000
+## 28         3    8 5.479167 0.9875000 0.1125000 3.604167 3.3583333
+## 29         3    9 5.480000 1.2650000 0.6150000 4.820000 4.6700000
+## 30         3   10 6.065000 1.5400000 0.5200000 5.400000 4.3050000</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>Example of <code>acast</code>. id variables are row names.</p>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">acast</span>(ff_m, time <span class="sc">~</span> flavor, <span class="at">fun.aggregate =</span> mean)</span></code></pre></div>
+<pre><code>##      potato  buttery    grassy   rancid   painty
+## 1  8.562500 2.236111 0.9416667 2.358333 1.645833
+## 2  8.059722 2.722222 1.1819444 2.845833 1.444444
+## 3  7.797222 2.102778 0.7500000 3.715278 1.311111
+## 4  7.713889 1.801389 0.7416667 3.602778 1.372222
+## 5  7.328169 1.642254 0.6352113 3.529577 2.015493
+## 6  6.670833 1.752778 0.6736111 4.075000 2.341667
+## 7  6.168056 1.369014 0.4208333 3.886111 2.683333
+## 8  5.431944 1.182857 0.3805556 4.272222 3.938028
+## 9  5.673333 1.586667 0.2766667 4.670000 3.873333
+## 10 5.703333 1.765000 0.5566667 6.068333 5.291667</code></pre>
+<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="fu">acast</span>(ff_m, time <span class="sc">+</span> treatment <span class="sc">~</span> flavor, <span class="at">fun.aggregate =</span> mean)</span></code></pre></div>
+<pre><code>##        potato   buttery    grassy   rancid    painty
+## 1_1  7.925000 1.7958333 0.9041667 2.758333 2.1500000
+## 1_2  8.775000 2.4916667 0.9958333 1.716667 0.8083333
+## 1_3  8.987500 2.4208333 0.9250000 2.600000 1.9791667
+## 2_1  7.591667 2.5250000 1.0041667 3.900000 1.9750000
+## 2_2  8.537500 3.1250000 0.9500000 2.141667 0.6625000
+## 2_3  8.050000 2.5166667 1.5916667 2.495833 1.6958333
+## 3_1  7.770833 2.2958333 0.8166667 4.650000 1.1166667
+## 3_2  7.637500 2.0791667 0.7250000 2.895833 1.5625000
+## 3_3  7.983333 1.9333333 0.7083333 3.600000 1.2541667
+## 4_1  8.404167 1.9791667 1.0250000 2.079167 0.4666667
+## 4_2  8.204167 1.6083333 0.6416667 3.512500 1.8583333
+## 4_3  6.533333 1.8166667 0.5583333 5.216667 1.7916667
+## 5_1  7.741667 1.3666667 0.7708333 4.279167 3.0083333
+## 5_2  6.933333 1.8583333 0.5833333 3.641667 0.7375000
+## 5_3  7.308696 1.7043478 0.5478261 2.630435 2.3130435
+## 6_1  6.079167 1.8250000 0.4666667 4.337500 2.5541667
+## 6_2  7.016667 2.0541667 0.9208333 3.841667 2.7500000
+## 6_3  6.916667 1.3791667 0.6333333 4.045833 1.7208333
+## 7_1  6.283333 1.2416667 0.1625000 3.204167 2.1958333
+## 7_2  5.729167 1.3565217 0.5500000 3.837500 3.0416667
+## 7_3  6.491667 1.5083333 0.5500000 4.616667 2.8125000
+## 8_1  5.175000 0.9869565 0.6333333 5.387500 4.5875000
+## 8_2  5.641667 1.5826087 0.3958333 3.825000 3.8652174
+## 8_3  5.479167 0.9875000 0.1125000 3.604167 3.3583333
+## 9_1  6.070000 1.8300000 0.1350000 3.950000 2.9050000
+## 9_2  5.470000 1.6650000 0.0800000 5.240000 4.0450000
+## 9_3  5.480000 1.2650000 0.6150000 4.820000 4.6700000
+## 10_1 5.465000 1.9600000 0.4550000 6.495000 5.4000000
+## 10_2 5.580000 1.7950000 0.6950000 6.310000 6.1700000
+## 10_3 6.065000 1.5400000 0.5200000 5.400000 4.3050000</code></pre>
+</div>
+<div id="merging" class="slide section level2">
+<h1>Merging</h1>
+<p>Final topic: What if you have data from two different places and you
+need to put them together?</p>
+<p>Basic syntax: <code>merge(x, y, by.x, by.y)</code></p>
+<ul class="incremental">
+<li><p><code>x</code> and <code>y</code> are the two datasets you want
+to merge.</p></li>
+<li><p><code>by.x</code> is the column of <code>x</code> to merge
+on.</p></li>
+<li><p><code>by.y</code> is the column of <code>y</code> to merge
+on.</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>Example:</p>
+<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>cities <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">city=</span><span class="fu">c</span>(<span class="st">&#39;New York&#39;</span>,<span class="st">&#39;Boston&#39;</span>,<span class="st">&#39;Juneau&#39;</span>,</span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>           <span class="st">&#39;Anchorage&#39;</span>,<span class="st">&#39;San Diego&#39;</span>,</span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>           <span class="st">&#39;Philadelphia&#39;</span>,<span class="st">&#39;Los Angeles&#39;</span>,</span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>           <span class="st">&#39;Fairbanks&#39;</span>,<span class="st">&#39;Ann Arbor&#39;</span>,<span class="st">&#39;Seattle&#39;</span>),</span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">state.abb=</span><span class="fu">c</span>(<span class="st">&#39;NY&#39;</span>,<span class="st">&#39;MA&#39;</span>,<span class="st">&#39;AK&#39;</span>,<span class="st">&#39;AK&#39;</span>,<span class="st">&#39;CA&#39;</span>,</span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>                <span class="st">&#39;PA&#39;</span>,<span class="st">&#39;CA&#39;</span>,<span class="st">&#39;AK&#39;</span>,<span class="st">&#39;MI&#39;</span>,<span class="st">&#39;WA&#39;</span>))</span>
+<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a>states <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(state.name, state.abb)</span>
+<span id="cb43-10"><a href="#cb43-10" aria-hidden="true" tabindex="-1"></a>cities</span></code></pre></div>
+<pre><code>##            city state.abb
+## 1      New York        NY
+## 2        Boston        MA
+## 3        Juneau        AK
+## 4     Anchorage        AK
+## 5     San Diego        CA
+## 6  Philadelphia        PA
+## 7   Los Angeles        CA
+## 8     Fairbanks        AK
+## 9     Ann Arbor        MI
+## 10      Seattle        WA</code></pre>
+<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(states)</span></code></pre></div>
+<pre><code>##   state.name state.abb
+## 1    Alabama        AL
+## 2     Alaska        AK
+## 3    Arizona        AZ
+## 4   Arkansas        AR
+## 5 California        CA
+## 6   Colorado        CO</code></pre>
+<p>We want to add the state name to the cities data frame, and we can
+use merge.</p>
+<div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="fu">merge</span>(states, cities, <span class="at">by.x =</span> <span class="st">&quot;state.abb&quot;</span>, <span class="at">by.y =</span> <span class="st">&quot;state.abb&quot;</span>)</span></code></pre></div>
+<pre><code>##    state.abb    state.name         city
+## 1         AK        Alaska       Juneau
+## 2         AK        Alaska    Anchorage
+## 3         AK        Alaska    Fairbanks
+## 4         CA    California    San Diego
+## 5         CA    California  Los Angeles
+## 6         MA Massachusetts       Boston
+## 7         MI      Michigan    Ann Arbor
+## 8         NY      New York     New York
+## 9         PA  Pennsylvania Philadelphia
+## 10        WA    Washington      Seattle</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>Notice in the last example that there was some ambiguity in how the
+merge took place because the two datasets have different sets of values
+for <code>state.abb</code>.</p>
+<ul class="incremental">
+<li>Default: the output dataset only has rows for which we had values in
+both data frames.</li>
+</ul>
+<div class="incremental">
+<p>Can modify with <code>all</code>, <code>all.x</code>, or
+<code>all.y</code></p>
+<ul class="incremental">
+<li><p><code>all = TRUE</code> means that you get one row for values of
+the merging variable that were seen in either <code>x</code> or
+<code>y</code></p></li>
+<li><p><code>all.x = TRUE</code> means you get one row for each value of
+the merging variable that was seen in <code>x</code></p></li>
+<li><p><code>all.y = TRUE</code> means you get one row for each value of
+the merging variable that was seen in <code>y</code>.</p></li>
+</ul>
+</div>
+</div>
+<div class="slide section level2">
+
+<div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="fu">merge</span>(states, cities, <span class="at">all.x =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<pre><code>##    state.abb     state.name         city
+## 1         AK         Alaska       Juneau
+## 2         AK         Alaska    Anchorage
+## 3         AK         Alaska    Fairbanks
+## 4         AL        Alabama         &lt;NA&gt;
+## 5         AR       Arkansas         &lt;NA&gt;
+## 6         AZ        Arizona         &lt;NA&gt;
+## 7         CA     California    San Diego
+## 8         CA     California  Los Angeles
+## 9         CO       Colorado         &lt;NA&gt;
+## 10        CT    Connecticut         &lt;NA&gt;
+## 11        DE       Delaware         &lt;NA&gt;
+## 12        FL        Florida         &lt;NA&gt;
+## 13        GA        Georgia         &lt;NA&gt;
+## 14        HI         Hawaii         &lt;NA&gt;
+## 15        IA           Iowa         &lt;NA&gt;
+## 16        ID          Idaho         &lt;NA&gt;
+## 17        IL       Illinois         &lt;NA&gt;
+## 18        IN        Indiana         &lt;NA&gt;
+## 19        KS         Kansas         &lt;NA&gt;
+## 20        KY       Kentucky         &lt;NA&gt;
+## 21        LA      Louisiana         &lt;NA&gt;
+## 22        MA  Massachusetts       Boston
+## 23        MD       Maryland         &lt;NA&gt;
+## 24        ME          Maine         &lt;NA&gt;
+## 25        MI       Michigan    Ann Arbor
+## 26        MN      Minnesota         &lt;NA&gt;
+## 27        MO       Missouri         &lt;NA&gt;
+## 28        MS    Mississippi         &lt;NA&gt;
+## 29        MT        Montana         &lt;NA&gt;
+## 30        NC North Carolina         &lt;NA&gt;
+## 31        ND   North Dakota         &lt;NA&gt;
+## 32        NE       Nebraska         &lt;NA&gt;
+## 33        NH  New Hampshire         &lt;NA&gt;
+## 34        NJ     New Jersey         &lt;NA&gt;
+## 35        NM     New Mexico         &lt;NA&gt;
+## 36        NV         Nevada         &lt;NA&gt;
+## 37        NY       New York     New York
+## 38        OH           Ohio         &lt;NA&gt;
+## 39        OK       Oklahoma         &lt;NA&gt;
+## 40        OR         Oregon         &lt;NA&gt;
+## 41        PA   Pennsylvania Philadelphia
+## 42        RI   Rhode Island         &lt;NA&gt;
+## 43        SC South Carolina         &lt;NA&gt;
+## 44        SD   South Dakota         &lt;NA&gt;
+## 45        TN      Tennessee         &lt;NA&gt;
+## 46        TX          Texas         &lt;NA&gt;
+## 47        UT           Utah         &lt;NA&gt;
+## 48        VA       Virginia         &lt;NA&gt;
+## 49        VT        Vermont         &lt;NA&gt;
+## 50        WA     Washington      Seattle
+## 51        WI      Wisconsin         &lt;NA&gt;
+## 52        WV  West Virginia         &lt;NA&gt;
+## 53        WY        Wyoming         &lt;NA&gt;</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>Some additional notes:</p>
+<ul class="incremental">
+<li><p>Default if you don’t specify <code>by.x</code> and
+<code>by.y</code> is to use the columns that are common to the
+two.</p></li>
+<li><p><code>by.x</code>/<code>by.y</code> can have length more than 1,
+in which case we match on the entire set of specified
+variables.</p></li>
+<li><p>Can use <code>by</code> instead of <code>by.x</code> and
+<code>by.y</code>, in which case the name of the column to merge on has
+to be the same in both <code>x</code> and <code>y</code>.</p></li>
+</ul>
+</div>
+<div id="some-final-notes" class="slide section level2">
+<h1>Some final notes</h1>
+<p>Merging, melting/casting, and split/apply/combine from last week are
+useful enough that there are multiple implementations.</p>
+<p>You can use other implementations, but you shouldn’t try to re-make
+them from scratch.</p>
+<p>Some other options are:</p>
+<ul class="incremental">
+<li><p><code>join</code> in <code>plyr</code> does the same thing as
+<code>merge</code></p></li>
+<li><p><code>gather</code> and <code>spread</code>, and more recently
+<code>pivot_longer</code> and <code>pivot_wider</code> in the
+<code>tidyr</code> package do roughly the same thing as
+<code>cast</code> and <code>melt</code>.</p></li>
+<li><p>There are multiple iterations of reshape, <code>reshape2</code>
+was a redesign of <code>reshape</code>.</p></li>
+</ul>
+</div>
+</body>
+</html>

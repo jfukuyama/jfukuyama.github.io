@@ -1,0 +1,557 @@
+## Text representations and Data Frames
+
+Reading: Matloff Chapter 11.1 (for strings), 6.1 (for factors), 5.1
+(for data frames)
+
+
+## The character type
+
+. . .
+
+- Strings have type `character` in R.
+
+- No special type for single characters vs. strings:
+
+```{r}
+typeof('a')
+typeof("ABC")
+```
+
+- As with the numeric type, single strings are vectors of length 1:
+
+```{r}
+length('a')
+length("ABC")
+```
+
+- If you actually want the number of characters in a string, you need
+the `nchar` function:
+
+```{r}
+nchar('a')
+nchar("ABC")
+```
+
+## Creating strings
+
+. . .
+
+You can use either double or single quotes.
+
+```{r}
+"The Leopard"
+'Burt Lancaster'
+```
+
+## Displaying strings
+
+. . .
+
+- `print` works.
+
+- Sometimes slightly nicer to use `cat`, which prints the string to
+the console instead of giving the representation with subscripts that
+`print` does.
+
+```{r}
+print("The Leopard")
+"The Leopard"
+cat("The Leopard")
+```
+
+## Escape characters
+
+The `\` is an _escape character_.
+
+It tells R to interpret whatever comes after in a different way from normal.
+
+There are two cases:
+
+1. If the escape character comes before a character that would not usually be part of the string, the escape character indicates that the next character should be used literally, and not for its special meaning.
+
+2. If the escape character comes before some kinds of real characters, the escape character modifies their behavior.
+
+-----
+
+. . .
+
+As an example of case 1, the `"` or `'` in a string definition would usually mean that we come to the end of the string definition.
+
+If you want a literal `"` or `'` in the string in that case, you need to escape it.
+```{r}
+cat("Giuseppe Tomasi di Lampedusa's \"The Leopard\"")
+cat('Giuseppe Tomasi di Lampedusa\'s "The Leopard"')
+```
+
+-----
+
+. . .
+
+Another example of case 1: normally the `\` means to escape the next character. If you need a `\` in your string, you need to escape it:
+
+```{r}
+cat("We use the '\\' character to escape")
+```
+
+-----
+
+Last time, we went through anchors a little bit quickly.
+
+The rules were:
+
+- `^` (not inside square brackets) means that what comes after must be
+at the start of a line.
+
+- `$` means that what comes before must be at the end of a line.
+
+- `\<` anchors to the beginning of a word.
+
+- `\>` anchors to the end of a word.
+
+- `\b` anchors to the boundary of words (beginning or ending)
+
+- `\B` anchors to anywhere aside from the boundary
+
+-----
+
+. . .
+
+How do we represent the anchors in R? 
+
+Look at what happens if we try to create a string with the anchors:
+
+
+```{r}
+cat("\B", fill = TRUE)
+```
+```{r}
+cat("\>", fill = TRUE)
+```
+```{r}
+cat("\b", fill = TRUE)
+```
+
+
+So we need to escape the `\`:
+
+```{r}
+cat("\\B", fill = TRUE)
+cat("\\>", fill = TRUE)
+cat("\\b", fill = TRUE)
+```
+
+-----
+
+. . .
+
+```{r}
+cat("\\<a", fill = TRUE)
+grepl("\\<a", "hat at")
+grepl("\\<a", "hat cat")
+cat("\\bnana", fill = TRUE)
+grepl("\\bnana", "bananas")
+cat("\\Bnana", fill = TRUE)
+grepl("\\Bnana", "bananas")
+```
+
+
+## String Manipulation
+
+. . .
+
+We can't use `[]` or `[[]]` to get at the internal parts of a string
+because strings are atomic in R.
+
+We need to use `substr`.
+
+Syntax is `substr(string, start, stop)`:
+
+```{r}
+lancaster <- "Burt Lancaster"
+substr(lancaster, 1, 4)
+```
+
+-----
+
+. . .
+
+`substr` vectorizes over the first argument (i.e. the `start` and
+`stop` arguments will be expanded to match the length of the first argument):
+
+```{r}
+substr("Burt Lancaster", 1, 4)
+substr("Burt Lancaster", c(1, 6), c(4, 14))
+substr(rep("Burt Lancaster", 2), c(1, 6), c(4, 14))
+substr(rep("Burt Lancaster", 2), 1, c(4, 14))
+```
+
+-----
+
+. . .
+
+We can use `substr` for replacement as well:
+
+```{r}
+lancaster
+substr(lancaster, 1, 4) <- "Bill"
+lancaster
+```
+
+
+## Combining strings
+
+. . .
+
+`paste` is the workhorse function for string combination.
+
+Simplest way to use it:
+
+`paste(s1, s2, ..., sn, sep)`
+
+This will paste together `s1`, `s2`, up to `sn`, with `sep` in between
+each one.
+
+For example:
+
+```{r}
+paste("Chico", "Harpo", "Groucho", sep = ", ")
+```
+
+-----
+
+. . .
+
+The arguments to `paste` can be vectors, and the function is
+vectorized so we get recycling:
+
+```{r}
+paste(c("Chico", "Harpo", "Groucho"), "Marx", sep = " ")
+paste("Marx", c("Chico", "Harpo", "Groucho"), sep = ", ")
+```
+
+-----
+
+. . .
+
+Final argument: `collapse`.
+
+Syntax `paste(vector, collapse)`
+
+Will create _one string_ (vector of length 1, not the length of the
+input vector) by pasting the elements of `vector` together, with the argument from `collapse`
+in between them.
+
+```{r}
+paste(c("Chico", "Harpo", "Grouco"), collapse = ", ")
+```
+
+-----
+
+. . .
+
+Finaly, we can specify both `sep` and `collapse` together.
+
+Think of this as first calling `paste` with `collapse = NULL`, then
+calling `paste` with non-null collapse on the result:
+
+```{r}
+paste(c("Chico", "Harpo", "Groucho"), "Marx", sep = " ", collapse = " and ")
+## note the equivalence:
+marx.brothers = paste(c("Chico", "Harpo", "Groucho"), "Marx", sep = " ", collapse = NULL)
+paste(marx.brothers, collapse = " and ")
+```
+
+
+## Splitting strings
+
+. . .
+
+Primariy function is `strsplit`.
+
+Syntax: `strsplit(s, split)`
+
+- `s` is a character vector (can have length greater than 1), and the
+function vectorizes.
+
+- `split` gives the string we want to split on: every element of `s`
+will be split into pieces separated by `split`.
+
+Given these parameters, what do you expect the output from `strsplit` to look
+like? Which of the data structures we've seen so far can accommodate
+everything we need?
+
+
+-----
+
+. . .
+
+```{r}
+split.brothers <- strsplit("Groucho and Harpo and Chico", "and")
+typeof(split.brothers)
+split.brothers
+
+split.two.groups <- strsplit(c("Groucho and Harpo and Chico", "David and John"), "and")
+typeof(split.two.groups)
+split.two.groups
+```
+
+-----
+
+. . .
+
+A slightly more realistic example:
+
+I have some fasta files that I'm going to use as input, perform some
+manipulations on, and then write some output based on each one. I want
+the output files to have the same prefix but have the extension `.txt`
+instead of `.fasta`:
+
+```{r}
+file.names <- c("ighv_human.fasta", "ighd_mouse.fasta", "ighj_human.fasta", "ighv_mouse.fasta", "ighd_human.fasta", "ighj_mouse.fasta")
+split.files <- strsplit(file.names, ".", fixed = TRUE)
+output.names <- character(length = length(file.names))
+for(i in 1:length(split.files)) {
+    prefix <- split.files[[i]][[1]]
+    output.names[i] <- paste(prefix, ".txt", sep = "")
+}
+output.names
+```
+
+## Factors
+
+. . .
+
+- A way of representing qualitative variables.
+
+- Variable that takes string values, but we know in advance which
+strings are valid.
+
+-----
+
+. . .
+
+Factor creation:
+
+- By default, when R reads in character data it will store it as a
+factor.
+
+- Manually with the factor function:
+
+```{r}
+factor(c("a", "b", "b", "z"))
+```
+
+-----
+
+## Factors vs. strings
+
+- Factors represented differently from strings internally.
+
+- Factors are an integer vector plus a set of names corresponding to each of the levels.
+
+-----
+
+. . .
+
+```{r}
+state.name
+typeof(state.name) ## typeof tells us about R's internal representation of the variable
+state.name.fac <- as.factor(state.name)
+typeof(state.name.fac) ## typeof tells us that from R's point of view, state.name.fac is a vector of integers 
+class(state.name.fac) ## class tells us that the object is a factor
+attributes(state.name.fac)
+unclass(state.name.fac)
+```
+
+-----
+
+. . .
+
+
+This representation is a bit more parsimonious in general (but not
+always...):
+
+```{r}
+object.size(state.name)
+object.size(state.name.fac)
+object.size(rep(state.name, 1000))
+object.size(rep(state.name.fac, 1000))
+```
+
+-----
+
+## Factor manipulation
+
+Problems we might need to deal with:
+
+- Too many levels
+
+- Too few levels
+
+- Levels with the wrong names
+
+-----
+
+. . .
+
+Suppose California falls off into the ocean and Puerto Rico becomes a
+state.
+
+We need to change our state names to reflect the new state of affairs,
+and we want to replace California with Puerto Rico.
+
+```{r}
+cal.index <- which(state.name.fac == "California")
+state.name.fac[cal.index] = "Puerto Rico"
+state.name.fac
+```
+
+Why does this happen?
+
+-----
+
+. . .
+
+Let's try again:
+
+```{r}
+state.name.fac <- factor(state.name)
+levels(state.name.fac) <- c(levels(state.name.fac), "Puerto Rico")
+state.name.fac[cal.index] <- "Puerto Rico"
+state.name.fac
+```
+
+-----
+
+. . .
+
+Then Puerto Rico decides to change its name to The People's Republic
+of Puerto Rico, or The PR of PR, for its pleasing symmetry.
+
+We need to modify our state names again. How can we do it?
+
+```{r}
+pr.index <- which(levels(state.name.fac) == "Puerto Rico")
+levels(state.name.fac)[pr.index] <- "The PR of PR"
+state.name.fac
+```
+
+-----
+
+ . . .
+
+We now have this extra level hanging around, and we would like to get
+rid of it.
+
+What can we do?
+
+```{r}
+cal.index <- which(levels(state.name.fac) == "California")
+levels(state.name.fac) <- levels(state.name.fac)[-cal.index]
+```
+
+This is good behavior! It prevents us from messing up our factor
+variables by mistake.
+
+-----
+
+. . .
+
+How do we actually do this?
+
+```{r}
+droplevels(state.name.fac) ## droplevels function does what it says it does
+factor(state.name.fac, levels = levels(state.name.fac)[-cal.index])
+factor(state.name.fac)
+```
+
+## Ordered factors
+
+No detail here, but for reference: ordered factors exist, are created with
+the `ordered = TRUE` flag, some functions will have nicer default
+behavior if you tell them that ordinal variables are ordinal.
+
+
+## Data frames
+
+Why do we need data frames?
+
+- A common setup is that we have some samples, and some observations
+on those samples. The observations are of different types: some are
+numbers, and some are qualitative variables.
+
+- We can't use a matrix because matrices
+require all of the elements to be of the same type.
+</br></br>
+Note that this isn't just
+an arbitrary rule about matrices: if we think about it from the
+computer's point of view, the amount of space required for a matrix
+containing all the same type of observations is fixed, but if the type
+of the observation can change, we don't know how much space to
+allocate.
+
+- We need a data structure that mostly acts like a matrix
+(rectangular, we can extract subsets easily, and so on), but that
+allows for different data types in different columns.
+
+-----
+
+. . .
+
+Data frames in R are lists with some extra rules:
+
+- Each element of the list needs to be a vector
+
+- Each of the vectors needs to be of the same length
+
+This gives essentially a heterogeneous analog of a matrix.
+
+
+## Data frame creation
+
+```{r}
+kids <- c("Jack", "Jill")
+ages <- c(12, 10)
+df <- data.frame(kids, ages)
+df <- data.frame(Kids = kids, Ages = ages)
+typeof(df)
+class(df)
+```
+
+
+
+## Referring to elements of a data frame
+
+Remember that data frames are lists, wich each element of the list
+corresponding to one column.
+
+This means we can use the `[[]]` notation to get a column:
+
+```{r}
+df[[1]]
+```
+
+. . .
+
+We can also refer to portions of a data frame the same way we do for
+matrices, with the `[]` notation:
+
+```{r}
+df[,1]
+df[,1,drop = FALSE]
+df[1,"Ages"]
+```
+
+. . .
+
+Finally, we have a special operator, `$`, to get just one of the
+columns of the data frame:
+
+```{r}
+df$Age
+```
+
+Pay attention to the return type: some subsetting operations give you
+a data frame back, but some give you a vector.
+
+## That's all, folks

@@ -1,0 +1,439 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title>lecture15</title>
+  <style type="text/css">
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="https://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="https://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div id="lecture-14-code-profiling-and-performance-enhancement"
+class="slide section level1">
+<h1>Lecture 14: Code profiling and performance enhancement</h1>
+<p>Reading: Matloff, Chapter 14</p>
+<p><a href="http://adv-r.had.co.nz/Profiling.html">Hadley Wickham,
+Advanced R</a></p>
+<p>Logistics:</p>
+<ul class="incremental">
+<li><p>One more lecture on programming,</p></li>
+<li><p>Then on to algorithms</p></li>
+</ul>
+</div>
+<div class="slide section level1">
+
+<blockquote>
+<p>We should forget about small efficiencies, say about 97% of the time:
+premature optimization is the root of all evil.</p>
+</blockquote>
+<p><a href="https://en.wikipedia.org/wiki/Tony_Hoare">Sir Tony
+Hoare</a>, popularized by <a
+href="https://en.wikipedia.org/wiki/Donald_Knuth">Donald Knuth</a></p>
+<p><a
+href="https://ubiquity.acm.org/article.cfm?id=1513451">Counterpoint</a></p>
+</div>
+<div id="setup" class="slide section level1">
+<h1>Setup</h1>
+<p>You have:</p>
+<ul class="incremental">
+<li><p>Code that is correct</p></li>
+<li><p>Code that is slow for the application you want</p></li>
+</ul>
+<div class="incremental">
+<p>You want:</p>
+<ul class="incremental">
+<li><p>Code that is correct</p></li>
+<li><p>Code that runs in a reasonable amount of time</p></li>
+</ul>
+</div>
+</div>
+<div class="slide section level1">
+
+<p>Two steps:</p>
+<ul class="incremental">
+<li><p>Find what the bottleneck is</p></li>
+<li><p>Rewrite the code for the bottleneck to make it run
+faster</p></li>
+</ul>
+<p>What to do?</p>
+<ul class="incremental">
+<li><p>Make a smaller example that runs quickly</p></li>
+<li><p>Write tests (formal or informal) for the output of the
+function</p></li>
+<li><p>Make a new function to implement the same algorithm, rewritten to
+be (hopefully) faster</p></li>
+<li><p>Check on the test cases that it gives the same output</p></li>
+<li><p>Check whether the new version is faster</p></li>
+</ul>
+</div>
+<div id="finding-what-the-problem-is" class="slide section level1">
+<h1>Finding what the problem is</h1>
+<p>Base R function for this task is <code>Rprof</code>.</p>
+<p>Many other packages, e.g. <code>profvis</code> (I believe what
+RStudio uses now) are based on <code>Rprof</code>, usually with more
+nicely formatted output.</p>
+</div>
+<div class="slide section level1">
+
+<p>How does Rprof work?</p>
+<ul class="incremental">
+<li><p>Once every set amount of time (default .02 seconds), stops the
+interpreter and checks what function is being called.</p></li>
+<li><p>Output is a list of function calls.</p></li>
+<li><p>Output is formatted to indicate what takes the most
+time.</p></li>
+<li><p>It will be non-deterministic, depends a bit on what else your
+computer is doing.</p></li>
+</ul>
+</div>
+<div id="for-example" class="slide section level1">
+<h1>For example</h1>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(profvis)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>f <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pause</span>(<span class="fl">0.1</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">g</span>()</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">h</span>()</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>g <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pause</span>(<span class="fl">0.1</span>)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">h</span>()</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>h <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pause</span>(<span class="fl">0.1</span>)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;profiling-example.R&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>tmp <span class="ot">&lt;-</span> <span class="fu">tempfile</span>()</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">Rprof</span>(tmp, <span class="at">interval =</span> <span class="fl">0.02</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">f</span>()</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="fu">Rprof</span>(<span class="cn">NULL</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summaryRprof</span>(tmp)</span></code></pre></div>
+</div>
+<div class="slide section level1">
+
+<p>If we don’t sample frequently enough, we don’t get very useful
+output:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>tmp <span class="ot">&lt;-</span> <span class="fu">tempfile</span>()</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">Rprof</span>(tmp, <span class="at">interval =</span> <span class="fl">0.2</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">f</span>()</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="fu">Rprof</span>(<span class="cn">NULL</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summaryRprof</span>(tmp)</span></code></pre></div>
+</div>
+<div class="slide section level1">
+
+<p>Using <code>profvis</code>:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">profvis</span>(<span class="fu">f</span>())</span></code></pre></div>
+</div>
+<div id="checking-whether-code-is-faster" class="slide section level1">
+<h1>Checking whether code is faster</h1>
+<p>Several packages for testing alternative implementations</p>
+<ul class="incremental">
+<li><p><code>microbenchmark</code> function in
+<code>microbenchmark</code> package runs the same code a large number of
+times</p></li>
+<li><p><code>mark</code> function in the <code>bench</code> package does
+the same thing but with a little more information and some extra
+plotting facilities.</p></li>
+</ul>
+</div>
+<div id="strategies-for-writing-faster-code"
+class="slide section level1">
+<h1>Strategies for writing faster code</h1>
+<ul class="incremental">
+<li><p>Remove extra work</p></li>
+<li><p>Vectorise</p></li>
+<li><p>Avoid copies</p></li>
+<li><p>Rewrite your R code in C/C++/fortran</p></li>
+</ul>
+</div>
+<div id="remove-extra-work" class="slide section level1">
+<h1>Remove extra work</h1>
+<p>If you know something about the input to a function, you can speed up
+your code by skipping some of the steps R takes in checking what kind of
+data is used.</p>
+<p>Here we’re bypassing the method dispatch for <code>mean</code>.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(microbenchmark)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">runif</span>(<span class="fl">1e2</span>)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="fu">microbenchmark</span>(</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mean</span>(x),</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mean.default</span>(x), <span class="at">times =</span> <span class="dv">1000</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<pre><code>## Unit: microseconds
+##             expr   min    lq     mean median     uq    max neval
+##          mean(x) 2.048 2.152 2.310585 2.2135 2.2855 19.078  1000
+##  mean.default(x) 1.091 1.154 1.203793 1.1820 1.2290  2.989  1000</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>The <code>as.data.frame</code> function performs many checks and is
+not optimized for performance.</p>
+<p>Suppose that we have a list and want to change it to a data
+frame.</p>
+<p>If we’re sure it’s formatted correctly, we can use the
+<code>quickdf</code> function.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>quickdf <span class="ot">&lt;-</span> <span class="cf">function</span>(l) {</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">class</span>(l) <span class="ot">&lt;-</span> <span class="st">&quot;data.frame&quot;</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">attr</span>(l, <span class="st">&quot;row.names&quot;</span>) <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(l[[<span class="dv">1</span>]])</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  l</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>l <span class="ot">&lt;-</span> <span class="fu">lapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">26</span>, <span class="cf">function</span>(i) <span class="fu">runif</span>(<span class="fl">1e3</span>))</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(l) <span class="ot">&lt;-</span> letters</span></code></pre></div>
+<div class="incremental">
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">microbenchmark</span>(</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">quick_df      =</span> <span class="fu">quickdf</span>(l),</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">as.data.frame =</span> <span class="fu">as.data.frame</span>(l)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<pre><code>## Unit: microseconds
+##           expr     min       lq      mean    median       uq       max neval
+##       quick_df  10.597   11.918  164.2065   13.7245   17.432 14912.223   100
+##  as.data.frame 997.955 1014.611 1102.2581 1028.5585 1069.960  4473.228   100</code></pre>
+<p>But we need to be sure the input is formatted correctly, because it
+does no checks:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">quickdf</span>(<span class="fu">list</span>(<span class="at">x =</span> <span class="dv">1</span>, <span class="at">y =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>))</span></code></pre></div>
+<pre><code>## Warning in format.data.frame(if (omit) x[seq_len(n0), , drop = FALSE] else x, :
+## corrupt data frame: columns will be truncated or padded with NAs</code></pre>
+<pre><code>##   x y
+## 1 1 1</code></pre>
+</div>
+</div>
+<div id="avoid-copies" class="slide section level1">
+<h1>Avoid copies</h1>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>random_string <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste</span>(<span class="fu">sample</span>(letters, <span class="dv">50</span>, <span class="at">replace =</span> <span class="cn">TRUE</span>), <span class="at">collapse =</span> <span class="st">&quot;&quot;</span>)</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>strings10 <span class="ot">&lt;-</span> <span class="fu">replicate</span>(<span class="dv">10</span>, <span class="fu">random_string</span>())</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>strings100 <span class="ot">&lt;-</span> <span class="fu">replicate</span>(<span class="dv">100</span>, <span class="fu">random_string</span>())</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>collapse <span class="ot">&lt;-</span> <span class="cf">function</span>(xs) {</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>  out <span class="ot">=</span> <span class="st">&quot;&quot;</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (x <span class="cf">in</span> xs) {</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>    out <span class="ot">&lt;-</span> <span class="fu">paste0</span>(out, x)</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>  out</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a><span class="fu">microbenchmark</span>(</span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">loop10  =</span> <span class="fu">collapse</span>(strings10),</span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">loop100 =</span> <span class="fu">collapse</span>(strings100),</span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">vec10   =</span> <span class="fu">paste</span>(strings10, <span class="at">collapse =</span> <span class="st">&quot;&quot;</span>),</span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">vec100  =</span> <span class="fu">paste</span>(strings100, <span class="at">collapse =</span> <span class="st">&quot;&quot;</span>)</span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<pre><code>## Unit: microseconds
+##     expr     min      lq      mean   median       uq      max neval
+##   loop10  21.934  22.348  24.02720  22.6275  23.3945   58.403   100
+##  loop100 582.833 584.588 636.88791 586.5090 606.5575 3034.728   100
+##    vec10   4.275   4.508   5.17937   4.7045   5.0455   19.173   100
+##   vec100  28.946  29.338  31.04682  29.8150  30.4745   74.487   100</code></pre>
+</div>
+<div id="vectorise" class="slide section level1">
+<h1>Vectorise</h1>
+<ul class="incremental">
+<li><p>This will sometimes give speed improvements and sometimes will
+not.</p></li>
+<li><p>Speed improvements happen primarily when it leads to calling
+compiled C code.</p></li>
+</ul>
+<div class="incremental">
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">rnorm</span>(<span class="dv">15</span>), <span class="at">nrow =</span> <span class="dv">3</span>, <span class="at">ncol =</span> <span class="dv">5</span>)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>row_means_loop <span class="ot">&lt;-</span> <span class="cf">function</span>(x) {</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>    row_means <span class="ot">&lt;-</span> <span class="fu">numeric</span>(<span class="fu">nrow</span>(x))</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(x)) {</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>        row_sum <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span>(j <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">ncol</span>(x)) {</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>            row_sum <span class="ot">&lt;-</span> row_sum <span class="sc">+</span> x[i,j]</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>        row_means[i] <span class="ot">&lt;-</span> row_sum <span class="sc">/</span> <span class="fu">ncol</span>(x)</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(row_means)</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a><span class="fu">microbenchmark</span>(</span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">no_vectorization =</span> <span class="fu">row_means_loop</span>(x),</span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">apply =</span> <span class="fu">apply</span>(x, <span class="dv">1</span>, mean),</span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">c_version =</span> <span class="fu">rowMeans</span>(x),</span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">times =</span> <span class="dv">1000</span>)</span></code></pre></div>
+<pre><code>## Unit: microseconds
+##              expr    min     lq      mean  median      uq      max neval
+##  no_vectorization  5.199  5.607 16.300027  6.0025  6.4065 7169.270  1000
+##             apply 22.297 23.259 28.150100 23.8715 25.7180  115.169  1000
+##         c_version  2.889  3.333  4.273167  3.7890  4.1200   26.165  1000</code></pre>
+</div>
+</div>
+<div class="slide section level1">
+
+<p>Another example: a problem in probability.</p>
+<ul class="incremental">
+<li><p>Urn 1 contains 10 blue marbles and 8 yellow marbles</p></li>
+<li><p>Urn 2 contains 6 blue marbles and 6 yellow marbles</p></li>
+<li><p>We draw one marble uniformly at random from urn 1, place it in
+urn 2, and then draw a marble uniformly at random from urn 2.</p></li>
+<li><p>What is the probability that the second marble is blue?</p></li>
+</ul>
+</div>
+<div class="slide section level1">
+
+<p>First attempt:</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># perform nreps repetitions of the marble experiment, to estimate</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="co"># P(pick blue from Urn 2)</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>sim1 <span class="ot">&lt;-</span> <span class="cf">function</span>(nreps)  {</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>    nb1 <span class="ot">&lt;-</span> <span class="dv">10</span> <span class="co">#10 blue marbles in Urn1</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>    n1 <span class="ot">&lt;-</span> <span class="dv">18</span> <span class="co"># number of marbles in Urn 1 at 1st pick</span></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>    n2 <span class="ot">&lt;-</span> <span class="dv">13</span> <span class="co"># number of marbles in Urn 2 at 2nd pick</span></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>    count <span class="ot">&lt;-</span> <span class="dv">0</span> <span class="co"># number of repetitions in which get blue from Urn 2</span></span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>nreps) {</span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>        nb2 <span class="ot">&lt;-</span> <span class="dv">6</span> <span class="co"># 6 blue marbles orig. in Urn2</span></span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>        <span class="do">## pick from Urn 1 and put in Urn 2; is it blue?</span></span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> (<span class="fu">runif</span>(<span class="dv">1</span>) <span class="sc">&lt;</span> nb1<span class="sc">/</span>n1) nb2 <span class="ot">&lt;-</span> nb2 <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>        <span class="do">## pick from Urn 2; is it blue?</span></span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> (<span class="fu">runif</span>(<span class="dv">1</span>) <span class="sc">&lt;</span> nb2<span class="sc">/</span>n2) count <span class="ot">&lt;-</span> count <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(count<span class="sc">/</span>nreps) <span class="co"># est. P(pick blue from Urn 2)</span></span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+<div class="slide section level1">
+
+<p>Let’s try pre-generate all of our random numbers and remove the for
+loop:</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>sim2 <span class="ot">&lt;-</span> <span class="cf">function</span>(nreps) {</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>    nb1 <span class="ot">&lt;-</span> <span class="dv">10</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>    nb2 <span class="ot">&lt;-</span> <span class="dv">6</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>    n1 <span class="ot">&lt;-</span> <span class="dv">18</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>    n2 <span class="ot">&lt;-</span> <span class="dv">13</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>    <span class="do">## pre-generate all our random numbers, one row per repetition</span></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>    u <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="fu">runif</span>(<span class="dv">2</span> <span class="sc">*</span> nreps)), <span class="at">nrow =</span> nreps, <span class="at">ncol =</span> <span class="dv">2</span>)</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>    <span class="do">## define simfun for use in apply(); simulates one repetition</span></span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>    simfun <span class="ot">&lt;-</span> <span class="cf">function</span>(rw) {</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>        <span class="do">## rw (&quot;row&quot;) is a pair of random numbers</span></span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>        <span class="do">## choose from Urn 1</span></span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> (rw[<span class="dv">1</span>] <span class="sc">&lt;</span> nb1 <span class="sc">/</span> n1) nb2 <span class="ot">&lt;-</span> nb2 <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>        <span class="do">## choose from Urn 2, and return boolean on choosing blue</span></span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>        <span class="fu">return</span> (rw[<span class="dv">2</span>] <span class="sc">&lt;</span> nb2 <span class="sc">/</span> n2)</span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a>    z <span class="ot">&lt;-</span> <span class="fu">apply</span>(u, <span class="dv">1</span>, simfun)</span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="fu">mean</span>(z))</span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+<div class="slide section level1">
+
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">microbenchmark</span>(<span class="fu">sim1</span>(<span class="dv">100</span>), <span class="fu">sim2</span>(<span class="dv">100</span>))</span></code></pre></div>
+<pre><code>## Unit: microseconds
+##       expr     min       lq     mean  median      uq       max neval
+##  sim1(100) 260.834 425.9855 579.7945 437.471 454.409 10682.013   100
+##  sim2(100) 154.577 159.9060 245.1615 164.410 177.711  7149.775   100</code></pre>
+<p>The timings here are different from in Matloff. I believe this is
+because more recent version of R <a
+href="https://en.wikipedia.org/wiki/Bytecode">byte compile</a> functions
+that you write, and this was not true for the version of R used in the
+book.</p>
+</div>
+<div class="slide section level1">
+
+<p>Take 3:</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>sim3 <span class="ot">&lt;-</span> <span class="cf">function</span>(nreps) {</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>    nb1 <span class="ot">&lt;-</span> <span class="dv">10</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>    nb2 <span class="ot">&lt;-</span> <span class="dv">6</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>    n1 <span class="ot">&lt;-</span> <span class="dv">18</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>    n2 <span class="ot">&lt;-</span> <span class="dv">13</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>    u <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="fu">runif</span>(<span class="dv">2</span> <span class="sc">*</span> nreps)), <span class="at">nrow =</span> nreps, <span class="at">ncol =</span> <span class="dv">2</span>)</span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>    <span class="do">## set up the condition vector</span></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>    cndtn <span class="ot">&lt;-</span></span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>        u[,<span class="dv">1</span>] <span class="sc">&lt;=</span> nb1 <span class="sc">/</span> n1 <span class="sc">&amp;</span> u[,<span class="dv">2</span>] <span class="sc">&lt;=</span> (nb2<span class="sc">+</span><span class="dv">1</span>) <span class="sc">/</span> n2 <span class="sc">|</span></span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>        u[,<span class="dv">1</span>] <span class="sc">&gt;</span> nb1 <span class="sc">/</span> n1 <span class="sc">&amp;</span> u[,<span class="dv">2</span>] <span class="sc">&lt;=</span> nb2 <span class="sc">/</span> n2</span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="fu">mean</span>(cndtn))</span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">microbenchmark</span>(<span class="fu">sim1</span>(<span class="dv">100</span>), <span class="fu">sim2</span>(<span class="dv">100</span>), <span class="fu">sim3</span>(<span class="dv">100</span>))</span></code></pre></div>
+<pre><code>## Unit: microseconds
+##       expr     min      lq     mean   median       uq      max neval
+##  sim1(100) 257.505 281.790 379.3203 426.5785 453.1620  662.683   100
+##  sim2(100) 152.142 158.667 176.3794 167.3800 187.6515  301.012   100
+##  sim3(100)  19.917  24.228 109.0899  26.2305  29.4800 8148.984   100</code></pre>
+</div>
+<div id="overall-strategies" class="slide section level1">
+<h1>Overall strategies</h1>
+<ul class="incremental">
+<li><p>If you know something about your input that R has to check for,
+you can save time by bypassing the checks</p></li>
+<li><p>Vectorised functions are sometimes faster, sometimes not</p></li>
+<li><p>Matrix operations generally call C and are therefore
+fast</p></li>
+<li><p>Compiled C code is faster than R code</p></li>
+</ul>
+</div>
+</body>
+</html>

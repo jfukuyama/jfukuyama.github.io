@@ -1,0 +1,472 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title>lecture23</title>
+  <style type="text/css">
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="https://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js"
+  type="text/javascript"></script>
+  <script src="https://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div id="monte-carlo-methods-approximate-bayesian-computation"
+class="slide section level2">
+<h1>Monte Carlo methods: Approximate Bayesian Computation</h1>
+<p>Today: Approximate Bayesian Computation</p>
+<p>Reading:</p>
+<ul class="incremental">
+<li><p><a
+href="https://m-clark.github.io/bayesian-basics/intro.html">Bayesian
+Basics</a>, the introductory chapter</p></li>
+<li><p><a href="https://arxiv.org/pdf/1802.09720.pdf">Sisson, Fan,
+Beaumont</a>, “Overview of Approximate Bayesian Computation”</p></li>
+</ul>
+</div>
+<div id="our-goals" class="slide section level2">
+<h1>Our goals</h1>
+<p>Next two weeks:</p>
+<ul class="incremental">
+<li><p>Methods for sampling from arbitrary probability
+distributions.</p></li>
+<li><p>Main application: sampling from posterior distributions</p></li>
+</ul>
+</div>
+<div id="bayesian-statistics" class="slide section level2">
+<h1>Bayesian Statistics</h1>
+<p>Suppose we have data <span class="math inline">\(y_1,\ldots,
+y_n\)</span> that we believe can be described by a probability model
+with parameters <span class="math inline">\(\theta\)</span>.</p>
+<p>We also have a prior distribution on the parameters <span
+class="math inline">\(\theta\)</span>, describing our belief about the
+values of those parameters before seeing any of the data.</p>
+<p><span class="math display">\[
+\begin{align*}
+y_i \mid \theta &amp;\sim P(y_i \mid \theta), \quad i = 1,\ldots, n\\
+\theta &amp; \sim \pi
+\end{align*}
+\]</span></p>
+</div>
+<div class="slide section level2">
+
+<p>For example:</p>
+<ul class="incremental">
+<li><p>Data <span class="math inline">\(y_i\)</span> are heights of men
+entering the military</p></li>
+<li><p>We think that the <span class="math inline">\(y_i\)</span> are
+distributed <span class="math inline">\(\mathcal N(\theta,
+\sigma^2)\)</span></p></li>
+<li><p>We have some prior belief about <span
+class="math inline">\(\theta\)</span>, maybe that it is around
+70”.</p></li>
+<li><p>We quantify our prior belief about <span
+class="math inline">\(\theta\)</span> as <span
+class="math inline">\(\theta \sim \mathcal N(70, 5)\)</span></p></li>
+<li><p>Once we have seen the actual heights, we can “update” our belief
+about <span class="math inline">\(\theta\)</span> by computing the
+posterior distribution <span class="math inline">\(P(\theta \mid
+y_1,\ldots, y_n)\)</span></p></li>
+</ul>
+<div class="incremental">
+<p>This posterior distribution is the Bayesian analog of a confidence
+interval for a normal mean.</p>
+</div>
+</div>
+<div id="some-more-complicated-examples" class="slide section level2">
+<h1>Some more complicated examples</h1>
+<p>Finance:</p>
+<ul class="incremental">
+<li><p>Data are historical stock prices.</p></li>
+<li><p>Stock prices assumed to come from a probabilistic model with
+parameters having to do with the expected return of each stock and the
+correlations between them.</p></li>
+<li><p>Given some prior on the expected returns and correlations, we can
+compute posterior distributions of the expected returns and
+correlations.</p></li>
+</ul>
+<div class="incremental">
+<p>Epidemiology</p>
+<ul class="incremental">
+<li><p>Data are dates at which people are infected with a virus</p></li>
+<li><p>Infection dates come from a probabilistic model of disease
+spread. Parameters in the model are transmission probabilities due to
+contact between individuals.</p></li>
+<li><p>If we specify prior beliefs about the transmission probabilities,
+we can compute a posterior distribution on transmission
+probabilities.</p></li>
+</ul>
+</div>
+</div>
+<div id="posterior-distribution" class="slide section level2">
+<h1>Posterior distribution</h1>
+<p>By applying Bayes’ rule, we can compute the <em>posterior
+distribution</em> of the parameters given the data: <span
+class="math display">\[
+\begin{align*}
+P(\theta \mid y_1,\ldots, y_n) &amp;= \frac{P(y_1,\ldots, y_n \mid
+\theta)P(\theta)}{P(y_1,\ldots, y_n)}
+\end{align*}
+\]</span></p>
+<ul class="incremental">
+<li><p>We want to know as much about this distribution as
+possible.</p></li>
+<li><p>For simple cases it is available in closed form</p></li>
+<li><p>For more complicated cases our best hope is to draw samples of
+it</p></li>
+<li><p>From those samples we can compute posterior means, variances,
+etc. using the Monte Carlo methods from last two classes.</p></li>
+</ul>
+</div>
+<div id="one-way-of-drawing-samples-from-the-posterior"
+class="slide section level2">
+<h1>One way of drawing samples from the posterior</h1>
+<p>Inputs:</p>
+<ul class="incremental">
+<li><p>A target posterior: <span class="math inline">\(P(\theta \mid
+y_{\text{obs}}) \propto P(y_{\text{obs}} \mid \theta)
+P(\theta)\)</span></p></li>
+<li><p>A way of simulating from <span
+class="math inline">\(P(y_{\text{obs}} \mid \theta)\)</span></p></li>
+<li><p>A prior on the parameters <span
+class="math inline">\(P(\theta)\)</span></p></li>
+</ul>
+<div class="incremental">
+<p>Sampling: for <span class="math inline">\(i = 1,\ldots,
+N\)</span>:</p>
+<ul class="incremental">
+<li><p>Generate <span class="math inline">\(\theta^{(i)} \sim
+P(\theta)\)</span></p></li>
+<li><p>Generate <span class="math inline">\(y^{(i)} \sim P(y \mid
+\theta^{(i)})\)</span></p></li>
+<li><p>If <span class="math inline">\(y^{(i)} = y_{\text{obs}}\)</span>,
+accept <span class="math inline">\(\theta^{(i)}\)</span></p></li>
+</ul>
+</div>
+<div class="incremental">
+<p>Why does this work?</p>
+<ul class="incremental">
+<li><p>Our draws <span class="math inline">\((\theta^{(i)},
+y^{(i)})\)</span> are samples from the joint distribution <span
+class="math inline">\(P(\theta, y)\)</span></p></li>
+<li><p>Keeping only the values for which <span
+class="math inline">\(y^{(i)} = y_{\text{obs}}\)</span> is the
+definition of conditioning on <span
+class="math inline">\(y_{\text{obs}}\)</span>.</p></li>
+</ul>
+</div>
+</div>
+<div id="abc-simple-example" class="slide section level2">
+<h1>ABC: Simple Example</h1>
+<p>Bayesian analysis for a Poisson random variable.</p>
+<p>Model is: <span class="math display">\[
+\begin{align*}
+Y_i &amp;\sim \text{Poisson}(\theta), \quad i = 1,\ldots, n \\
+\theta &amp;\sim \text{Gamma}(\alpha, \beta)
+\end{align*}
+\]</span></p>
+<p>By Bayes rule, we can find in closed form that the posterior, <span
+class="math inline">\(P(\theta \mid Y_1, \ldots, Y_n)\)</span> has a
+<span class="math inline">\(\text{Gamma}(\sum_{i=1}^n Y_i + \alpha, n +
+\beta)\)</span> distribution.</p>
+<p>Let’s pretend we can’t do that though, and try using ABC.</p>
+</div>
+<div class="slide section level2">
+
+<p>Set up the function:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>generate_abc_sample <span class="ot">&lt;-</span> <span class="cf">function</span>(observed_data,</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>                                prior_distribution,</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>                                data_generating_function) {</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span>(<span class="cn">TRUE</span>) {</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>        theta <span class="ot">&lt;-</span> <span class="fu">prior_distribution</span>()</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>        y <span class="ot">&lt;-</span> <span class="fu">data_generating_function</span>(theta)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span>(<span class="fu">all</span>(y <span class="sc">==</span> observed_data)) {</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>            <span class="fu">return</span>(theta)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+<div class="slide section level2">
+
+<p>Analysis for:</p>
+<ul class="incremental">
+<li><p>Prior distribution: <span class="math inline">\(\theta \sim
+\text{Gamma}(1, 1)\)</span></p></li>
+<li><p>Likelihood: <span class="math inline">\(y \mid \theta \sim
+\text{Poisson}(\theta)\)</span></p></li>
+<li><p>Observed data: <span class="math inline">\(y =
+3\)</span></p></li>
+</ul>
+<div class="incremental">
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>prior_distribution <span class="ot">&lt;-</span> <span class="cf">function</span>() <span class="fu">rgamma</span>(<span class="at">n =</span> <span class="dv">1</span>, <span class="at">shape =</span> <span class="dv">1</span>, <span class="at">rate =</span> <span class="dv">1</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>data_generating_function <span class="ot">&lt;-</span> <span class="cf">function</span>(theta) <span class="fu">rpois</span>(<span class="at">n =</span> <span class="dv">1</span>, <span class="at">lambda =</span> theta)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>observed_data <span class="ot">&lt;-</span> <span class="dv">3</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_abc_sample</span>(observed_data, prior_distribution, data_generating_function)</span></code></pre></div>
+<pre><code>## [1] 3.463678</code></pre>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>posterior_samples <span class="ot">&lt;-</span> <span class="fu">replicate</span>(<span class="at">n =</span> <span class="dv">1000</span>, <span class="fu">generate_abc_sample</span>(observed_data, prior_distribution, data_generating_function))</span></code></pre></div>
+</div>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="do">## our posterior should be gamma(y + alpha, 1 + beta) or gamma(4, 2)</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="do">## The mean of a gamma distribution is alpha / beta, so should be 2</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(posterior_samples)</span></code></pre></div>
+<pre><code>## [1] 2.037032</code></pre>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="do">## The variance of a gamma distribution is alpha / beta^2, so should be 1</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">var</span>(posterior_samples)</span></code></pre></div>
+<pre><code>## [1] 1.10589</code></pre>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">qplot</span>(posterior_samples)</span></code></pre></div>
+<pre><code>## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+<p><img src="lecture-23-fig/unnamed-chunk-3-1.png" /></p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>theta_vec <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">6</span>, <span class="at">length.out =</span> <span class="dv">1000</span>)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">dgamma</span>(theta_vec, <span class="at">shape =</span> <span class="dv">4</span>, <span class="at">rate =</span> <span class="dv">2</span>) <span class="sc">~</span> theta_vec, <span class="at">type =</span> <span class="st">&#39;l&#39;</span>, <span class="at">ylab=</span><span class="st">&quot;true posterior density&quot;</span>, <span class="at">xlab =</span> <span class="st">&quot;theta&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-23-fig/unnamed-chunk-3-2.png" /></p>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>What if you have more than one sample?</p>
+<div class="incremental">
+<p>We still have</p>
+<ul class="incremental">
+<li><p>Prior distribution: <span class="math inline">\(\theta \sim
+\text{Gamma}(1, 1)\)</span></p></li>
+<li><p>Likelihood: <span class="math inline">\(y_i \mid \theta \sim
+\text{Poisson}(\theta)\)</span></p></li>
+<li><p>Observed data: <span class="math inline">\(y_1 = 3, y_2 =
+3\)</span></p></li>
+</ul>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>n_samples <span class="ot">&lt;-</span> <span class="dv">2</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>data_generating_function <span class="ot">&lt;-</span> <span class="cf">function</span>(theta) <span class="fu">rpois</span>(<span class="at">n =</span> n_samples, <span class="at">lambda =</span> theta)</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>observed_data <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">3</span>, n_samples)</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_abc_sample</span>(observed_data, prior_distribution, data_generating_function)</span></code></pre></div>
+<pre><code>## [1] 1.445692</code></pre>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">system.time</span>(<span class="fu">replicate</span>(<span class="at">n =</span> <span class="dv">1000</span>, <span class="fu">generate_abc_sample</span>(observed_data, prior_distribution, data_generating_function)))</span></code></pre></div>
+<pre><code>##    user  system elapsed 
+##   0.518   0.041   0.561</code></pre>
+<p>(Try changing <code>n_samples</code> to something bigger on your own
+computer…)</p>
+</div>
+</div>
+<div id="problems" class="slide section level2">
+<h1>Problems</h1>
+<ul class="incremental">
+<li><p>Only works for discrete data.</p></li>
+<li><p>Very low acceptance probabilities, so it can take a very long
+time.</p></li>
+</ul>
+<p>Therefore:</p>
+<ul class="incremental">
+<li><p>Modify the acceptance parameters.</p></li>
+<li><p>This makes the method give approximate samples from the posterior
+instead of exact samples.</p></li>
+</ul>
+</div>
+<div id="abc-the-algorithm" class="slide section level2">
+<h1>ABC: The algorithm</h1>
+<p>Inputs:</p>
+<ul class="incremental">
+<li><p>A target posterior: <span class="math inline">\(P(\theta \mid
+y_{\text{obs}}) \propto P(y_{\text{obs}} \mid \theta)
+P(\theta)\)</span></p></li>
+<li><p>A way of simulating from <span
+class="math inline">\(p(y_{\text{obs}} \mid \theta)\)</span></p></li>
+<li><p>A prior on the parameters <span
+class="math inline">\(P(\theta)\)</span></p></li>
+<li><p>A summary statistic function <span
+class="math inline">\(s\)</span></p></li>
+<li><p>A tolerance <span
+class="math inline">\(\epsilon\)</span></p></li>
+</ul>
+<div class="incremental">
+<p>Sampling: for <span class="math inline">\(i = 1,\ldots,
+N\)</span>:</p>
+<ul class="incremental">
+<li><p>Generate <span class="math inline">\(\theta^{(i)} \sim
+g(\theta)\)</span></p></li>
+<li><p>Generate <span class="math inline">\(y^{(i)} \sim p(y \mid
+\theta^{(i)})\)</span></p></li>
+<li><p>If <span class="math inline">\(\|s(y^{(i)}) - s(y_{\text{obs}})\|
+&lt; \epsilon\)</span>, accept <span
+class="math inline">\(\theta^{(i)}\)</span></p></li>
+</ul>
+</div>
+<div class="incremental">
+<p>This method generates approximate samples from the posterior
+distribution</p>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Set up a function for the approximate version of ABC:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>generate_abc_sample_2 <span class="ot">&lt;-</span> <span class="cf">function</span>(observed_data,</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>                                  summary_statistic,</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>                                  prior_distribution,</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>                                  data_generating_function,</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>                                  epsilon) {</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span>(<span class="cn">TRUE</span>) {</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>        theta <span class="ot">&lt;-</span> <span class="fu">prior_distribution</span>()</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>        y <span class="ot">&lt;-</span> <span class="fu">data_generating_function</span>(theta)</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span>(<span class="fu">abs</span>(<span class="fu">summary_statistic</span>(y) <span class="sc">-</span>  <span class="fu">summary_statistic</span>(observed_data)) <span class="sc">&lt;</span> epsilon) {</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>            <span class="fu">return</span>(theta)</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<p>Let’s see what happens with the approximate version:</p>
+<p>We still have</p>
+<ul class="incremental">
+<li><p>Prior distribution: <span class="math inline">\(\theta \sim
+\text{Gamma}(1, 1)\)</span></p></li>
+<li><p>Likelihood: <span class="math inline">\(y_i \mid \theta \sim
+\text{Poisson}(\theta)\)</span></p></li>
+<li><p>Observed data: <span class="math inline">\(y_i = 3\)</span>,
+<span class="math inline">\(i = 1,\ldots, 10\)</span></p></li>
+<li><p>Summary statistic <span class="math inline">\(s\)</span> is the
+mean function, so <span class="math inline">\(s(y_1,\ldots, y_n) =
+\frac{1}{n} \sum_{i=1}^n y_i\)</span></p></li>
+<li><p>Our tolerance is <span class="math inline">\(\epsilon =
+.1\)</span></p></li>
+</ul>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>n_samples <span class="ot">&lt;-</span> <span class="dv">10</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>prior_distribution <span class="ot">&lt;-</span> <span class="cf">function</span>() <span class="fu">rgamma</span>(<span class="at">n =</span> <span class="dv">1</span>, <span class="at">shape =</span> <span class="dv">1</span>, <span class="at">rate =</span> <span class="dv">1</span>)</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>data_generating_function <span class="ot">&lt;-</span> <span class="cf">function</span>(theta) <span class="fu">rpois</span>(<span class="at">n =</span> n_samples, <span class="at">lambda =</span> theta)</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>observed_data <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">3</span>, n_samples)</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>summary_statistic <span class="ot">&lt;-</span> mean</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>epsilon <span class="ot">&lt;-</span> .<span class="dv">1</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_abc_sample_2</span>(observed_data, summary_statistic, prior_distribution, data_generating_function, epsilon)</span></code></pre></div>
+<pre><code>## [1] 1.7603</code></pre>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>posterior_samples <span class="ot">&lt;-</span> <span class="fu">replicate</span>(<span class="at">n =</span> <span class="dv">1000</span>,</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">generate_abc_sample_2</span>(observed_data,</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>                          summary_statistic,</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>                          prior_distribution,</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>                          data_generating_function,</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>                          epsilon))</span></code></pre></div>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Checking on the posterior means and variances:</p>
+<div class="incremental">
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>(true_posterior_mean <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">sum</span>(observed_data)) <span class="sc">/</span> (n_samples <span class="sc">+</span> <span class="dv">1</span>))</span></code></pre></div>
+<pre><code>## [1] 2.818182</code></pre>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(posterior_samples)</span></code></pre></div>
+<pre><code>## [1] 2.81916</code></pre>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>(true_posterior_variance <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">sum</span>(observed_data)) <span class="sc">/</span> (n_samples <span class="sc">+</span> <span class="dv">1</span>)<span class="sc">^</span><span class="dv">2</span>)</span></code></pre></div>
+<pre><code>## [1] 0.2561983</code></pre>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">var</span>(posterior_samples)</span></code></pre></div>
+<pre><code>## [1] 0.2605666</code></pre>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Checking on the posterior distributions:</p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">qplot</span>(posterior_samples) <span class="sc">+</span> <span class="fu">xlim</span>(<span class="fu">c</span>(<span class="dv">0</span>, <span class="fu">max</span>(theta_vec)))</span></code></pre></div>
+<pre><code>## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+<p><img src="lecture-23-fig/unnamed-chunk-8-1.png" /></p>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">dgamma</span>(theta_vec, <span class="at">shape =</span> <span class="dv">1</span> <span class="sc">+</span> <span class="fu">sum</span>(observed_data), <span class="at">rate =</span> n_samples <span class="sc">+</span> <span class="dv">1</span>) <span class="sc">~</span> x_vec, <span class="at">type =</span> <span class="st">&#39;l&#39;</span>, <span class="at">ylab =</span> <span class="st">&quot;True posterior density&quot;</span>, <span class="at">xlab =</span> <span class="st">&quot;theta&quot;</span>)</span></code></pre></div>
+<pre><code>## Error in eval(predvars, data, env): object &#39;x_vec&#39; not found</code></pre>
+</div>
+<div id="abc-some-notes" class="slide section level2">
+<h1>ABC: Some notes</h1>
+<ul class="incremental">
+<li><p>Difficulties: choice of summary statistics:</p>
+<ul class="incremental">
+<li><p>Theory says they should be sufficient statistics for the
+model.</p></li>
+<li><p>In practice, they are chosen by expert opinion to be features of
+the data that are thought to be informative about the underlying
+parameters.</p></li>
+</ul></li>
+<li><p>Advantage: you need to know hardly anything about the likelihood,
+you just need to be able to simulate data from it.</p></li>
+<li><p>Interpretation of Bayesian inference: parameters with higher
+posterior probability are simply those that make the observed data match
+data that we simulate under those parameters.</p></li>
+<li><p>Next week we’ll talk about more exact methods for sampling from
+posteriors, but they will require us to know more about the
+functions</p></li>
+</ul>
+</div>
+</body>
+</html>

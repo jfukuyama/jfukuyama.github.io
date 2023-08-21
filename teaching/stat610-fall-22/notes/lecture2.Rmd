@@ -1,0 +1,663 @@
+```{r setup, echo = FALSE, message = FALSE}
+library(knitr)
+opts_chunk$set(fig.cap="", fig.width = 6, fig.height = 4, dpi=175,
+               fig.path="lecture-2-fig/", warning = FALSE, cache=FALSE)
+```
+
+
+## Logistics
+
+- First lab (on text) this week.
+
+- First homework out.
+
+
+
+## Today
+
+Reading: Matloff Chapter 7.1, 7.2, 2.9
+
+Last time/finish up today: Data structures, so that we have something to work on.
+
+This time: Flow control, so we can actually do things.
+
+
+
+## Lists
+
+- Lists are technically vectors.
+
+- The vectors from before were called _atomic_ vectors, which means
+that their components couldn't be broken down into smaller components.
+
+- In R, the main purpose of lists is to lump together data of
+different types. Atomic vectors require all their elements to be of
+the same type, but lists can have any sort of elements (including lists!).
+
+----
+
+## Creating lists
+
+You can create a list with the `list` function...
+
+```{r}
+j <- list(name = "Joe", salary = 55000, union = TRUE)
+j
+```
+
+-----
+
+The component names (_tags_) are not necessary, but it is good
+practice to use them.
+
+```{r}
+list("Joe", 55000, TRUE)
+```
+
+-----
+
+## List access
+
+Suppose we want to get Joe's salary. There are at least three
+different ways to do so:
+
+```{r}
+j$salary
+j[["salary"]]
+j[[2]]
+```
+
+The double brackets `[[]]` allow us access to an element of the list.
+
+Note that if we didn't use the tags, we would only be able to access
+the salary using `j[[2]]`.
+
+----
+
+
+## Sublist vs. Element of list
+
+
+Very important: `[[]]` and `[]` are different operations:
+
+- `[[]]` gives an _element_ of the list
+
+- `[]` gives a sublist
+
+. . .
+
+```{r}
+j[[2]]
+typeof(j[[2]])
+j[2]
+typeof(j[2])
+```
+
+-----
+
+## List manipulation
+
+We can add to a list by tag:
+
+```{r}
+j$hobby <- "sailing"
+j
+```
+
+-----
+
+We can add to a list by index:
+
+```{r}
+j[[5]] <- 1:5
+j
+```
+
+----
+
+We can remove an element from a list by setting it to `NULL`:
+
+```{r}
+j[[5]] <- NULL
+j
+j$hobby <- NULL
+j
+```
+
+-----
+
+
+## Extracting names and values
+
+Names are easy, just use the `names` function:
+
+```{r}
+names(j)
+```
+
+-----
+
+
+
+To get values, we use `unlist`.
+
+This is another function you have to be careful with, because it
+doesn't necessarily do what you think it will.
+
+- It returns an atomic vector.
+
+- That means all the elements have to be of the same class, and so
+data often gets coerced to a different type.
+
+- If we unlist `j`, we get back a character vector. This is
+essentially because R knows how to convert numbers and booleans to
+characters but doesn't know how to convert characters to numbers or
+booleans.
+
+```{r}
+unlist(j)
+```
+
+You can see the text for the coercion hierarchy.
+
+----
+
+Note that `unlist` gives an atomic vector even for recursive lists
+(lists of lists), for example:
+
+```{r}
+complex_list <- list(a = list(1), b = 1:5, c = (list(a = 1, b = 2)))
+unlist(complex_list)
+```
+
+
+## Flow control and looping
+
+- Conditionals
+
+- Iteration
+
+- Vectorization
+
+
+## if statements
+
+Syntax
+```{r, eval = FALSE}
+if (condition) {
+    action1
+} else {
+    action2
+}
+```
+
+. . .
+
+So for example:
+
+```{r}
+weather <- "sunny"
+if(weather == "rainy") {
+    print("Take your umbrella!")
+} else {
+    print("No need for an umbrella today...")
+}
+```
+
+
+-----
+
+You can make more complicated conditions using either `else if` or
+nested `if` statements:
+
+. . .
+
+```{r}
+weather <- "cloudy"
+if(weather == "rainy") {
+    print("Take your umbrella!")
+} else if (weather == "cloudy") {
+    print("Think about taking your umbrella")
+} else {
+    print("No need for an umbrella today...")
+}
+```
+
+-----
+
+Some rules:
+
+- `if` requires _one_ boolean, not a vector. It will throw a warning
+if you give it a vector, but it will evaluated based on just the first
+element of that vector.
+
+- `else` is optional
+
+- If the action is just one line, you don't need the braces (but you
+should be consistent about this: choose a way you like and stick to
+it).
+
+
+
+## Combining booleans and lazy evaluation
+
+We often want to combine conditions, which we can do with boolean
+operations.
+
+Like all other languages, R has AND and OR functions, but unlike some
+other languages it has two of each.
+
+- `&` and `&&` both mean AND.
+
+- `|` and `||` both mean OR.
+
+. . .
+
+So for example:
+
+```{r}
+steak_type <- "med_rare"
+temp <- 130
+```
+```{r}
+if(steak_type == "rare" & temp > 115) {
+    print("take your steak off!")
+} else if(steak_type == "med_rare" & temp > 125) {
+    print("take your steak off!")        
+} else {
+    print("you can keep cooking")
+}
+```
+
+NB: As we'll see in two slides, `&` works here but it would be better
+to use `&&`.
+
+-----
+
+Or, in not so dire a situation:
+
+. . .
+
+```{r}
+steak_type <- "rare"
+temp <- 110
+```
+```{r}
+if(steak_type == "rare" && temp > 115) {
+    print("take your steak off!")
+} else if(steak_type == "med_rare" && temp > 125) {
+    print("take your steak off!")        
+} else {
+    print("you can keep cooking")
+}
+```
+
+-----
+
+What is the difference between the two?
+
+- Double operators give scalars (vectors of length 1), single
+operators give vectors.
+
+. . .
+
+- If you call `&&` or `||` on a pair of vectors with length longer
+than 1, the expression will be evaluated on the first element of the
+vector.
+
+. . .
+
+- `&&` and `||` also support _lazy evaluation_.
+
+-----
+
+Lazy evaluation:
+
+- `FALSE` followed by `&&` doesn't evaluate
+the second expression.
+
+- `TRUE` followed by `||` doesn't evaluate the second expression.
+
+- This will occasionally make your code faster, so if you remember to
+use `&&` and `||` for flow control and put the expressions that are
+simpler to evaluate first, you will occasionally get performance improvements.
+
+
+Try this on your computer. Which ones are fast and which ones are slow? Why?
+```{r, eval = FALSE}
+(FALSE && all(rep(1, 10^8) == 1))
+(FALSE & all(rep(1, 10^8) == 1))
+(all(rep(1, 10^8) == 1) && FALSE)
+(all(rep(1, 10^8) == 1) & FALSE)
+```
+
+-----
+
+Take-away:
+
+- Use `&&` and `||` for flow control.
+
+- Use `&` and `|` for operations on vectors.
+
+- Put simpler operations first when using `&&` and `||`.
+
+## Iteration
+
+Two types
+
+- For loops: You know how many iterations you need in advance.
+
+- While loops: You'll know when to stop when you see it, but you don't
+know in advance.
+
+## For loops
+
+Syntax:
+
+```{r, eval = FALSE}
+for(x in vector) {
+    ...
+}
+```
+
+Rules:
+
+- `vector` is a vector
+
+- `x` is a variable, which will be set first to `vector[1]`, then to
+`vector[2]`, and so on, up to `vector[n]`, where `n` is the length of
+`vector`.
+
+- The actions inside `{` and `}` will be performed for each value of `x`.
+
+
+-----
+
+So for example:
+```{r}
+x <- 1:5
+for(i in x) {
+    print(i^2)
+}
+```
+
+-----
+
+As with all the other flow control elements, for loops can be nested.
+
+. . .
+
+We can use this to do something slightly more complicated:
+
+```{r}
+d <- 1:5
+D <- matrix(NA, nrow = length(d), ncol = length(d))
+D
+```
+
+```{r}
+for(i in 1:nrow(D)) {
+    for(j in 1:ncol(D)) {
+        if(i == j) {
+            D[i,j] <- d[i]
+        } else {
+            D[i,j] <- 0
+        }
+    }
+}
+D
+```
+
+-----
+
+. . .
+
+They can also be combined with the other flow control elements:
+
+Don't worry about this part, just data setup:
+```{r}
+## install.packages("Lahman")
+## install.packages("pacman")
+library(Lahman)
+library(pacman)
+p_load(Lahman)
+```
+
+What the data looks like:
+```{r}
+head(People)
+```
+
+-----
+
+. . .
+
+And finally a for loop: What am I doing here?
+```{r}
+for(i in 1:nrow(People)) {
+    if(!is.na(People$height[i]) && People$height[i] <= 62) {
+        print(People[i,])
+    }
+}
+```
+
+Not a data problem:
+[Eddie Gaedel](https://en.wikipedia.org/wiki/Eddie_Gaedel)
+
+Question: does it matter whether we check for NA first? What could potentially happen if we check for height first instead?
+
+## While loops
+
+Syntax:
+
+```{r, eval = FALSE}
+while(condition) {
+    ...
+}
+```
+
+Rules:
+
+- If `condition` is `TRUE`, the code inside `{` and `}` will be
+evaluated.
+
+- After the code inside `{` and `}` is evaluated, `condition` is
+checked again, if it is still `TRUE`, we go again.
+
+- This repeats until `condition` is FALSE.
+
+-----
+
+If you don't want your while loop to go forever, you have two options:
+
+- The value of `condition` needs to eventually be set to `FALSE` by
+the code inside `{` and `}`.
+
+- You have a `break` statement inside the `{` `}` that eventually gets
+you out of the loop.
+
+-----
+
+So for example, we could use a while loop to find the largest power of
+2 less than 1000:
+
+```{r}
+x <- 2
+while(x * 2 < 1000) {
+    x <- x * 2
+}
+x
+```
+
+-----
+
+
+Or for a slightly less silly example, we could use it to answer a
+modified birthday problem.
+
+Suppose we want to know how many classes filled with randomly selected
+individuals we would have to attend before we found one where there
+were at least two pairs of people with the same birthday.
+
+We could go through the math, or we could get partway to an answer
+with a while loop.
+
+. . .
+
+Here we draw sets of birthdays for classes of size 20, assuming that
+there are 365 days in a year:
+
+```{r}
+days_in_year <- 365
+class_size <- 20
+num_classes <- 0
+while(TRUE) {
+    num_classes <- num_classes + 1
+    birthdays <- sample(1:days_in_year, class_size, replace = TRUE)
+    num_birthdays_per_day <- table(birthdays)
+    days_with_match <- num_birthdays_per_day >= 2
+    num_days_with_match <- sum(days_with_match)
+    if(num_days_with_match >= 2) {
+        break
+    }
+}
+num_classes
+```
+
+
+
+. . .
+
+Notes:
+
+- The `while(TRUE)` with a `break` statement is a common idiom for
+while loops.
+
+- `break` can also be used in for loops.
+
+## Vectorization
+
+Most basic functions in R are _vectorized_, which means that they are
+applied to vectors element-by-element.
+
+- We already saw this with vector operations.
+
+- Also true of many base functions.
+
+```{r}
+x <- rgamma(10, 1, .1)
+x
+log(x)
+round(x)
+floor(x)
+```
+
+-----
+
+More on vectorization and its advantages later. Why vectorization?
+
+- More readable code.
+
+- Instead of writing _how_ you want the computer to perform the
+computations, you tell the computer _what_ you want to do.
+
+- Less typing = less of an opportunity to introduce bugs.
+
+- Can be faster.
+
+
+-----
+
+Compare:
+
+for-loop way of computing the floor of all the elements in the vector `x`:
+```{r}
+floor_of_x <- rep(NA, length(x)) ## pre-allocate a vector to hold our computations
+for(i in 1:length(x)) {
+    floor_of_x[i] <- floor(x[i])
+}
+floor_of_x
+```
+
+. . .
+
+Versus the vectorized way:
+```{r}
+floor(x)
+```
+
+-----
+
+## Vectorized conditionals
+
+
+Suppose we want to plot the following function.
+
+$$
+f(x) = \begin{cases}
+\frac{15}{16} (1 - x^2)^2 & |x| < 1\\
+0 & \text{o.w.}
+\end{cases}
+$$
+
+
+-----
+
+. . .
+
+Take 1:
+
+```{r}
+x <- seq(-2, 2, length = 200) ## a vector with the values at which we want to evaluate f
+fx <- rep(NA, 200) ## pre-allocate a vector in which to store the values of f(x)
+for(i in 1:200) {
+    if(abs(x[i]) < 1) {
+        fx[i] <- 15/16 * (1 - x[i]^2)^2
+    } else {
+        fx[i] <- 0
+    }
+}
+plot(fx ~ x, type = 'l')
+```
+
+-----
+
+## ifelse: Vectorized conditionals
+
+`ifelse` syntax:
+```{r, eval = FALSE}
+ifelse(condition, yes, no)
+```
+
+Rules:
+
+- `ifelse` returns a vector
+
+- `condition` is a vector of Booleans.
+
+- `yes` and `no` are vectors, should be of the same type.
+
+. . .
+
+
+`ifelse` goes element-by-element through `condition`, `yes`, and
+`no`.
+
+- The `i`th element of the output is `yes[i]` if `condition[i]` is
+`TRUE`
+
+- The `i`th element of the output is `no[i]` if `condition[i]` is `FALSE`
+
+
+-----
+. . .
+
+Take 2:
+```{r}
+x <- seq(-2, 2, length.out = 200)
+y <- ifelse(abs(x) < 1, 15/16 * (1 - x^2)^2, 0)
+```
+
+```{r}
+plot(y ~ x, type = 'l')
+```

@@ -1,0 +1,575 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title>Stat 610 Lecture 5: Writing and calling functions</title>
+  <style type="text/css">
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="https://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="https://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div class="slide titlepage">
+  <h1 class="title">Stat 610 Lecture 5: Writing and calling
+functions</h1>
+</div>
+<div id="writing-and-calling-functions" class="slide section level2">
+<h1>Writing and calling functions</h1>
+<p>Reading:</p>
+<ul class="incremental">
+<li><p>Matloff Section 1.3, 7.3-7.6 (7.6 is presented rather formally),
+7.12, 7.13</p></li>
+<li><p>If you want more detail on environments: <em>Advanced R</em> by
+Hadley Wickham has a good <a
+href="http://adv-r.had.co.nz/Environments.html">chapter</a> on
+them.</p></li>
+<li><p>More relevant for next time: <em>Clean Code</em> by Robert
+Martin, <a href="https://iucat.iu.edu/iub/16580380">Chapter
+3</a>.</p></li>
+</ul>
+<p>Today: Nuts and bolts, technical aspects of functions in R.</p>
+<p>Next time: More practical advice on how to write functions, best
+practices, etc.</p>
+</div>
+<div id="why-write-functions" class="slide section level2">
+<h1>Why write functions?</h1>
+<ul class="incremental">
+<li>Make your code more readable.</li>
+</ul>
+<div class="incremental">
+<ul class="incremental">
+<li>Allows you to re-use related lines of code for slightly different
+tasks.</li>
+</ul>
+</div>
+<div class="incremental">
+<ul class="incremental">
+<li>Makes testing your code easier.</li>
+</ul>
+</div>
+</div>
+<div id="what-is-a-function" class="slide section level2">
+<h1>What is a function?</h1>
+<ul class="incremental">
+<li>A way of turning some inputs into some outputs.</li>
+</ul>
+<div class="incremental">
+<ul class="incremental">
+<li>A way of tying together related pieces of code.</li>
+</ul>
+</div>
+<div class="incremental">
+<ul class="incremental">
+<li>An object.</li>
+</ul>
+</div>
+</div>
+<div id="function-creation" class="slide section level2">
+<h1>Function creation</h1>
+<p>Syntax for function creation:</p>
+<pre><code>f &lt;- function(argument) {
+    body
+}</code></pre>
+<ul class="incremental">
+<li><p><code>arguments</code> are variables used by the
+function.</p></li>
+<li><p><code>body</code> is the code you want to execute.</p></li>
+</ul>
+</div>
+<div id="arguments-formal-and-actual" class="slide section level2">
+<h1>Arguments: formal and actual</h1>
+<ul class="incremental">
+<li><p>Formal argument: the variable name used in the function
+definition.</p></li>
+<li><p>Actual argument: the actual value of the variable used when the
+function is called.</p></li>
+</ul>
+<p>Idea: You want to be able to evaluate the function for any possible
+<em>actual argument</em> value, and the <em>formal argument</em> is a
+placeholder.</p>
+</div>
+<div class="slide section level2">
+
+<p>So for example, if we return to our steak-cooking example from a
+couple lectures ago, we might define the following function:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>steak_directions <span class="ot">&lt;-</span> <span class="cf">function</span>(temp, steak_type) {</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(steak_type <span class="sc">==</span> <span class="st">&quot;rare&quot;</span> <span class="sc">&amp;&amp;</span> temp <span class="sc">&gt;</span> <span class="dv">115</span>) {</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>        <span class="fu">return</span>(<span class="st">&quot;take your steak off!&quot;</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> <span class="cf">if</span>(steak_type <span class="sc">==</span> <span class="st">&quot;med_rare&quot;</span> <span class="sc">&amp;&amp;</span> temp <span class="sc">&gt;</span> <span class="dv">125</span>) {</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>        <span class="fu">return</span>(<span class="st">&quot;take your steak off!&quot;</span>)        </span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    } </span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;you can keep cooking&quot;</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+<div class="slide section level2">
+
+<p>We can see the arguments and body of the function using
+<code>formals</code> and <code>body</code>, respectively.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">formals</span>(steak_directions)</span></code></pre></div>
+<pre><code>## $temp
+## 
+## 
+## $steak_type</code></pre>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">body</span>(steak_directions)</span></code></pre></div>
+<pre><code>## {
+##     if (steak_type == &quot;rare&quot; &amp;&amp; temp &gt; 115) {
+##         return(&quot;take your steak off!&quot;)
+##     }
+##     else if (steak_type == &quot;med_rare&quot; &amp;&amp; temp &gt; 125) {
+##         return(&quot;take your steak off!&quot;)
+##     }
+##     &quot;you can keep cooking&quot;
+## }</code></pre>
+</div>
+<div id="function-arguments" class="slide section level2">
+<h1>Function arguments</h1>
+<p>Once you have a function, you call it by specifying the values for
+all of the arguments. The values can be specified in two ways:</p>
+<ul class="incremental">
+<li><p>By position: first argument is assigned to the first variable in
+the function definition, second argument to the second variable in the
+function definition, and so on</p></li>
+<li><p>By name: arguments are specified by name instead of being
+inferred based on position.</p></li>
+</ul>
+<p>The two can be combined.</p>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<p>So for example, the following are all the same:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">steak_directions</span>(<span class="at">temp =</span> <span class="dv">120</span>, <span class="at">steak_type =</span> <span class="st">&quot;rare&quot;</span>)</span></code></pre></div>
+<pre><code>## [1] &quot;take your steak off!&quot;</code></pre>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">steak_directions</span>(<span class="at">steak_type =</span> <span class="st">&quot;rare&quot;</span>, <span class="at">temp =</span> <span class="dv">120</span>)</span></code></pre></div>
+<pre><code>## [1] &quot;take your steak off!&quot;</code></pre>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">steak_directions</span>(<span class="dv">120</span>, <span class="st">&quot;rare&quot;</span>)</span></code></pre></div>
+<pre><code>## [1] &quot;take your steak off!&quot;</code></pre>
+<p>But this is of course different and will not work correctly:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">steak_directions</span>(<span class="st">&quot;rare&quot;</span>, <span class="dv">120</span>)</span></code></pre></div>
+<pre><code>## [1] &quot;you can keep cooking&quot;</code></pre>
+</div>
+</div>
+<div id="default-arguments" class="slide section level2">
+<h1>Default arguments</h1>
+<p>When you define a function, you can set default values for any/all of
+the arguments.</p>
+<p>When you call such a function, if you don’t specify a value for that
+argument, it will automatically go to the default value.</p>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<p>For example, in the following function the default argument for
+<code>steak_type</code> is <code>"rare"</code>.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>steak_directions <span class="ot">&lt;-</span> <span class="cf">function</span>(temp, <span class="at">steak_type =</span> <span class="st">&quot;rare&quot;</span>) {</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(steak_type <span class="sc">==</span> <span class="st">&quot;rare&quot;</span> <span class="sc">&amp;&amp;</span> temp <span class="sc">&gt;</span> <span class="dv">115</span>) {</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>        <span class="fu">return</span>(<span class="st">&quot;take your steak off!&quot;</span>)</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> <span class="cf">if</span>(steak_type <span class="sc">==</span> <span class="st">&quot;med_rare&quot;</span> <span class="sc">&amp;&amp;</span> temp <span class="sc">&gt;</span> <span class="dv">125</span>) {</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>        <span class="fu">return</span>(<span class="st">&quot;take your steak off!&quot;</span>)        </span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    } </span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;you can keep cooking&quot;</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>If we don’t specify <code>steak_type</code>, we will get results as
+if we had specified it to be <code>"rare"</code>, but we can also
+over-ride that argument if we set it explicitly:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">steak_directions</span>(<span class="dv">120</span>, <span class="st">&quot;rare&quot;</span>)</span></code></pre></div>
+<pre><code>## [1] &quot;take your steak off!&quot;</code></pre>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">steak_directions</span>(<span class="dv">120</span>)</span></code></pre></div>
+<pre><code>## [1] &quot;take your steak off!&quot;</code></pre>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">steak_directions</span>(<span class="dv">120</span>, <span class="at">steak_type =</span> <span class="st">&quot;med_rare&quot;</span>)</span></code></pre></div>
+<pre><code>## [1] &quot;you can keep cooking&quot;</code></pre>
+</div>
+</div>
+<div id="return-values" class="slide section level2">
+<h1>Return values</h1>
+<p>When a function is called, the commands in the body of the function
+are executed, and a value is returned.</p>
+<p>The return value is either:</p>
+<ul class="incremental">
+<li><p>The value of last command executed, or</p></li>
+<li><p>A value set explicitly using the <code>return</code>
+syntax.</p></li>
+</ul>
+<p>The commands in the body of the function are executed until a
+<code>return</code> statement is encountered or the the end of the body
+is reached, whichever comes first.</p>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<p>Let’s think through what happens when we call the function these two
+ways:</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>steak_directions <span class="ot">&lt;-</span> <span class="cf">function</span>(temp, <span class="at">steak_type =</span> <span class="st">&quot;rare&quot;</span>) {</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(steak_type <span class="sc">==</span> <span class="st">&quot;rare&quot;</span> <span class="sc">&amp;&amp;</span> temp <span class="sc">&gt;</span> <span class="dv">115</span>) {</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>        <span class="fu">return</span>(<span class="st">&quot;take your steak off!&quot;</span>)</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> <span class="cf">if</span>(steak_type <span class="sc">==</span> <span class="st">&quot;med_rare&quot;</span> <span class="sc">&amp;&amp;</span> temp <span class="sc">&gt;</span> <span class="dv">125</span>) {</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>        <span class="fu">return</span>(<span class="st">&quot;take your steak off!&quot;</span>)        </span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>    } </span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;you can keep cooking&quot;</span></span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a><span class="fu">steak_directions</span>(<span class="at">steak_type =</span> <span class="st">&quot;rare&quot;</span>, <span class="at">temp =</span> <span class="dv">120</span>)</span></code></pre></div>
+<pre><code>## [1] &quot;take your steak off!&quot;</code></pre>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">steak_directions</span>(<span class="at">steak_type =</span> <span class="st">&quot;med_rare&quot;</span>, <span class="at">temp =</span> <span class="dv">120</span>)</span></code></pre></div>
+<pre><code>## [1] &quot;you can keep cooking&quot;</code></pre>
+</div>
+</div>
+<div id="invisible-return" class="slide section level2">
+<h1>Invisible return</h1>
+<p>Invisible return is a bit R-specific:</p>
+<ul class="incremental">
+<li><p>If you use <code>invisible</code> instead of <code>return</code>
+in a function definition, the result will be discarded unless it is
+assigned.</p></li>
+<li><p>This is not usually something that you will use, but some of the
+built-in functions use invisible returns.</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>square_invisible <span class="ot">&lt;-</span> <span class="cf">function</span>(x) <span class="fu">invisible</span>(x<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>square <span class="ot">&lt;-</span> <span class="cf">function</span>(x) x<span class="sc">^</span><span class="dv">2</span></span></code></pre></div>
+</div>
+<div class="incremental">
+<p>If we call <code>square(4)</code> we get output: 16</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">square</span>(<span class="dv">4</span>)</span></code></pre></div>
+<pre><code>## [1] 16</code></pre>
+<p>. . . But if we call <code>square_invisible(4)</code>, we don’t see
+any output!</p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">square_invisible</span>(<span class="dv">4</span>)</span></code></pre></div>
+</div>
+<div class="incremental">
+<p>The square was computed though, and we can see this if we assign the
+output:</p>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>xsquared <span class="ot">&lt;-</span> <span class="fu">square_invisible</span>(<span class="dv">4</span>)</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>xsquared</span></code></pre></div>
+<pre><code>## [1] 16</code></pre>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Another example: compare the two versions of oddcount:</p>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>oddcount <span class="ot">&lt;-</span> <span class="cf">function</span>(x) {</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>    k <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span>(n <span class="cf">in</span> x) {</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> (n <span class="sc">%%</span> <span class="dv">2</span> <span class="sc">==</span> <span class="dv">1</span>) k <span class="ot">&lt;-</span> k <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(k)</span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a><span class="fu">oddcount</span>(<span class="at">x =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">5</span>))</span></code></pre></div>
+<pre><code>## [1] 1</code></pre>
+<div class="incremental">
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>oddcount <span class="ot">&lt;-</span> <span class="cf">function</span>(x) {</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>    k <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span>(n <span class="cf">in</span> x) {</span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> (n <span class="sc">%%</span> <span class="dv">2</span> <span class="sc">==</span> <span class="dv">1</span>) k <span class="ot">&lt;-</span> k <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a><span class="fu">oddcount</span>(<span class="at">x =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">5</span>))</span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a>oddcount_output <span class="ot">=</span> <span class="fu">oddcount</span>(<span class="at">x =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">5</span>))</span>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a>oddcount_output</span></code></pre></div>
+<pre><code>## NULL</code></pre>
+<p>We get <code>NULL</code> for the value of
+<code>oddcount_output</code> because the last function to be evaluated
+in <code>oddcount</code> was technically the <code>for</code>
+function.</p>
+<p><code>for</code> returns <code>NULL</code> invisibly, so the second
+version of <code>oddcount</code> also returns <code>NULL</code>
+invisibly.</p>
+</div>
+</div>
+<div id="return-values-can-be-anything" class="slide section level2">
+<h1>Return values can be anything</h1>
+<ul class="incremental">
+<li>If you want to return multiple related pieces of information, you
+can put them in a list or other type of object.</li>
+</ul>
+<div class="incremental">
+<ul class="incremental">
+<li>Your return value can even be another function!</li>
+</ul>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>g <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>    t <span class="ot">&lt;-</span> <span class="cf">function</span>(x) x<span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(t)</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>g</span></code></pre></div>
+<pre><code>## function() {
+##     t &lt;- function(x) x^2
+##     return(t)
+## }</code></pre>
+<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">g</span>()</span></code></pre></div>
+<pre><code>## function(x) x^2
+## &lt;environment: 0x7fc8a5695e88&gt;</code></pre>
+<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">formals</span>(g)</span></code></pre></div>
+<pre><code>## NULL</code></pre>
+<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="fu">formals</span>(<span class="fu">g</span>())</span></code></pre></div>
+<pre><code>## $x</code></pre>
+<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="fu">body</span>(g)</span></code></pre></div>
+<pre><code>## {
+##     t &lt;- function(x) x^2
+##     return(t)
+## }</code></pre>
+<div class="sourceCode" id="cb46"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="fu">body</span>(<span class="fu">g</span>())</span></code></pre></div>
+<pre><code>## x^2</code></pre>
+</div>
+</div>
+<div id="environments-and-scope" class="slide section level2">
+<h1>Environments and scope</h1>
+<p>When you call a function, the commands in the function body are
+executed, but not in exactly the same way they would be if you simply
+ran them one at a time in an interactive R session.</p>
+<p>The commands are executed in the function’s <em>environment</em>.</p>
+</div>
+<div id="environments" class="slide section level2">
+<h1>Environments</h1>
+<p>Ok, so what is an environment?</p>
+<ul class="incremental">
+<li>An environment binds names to values.</li>
+</ul>
+<div class="incremental">
+<ul class="incremental">
+<li>Every environment has a parent (except for the empty
+environment).</li>
+</ul>
+</div>
+<div class="incremental">
+<p>What are they good for?</p>
+<ul class="incremental">
+<li><p>The purpose of environments is to describe where to look for
+variables.</p></li>
+<li><p>When you refer to any object, R first looks in the current
+environment for an object with that name.</p></li>
+<li><p>If it doesn’t find an object with that name in the current
+environment, it looks in the parent environment, and continues until it
+runs out of parents or finds an object with the right name.</p></li>
+</ul>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>For example, have you ever wondered how R finds functions?</p>
+<p>The function <code>lm</code> is not in the global environment, as we
+can see if we just call <code>ls</code>:</p>
+<div class="sourceCode" id="cb48"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ls</span>()</span></code></pre></div>
+<pre><code>## [1] &quot;corner&quot;           &quot;g&quot;                &quot;multiplot&quot;        &quot;oddcount&quot;        
+## [5] &quot;oddcount_output&quot;  &quot;square&quot;           &quot;square_invisible&quot; &quot;steak_directions&quot;
+## [9] &quot;xsquared&quot;</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>But we are able to access it and, for instance, ask what its
+arguments are:</p>
+<div class="sourceCode" id="cb50"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">formals</span>(lm))</span></code></pre></div>
+<pre><code>## $formula
+## 
+## 
+## $data
+## 
+## 
+## $subset
+## 
+## 
+## $weights
+## 
+## 
+## $na.action
+## 
+## 
+## $method
+## [1] &quot;qr&quot;</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>Functions live in environments corresponding to the package they are
+defined in. For <code>lm</code>, this is <code>stats</code>.</p>
+<div class="sourceCode" id="cb52"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="fu">environment</span>(lm)</span></code></pre></div>
+<pre><code>## &lt;environment: namespace:stats&gt;</code></pre>
+<p>Package environments are all ancestral to the global environment, so
+when R found that lm wasn’t defined in the global environment, it looked
+through the packages until it found lm defined in stats.</p>
+</div>
+<div id="function-environments" class="slide section level2">
+<h1>Function environments</h1>
+<div class="incremental">
+<p>When a function is called, its body is evaluated in an execution
+environment whose parent is the function’s environment.</p>
+<div class="sourceCode" id="cb54"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>w <span class="ot">&lt;-</span> <span class="dv">12</span></span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>f <span class="ot">&lt;-</span> <span class="cf">function</span>(y) {</span>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>    d <span class="ot">&lt;-</span> <span class="dv">8</span></span>
+<span id="cb54-4"><a href="#cb54-4" aria-hidden="true" tabindex="-1"></a>    h <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb54-5"><a href="#cb54-5" aria-hidden="true" tabindex="-1"></a>        <span class="fu">return</span>(d <span class="sc">*</span> (w <span class="sc">+</span> y))</span>
+<span id="cb54-6"><a href="#cb54-6" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb54-7"><a href="#cb54-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">&quot;h&#39;s environment: &quot;</span>, <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb54-8"><a href="#cb54-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">print</span>(<span class="fu">environment</span>(h))</span>
+<span id="cb54-9"><a href="#cb54-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">&quot;h&#39;s parent environment:&quot;</span>, <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb54-10"><a href="#cb54-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">print</span>(<span class="fu">parent.env</span>(<span class="fu">environment</span>(h)))</span>
+<span id="cb54-11"><a href="#cb54-11" aria-hidden="true" tabindex="-1"></a>    output <span class="ot">&lt;-</span> <span class="fu">h</span>()</span>
+<span id="cb54-12"><a href="#cb54-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(output)</span>
+<span id="cb54-13"><a href="#cb54-13" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb54-14"><a href="#cb54-14" aria-hidden="true" tabindex="-1"></a><span class="fu">f</span>(<span class="dv">1</span>)</span></code></pre></div>
+<pre><code>## h&#39;s environment:  
+## &lt;environment: 0x7fc8a3dd7010&gt;
+## h&#39;s parent environment: 
+## &lt;environment: R_GlobalEnv&gt;</code></pre>
+<pre><code>## [1] 104</code></pre>
+<div class="sourceCode" id="cb57"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="fu">environment</span>(f)</span></code></pre></div>
+<pre><code>## &lt;environment: R_GlobalEnv&gt;</code></pre>
+</div>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<p>Compare with:</p>
+<div class="sourceCode" id="cb59"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>f <span class="ot">=</span> <span class="cf">function</span>(y) {</span>
+<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a>    d <span class="ot">&lt;-</span> <span class="dv">8</span></span>
+<span id="cb59-3"><a href="#cb59-3" aria-hidden="true" tabindex="-1"></a>    output <span class="ot">&lt;-</span> <span class="fu">h</span>()</span>
+<span id="cb59-4"><a href="#cb59-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(output)</span>
+<span id="cb59-5"><a href="#cb59-5" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb59-6"><a href="#cb59-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb59-7"><a href="#cb59-7" aria-hidden="true" tabindex="-1"></a>h <span class="ot">=</span> <span class="cf">function</span>() {</span>
+<span id="cb59-8"><a href="#cb59-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">&quot;h&#39;s environment:&quot;</span>, <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb59-9"><a href="#cb59-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">print</span>(<span class="fu">environment</span>(h))</span>
+<span id="cb59-10"><a href="#cb59-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">&quot;h&#39;s parent environment:&quot;</span>, <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb59-11"><a href="#cb59-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">print</span>(<span class="fu">parent.env</span>(<span class="fu">environment</span>(h)))</span>
+<span id="cb59-12"><a href="#cb59-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(d <span class="sc">*</span> (w <span class="sc">+</span> y))</span>
+<span id="cb59-13"><a href="#cb59-13" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb59-14"><a href="#cb59-14" aria-hidden="true" tabindex="-1"></a><span class="fu">f</span>(<span class="dv">5</span>)</span></code></pre></div>
+<pre><code>## h&#39;s environment: 
+## &lt;environment: R_GlobalEnv&gt;
+## h&#39;s parent environment: 
+## &lt;environment: package:knitr&gt;
+## attr(,&quot;name&quot;)
+## [1] &quot;package:knitr&quot;
+## attr(,&quot;path&quot;)
+## [1] &quot;/Library/Frameworks/R.framework/Versions/4.1/Resources/library/knitr&quot;</code></pre>
+<pre><code>## Error in h(): object &#39;d&#39; not found</code></pre>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>This perhaps seems overly baroque, but the take-home points about
+environments (and the reason why they are set up the way they are)
+are:</p>
+<ul class="incremental">
+<li><p>Commands called in the body of the function usually have access
+to values of the variables in that function plus variables at higher
+levels.</p></li>
+<li><p>Variables defined in the body of a function go away after the
+function exits.</p></li>
+</ul>
+</div>
+<div id="side-effects" class="slide section level2">
+<h1>Side effects</h1>
+<p>A function has a <em>side effect</em> if it does anything other than
+compute a return value, for instance, if it changes the values of other
+variables in the environment it is defined in, or adds variables to the
+environment.</p>
+<p>We generally don’t want functions to have side effects, because they
+make code more confusing and more difficult to test.</p>
+<p>In R, functions <em>can</em> have side effects, but it is discouraged
+by both the language itself and by programming norms.</p>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<p>Remember that functions can see variables defined in the parent
+environments.</p>
+<p>What they can’t do is change the values of those variables (except
+with a special operator).</p>
+<p>For example:</p>
+<div class="sourceCode" id="cb62"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>w <span class="ot">&lt;-</span> <span class="dv">12</span></span>
+<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a>f <span class="ot">&lt;-</span> <span class="cf">function</span>(y) {</span>
+<span id="cb62-3"><a href="#cb62-3" aria-hidden="true" tabindex="-1"></a>   d <span class="ot">&lt;-</span> <span class="dv">8</span></span>
+<span id="cb62-4"><a href="#cb62-4" aria-hidden="true" tabindex="-1"></a>   w <span class="ot">&lt;-</span> w <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb62-5"><a href="#cb62-5" aria-hidden="true" tabindex="-1"></a>   y <span class="ot">&lt;-</span> y <span class="sc">-</span> <span class="dv">2</span></span>
+<span id="cb62-6"><a href="#cb62-6" aria-hidden="true" tabindex="-1"></a>   <span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;Value of w: %i&quot;</span>, w), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb62-7"><a href="#cb62-7" aria-hidden="true" tabindex="-1"></a>   <span class="fu">return</span>(d <span class="sc">*</span> (w <span class="sc">+</span> y))</span>
+<span id="cb62-8"><a href="#cb62-8" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb62-9"><a href="#cb62-9" aria-hidden="true" tabindex="-1"></a>t <span class="ot">&lt;-</span> <span class="dv">4</span></span>
+<span id="cb62-10"><a href="#cb62-10" aria-hidden="true" tabindex="-1"></a><span class="fu">f</span>(t)</span></code></pre></div>
+<pre><code>## Value of w: 13</code></pre>
+<pre><code>## [1] 120</code></pre>
+<div class="sourceCode" id="cb65"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a>w</span></code></pre></div>
+<pre><code>## [1] 12</code></pre>
+<p>It looks like the value of <code>w</code> changed inside the
+function, but the value in the global environment was not actually
+changed.</p>
+</div>
+</div>
+</body>
+</html>

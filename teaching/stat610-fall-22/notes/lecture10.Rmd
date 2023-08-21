@@ -1,0 +1,400 @@
+## Debugging
+
+Reading: Matloff Chapter 13
+
+Today: Debugging
+
+- Common causes of bugs
+
+- Bug processing
+
+- Debugging operations in R
+
+- Examples
+
+
+
+
+## Some common causes of bugs
+
+Syntax problems:
+
+. . .
+
+- Parentheses mismatches, particularly when nesting functions.
+
+```{r}
+data(diamonds)
+mean(subset(diamonds$carat), cut == "Ideal")
+```
+
+- `=` instead of `==`.
+
+```{r}
+mean(subset(diamonds$carat, cut = "Ideal"))
+```
+
+- Arguments to functions given in the wrong order.
+
+-----
+
+Inputs to functions are of a type you didn't expect:
+
+. . .
+
+- `[[]]` vs. `[]`: element of a list vs. sublist
+
+. . .
+
+- Vectors vs. single values: You assume a single value but have a vector with more than one element, unexpected recycling.
+
+. . .
+
+- Silent type conversions: when converting from a data frame to an array, or when creating a data frame.
+
+. . .
+
+- NA values in data where they're not allowed.
+
+-----
+
+Scope issues/global variables:
+
+- Function relies on a global variable with the wrong value.
+
+- You tried to use a function to change a global variable.
+
+- Confusion between arguments to the function and global variables.
+
+
+
+## Bug processing
+
+Once you realize you have a bug, there are three steps:
+
+- Characterize the bug
+
+- Localize the bug
+
+- Fix the bug
+
+-----
+
+Characterizing the bug:
+
+- Be able to reproduce the bug
+
+- Test on simpler examples
+
+- See where you get correct and incorrect output
+
+-----
+
+Localizing the bug
+
+- First find the function that made the issue (`traceback` helps here)
+
+- Find the line in that function that made the bug (single-stepping through the function or adding print statements in places you think are likely to have gone wrong).
+
+## Overall principle for debugging
+
+Aside from syntax errors, bugs are assumptions you made when writing the code that aren't actually true.
+
+This is Matloff's principle of confirmation:
+
+> Fixing a buggy program is a process of confirming, one by one, that the many things you _believe_ to be true about the code actually _are_ true. When you find that one of your assumptions is _not_ true, you have found a clue about the location (if not the exact nature) of a bug.
+
+
+
+## Main debugging operations
+
+Stepping through the source code
+
+- In R, you can use the `debug` function or set breakpoints.
+
+- Pretty good control over _how_ to step through: options for line by line, step into functions, continue through loops.
+
+Inspecting variables
+
+- A low-rent way of doing this is to add `print` statements to your function.
+
+- R's browser allows you to inspect variables in the function's environment at intermediate points in execution.
+
+## Setting up a function for debugging
+
+- `debug(function)`
+
+- Put a call to `browser()` somewhere in the function.
+
+- Set a breakpoint in the function.
+
+-----
+
+
+The `debug` function:
+
+- Syntax: `debug(fn)`
+
+- Undoing the debugging is with `undebug(fn)`
+
+- Takes you to the browser at the beginning of the function
+
+-----
+
+```{r, eval = FALSE}
+f <- function(y, z) {
+    x <- y^2 - 3 * z^2
+    w <- 28
+    if (x > 0 && a > 0) {
+        u <- 1 + x
+    } else {
+        u <- 10
+    }
+    return(u)
+}
+f(y = 0, z = 1)
+f(y = 1, z = 0)
+## try:
+debug(f)
+f(y = 1, z = 0)
+```
+
+-----
+
+The `browser` function:
+
+- Syntax: `browser(expr = condition)`
+
+- `condition` is some expression, if it evaluates to `TRUE` you enter the browser.
+
+
+- If you don't specify a condition, the function stops executing and
+you enter the browser when you reach the `browser` line in the
+function.
+
+-----
+
+
+```{r, eval=FALSE}
+f <- function(y, z) {
+    x <- y^2 - 3 * z^2
+    w <- 28
+    browser(expr = x > 0)
+    if (x > 0 && a > 0) {
+        u <- 1 + x
+    } else {
+        u <- 10
+    }
+    return(u)
+}
+f(y = 0, z = 1)
+f(y = 1, z = 0)
+```
+
+
+-----
+
+The `setBreakpoint` function
+
+- Syntax: `setBreakpoint(filename, linenumber)`
+
+- This is what the RStudio breakpoints do.
+
+- Undoing a breakpoint is with `untrace(g)`
+
+- Takes you to the browser at the breakpoint.
+
+- Slightly nicer than `browser()` because the code for the function itself doesn't change.
+
+-----
+
+Commands once you're in the browser
+
+- `n`: Execute the next command.
+
+- `s`: Step into the next function.
+
+- `f`: Finish the current loop or function.
+
+- `c`: Continue execution normally.
+
+- `where`: Prints a _stack trace_, the sequence of function calls that led to the current execution.
+
+- `Q`: Stop the function and return to console.
+
+------
+
+```{r, eval = FALSE}
+g <- function(a) {
+    y <- a^2 + 3
+    if(y - 10 > 2) {
+        return(y)
+    } else {
+        return(z)
+    }
+}
+f <- function(y, z) {
+    x <- y^2 - 3 * g(z)
+    w <- 28
+    if (x > 0 && a > 0) {
+        u <- 1 + x
+    } else {
+        u <- 10
+    }
+    return(u)
+}
+f(y = 0, z = 1)
+debug(f)
+f(y = 0, z = 1)
+```
+
+------
+
+## Debugging after an error
+
+The `traceback` function:
+
+- Syntax: `traceback()`, called after a crash (in RStudio the traceback is printed automatically after an error).
+
+- Provides the list of function calls leading to the error, allows you to localize the bug.
+
+- If the traceback has a combination of functions that you wrote and functions in base R, focus your attention on those that you wrote.
+
+-----
+
+```{r, eval=FALSE}
+f <- function(y, z) {
+    x <- y^2 - 3 * z^2
+    w <- 28
+    if (x > 0 && a > 0) {
+        u <- 1 + x
+    } else {
+        u <- 10
+    }
+    return(u)
+}
+f(y = 1, z = 0)
+traceback()
+```
+
+-----
+
+```{r, eval=FALSE}
+g <- function(a) {
+    y <- a^2 + 3
+    if(y - 10 > 2) {
+        return(y)
+    } else {
+        return(z)
+    }
+}
+f <- function(y, z) {
+    x <- y^2 - 3 * g(z)
+    w <- 28
+    if (x > 0 && a > 0) {
+        u <- 1 + x
+    } else {
+        u <- 10
+    }
+    return(u)
+}
+f(y = 1, z = 0)
+traceback()
+f(y = 10, z = 3.1)
+traceback()
+```
+
+
+-----
+
+The `debugger` function:
+
+- Syntax: `debugger()`
+
+- You need to have set `options(error=dump.frames)` for this to work.
+
+- If your function crashes and you call `debugger()`, you can inspect variables in any of the function environments.
+
+- If you set `options(error=recover)`, you enter the debugger automatically when a function crashes.
+
+-----
+
+```{r, eval = FALSE}
+options(error = dump.frames)
+f(y = 1,z = 0)
+debugger()
+```
+
+## Example 1
+
+`findruns` is supposed to find the starting positions of all the runs of 1's of length `k` in `x`:
+
+. . .
+
+```{r, eval = FALSE}
+findruns <- function(x, k) {
+    n <- length(x)
+    runs <- NULL
+    for(i in 1:(n-k)) {
+        if(all(x[i:i+k-1] == 1)) {
+            runs <- c(runs, i)
+        }
+
+    }
+    return(runs)
+}
+findruns(c(1,0,0,1,1,0,1,1,1),2)
+```
+
+
+## Example 2
+
+
+```{r, eval = FALSE}
+## returns the minimum value of d[i,j], i != j, and
+## the row/col attaining that minimum, for square
+## symmetric matrix d; no special policy on ties;
+## motivated by distance matrices
+mind <- function(d) {
+    n <- nrow(d)
+    ## add a column to identify row number for apply()
+    dd <- cbind(d, 1:n)
+    wmins <- apply(dd[-n, ], 1, imin)
+    ## wmins will be 2xn, 1st row being indices and 2nd being values
+    i <- which.min(wmins[1, ])
+    j <- wmins[2, i]
+    return(c(d[i, j], i, j))
+}
+
+## finds the location, value of the minimum in a row x
+imin <- function(x) {
+    n <- length(x)
+    i <- x[n]
+    j <- which.min(x[(i + 1):(n - 1)])
+    return(c(j, x[j]))
+}
+
+m <- rbind(c(0, 12, 5), c(12, 0, 8), c(5, 8, 0))
+```
+
+```{r, eval = FALSE, echo = FALSE}
+mind(m)
+options(error = dump.frames)
+mind(m)
+debugger()
+options(error = recover)
+mind(m)
+```
+
+
+## Antibugging or defensive coding
+
+- When you're writing code, think about what you're assuming the inputs should be.
+
+- Write those assumptions in explicitly and test for them, with things like `stopifnot`, `error`, `warning`.
+
+- Write small functions with well defined inputs and outputs, makes it easier to check whether they're doing the right thing during debugging.
+
+- Write code so that it is clear what each line/function is expected to do. This makes it easier to check whether what you assume it does is the same as what it actually does.
+<br><br>
+This includes: comments, descriptive names for variables, descriptive names for functions.
