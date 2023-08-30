@@ -1,8 +1,6 @@
 ## Logistics
 
-- Homework 0 due next Thursday.
-
-- Lab 1 will happen on Friday with John, script and data will be posted at jfukuyama.github.io/teaching/stat610/assignments.
+Lab 1 will happen on Friday, script and data posted at jfukuyama.github.io/teaching/stat610/assignments.
 
 ## Regular expressions
 
