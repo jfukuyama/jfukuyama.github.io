@@ -6,65 +6,12 @@ set.seed(0)
 
 Agenda for today:
 
-- Finish up from last time
+- Show some examples of how you might write functions.
 
-- We'll write some functions that let us investigate the birthday problem.
+> It is my purpose to transmit the importance of good taste and style in programming, [but] the specific elements of style presented serve only to illustrate what benefits can be derived from "style" in general. In this respect I feel akin to the teacher of composition at a conservatory: He does not teach his pupils how to compose a particular symphony, he must help his pupils to find their own style and must explain to them what is implied by this. (It has been this analogy that made me talk about "The Art of Programming.")
 
+Don Knuth, quoting Dijkstra in his book "Literate Programming"
 
-## Side effects
-
-A function has a _side effect_ if it does anything other than compute a return value, for instance, if it changes the values of other variables in the environment it is defined in, or adds variables to the environment.
-
-We generally don't want functions to have side effects, because they make code more confusing and more difficult to test.
-
-In R, functions _can_ have side effects, but it is discouraged by both the language itself and by programming norms.
-
-
------
-
-. . .
-
-Remember that functions can see variables defined in the parent environments.
-
-What they can't do is change the values of those variables (except with a special operator).
-
-For example:
-
-
-```{r}
-w <- 12
-f <- function(y) {
-   d <- 8
-   w <- w + 1
-   y <- y - 2
-   cat(sprintf("Value of w: %i", w))
-   h <- function() {
-      return(d*(w+y))
-   }
-   return(h())
-}
-t <- 4
-f(t)
-w
-```
-
-It looks like the value of `w` changed inside the function, but the value in the global environment was not actually changed.
-
------
-
-Primary exceptions to the no side effects rule:
-
-- Plotting
-
-- Data export
-
-## The complement of the no side effects rule
-
-- No side effects says in part that functions shouldn't change variables in the global environment (or any other environment).
-
-- Your functions also should not read from environments other than the function's execution environment.
-
-This rule isn't as strong/there are more exceptions, but in general all the variables your function uses should be given as arguments to the function.
 
 
 ## Some suggestions for writing functions
@@ -280,6 +227,94 @@ estimate_birthday_match_probability(n_people = 23,
                                     n_sim = 10000)
 ```
 
+
+## Another example: Data import
+
+We are trying to import data from the CDC's infant mortality records ([zipped data](https://ftp.cdc.gov/pub/Health_Statistics/NCHS/Datasets/DVS/cohortlinkedus/LinkCO15US.zip), [data description](https://ftp.cdc.gov/pub/Health_Statistics/NCHS/Dataset_Documentation/DVS/cohortlinked/LinkCO15Guide.pdf))
+
+The data file consists of lines of characters, each of the same length.
+
+Variables are given by their position within the line, e.g. the four-digit birth year is at indices 9-12, the two-digit age of the mother is at indices 75-76, and so on.
+
+We need to write our own functions to extract any variables we want to work with.
+
+```{r}
+library(stringr)
+num <- read.delim("VS15LKBC.PublicUse.USNUMPUB_2019_11_25")
+## we want to separate all the characters into individual elements
+separated <- strsplit(x = num[,1], split = "")
+n <- length(separated)
+char_matrix <- matrix("",
+                     nrow = length(separated),
+                     ncol = length(separated[[1]]))
+for(i in 1:length(separated)) {
+    char_matrix[i,] <- separated[[i]]
+}
+
+## extract birth year, in indices 9:12
+birth_year <- rep(NA, n)
+for(i in 1:nrow(char_matrix)) {
+    birth_year[i] <- paste(char_matrix[i, 9:12], collapse = "")
+}
+table(birth_year)
+```
+
+
+-----
+
+Suppose we want to be able to extract a lot of different variables. It makes sense to create a function.
+```{r}
+
+extract_variable <- function(start_idx, end_idx, mat, numeric = TRUE) {
+    ## this is the character version of the variable
+    variable_char <- rep(NA, n)
+    for(i in 1:nrow(char_matrix)) {
+        variable_char[i] <- paste(mat[i, start_idx:end_idx, drop = FALSE], collapse = "")
+    }
+
+    ## if we need to change the character to numeric, we do so
+    if(numeric) {
+        variable_numeric <- as.numeric(variable_char)
+        return(variable_numeric)
+    }
+    return(variable_char)
+}
+
+
+birth_year <- extract_variable(9, 12, char_matrix)
+mothers_age <- extract_variable(75, 76, char_matrix)
+summary(birth_year)
+summary(mothers_age)
+```
+
+
+-----
+
+We later learn that some of the variables use specific numbers (e.g. 9, 99, 999) as NA values. We might want to modify our function to deal with these.
+```{r}
+extract_variable <- function(start_idx, end_idx, mat,
+                            numeric = TRUE, na.val = NULL) {
+    variable_char <- rep(NA, n)
+    for(i in 1:nrow(char_matrix)) {
+        variable_char[i] <- paste(mat[i, start_idx:end_idx, drop = FALSE], collapse = "")
+    }
+    ## if we need to change the character to numeric, we do so
+    if(numeric) {
+        variable_numeric <- as.numeric(variable_char)
+        if(!is.null(na.val)) {
+            variable_numeric[variable_numeric == na.val] = NA
+        }
+        return(variable_numeric)
+    }
+    return(variable_char)
+}
+birth_year <- extract_variable(9, 12, char_matrix)
+summary(birth_year)
+mothers_age <- extract_variable(75, 76, char_matrix)
+summary(mothers_age)
+gest_age <- extract_variable(492, 493, char_matrix, na.val = 99)
+summary(gest_age)
+```
 
 -----
 
