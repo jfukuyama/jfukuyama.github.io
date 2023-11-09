@@ -212,7 +212,7 @@ We still have
 - Observed data: $y_1 = 3, y_2 = 3$
 
 ```{r}
-n_samples <- 2
+n_samples <- 4
 data_generating_function <- function(theta) rpois(n = n_samples, lambda = theta)
 observed_data <- rep(3, n_samples)
 generate_abc_sample(observed_data, prior_distribution, data_generating_function)
@@ -317,6 +317,17 @@ posterior_samples <- replicate(n = 1000,
                           epsilon))
 ```
 
+```{r}
+system.time(
+replicate(n = 1000,
+    generate_abc_sample_2(observed_data,
+                          summary_statistic,
+                          prior_distribution,
+                          data_generating_function,
+                          epsilon))
+)
+```
+
 -----
 
 
@@ -337,7 +348,7 @@ Checking on the posterior distributions:
 
 ```{r}
 qplot(posterior_samples) + xlim(c(0, max(theta_vec)))
-plot(dgamma(theta_vec, shape = 1 + sum(observed_data), rate = n_samples + 1) ~ x_vec, type = 'l', ylab = "True posterior density", xlab = "theta")
+plot(dgamma(theta_vec, shape = 1 + sum(observed_data), rate = n_samples + 1) ~ theta_vec, type = 'l', ylab = "True posterior density", xlab = "theta")
 ```
 
 ## ABC: Some notes
