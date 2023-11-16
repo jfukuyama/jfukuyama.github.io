@@ -101,7 +101,7 @@ $$
 \begin{align*}
 \pi(X_i)q(X_j \mid X_i) a_{ij} &= \pi(X_i) q(X_j \mid X_i) \frac{\pi(X_j)}{\pi(X_i)} \\ 
 &= q(X_j \mid X_i) \pi(X_j) \\
-&= \pi(X_j) q(X_j \mid X_i) a_{ji}
+&= \pi(X_j) q(X_i \mid X_j) a_{ji}
 \end{align*}
 $$
 
