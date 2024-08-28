@@ -4,7 +4,7 @@ Reading: Matloff Chapter 1, 2, 3.1, 3.2, 3.4, 3.5, 3.6, 3.7, 4.1, 4.2, 4.3
 
 Chapter 1: Don't worry about understanding everything in detail, but it gives a good overview and will help you have a slot for everything later.
 
-Also, you should probably not use his advice on getting help, the real way is to google your problem + R and click on the first stackoverflow link.
+Also, you should probably not use his advice on getting help, the real way is to google your problem + R and click on the first stackoverflow link or else ask chat gpt.
 
 It's almost never a good idea to ask for help on the mailing list.
 
