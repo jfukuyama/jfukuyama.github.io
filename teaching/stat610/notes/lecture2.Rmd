@@ -292,7 +292,7 @@ for(i in 1:nrow(People)) {
 Not a data problem:
 [Eddie Gaedel](https://en.wikipedia.org/wiki/Eddie_Gaedel)
 
-Question: does it matter whether we check for NA first? What could potentially happen if we check for height first instead?
+Question: does it matter whether we check for NA first?
 
 ## While loops
 
