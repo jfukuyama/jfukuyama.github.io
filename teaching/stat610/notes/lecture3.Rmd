@@ -1,12 +1,11 @@
 ## Logistics
 
-Lab 1 will happen on Friday, script and data posted at jfukuyama.github.io/teaching/stat610/assignments.
+- Lab 1 will happen on Friday, script and data will be posted at jfukuyama.github.io/teaching/stat610/assignments.
 
 ## Regular expressions
 
 Reading: Matloff Chapter 11.2.
 
-I've linked to a couple of regular expression testers from the page with the course notes.
 
 [Wikipedia](https://en.wikipedia.org/wiki/Regular_expression) actually has a good treatment if you go through it slowly.
 
