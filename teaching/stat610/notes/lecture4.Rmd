@@ -95,9 +95,23 @@ cat("We use the '\\' character to escape")
 
 -----
 
-Last time, we went through anchors a little bit quickly.
+## From last time: Greedy quantification
 
-The rules were:
+By default, quantifiers are greedy, meaning they match the longest
+substring possible.
+
+We can make them have the opposite behavior by modifying them with the
+`?` character: in that case, they match the shortest substring
+possible.
+
+```{r}
+regmatches("[i][j]", regexpr("\\[.*\\]", "[i][j]"))
+regmatches("[i][j]", regexpr("\\[.*?\\]", "[i][j]"))
+```
+
+
+
+## Anchoring
 
 - `^` (not inside square brackets) means that what comes after must be
 at the start of a line.
