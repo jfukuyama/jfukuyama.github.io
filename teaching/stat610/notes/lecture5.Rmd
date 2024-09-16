@@ -5,7 +5,7 @@ Reading:
 - Matloff Section 1.3, 7.3-7.6 (7.6 is presented rather
 formally), 7.12, 7.13
 
-- If you want more detail on environments: _Advanced R_ by Hadley Wickham has a good [chapter](http://adv-r.had.co.nz/Environments.html) on them.
+- If you want more detail on environments: _Advanced R_ by Hadley Wickham has a good [chapter](http://adv-r.had.co.nz/Environments.html) on them. That chapter makes a distinction between a function's _enclosing_ environment and its _binding_ environment, but for the purposes of this class we are going to assume those are always the same.
 
 - More relevant for next time: _Clean Code_ by Robert Martin, [Chapter 3](https://iucat.iu.edu/iub/16580380).
 
@@ -244,7 +244,7 @@ oddcount <- function(x) {
     }
 }
 oddcount(x = c(0, 5))
-oddcount_output = oddcount(x = c(0, 5))
+oddcount_output <- oddcount(x = c(0, 5))
 oddcount_output
 ```
 
@@ -277,7 +277,7 @@ body(g())
 
 When you call a function, the commands in the function body are executed, but not in exactly the same way they would be if you simply ran them one at a time in an interactive R session.
 
-The commands are executed in the function's _environment_.
+The commands are executed in the function's _execution environment_.
 
 ## Environments
 
@@ -334,7 +334,7 @@ Package environments are all ancestral to the global environment, so when R foun
 
 . . .
 
-When a function is called, its body is evaluated in an execution environment whose parent is the function's environment.
+When a function is called, its body is evaluated in an _execution environment_ whose parent is the function's _enclosing environment_.
 
 ```{r}
 w <- 12
@@ -343,9 +343,9 @@ f <- function(y) {
     h <- function() {
         return(d * (w + y))
     }
-    cat("h's environment: ", "\n")
+    cat("h's enclosing environment: ", "\n")
     print(environment(h))
-    cat("h's parent environment:", "\n")
+    cat("parent of h's enclosing environment:", "\n")
     print(parent.env(environment(h)))
     output <- h()
     return(output)
@@ -361,16 +361,16 @@ environment(f)
 Compare with:
 
 ```{r}
-f = function(y) {
+f <- function(y) {
     d <- 8
     output <- h()
     return(output)
 }
 
-h = function() {
-    cat("h's environment:", "\n")
+h <- function() {
+    cat("h's enclosing environment:", "\n")
     print(environment(h))
-    cat("h's parent environment:", "\n")
+    cat("parent of h's enclosing environment:", "\n")
     print(parent.env(environment(h)))
     return(d * (w + y))
 }
