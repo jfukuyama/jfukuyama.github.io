@@ -209,7 +209,7 @@ do_birthdays_match <- function(n_people, birthday_probabilities) {
 ```
 
 ```{r}
-do_birthdays_match(n_people = 23, birthday_probabilities = c(1, rep(0, 365)))
+do_birthdays_match(n_people = 23, birthday_probabilities = c(1, rep(0, 364)))
 ```
 
 -----
