@@ -199,7 +199,7 @@ people and check whether any of them share a birthday.</p>
 <span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>birthdays <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="at">x =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">365</span>, <span class="at">size =</span> n_people, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>n_birthdays_per_day <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">0</span>, <span class="dv">365</span>)</span>
 <span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a><span class="cf">for</span>(day <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">365</span>) {</span>
-<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a>    n_birthdays_per_day[day] <span class="ot">=</span> <span class="fu">sum</span>(birthdays <span class="sc">==</span> day)</span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a>    n_birthdays_per_day[day] <span class="ot">&lt;-</span> <span class="fu">sum</span>(birthdays <span class="sc">==</span> day)</span>
 <span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a>}</span>
 <span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a><span class="cf">if</span>(<span class="fu">max</span>(n_birthdays_per_day) <span class="sc">&gt;=</span> <span class="dv">2</span>) {</span>
 <span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a>    <span class="fu">print</span>(<span class="st">&quot;At least two people share a birthday&quot;</span>)</span>
@@ -219,7 +219,7 @@ probability of a match, we <em>could</em> use a for loop:</p>
 <span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a>    birthdays <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="at">x =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">365</span>, <span class="at">size =</span> n_people, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a>    n_birthdays_per_day <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">0</span>, <span class="dv">365</span>)</span>
 <span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a>    <span class="cf">for</span>(day <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">365</span>) {</span>
-<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a>        n_birthdays_per_day[day] <span class="ot">=</span> <span class="fu">sum</span>(birthdays <span class="sc">==</span> day)</span>
+<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a>        n_birthdays_per_day[day] <span class="ot">&lt;-</span> <span class="fu">sum</span>(birthdays <span class="sc">==</span> day)</span>
 <span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a>    }</span>
 <span id="cb11-10"><a href="#cb11-10" tabindex="-1"></a>    <span class="cf">if</span>(<span class="fu">max</span>(n_birthdays_per_day) <span class="sc">&gt;=</span> <span class="dv">2</span>) {</span>
 <span id="cb11-11"><a href="#cb11-11" tabindex="-1"></a>        match_vector[i] <span class="ot">&lt;-</span> <span class="st">&quot;birthdays match&quot;</span></span>
@@ -240,7 +240,7 @@ takes <code>n_people</code> as an argument.</p>
 <span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a>    birthdays <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="at">x =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">365</span>, <span class="at">size =</span> n_people, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a>    n_birthdays_per_day <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">0</span>, <span class="dv">365</span>)</span>
 <span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a>    <span class="cf">for</span>(day <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">365</span>) {</span>
-<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a>        n_birthdays_per_day[day] <span class="ot">=</span> <span class="fu">sum</span>(birthdays <span class="sc">==</span> day)</span>
+<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a>        n_birthdays_per_day[day] <span class="ot">&lt;-</span> <span class="fu">sum</span>(birthdays <span class="sc">==</span> day)</span>
 <span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a>    }</span>
 <span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a>    <span class="cf">if</span>(<span class="fu">max</span>(n_birthdays_per_day) <span class="sc">&gt;=</span> <span class="dv">2</span>) {</span>
 <span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a>        <span class="fu">return</span>(<span class="st">&quot;birthdays match&quot;</span>)</span>
@@ -289,7 +289,7 @@ probabilities</p>
 <span id="cb20-2"><a href="#cb20-2" tabindex="-1"></a>    birthdays <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="at">x =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">365</span>, <span class="at">size =</span> n_people, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb20-3"><a href="#cb20-3" tabindex="-1"></a>    n_birthdays_per_day <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">0</span>, <span class="dv">365</span>)</span>
 <span id="cb20-4"><a href="#cb20-4" tabindex="-1"></a>    <span class="cf">for</span>(day <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">365</span>) {</span>
-<span id="cb20-5"><a href="#cb20-5" tabindex="-1"></a>        n_birthdays_per_day[day] <span class="ot">=</span> <span class="fu">sum</span>(birthdays <span class="sc">==</span> day)</span>
+<span id="cb20-5"><a href="#cb20-5" tabindex="-1"></a>        n_birthdays_per_day[day] <span class="ot">&lt;-</span> <span class="fu">sum</span>(birthdays <span class="sc">==</span> day)</span>
 <span id="cb20-6"><a href="#cb20-6" tabindex="-1"></a>    }</span>
 <span id="cb20-7"><a href="#cb20-7" tabindex="-1"></a>    <span class="cf">if</span>(<span class="fu">max</span>(n_birthdays_per_day) <span class="sc">&gt;=</span> <span class="dv">2</span>) {</span>
 <span id="cb20-8"><a href="#cb20-8" tabindex="-1"></a>        <span class="fu">return</span>(<span class="st">&quot;birthdays match&quot;</span>)</span>
@@ -307,7 +307,7 @@ the year:</p>
 <span id="cb21-5"><a href="#cb21-5" tabindex="-1"></a>                        <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb21-6"><a href="#cb21-6" tabindex="-1"></a>    n_birthdays_per_day <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">0</span>, <span class="dv">365</span>)</span>
 <span id="cb21-7"><a href="#cb21-7" tabindex="-1"></a>    <span class="cf">for</span>(day <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">365</span>) {</span>
-<span id="cb21-8"><a href="#cb21-8" tabindex="-1"></a>        n_birthdays_per_day[day] <span class="ot">=</span> <span class="fu">sum</span>(birthdays <span class="sc">==</span> day)</span>
+<span id="cb21-8"><a href="#cb21-8" tabindex="-1"></a>        n_birthdays_per_day[day] <span class="ot">&lt;-</span> <span class="fu">sum</span>(birthdays <span class="sc">==</span> day)</span>
 <span id="cb21-9"><a href="#cb21-9" tabindex="-1"></a>    }</span>
 <span id="cb21-10"><a href="#cb21-10" tabindex="-1"></a>    <span class="cf">if</span>(<span class="fu">max</span>(n_birthdays_per_day) <span class="sc">&gt;=</span> <span class="dv">2</span>) {</span>
 <span id="cb21-11"><a href="#cb21-11" tabindex="-1"></a>        <span class="fu">return</span>(<span class="st">&quot;birthdays match&quot;</span>)</span>

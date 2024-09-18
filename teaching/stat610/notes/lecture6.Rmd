@@ -85,7 +85,7 @@ n_people <- 23
 birthdays <- sample(x = 1:365, size = n_people, replace = TRUE)
 n_birthdays_per_day <- rep(0, 365)
 for(day in 1:365) {
-    n_birthdays_per_day[day] = sum(birthdays == day)
+    n_birthdays_per_day[day] <- sum(birthdays == day)
 }
 if(max(n_birthdays_per_day) >= 2) {
     print("At least two people share a birthday")
@@ -106,7 +106,7 @@ for(i in 1:n_sim) {
     birthdays <- sample(x = 1:365, size = n_people, replace = TRUE)
     n_birthdays_per_day <- rep(0, 365)
     for(day in 1:365) {
-        n_birthdays_per_day[day] = sum(birthdays == day)
+        n_birthdays_per_day[day] <- sum(birthdays == day)
     }
     if(max(n_birthdays_per_day) >= 2) {
         match_vector[i] <- "birthdays match"
@@ -127,7 +127,7 @@ do_birthdays_match <- function(n_people) {
     birthdays <- sample(x = 1:365, size = n_people, replace = TRUE)
     n_birthdays_per_day <- rep(0, 365)
     for(day in 1:365) {
-        n_birthdays_per_day[day] = sum(birthdays == day)
+        n_birthdays_per_day[day] <- sum(birthdays == day)
     }
     if(max(n_birthdays_per_day) >= 2) {
         return("birthdays match")
@@ -176,7 +176,7 @@ do_birthdays_match <- function(n_people) {
     birthdays <- sample(x = 1:365, size = n_people, replace = TRUE)
     n_birthdays_per_day <- rep(0, 365)
     for(day in 1:365) {
-        n_birthdays_per_day[day] = sum(birthdays == day)
+        n_birthdays_per_day[day] <- sum(birthdays == day)
     }
     if(max(n_birthdays_per_day) >= 2) {
         return("birthdays match")
@@ -198,7 +198,7 @@ do_birthdays_match <- function(n_people, birthday_probabilities) {
                         replace = TRUE)
     n_birthdays_per_day <- rep(0, 365)
     for(day in 1:365) {
-        n_birthdays_per_day[day] = sum(birthdays == day)
+        n_birthdays_per_day[day] <- sum(birthdays == day)
     }
     if(max(n_birthdays_per_day) >= 2) {
         return("birthdays match")
