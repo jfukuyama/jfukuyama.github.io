@@ -10,12 +10,21 @@
   <style type="text/css">
     code{white-space: pre-wrap;}
     span.smallcaps{font-variant: small-caps;}
-    span.underline{text-decoration: underline;}
-    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
     div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
-    ul.task-list{list-style: none;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    /* CSS for syntax highlighting */
     pre > code.sourceCode { white-space: pre; position: relative; }
-    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span { line-height: 1.25; }
     pre > code.sourceCode > span:empty { height: 1.2em; }
     .sourceCode { overflow: visible; }
     code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -52,7 +61,7 @@
     code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
     code span.at { color: #7d9029; } /* Attribute */
     code span.bn { color: #40a070; } /* BaseN */
-    code span.bu { } /* BuiltIn */
+    code span.bu { color: #008000; } /* BuiltIn */
     code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
     code span.ch { color: #4070a0; } /* Char */
     code span.cn { color: #880000; } /* Constant */
@@ -65,7 +74,7 @@
     code span.ex { } /* Extension */
     code span.fl { color: #40a070; } /* Float */
     code span.fu { color: #06287e; } /* Function */
-    code span.im { } /* Import */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
     code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
     code span.kw { color: #007020; font-weight: bold; } /* Keyword */
     code span.op { color: #666666; } /* Operator */
@@ -165,9 +174,9 @@ elements.</p></li>
 
 <p>Example:</p>
 <div class="incremental">
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(plyr)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>a_list <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">a =</span> <span class="dv">1</span>, <span class="at">b =</span> <span class="st">&quot;state&quot;</span>, <span class="at">c =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>a_list</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(plyr)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>a_list <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">a =</span> <span class="dv">1</span>, <span class="at">b =</span> <span class="st">&quot;state&quot;</span>, <span class="at">c =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>a_list</span></code></pre></div>
 <pre><code>## $a
 ## [1] 1
 ## 
@@ -176,15 +185,15 @@ elements.</p></li>
 ## 
 ## $c
 ## [1] TRUE</code></pre>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">laply</span>(a_list, typeof)</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">laply</span>(a_list, typeof)</span></code></pre></div>
 <pre><code>## [1] &quot;double&quot;    &quot;character&quot; &quot;logical&quot;</code></pre>
 </div>
 </div>
 <div class="slide section level2">
 
 <p><code>l*ply</code> will also work on vectors, e.g.:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>vec <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">10</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">laply</span>(vec, log)</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>vec <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">10</span></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="fu">laply</span>(vec, log)</span></code></pre></div>
 <pre><code>##  [1] 0.0000000 0.6931472 1.0986123 1.3862944 1.6094379 1.7917595 1.9459101
 ##  [8] 2.0794415 2.1972246 2.3025851</code></pre>
 </div>
@@ -206,19 +215,19 @@ data (generally a row or column vector).</p></li>
 
 <div class="incremental">
 <p>Example:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>X <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">6</span>, <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">ncol =</span> <span class="dv">3</span>)</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>X</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>X <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">6</span>, <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">ncol =</span> <span class="dv">3</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>X</span></code></pre></div>
 <pre><code>##      [,1] [,2] [,3]
 ## [1,]    1    3    5
 ## [2,]    2    4    6</code></pre>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">aaply</span>(X, <span class="dv">1</span>, sum)</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="fu">aaply</span>(X, <span class="dv">1</span>, sum)</span></code></pre></div>
 <pre><code>##  1  2 
 ##  9 12</code></pre>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">adply</span>(X, <span class="dv">1</span>, sum)</span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="fu">adply</span>(X, <span class="dv">1</span>, sum)</span></code></pre></div>
 <pre><code>##   X1 V1
 ## 1  1  9
 ## 2  2 12</code></pre>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">alply</span>(X, <span class="dv">1</span>, sum)</span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="fu">alply</span>(X, <span class="dv">1</span>, sum)</span></code></pre></div>
 <pre><code>## $`1`
 ## [1] 9
 ## 
@@ -250,8 +259,8 @@ arrays/matrices.</p></li>
 
 <div class="incremental">
 <p>Example on a 3-dimensional array:</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(HairEyeColor)</span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>HairEyeColor</span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="fu">data</span>(HairEyeColor)</span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a>HairEyeColor</span></code></pre></div>
 <pre><code>## , , Sex = Male
 ## 
 ##        Eye
@@ -269,9 +278,9 @@ arrays/matrices.</p></li>
 ##   Brown    66   34    29    14
 ##   Red      16    7     7     7
 ##   Blond     4   64     5     8</code></pre>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(HairEyeColor)</span></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a><span class="fu">dim</span>(HairEyeColor)</span></code></pre></div>
 <pre><code>## [1] 4 4 2</code></pre>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dimnames</span>(HairEyeColor)</span></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a><span class="fu">dimnames</span>(HairEyeColor)</span></code></pre></div>
 <pre><code>## $Hair
 ## [1] &quot;Black&quot; &quot;Brown&quot; &quot;Red&quot;   &quot;Blond&quot;
 ## 
@@ -280,7 +289,7 @@ arrays/matrices.</p></li>
 ## 
 ## $Sex
 ## [1] &quot;Male&quot;   &quot;Female&quot;</code></pre>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">adply</span>(HairEyeColor, <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>), sum)</span></code></pre></div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a><span class="fu">adply</span>(HairEyeColor, <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>), sum)</span></code></pre></div>
 <pre><code>##     Hair   Eye  V1
 ## 1  Black Brown  68
 ## 2  Brown Brown 119
@@ -323,25 +332,24 @@ data.</p></li>
 <div class="slide section level2">
 
 <p>For example: Star Wars</p>
-<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(starwars, <span class="at">package =</span> <span class="st">&quot;dplyr&quot;</span>)</span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>starwars</span></code></pre></div>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" tabindex="-1"></a><span class="fu">data</span>(starwars, <span class="at">package =</span> <span class="st">&quot;dplyr&quot;</span>)</span>
+<span id="cb23-2"><a href="#cb23-2" tabindex="-1"></a>starwars</span></code></pre></div>
 <pre><code>## # A tibble: 87 × 14
-##    name        height  mass hair_…¹ skin_…² eye_c…³ birth…⁴ sex   gender homew…⁵
-##    &lt;chr&gt;        &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;     &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt;  &lt;chr&gt;  
-##  1 Luke Skywa…    172    77 blond   fair    blue       19   male  mascu… Tatooi…
-##  2 C-3PO          167    75 &lt;NA&gt;    gold    yellow    112   none  mascu… Tatooi…
-##  3 R2-D2           96    32 &lt;NA&gt;    white,… red        33   none  mascu… Naboo  
-##  4 Darth Vader    202   136 none    white   yellow     41.9 male  mascu… Tatooi…
-##  5 Leia Organa    150    49 brown   light   brown      19   fema… femin… Aldera…
-##  6 Owen Lars      178   120 brown,… light   blue       52   male  mascu… Tatooi…
-##  7 Beru White…    165    75 brown   light   blue       47   fema… femin… Tatooi…
-##  8 R5-D4           97    32 &lt;NA&gt;    white,… red        NA   none  mascu… Tatooi…
-##  9 Biggs Dark…    183    84 black   light   brown      24   male  mascu… Tatooi…
-## 10 Obi-Wan Ke…    182    77 auburn… fair    blue-g…    57   male  mascu… Stewjon
-## # … with 77 more rows, 4 more variables: species &lt;chr&gt;, films &lt;list&gt;,
-## #   vehicles &lt;list&gt;, starships &lt;list&gt;, and abbreviated variable names
-## #   ¹​hair_color, ²​skin_color, ³​eye_color, ⁴​birth_year, ⁵​homeworld
-## # ℹ Use `print(n = ...)` to see more rows, and `colnames()` to see all variable names</code></pre>
+##    name     height  mass hair_color skin_color eye_color birth_year sex   gender
+##    &lt;chr&gt;     &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;      &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt; 
+##  1 Luke Sk…    172    77 blond      fair       blue            19   male  mascu…
+##  2 C-3PO       167    75 &lt;NA&gt;       gold       yellow         112   none  mascu…
+##  3 R2-D2        96    32 &lt;NA&gt;       white, bl… red             33   none  mascu…
+##  4 Darth V…    202   136 none       white      yellow          41.9 male  mascu…
+##  5 Leia Or…    150    49 brown      light      brown           19   fema… femin…
+##  6 Owen La…    178   120 brown, gr… light      blue            52   male  mascu…
+##  7 Beru Wh…    165    75 brown      light      blue            47   fema… femin…
+##  8 R5-D4        97    32 &lt;NA&gt;       white, red red             NA   none  mascu…
+##  9 Biggs D…    183    84 black      light      brown           24   male  mascu…
+## 10 Obi-Wan…    182    77 auburn, w… fair       blue-gray       57   male  mascu…
+## # ℹ 77 more rows
+## # ℹ 5 more variables: homeworld &lt;chr&gt;, species &lt;chr&gt;, films &lt;list&gt;,
+## #   vehicles &lt;list&gt;, starships &lt;list&gt;</code></pre>
 </div>
 <div class="slide section level2">
 
@@ -358,13 +366,13 @@ world.</p>
 <div class="incremental">
 <p>First define a function that will take a subset of the data and find
 return to us the average height:</p>
-<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>get_avg_height <span class="ot">&lt;-</span> <span class="cf">function</span>(data_subset) {</span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>    avg_height <span class="ot">&lt;-</span> <span class="fu">mean</span>(data_subset<span class="sc">$</span>height)</span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(avg_height)</span>
-<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" tabindex="-1"></a>get_avg_height <span class="ot">&lt;-</span> <span class="cf">function</span>(data_subset) {</span>
+<span id="cb25-2"><a href="#cb25-2" tabindex="-1"></a>    avg_height <span class="ot">&lt;-</span> <span class="fu">mean</span>(data_subset<span class="sc">$</span>height)</span>
+<span id="cb25-3"><a href="#cb25-3" tabindex="-1"></a>    <span class="fu">return</span>(avg_height)</span>
+<span id="cb25-4"><a href="#cb25-4" tabindex="-1"></a>}</span></code></pre></div>
 <p>Then split <code>starwars</code> on the <code>homeworld</code>
 variable and apply <code>get_avg_height</code> to each data subset:</p>
-<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ddply</span>(starwars, .(homeworld), get_avg_height)</span></code></pre></div>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" tabindex="-1"></a><span class="fu">ddply</span>(starwars, .(homeworld), get_avg_height)</span></code></pre></div>
 <pre><code>##         homeworld       V1
 ## 1        Alderaan 176.3333
 ## 2     Aleen Minor  79.0000
@@ -393,7 +401,7 @@ variable and apply <code>get_avg_height</code> to each data subset:</p>
 ## 25         Mirial 168.0000
 ## 26       Mon Cala 180.0000
 ## 27     Muunilinst 191.0000
-## 28          Naboo 175.4545
+## 28          Naboo 177.2727
 ## 29      Nal Hutta 175.0000
 ## 30           Ojom 198.0000
 ## 31        Quermia 264.0000
@@ -426,12 +434,12 @@ individuals with yellow eyes on each world.</p>
 <li><p>What function do we apply to each subset of the data?</p></li>
 </ul>
 <div class="incremental">
-<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>get_frac_yellow_eyes <span class="ot">&lt;-</span> <span class="cf">function</span>(data_subset) {</span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>    num_yellow_eyes <span class="ot">&lt;-</span> <span class="fu">sum</span>(data_subset<span class="sc">$</span>eye_color <span class="sc">==</span> <span class="st">&quot;yellow&quot;</span>)</span>
-<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>    num_individuals <span class="ot">&lt;-</span> <span class="fu">nrow</span>(data_subset)</span>
-<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(num_yellow_eyes <span class="sc">/</span> num_individuals)</span>
-<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
-<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ddply</span>(starwars, .(homeworld), get_frac_yellow_eyes)</span></code></pre></div>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" tabindex="-1"></a>get_frac_yellow_eyes <span class="ot">&lt;-</span> <span class="cf">function</span>(data_subset) {</span>
+<span id="cb28-2"><a href="#cb28-2" tabindex="-1"></a>    num_yellow_eyes <span class="ot">&lt;-</span> <span class="fu">sum</span>(data_subset<span class="sc">$</span>eye_color <span class="sc">==</span> <span class="st">&quot;yellow&quot;</span>)</span>
+<span id="cb28-3"><a href="#cb28-3" tabindex="-1"></a>    num_individuals <span class="ot">&lt;-</span> <span class="fu">nrow</span>(data_subset)</span>
+<span id="cb28-4"><a href="#cb28-4" tabindex="-1"></a>    <span class="fu">return</span>(num_yellow_eyes <span class="sc">/</span> num_individuals)</span>
+<span id="cb28-5"><a href="#cb28-5" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" tabindex="-1"></a><span class="fu">ddply</span>(starwars, .(homeworld), get_frac_yellow_eyes)</span></code></pre></div>
 <pre><code>##         homeworld         V1
 ## 1        Alderaan 0.00000000
 ## 2     Aleen Minor 0.00000000
@@ -502,13 +510,13 @@ frame or a vector of a consistent length.</p></li>
 <div class="slide section level2">
 
 <div class="incremental">
-<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(diamonds)</span>
-<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>diamond_coefs <span class="ot">&lt;-</span> <span class="fu">ddply</span>(diamonds, .(color), <span class="cf">function</span>(data_subset) {</span>
-<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>    diamond_lm <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="fu">log</span>(price) <span class="sc">~</span> carat, <span class="at">data =</span> data_subset)</span>
-<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>    diamond_coefs <span class="ot">&lt;-</span> <span class="fu">coef</span>(diamond_lm)</span>
-<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(diamond_coefs)</span>
-<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>})</span>
-<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>diamond_coefs</span></code></pre></div>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" tabindex="-1"></a><span class="fu">data</span>(diamonds)</span>
+<span id="cb31-2"><a href="#cb31-2" tabindex="-1"></a>diamond_coefs <span class="ot">&lt;-</span> <span class="fu">ddply</span>(diamonds, .(color), <span class="cf">function</span>(data_subset) {</span>
+<span id="cb31-3"><a href="#cb31-3" tabindex="-1"></a>    diamond_lm <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="fu">log</span>(price) <span class="sc">~</span> carat, <span class="at">data =</span> data_subset)</span>
+<span id="cb31-4"><a href="#cb31-4" tabindex="-1"></a>    diamond_coefs <span class="ot">&lt;-</span> <span class="fu">coef</span>(diamond_lm)</span>
+<span id="cb31-5"><a href="#cb31-5" tabindex="-1"></a>    <span class="fu">return</span>(diamond_coefs)</span>
+<span id="cb31-6"><a href="#cb31-6" tabindex="-1"></a>})</span>
+<span id="cb31-7"><a href="#cb31-7" tabindex="-1"></a>diamond_coefs</span></code></pre></div>
 <pre><code>##   color (Intercept)    carat
 ## 1     D    6.048811 2.383864
 ## 2     E    6.034513 2.348335
@@ -517,14 +525,14 @@ frame or a vector of a consistent length.</p></li>
 ## 5     H    6.180284 1.906300
 ## 6     I    6.175315 1.799199
 ## 7     J    6.254074 1.627947</code></pre>
-<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>diamond_coefs_2 <span class="ot">&lt;-</span> <span class="fu">ddply</span>(diamonds, .(color), <span class="cf">function</span>(data_subset) {</span>
-<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>    diamond_lm <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="fu">log</span>(price) <span class="sc">~</span> carat, <span class="at">data =</span> data_subset)</span>
-<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>    diamond_coefs <span class="ot">&lt;-</span> <span class="fu">coef</span>(diamond_lm)</span>
-<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>    df_row <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">slope =</span> diamond_coefs[<span class="st">&#39;carat&#39;</span>],</span>
-<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>                         <span class="at">my_color_description =</span> <span class="fu">paste0</span>(<span class="st">&quot;color&quot;</span>, <span class="fu">unique</span>(data_subset<span class="sc">$</span>color)))</span>
-<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(df_row)</span>
-<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>})</span>
-<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>diamond_coefs_2</span></code></pre></div>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" tabindex="-1"></a>diamond_coefs_2 <span class="ot">&lt;-</span> <span class="fu">ddply</span>(diamonds, .(color), <span class="cf">function</span>(data_subset) {</span>
+<span id="cb33-2"><a href="#cb33-2" tabindex="-1"></a>    diamond_lm <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="fu">log</span>(price) <span class="sc">~</span> carat, <span class="at">data =</span> data_subset)</span>
+<span id="cb33-3"><a href="#cb33-3" tabindex="-1"></a>    diamond_coefs <span class="ot">&lt;-</span> <span class="fu">coef</span>(diamond_lm)</span>
+<span id="cb33-4"><a href="#cb33-4" tabindex="-1"></a>    df_row <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">slope =</span> diamond_coefs[<span class="st">&#39;carat&#39;</span>],</span>
+<span id="cb33-5"><a href="#cb33-5" tabindex="-1"></a>                         <span class="at">my_color_description =</span> <span class="fu">paste0</span>(<span class="st">&quot;color&quot;</span>, <span class="fu">unique</span>(data_subset<span class="sc">$</span>color)))</span>
+<span id="cb33-6"><a href="#cb33-6" tabindex="-1"></a>    <span class="fu">return</span>(df_row)</span>
+<span id="cb33-7"><a href="#cb33-7" tabindex="-1"></a>})</span>
+<span id="cb33-8"><a href="#cb33-8" tabindex="-1"></a>diamond_coefs_2</span></code></pre></div>
 <pre><code>##   color    slope my_color_description
 ## 1     D 2.383864               colorD
 ## 2     E 2.348335               colorE
@@ -543,8 +551,13 @@ what we got using <code>by</code> last time? Is it better?</p>
 <ul class="incremental">
 <li><p>Returns an array with dimension equal to the dimension of the
 split concatenated with the dimension of the output. <br><br> The first
-dimensions in the array correspond to the split dimensions, and
-subsequent dimensions correspond to the output dimensions.</p></li>
+dimensions in the array correspond to the split dimensions, and the last
+dimension(s) has/have the same size as the output from the processing
+function.</p></li>
+<li><p>Has a <code>.drop</code> argument, which is TRUE by default. Any
+dimensions of size 1 will be dropped (e.g., if the output would have
+been a 3 x 1 matrix, with <code>.drop = TRUE</code> you will get a
+length-3 vector).</p></li>
 <li><p>The processing function should return a vector or array of the
 same type and dimensionality each time it is called.</p></li>
 </ul>
@@ -554,18 +567,25 @@ same type and dimensionality each time it is called.</p></li>
 <div class="incremental">
 <p>Here we split along one dimension and have one-dimensional output.
 Similar to what we’ve seen before with apply in base R.</p>
-<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>X <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">6</span>, <span class="at">nrow =</span> <span class="dv">3</span>, <span class="at">ncol =</span> <span class="dv">2</span>)</span>
-<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>X</span></code></pre></div>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" tabindex="-1"></a>X <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">6</span>, <span class="at">nrow =</span> <span class="dv">3</span>, <span class="at">ncol =</span> <span class="dv">2</span>)</span>
+<span id="cb35-2"><a href="#cb35-2" tabindex="-1"></a>X</span></code></pre></div>
 <pre><code>##      [,1] [,2]
 ## [1,]    1    4
 ## [2,]    2    5
 ## [3,]    3    6</code></pre>
-<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>row_sums_x <span class="ot">&lt;-</span> <span class="fu">aaply</span>(X, <span class="dv">1</span>, sum)</span>
-<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(row_sums_x)</span></code></pre></div>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" tabindex="-1"></a>row_sums_x <span class="ot">&lt;-</span> <span class="fu">aaply</span>(X, <span class="dv">1</span>, sum, <span class="at">.drop =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb37-2"><a href="#cb37-2" tabindex="-1"></a><span class="fu">dim</span>(row_sums_x)</span></code></pre></div>
+<pre><code>## [1] 3 1</code></pre>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" tabindex="-1"></a>row_sums_x</span></code></pre></div>
+<pre><code>##    
+## X1  1
+##   1 5
+##   2 7
+##   3 9</code></pre>
+<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" tabindex="-1"></a>row_sums_x <span class="ot">&lt;-</span> <span class="fu">aaply</span>(X, <span class="dv">1</span>, sum)</span>
+<span id="cb41-2"><a href="#cb41-2" tabindex="-1"></a><span class="fu">dim</span>(row_sums_x)</span></code></pre></div>
 <pre><code>## NULL</code></pre>
-<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">length</span>(row_sums_x)</span></code></pre></div>
-<pre><code>## [1] 3</code></pre>
-<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>row_sums_x</span></code></pre></div>
+<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" tabindex="-1"></a>row_sums_x</span></code></pre></div>
 <pre><code>## 1 2 3 
 ## 5 7 9</code></pre>
 </div>
@@ -573,12 +593,12 @@ Similar to what we’ve seen before with apply in base R.</p>
 <div class="slide section level2">
 
 <div class="incremental">
-<p>Here we split along two dimensions and have two-dimensional
-output:</p>
-<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>X_array <span class="ot">&lt;-</span> <span class="fu">array</span>(<span class="at">data =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">12</span>, <span class="at">dim =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">2</span>, <span class="dv">2</span>))</span>
-<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(X_array)</span></code></pre></div>
+<p>Here we split along two dimensions and the processing function gives
+one-dimensional output:</p>
+<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" tabindex="-1"></a>X_array <span class="ot">&lt;-</span> <span class="fu">array</span>(<span class="at">data =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">12</span>, <span class="at">dim =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">2</span>, <span class="dv">2</span>))</span>
+<span id="cb45-2"><a href="#cb45-2" tabindex="-1"></a><span class="fu">dim</span>(X_array)</span></code></pre></div>
 <pre><code>## [1] 3 2 2</code></pre>
-<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>X_array</span></code></pre></div>
+<div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" tabindex="-1"></a>X_array</span></code></pre></div>
 <pre><code>## , , 1
 ## 
 ##      [,1] [,2]
@@ -592,11 +612,22 @@ output:</p>
 ## [1,]    7   10
 ## [2,]    8   11
 ## [3,]    9   12</code></pre>
-<div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>third_dim_sums_x <span class="ot">&lt;-</span> <span class="fu">aaply</span>(X_array, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>, sum)</span>
-<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(third_dim_sums_x)</span></code></pre></div>
-<pre><code>## [1] 3 2</code></pre>
-<div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>third_dim_sums_x</span></code></pre></div>
-<pre><code>##    X2
+<div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" tabindex="-1"></a>third_dim_sums_x <span class="ot">&lt;-</span> <span class="fu">aaply</span>(X_array, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>, sum, <span class="at">.drop =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb49-2"><a href="#cb49-2" tabindex="-1"></a><span class="fu">dim</span>(third_dim_sums_x)</span></code></pre></div>
+<pre><code>## [1] 3 2 1</code></pre>
+<div class="sourceCode" id="cb51"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" tabindex="-1"></a>third_dim_sums_x</span></code></pre></div>
+<pre><code>## , ,  = 1
+## 
+##    X2
+## X1   1  2
+##   1  8 14
+##   2 10 16
+##   3 12 18</code></pre>
+<div class="sourceCode" id="cb53"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" tabindex="-1"></a>third_dim_sums_x <span class="ot">&lt;-</span> <span class="fu">aaply</span>(X_array, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>, sum, <span class="at">.drop =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb53-2"><a href="#cb53-2" tabindex="-1"></a>third_dim_sums_x</span></code></pre></div>
+<pre><code>## , ,  = 1
+## 
+##    X2
 ## X1   1  2
 ##   1  8 14
 ##   2 10 16
@@ -606,21 +637,21 @@ output:</p>
 <div class="slide section level2">
 
 <div class="incremental">
-<p>Here we split along one dimension and have four-dimensional
-output:</p>
-<div class="sourceCode" id="cb51"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>nonsense_function <span class="ot">&lt;-</span> <span class="cf">function</span>(x) {</span>
-<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>    out <span class="ot">&lt;-</span> <span class="fu">c</span>(x[<span class="dv">1</span>] <span class="sc">*</span> <span class="dv">2</span>, x[<span class="dv">2</span>] <span class="sc">*</span> <span class="sc">-</span><span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>)</span>
-<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(out)</span>
-<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a>X</span></code></pre></div>
+<p>Here we split along one dimension and have four-dimensional output
+from the processing function:</p>
+<div class="sourceCode" id="cb55"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" tabindex="-1"></a>nonsense_function <span class="ot">&lt;-</span> <span class="cf">function</span>(x) {</span>
+<span id="cb55-2"><a href="#cb55-2" tabindex="-1"></a>    out <span class="ot">&lt;-</span> <span class="fu">c</span>(x[<span class="dv">1</span>] <span class="sc">*</span> <span class="dv">2</span>, x[<span class="dv">2</span>] <span class="sc">*</span> <span class="sc">-</span><span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>)</span>
+<span id="cb55-3"><a href="#cb55-3" tabindex="-1"></a>    <span class="fu">return</span>(out)</span>
+<span id="cb55-4"><a href="#cb55-4" tabindex="-1"></a>}</span>
+<span id="cb55-5"><a href="#cb55-5" tabindex="-1"></a>X</span></code></pre></div>
 <pre><code>##      [,1] [,2]
 ## [1,]    1    4
 ## [2,]    2    5
 ## [3,]    3    6</code></pre>
-<div class="sourceCode" id="cb53"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>nonsense_applied_to_rows <span class="ot">&lt;-</span> <span class="fu">aaply</span>(X, <span class="dv">1</span>, nonsense_function)</span>
-<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(nonsense_applied_to_rows)</span></code></pre></div>
+<div class="sourceCode" id="cb57"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" tabindex="-1"></a>nonsense_applied_to_rows <span class="ot">&lt;-</span> <span class="fu">aaply</span>(X, <span class="dv">1</span>, nonsense_function)</span>
+<span id="cb57-2"><a href="#cb57-2" tabindex="-1"></a><span class="fu">dim</span>(nonsense_applied_to_rows)</span></code></pre></div>
 <pre><code>## [1] 3 4</code></pre>
-<div class="sourceCode" id="cb55"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>nonsense_applied_to_rows</span></code></pre></div>
+<div class="sourceCode" id="cb59"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" tabindex="-1"></a>nonsense_applied_to_rows</span></code></pre></div>
 <pre><code>##    
 ## X1  1  2 3 4
 ##   1 2 -4 0 0
@@ -638,15 +669,15 @@ output the processing function returns.</p></li>
 </div>
 <div class="slide section level2">
 
-<div class="sourceCode" id="cb57"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>diamond_lms <span class="ot">&lt;-</span> <span class="fu">dlply</span>(diamonds, .(color), <span class="cf">function</span>(data_subset) {</span>
-<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">lm</span>(<span class="fu">log</span>(price) <span class="sc">~</span> carat, <span class="at">data =</span> data_subset)</span>
-<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a>})</span>
-<span id="cb57-4"><a href="#cb57-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb57-5"><a href="#cb57-5" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(diamond_lms)</span></code></pre></div>
+<div class="sourceCode" id="cb61"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" tabindex="-1"></a>diamond_lms <span class="ot">&lt;-</span> <span class="fu">dlply</span>(diamonds, .(color), <span class="cf">function</span>(data_subset) {</span>
+<span id="cb61-2"><a href="#cb61-2" tabindex="-1"></a>    <span class="fu">lm</span>(<span class="fu">log</span>(price) <span class="sc">~</span> carat, <span class="at">data =</span> data_subset)</span>
+<span id="cb61-3"><a href="#cb61-3" tabindex="-1"></a>})</span>
+<span id="cb61-4"><a href="#cb61-4" tabindex="-1"></a></span>
+<span id="cb61-5"><a href="#cb61-5" tabindex="-1"></a><span class="fu">class</span>(diamond_lms)</span></code></pre></div>
 <pre><code>## [1] &quot;list&quot;</code></pre>
-<div class="sourceCode" id="cb59"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(diamond_lms[[<span class="dv">1</span>]])</span></code></pre></div>
+<div class="sourceCode" id="cb63"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1" tabindex="-1"></a><span class="fu">class</span>(diamond_lms[[<span class="dv">1</span>]])</span></code></pre></div>
 <pre><code>## [1] &quot;lm&quot;</code></pre>
-<div class="sourceCode" id="cb61"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(diamond_lms)</span></code></pre></div>
+<div class="sourceCode" id="cb65"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" tabindex="-1"></a><span class="fu">names</span>(diamond_lms)</span></code></pre></div>
 <pre><code>## [1] &quot;D&quot; &quot;E&quot; &quot;F&quot; &quot;G&quot; &quot;H&quot; &quot;I&quot; &quot;J&quot;</code></pre>
 </div>
 <div id="some-special-cases" class="slide section level2">
@@ -691,12 +722,11 @@ equivalent:</p>
 </div>
 <div class="incremental">
 <p>For example:</p>
-<div class="sourceCode" id="cb63"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(magrittr)</span>
-<span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">rnorm</span>(<span class="dv">10</span>))</span></code></pre></div>
-<pre><code>## [1] -0.064997232 -0.313882047 -0.175468114 -0.001032758 -0.988162762
-## [6]  1.255395192</code></pre>
-<div class="sourceCode" id="cb65"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rnorm</span>(<span class="dv">10</span>) <span class="sc">%&gt;%</span> <span class="fu">head</span>()</span></code></pre></div>
-<pre><code>## [1]  1.4128059  0.9248791  0.3339866 -0.8799401  0.4914870  0.7563599</code></pre>
+<div class="sourceCode" id="cb67"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb67-1"><a href="#cb67-1" tabindex="-1"></a><span class="fu">library</span>(magrittr)</span>
+<span id="cb67-2"><a href="#cb67-2" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">rnorm</span>(<span class="dv">10</span>))</span></code></pre></div>
+<pre><code>## [1] -0.3657792 -1.7920564  1.0784473  1.5932574  0.7790087 -0.4319562</code></pre>
+<div class="sourceCode" id="cb69"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb69-1"><a href="#cb69-1" tabindex="-1"></a><span class="fu">rnorm</span>(<span class="dv">10</span>) <span class="sc">%&gt;%</span> <span class="fu">head</span>()</span></code></pre></div>
+<pre><code>## [1]  0.6582923  0.7203166 -2.1491630 -0.1803154 -0.2870917  0.9972917</code></pre>
 </div>
 </div>
 <div class="slide section level2">
@@ -722,8 +752,8 @@ here.</p>
 <p>Star wars example again:</p>
 <div class="incremental">
 <p>What is the average height in each world?</p>
-<div class="sourceCode" id="cb68"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
-<span id="cb68-2"><a href="#cb68-2" aria-hidden="true" tabindex="-1"></a>starwars <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(homeworld) <span class="sc">%&gt;%</span> <span class="fu">summarise</span>(<span class="at">avg_height =</span> <span class="fu">mean</span>(height))</span></code></pre></div>
+<div class="sourceCode" id="cb72"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb72-1"><a href="#cb72-1" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb72-2"><a href="#cb72-2" tabindex="-1"></a>starwars <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(homeworld) <span class="sc">%&gt;%</span> <span class="fu">summarise</span>(<span class="at">avg_height =</span> <span class="fu">mean</span>(height))</span></code></pre></div>
 <pre><code>## # A tibble: 49 × 2
 ##    homeworld      avg_height
 ##    &lt;chr&gt;               &lt;dbl&gt;
@@ -737,12 +767,11 @@ here.</p>
 ##  8 Chandrila            150 
 ##  9 Concord Dawn         183 
 ## 10 Corellia             175 
-## # … with 39 more rows
-## # ℹ Use `print(n = ...)` to see more rows</code></pre>
+## # ℹ 39 more rows</code></pre>
 <p>What fraction of individuals on each world have yellow eyes?</p>
-<div class="sourceCode" id="cb70"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a>starwars <span class="sc">%&gt;%</span></span>
-<span id="cb70-2"><a href="#cb70-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(homeworld) <span class="sc">%&gt;%</span></span>
-<span id="cb70-3"><a href="#cb70-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarise</span>(<span class="at">frac_yellow_eyes =</span> <span class="fu">sum</span>(eye_color <span class="sc">==</span> <span class="st">&quot;yellow&quot;</span>) <span class="sc">/</span> <span class="fu">length</span>(eye_color))</span></code></pre></div>
+<div class="sourceCode" id="cb74"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb74-1"><a href="#cb74-1" tabindex="-1"></a>starwars <span class="sc">%&gt;%</span></span>
+<span id="cb74-2"><a href="#cb74-2" tabindex="-1"></a>    <span class="fu">group_by</span>(homeworld) <span class="sc">%&gt;%</span></span>
+<span id="cb74-3"><a href="#cb74-3" tabindex="-1"></a>    <span class="fu">summarise</span>(<span class="at">frac_yellow_eyes =</span> <span class="fu">sum</span>(eye_color <span class="sc">==</span> <span class="st">&quot;yellow&quot;</span>) <span class="sc">/</span> <span class="fu">length</span>(eye_color))</span></code></pre></div>
 <pre><code>## # A tibble: 49 × 2
 ##    homeworld      frac_yellow_eyes
 ##    &lt;chr&gt;                     &lt;dbl&gt;
@@ -756,8 +785,7 @@ here.</p>
 ##  8 Chandrila                     0
 ##  9 Concord Dawn                  0
 ## 10 Corellia                      0
-## # … with 39 more rows
-## # ℹ Use `print(n = ...)` to see more rows</code></pre>
+## # ℹ 39 more rows</code></pre>
 </div>
 </div>
 <div id="summing-up" class="slide section level2">
