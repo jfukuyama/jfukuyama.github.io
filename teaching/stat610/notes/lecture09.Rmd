@@ -160,9 +160,9 @@ Conceptually, we have two sets of variables:
 
 - Identification variables, that describe the observations, and
 
-- Measurement variables, which are the quantities that are measured for each observed.
+- Measurement variables, which are the quantities that are measured for each observation. If you want to do any aggregation later, it will be over the measurement variables.
 
-To melt a dateset, you need to decide what these are.
+To melt a dataset, you need to decide what these are.
 
 -----
 
@@ -291,14 +291,11 @@ col_var_m, value.var)`
 
 - `mdata` should be a molten data set
 
-- The columns of the output will be all the combinations of `col_var_1`,
-..., `col_var_n`
+- The columns of the output will be all the combinations of `col_var_1`, ..., `col_var_n`
 
-- The rows of the output will be all the combinations of `row_var_1`,
-..., `row_var_n`
+- The rows of the output will be all the combinations of `row_var_1`, ..., `row_var_n`
 
-- `value.var` is the value variable, the values that should go in the
-cells of the output. If you don't specify it, `melt` will guess.
+- `value.var` is the value variable, the values that should go in the cells of the output. If you don't specify it, `melt` will guess.
 
 
 -----
@@ -342,7 +339,7 @@ dcast(ff_m, time ~ flavor, value.var = "value", fun.aggregate = mean)
 
 A couple of other notes:
 
-- You can use `.` to represent all the other variables in the formula.
+- You can use `...` to represent all the other variables in the formula.
 
 - The order that you specify the variables in the formula matters for the way the output is ordered: the first variables change most slowly, and the later ones change more quickly. This is mainly important for looking at the data.
 
