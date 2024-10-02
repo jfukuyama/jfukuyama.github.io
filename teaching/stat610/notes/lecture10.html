@@ -10,12 +10,21 @@
   <style type="text/css">
     code{white-space: pre-wrap;}
     span.smallcaps{font-variant: small-caps;}
-    span.underline{text-decoration: underline;}
-    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
     div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
-    ul.task-list{list-style: none;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    /* CSS for syntax highlighting */
     pre > code.sourceCode { white-space: pre; position: relative; }
-    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span { line-height: 1.25; }
     pre > code.sourceCode > span:empty { height: 1.2em; }
     .sourceCode { overflow: visible; }
     code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -52,7 +61,7 @@
     code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
     code span.at { color: #7d9029; } /* Attribute */
     code span.bn { color: #40a070; } /* BaseN */
-    code span.bu { } /* BuiltIn */
+    code span.bu { color: #008000; } /* BuiltIn */
     code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
     code span.ch { color: #4070a0; } /* Char */
     code span.cn { color: #880000; } /* Constant */
@@ -65,7 +74,7 @@
     code span.ex { } /* Extension */
     code span.fl { color: #40a070; } /* Float */
     code span.fu { color: #06287e; } /* Function */
-    code span.im { } /* Import */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
     code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
     code span.kw { color: #007020; font-weight: bold; } /* Keyword */
     code span.op { color: #666666; } /* Operator */
@@ -102,13 +111,13 @@
 <ul class="incremental">
 <li>Parentheses mismatches, particularly when nesting functions.</li>
 </ul>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(diamonds)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(<span class="fu">subset</span>(diamonds<span class="sc">$</span>carat), cut <span class="sc">==</span> <span class="st">&quot;Ideal&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">data</span>(diamonds)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">mean</span>(<span class="fu">subset</span>(diamonds<span class="sc">$</span>carat), cut <span class="sc">==</span> <span class="st">&quot;Ideal&quot;</span>)</span></code></pre></div>
 <pre><code>## Error in subset.default(diamonds$carat): argument &quot;subset&quot; is missing, with no default</code></pre>
 <ul class="incremental">
 <li><code>=</code> instead of <code>==</code>.</li>
 </ul>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(<span class="fu">subset</span>(diamonds<span class="sc">$</span>carat, <span class="at">cut =</span> <span class="st">&quot;Ideal&quot;</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">mean</span>(<span class="fu">subset</span>(diamonds<span class="sc">$</span>carat, <span class="at">cut =</span> <span class="st">&quot;Ideal&quot;</span>))</span></code></pre></div>
 <pre><code>## Error in subset.default(diamonds$carat, cut = &quot;Ideal&quot;): argument &quot;subset&quot; is missing, with no default</code></pre>
 <ul class="incremental">
 <li>Arguments to functions given in the wrong order.</li>
@@ -234,21 +243,21 @@ function</p></li>
 </div>
 <div class="slide section level2">
 
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>f <span class="ot">&lt;-</span> <span class="cf">function</span>(y, z) {</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    x <span class="ot">&lt;-</span> y<span class="sc">^</span><span class="dv">2</span> <span class="sc">-</span> <span class="dv">3</span> <span class="sc">*</span> z<span class="sc">^</span><span class="dv">2</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    w <span class="ot">&lt;-</span> <span class="dv">28</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (x <span class="sc">&gt;</span> <span class="dv">0</span> <span class="sc">&amp;&amp;</span> a <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>        u <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">+</span> x</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>        u <span class="ot">&lt;-</span> <span class="dv">10</span></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(u)</span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="fu">f</span>(<span class="at">y =</span> <span class="dv">0</span>, <span class="at">z =</span> <span class="dv">1</span>)</span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="fu">f</span>(<span class="at">y =</span> <span class="dv">1</span>, <span class="at">z =</span> <span class="dv">0</span>)</span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="do">## try:</span></span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="fu">debug</span>(f)</span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="fu">f</span>(<span class="at">y =</span> <span class="dv">1</span>, <span class="at">z =</span> <span class="dv">0</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>f <span class="ot">&lt;-</span> <span class="cf">function</span>(y, z) {</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>    x <span class="ot">&lt;-</span> y<span class="sc">^</span><span class="dv">2</span> <span class="sc">-</span> <span class="dv">3</span> <span class="sc">*</span> z<span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>    w <span class="ot">&lt;-</span> <span class="dv">28</span></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>    <span class="cf">if</span> (x <span class="sc">&gt;</span> <span class="dv">0</span> <span class="sc">&amp;&amp;</span> a <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>        u <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">+</span> x</span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>        u <span class="ot">&lt;-</span> <span class="dv">10</span></span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a>    }</span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a>    <span class="fu">return</span>(u)</span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a>}</span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a><span class="fu">f</span>(<span class="at">y =</span> <span class="dv">0</span>, <span class="at">z =</span> <span class="dv">1</span>)</span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a><span class="fu">f</span>(<span class="at">y =</span> <span class="dv">1</span>, <span class="at">z =</span> <span class="dv">0</span>)</span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a><span class="do">## try:</span></span>
+<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a><span class="fu">debug</span>(f)</span>
+<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a><span class="fu">f</span>(<span class="at">y =</span> <span class="dv">1</span>, <span class="at">z =</span> <span class="dv">0</span>)</span></code></pre></div>
 </div>
 <div class="slide section level2">
 
@@ -264,19 +273,19 @@ in the function.</p></li>
 </div>
 <div class="slide section level2">
 
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>f <span class="ot">&lt;-</span> <span class="cf">function</span>(y, z) {</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    x <span class="ot">&lt;-</span> y<span class="sc">^</span><span class="dv">2</span> <span class="sc">-</span> <span class="dv">3</span> <span class="sc">*</span> z<span class="sc">^</span><span class="dv">2</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    w <span class="ot">&lt;-</span> <span class="dv">28</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">browser</span>(<span class="at">expr =</span> x <span class="sc">&gt;</span> <span class="dv">0</span>)</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (x <span class="sc">&gt;</span> <span class="dv">0</span> <span class="sc">&amp;&amp;</span> a <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>        u <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">+</span> x</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>        u <span class="ot">&lt;-</span> <span class="dv">10</span></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(u)</span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="fu">f</span>(<span class="at">y =</span> <span class="dv">0</span>, <span class="at">z =</span> <span class="dv">1</span>)</span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="fu">f</span>(<span class="at">y =</span> <span class="dv">1</span>, <span class="at">z =</span> <span class="dv">0</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>f <span class="ot">&lt;-</span> <span class="cf">function</span>(y, z) {</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>    x <span class="ot">&lt;-</span> y<span class="sc">^</span><span class="dv">2</span> <span class="sc">-</span> <span class="dv">3</span> <span class="sc">*</span> z<span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>    w <span class="ot">&lt;-</span> <span class="dv">28</span></span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>    <span class="fu">browser</span>(<span class="at">expr =</span> x <span class="sc">&gt;</span> <span class="dv">0</span>)</span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>    <span class="cf">if</span> (x <span class="sc">&gt;</span> <span class="dv">0</span> <span class="sc">&amp;&amp;</span> a <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>        u <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">+</span> x</span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a>        u <span class="ot">&lt;-</span> <span class="dv">10</span></span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a>    }</span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a>    <span class="fu">return</span>(u)</span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a>}</span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a><span class="fu">f</span>(<span class="at">y =</span> <span class="dv">0</span>, <span class="at">z =</span> <span class="dv">1</span>)</span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a><span class="fu">f</span>(<span class="at">y =</span> <span class="dv">1</span>, <span class="at">z =</span> <span class="dv">0</span>)</span></code></pre></div>
 </div>
 <div class="slide section level2">
 
@@ -305,27 +314,27 @@ of function calls that led to the current execution.</p></li>
 </div>
 <div class="slide section level2">
 
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>g <span class="ot">&lt;-</span> <span class="cf">function</span>(a) {</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    y <span class="ot">&lt;-</span> a<span class="sc">^</span><span class="dv">2</span> <span class="sc">+</span> <span class="dv">3</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(y <span class="sc">-</span> <span class="dv">10</span> <span class="sc">&gt;</span> <span class="dv">2</span>) {</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>        <span class="fu">return</span>(y)</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>        <span class="fu">return</span>(z)</span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>f <span class="ot">&lt;-</span> <span class="cf">function</span>(y, z) {</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    x <span class="ot">&lt;-</span> y<span class="sc">^</span><span class="dv">2</span> <span class="sc">-</span> <span class="dv">3</span> <span class="sc">*</span> <span class="fu">g</span>(z)</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    w <span class="ot">&lt;-</span> <span class="dv">28</span></span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (x <span class="sc">&gt;</span> <span class="dv">0</span> <span class="sc">&amp;&amp;</span> a <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>        u <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">+</span> x</span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>        u <span class="ot">&lt;-</span> <span class="dv">10</span></span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(u)</span>
-<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a><span class="fu">f</span>(<span class="at">y =</span> <span class="dv">0</span>, <span class="at">z =</span> <span class="dv">1</span>)</span>
-<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="fu">debug</span>(f)</span>
-<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a><span class="fu">f</span>(<span class="at">y =</span> <span class="dv">0</span>, <span class="at">z =</span> <span class="dv">1</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>g <span class="ot">&lt;-</span> <span class="cf">function</span>(a) {</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>    y <span class="ot">&lt;-</span> a<span class="sc">^</span><span class="dv">2</span> <span class="sc">+</span> <span class="dv">3</span></span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>    <span class="cf">if</span>(y <span class="sc">-</span> <span class="dv">10</span> <span class="sc">&gt;</span> <span class="dv">2</span>) {</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>        <span class="fu">return</span>(y)</span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>        <span class="fu">return</span>(z)</span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>    }</span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>}</span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a>f <span class="ot">&lt;-</span> <span class="cf">function</span>(y, z) {</span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a>    x <span class="ot">&lt;-</span> y<span class="sc">^</span><span class="dv">2</span> <span class="sc">-</span> <span class="dv">3</span> <span class="sc">*</span> <span class="fu">g</span>(z)</span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a>    w <span class="ot">&lt;-</span> <span class="dv">28</span></span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a>    <span class="cf">if</span> (x <span class="sc">&gt;</span> <span class="dv">0</span> <span class="sc">&amp;&amp;</span> a <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
+<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a>        u <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">+</span> x</span>
+<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a>        u <span class="ot">&lt;-</span> <span class="dv">10</span></span>
+<span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a>    }</span>
+<span id="cb7-17"><a href="#cb7-17" tabindex="-1"></a>    <span class="fu">return</span>(u)</span>
+<span id="cb7-18"><a href="#cb7-18" tabindex="-1"></a>}</span>
+<span id="cb7-19"><a href="#cb7-19" tabindex="-1"></a><span class="fu">f</span>(<span class="at">y =</span> <span class="dv">0</span>, <span class="at">z =</span> <span class="dv">1</span>)</span>
+<span id="cb7-20"><a href="#cb7-20" tabindex="-1"></a><span class="fu">debug</span>(f)</span>
+<span id="cb7-21"><a href="#cb7-21" tabindex="-1"></a><span class="fu">f</span>(<span class="at">y =</span> <span class="dv">0</span>, <span class="at">z =</span> <span class="dv">1</span>)</span></code></pre></div>
 </div>
 <div id="debugging-after-an-error" class="slide section level2">
 <h1>Debugging after an error</h1>
@@ -342,43 +351,43 @@ wrote.</p></li>
 </div>
 <div class="slide section level2">
 
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>f <span class="ot">&lt;-</span> <span class="cf">function</span>(y, z) {</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    x <span class="ot">&lt;-</span> y<span class="sc">^</span><span class="dv">2</span> <span class="sc">-</span> <span class="dv">3</span> <span class="sc">*</span> z<span class="sc">^</span><span class="dv">2</span></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    w <span class="ot">&lt;-</span> <span class="dv">28</span></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (x <span class="sc">&gt;</span> <span class="dv">0</span> <span class="sc">&amp;&amp;</span> a <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>        u <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">+</span> x</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>        u <span class="ot">&lt;-</span> <span class="dv">10</span></span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(u)</span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="fu">f</span>(<span class="at">y =</span> <span class="dv">1</span>, <span class="at">z =</span> <span class="dv">0</span>)</span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="fu">traceback</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>f <span class="ot">&lt;-</span> <span class="cf">function</span>(y, z) {</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>    x <span class="ot">&lt;-</span> y<span class="sc">^</span><span class="dv">2</span> <span class="sc">-</span> <span class="dv">3</span> <span class="sc">*</span> z<span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>    w <span class="ot">&lt;-</span> <span class="dv">28</span></span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>    <span class="cf">if</span> (x <span class="sc">&gt;</span> <span class="dv">0</span> <span class="sc">&amp;&amp;</span> a <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>        u <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">+</span> x</span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a>        u <span class="ot">&lt;-</span> <span class="dv">10</span></span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a>    }</span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a>    <span class="fu">return</span>(u)</span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a>}</span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a><span class="fu">f</span>(<span class="at">y =</span> <span class="dv">1</span>, <span class="at">z =</span> <span class="dv">0</span>)</span>
+<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a><span class="fu">traceback</span>()</span></code></pre></div>
 </div>
 <div class="slide section level2">
 
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>g <span class="ot">&lt;-</span> <span class="cf">function</span>(a) {</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    y <span class="ot">&lt;-</span> a<span class="sc">^</span><span class="dv">2</span> <span class="sc">+</span> <span class="dv">3</span></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(y <span class="sc">-</span> <span class="dv">10</span> <span class="sc">&gt;</span> <span class="dv">2</span>) {</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>        <span class="fu">return</span>(y)</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>        <span class="fu">return</span>(z)</span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>f <span class="ot">&lt;-</span> <span class="cf">function</span>(y, z) {</span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    x <span class="ot">&lt;-</span> y<span class="sc">^</span><span class="dv">2</span> <span class="sc">-</span> <span class="dv">3</span> <span class="sc">*</span> <span class="fu">g</span>(z)</span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    w <span class="ot">&lt;-</span> <span class="dv">28</span></span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (x <span class="sc">&gt;</span> <span class="dv">0</span> <span class="sc">&amp;&amp;</span> a <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
-<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>        u <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">+</span> x</span>
-<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
-<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>        u <span class="ot">&lt;-</span> <span class="dv">10</span></span>
-<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(u)</span>
-<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a><span class="fu">f</span>(<span class="at">y =</span> <span class="dv">1</span>, <span class="at">z =</span> <span class="dv">0</span>)</span>
-<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a><span class="fu">traceback</span>()</span>
-<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a><span class="fu">f</span>(<span class="at">y =</span> <span class="dv">10</span>, <span class="at">z =</span> <span class="fl">3.1</span>)</span>
-<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a><span class="fu">traceback</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>g <span class="ot">&lt;-</span> <span class="cf">function</span>(a) {</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>    y <span class="ot">&lt;-</span> a<span class="sc">^</span><span class="dv">2</span> <span class="sc">+</span> <span class="dv">3</span></span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>    <span class="cf">if</span>(y <span class="sc">-</span> <span class="dv">10</span> <span class="sc">&gt;</span> <span class="dv">2</span>) {</span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>        <span class="fu">return</span>(y)</span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a>        <span class="fu">return</span>(z)</span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a>    }</span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a>}</span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a>f <span class="ot">&lt;-</span> <span class="cf">function</span>(y, z) {</span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a>    x <span class="ot">&lt;-</span> y<span class="sc">^</span><span class="dv">2</span> <span class="sc">-</span> <span class="dv">3</span> <span class="sc">*</span> <span class="fu">g</span>(z)</span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a>    w <span class="ot">&lt;-</span> <span class="dv">28</span></span>
+<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a>    <span class="cf">if</span> (x <span class="sc">&gt;</span> <span class="dv">0</span> <span class="sc">&amp;&amp;</span> a <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
+<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a>        u <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">+</span> x</span>
+<span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb9-15"><a href="#cb9-15" tabindex="-1"></a>        u <span class="ot">&lt;-</span> <span class="dv">10</span></span>
+<span id="cb9-16"><a href="#cb9-16" tabindex="-1"></a>    }</span>
+<span id="cb9-17"><a href="#cb9-17" tabindex="-1"></a>    <span class="fu">return</span>(u)</span>
+<span id="cb9-18"><a href="#cb9-18" tabindex="-1"></a>}</span>
+<span id="cb9-19"><a href="#cb9-19" tabindex="-1"></a><span class="fu">f</span>(<span class="at">y =</span> <span class="dv">1</span>, <span class="at">z =</span> <span class="dv">0</span>)</span>
+<span id="cb9-20"><a href="#cb9-20" tabindex="-1"></a><span class="fu">traceback</span>()</span>
+<span id="cb9-21"><a href="#cb9-21" tabindex="-1"></a><span class="fu">f</span>(<span class="at">y =</span> <span class="dv">10</span>, <span class="at">z =</span> <span class="fl">3.1</span>)</span>
+<span id="cb9-22"><a href="#cb9-22" tabindex="-1"></a><span class="fu">traceback</span>()</span></code></pre></div>
 </div>
 <div class="slide section level2">
 
@@ -395,55 +404,53 @@ debugger automatically when a function crashes.</p></li>
 </div>
 <div class="slide section level2">
 
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">error =</span> dump.frames)</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">f</span>(<span class="at">y =</span> <span class="dv">1</span>,<span class="at">z =</span> <span class="dv">0</span>)</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="fu">debugger</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="fu">options</span>(<span class="at">error =</span> dump.frames)</span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="fu">f</span>(<span class="at">y =</span> <span class="dv">1</span>,<span class="at">z =</span> <span class="dv">0</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a><span class="fu">debugger</span>()</span></code></pre></div>
 </div>
 <div id="example-1" class="slide section level2">
 <h1>Example 1</h1>
 <p><code>findruns</code> is supposed to find the starting positions of
 all the runs of 1’s of length <code>k</code> in <code>x</code>:</p>
 <div class="incremental">
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>findruns <span class="ot">&lt;-</span> <span class="cf">function</span>(x, k) {</span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    n <span class="ot">&lt;-</span> <span class="fu">length</span>(x)</span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    runs <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>(n<span class="sc">-</span>k)) {</span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span>(<span class="fu">all</span>(x[i<span class="sc">:</span>i<span class="sc">+</span>k<span class="dv">-1</span>] <span class="sc">==</span> <span class="dv">1</span>)) {</span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>            runs <span class="ot">&lt;-</span> <span class="fu">c</span>(runs, i)</span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>        }</span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(runs)</span>
-<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a><span class="fu">findruns</span>(<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">1</span>),<span class="dv">2</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a>findruns <span class="ot">&lt;-</span> <span class="cf">function</span>(x, k) {</span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>  n <span class="ot">&lt;-</span> <span class="fu">length</span>(x)</span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a>  runs <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a>  <span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>(n<span class="sc">-</span>k)) {</span>
+<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a>    <span class="cf">if</span>(<span class="fu">all</span>(x[i<span class="sc">:</span>i<span class="sc">+</span>k<span class="dv">-1</span>] <span class="sc">==</span> <span class="dv">1</span>))</span>
+<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a>      runs <span class="ot">=</span> <span class="fu">c</span>(runs, i)</span>
+<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a>  }</span>
+<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a>  <span class="fu">return</span>(runs)</span>
+<span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a>}</span>
+<span id="cb11-10"><a href="#cb11-10" tabindex="-1"></a><span class="fu">findruns</span>(<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">1</span>),<span class="dv">2</span>)</span></code></pre></div>
 </div>
 </div>
 <div id="example-2" class="slide section level2">
 <h1>Example 2</h1>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="do">## returns the minimum value of d[i,j], i != j, and</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="do">## the row/col attaining that minimum, for square</span></span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="do">## symmetric matrix d; no special policy on ties;</span></span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="do">## motivated by distance matrices</span></span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>mind <span class="ot">&lt;-</span> <span class="cf">function</span>(d) {</span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(d)</span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    <span class="do">## add a column to identify row number for apply()</span></span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    dd <span class="ot">&lt;-</span> <span class="fu">cbind</span>(d, <span class="dv">1</span><span class="sc">:</span>n)</span>
-<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>    wmins <span class="ot">&lt;-</span> <span class="fu">apply</span>(dd[<span class="sc">-</span>n, ], <span class="dv">1</span>, imin)</span>
-<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>    <span class="do">## wmins will be 2xn, 1st row being indices and 2nd being values</span></span>
-<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>    i <span class="ot">&lt;-</span> <span class="fu">which.min</span>(wmins[<span class="dv">1</span>, ])</span>
-<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>    j <span class="ot">&lt;-</span> wmins[<span class="dv">2</span>, i]</span>
-<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="fu">c</span>(d[i, j], i, j))</span>
-<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a><span class="do">## finds the location, value of the minimum in a row x</span></span>
-<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>imin <span class="ot">&lt;-</span> <span class="cf">function</span>(x) {</span>
-<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>    n <span class="ot">&lt;-</span> <span class="fu">length</span>(x)</span>
-<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>    i <span class="ot">&lt;-</span> x[n]</span>
-<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>    j <span class="ot">&lt;-</span> <span class="fu">which.min</span>(x[(i <span class="sc">+</span> <span class="dv">1</span>)<span class="sc">:</span>(n <span class="sc">-</span> <span class="dv">1</span>)])</span>
-<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="fu">c</span>(j, x[j]))</span>
-<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>m <span class="ot">&lt;-</span> <span class="fu">rbind</span>(<span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">12</span>, <span class="dv">5</span>), <span class="fu">c</span>(<span class="dv">12</span>, <span class="dv">0</span>, <span class="dv">8</span>), <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">8</span>, <span class="dv">0</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="do">## returns the minimum value of d[i,j], i != j, and</span></span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a><span class="do">## the row/col attaining that minimum, for square</span></span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a><span class="do">## symmetric matrix d; no special policy on ties;</span></span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a><span class="do">## motivated by distance matrices</span></span>
+<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a>mind <span class="ot">&lt;-</span> <span class="cf">function</span>(d) {</span>
+<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a>    n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(d)</span>
+<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a>    <span class="do">## add a column to identify row number for apply()</span></span>
+<span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a>    dd <span class="ot">&lt;-</span> <span class="fu">cbind</span>(d, <span class="dv">1</span><span class="sc">:</span>n)</span>
+<span id="cb12-9"><a href="#cb12-9" tabindex="-1"></a>    wmins <span class="ot">&lt;-</span> <span class="fu">apply</span>(dd[<span class="sc">-</span>n, ], <span class="dv">1</span>, imin)</span>
+<span id="cb12-10"><a href="#cb12-10" tabindex="-1"></a>    <span class="do">## wmins will be 2xn, 1st row being indices and 2nd being values</span></span>
+<span id="cb12-11"><a href="#cb12-11" tabindex="-1"></a>    i <span class="ot">&lt;-</span> <span class="fu">which.min</span>(wmins[<span class="dv">1</span>, ])</span>
+<span id="cb12-12"><a href="#cb12-12" tabindex="-1"></a>    j <span class="ot">&lt;-</span> wmins[<span class="dv">2</span>, i]</span>
+<span id="cb12-13"><a href="#cb12-13" tabindex="-1"></a>    <span class="fu">return</span>(<span class="fu">c</span>(d[i, j], i, j))</span>
+<span id="cb12-14"><a href="#cb12-14" tabindex="-1"></a>}</span>
+<span id="cb12-15"><a href="#cb12-15" tabindex="-1"></a></span>
+<span id="cb12-16"><a href="#cb12-16" tabindex="-1"></a><span class="do">## finds the location, value of the minimum in a row x</span></span>
+<span id="cb12-17"><a href="#cb12-17" tabindex="-1"></a>imin <span class="ot">&lt;-</span> <span class="cf">function</span>(x) {</span>
+<span id="cb12-18"><a href="#cb12-18" tabindex="-1"></a>    n <span class="ot">&lt;-</span> <span class="fu">length</span>(x)</span>
+<span id="cb12-19"><a href="#cb12-19" tabindex="-1"></a>    i <span class="ot">&lt;-</span> x[n]</span>
+<span id="cb12-20"><a href="#cb12-20" tabindex="-1"></a>    j <span class="ot">&lt;-</span> <span class="fu">which.min</span>(x[(i <span class="sc">+</span> <span class="dv">1</span>)<span class="sc">:</span>(n <span class="sc">-</span> <span class="dv">1</span>)])</span>
+<span id="cb12-21"><a href="#cb12-21" tabindex="-1"></a>    <span class="fu">return</span>(<span class="fu">c</span>(j, x[j]))</span>
+<span id="cb12-22"><a href="#cb12-22" tabindex="-1"></a>}</span>
+<span id="cb12-23"><a href="#cb12-23" tabindex="-1"></a></span>
+<span id="cb12-24"><a href="#cb12-24" tabindex="-1"></a>m <span class="ot">&lt;-</span> <span class="fu">rbind</span>(<span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">12</span>, <span class="dv">5</span>), <span class="fu">c</span>(<span class="dv">12</span>, <span class="dv">0</span>, <span class="dv">8</span>), <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">8</span>, <span class="dv">0</span>))</span></code></pre></div>
 </div>
 <div id="antibugging-or-defensive-coding" class="slide section level2">
 <h1>Antibugging or defensive coding</h1>
