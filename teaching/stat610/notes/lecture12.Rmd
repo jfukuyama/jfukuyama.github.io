@@ -7,7 +7,7 @@ Reading:
 - [Efron + Hastie, Computer-Age Statistical Inference](https://hastie.su.domains/CASI/order.html) 10.2, 11.2
 
 
-## What does it mean?
+## What is top-down design?
 
 General approach to problem solving.
 
@@ -92,9 +92,9 @@ The distribution of the $\hat \theta^*$'s can be used to approximate the samplin
 
 In particular, if we have $\hat \theta^*_1, \ldots, \hat \theta^*_{B}$, where $B$ is the number of "bootstrap replicates", then
 
-- The bootstrap estimate of the standard error of $\hat \theta$ is $\text{sd}(\hat \theta_1^*, \ldots, \hat \theta_B^*)$
+> - The bootstrap estimate of the standard error of $\hat \theta$ is $\text{sd}(\hat \theta_1^*, \ldots, \hat \theta_B^*)$
 
-- The boostrap confidence interval at level $\alpha$ for $\hat \theta$ is $(q_{\alpha/ 2}(\hat \theta_1^*, \ldots, \theta_B^*), q_{1 - \alpha / 2}(\hat \theta_1^*, \ldots, \theta_B^*))$, where $q$ is the quantile function.
+> - The boostrap confidence interval at level $\alpha$ for $\hat \theta$ is $(q_{\alpha/ 2}(\hat \theta_1^*, \ldots, \theta_B^*), q_{1 - \alpha / 2}(\hat \theta_1^*, \ldots, \theta_B^*))$, where $q_{\alpha}$ is the function that computes the $\alpha$ quantile of a set of points.
 
 We'll try to compute bootstrap confidence intervals today.
 
@@ -146,15 +146,36 @@ Notice that now would be a good time to write tests for the `get_ci` and `get_bo
 
 In the `bootstrap_mean_ci` function, we assume that
 
-- `get_boot_means` returns a vector of length `B`.
+> - `get_boot_means` returns a vector of length `B`.
 
-- `get_ci` returns a vector of length 2.
+> - `get_ci` returns a vector of length 2.
 
 We might also want to check that
 
-- `get_ci` works on a simple test case.
+> - `get_ci` and `get_boot_means` work on a simple test case.
 
-- The first element of `get_ci` is smaller than the second.
+> - The first element of `get_ci` is smaller than the second (the output is in the format we expect).
+
+. . .
+
+```{r, eval = FALSE}
+test_that("get_boot_means gives correct results on small datasets", {
+    ## if we only have one sample, all the bootstrap samples are identical
+    expect_equal(get_boot_means(data = 1, B = 100), rep(1, 100))
+    ## If we only have two samples, there are three possible bootstrap samples
+    expect_true(length(unique(get_boot_means(data = c(1,2), B = 100))) <= 3)
+    expect_true(all(unique(get_boot_means(data = c(1,2), B = 100)) %in% c(1, 1.5, 2)))
+})
+test_that("get_ci gives correct results on simple cases", {
+    ## the .025 and .975 quantiles of a dataset that is half 0's and half 1's should be 0 and 1
+    expect_equivalent(get_ci(c(rep(0, 50), rep(1,50)), .05), c(0, 1))
+    ## CI should be of length 2
+    expect_equal(length(get_ci(rnorm(100), .05)), 2)
+    test_ci = get_ci(rnorm(50), .05)
+    ## first element of CI should be less than the second element
+    expect_true(test_ci[1] < test_ci[2])
+})
+```
 
 
 -----
@@ -190,16 +211,44 @@ Go through the informal tests:
 ```{r}
 ## informal tests
 length(get_boot_means(data = rnorm(10), B = 20))
-get_ci(0:100, .05)
+get_boot_means(data = 1, B = 20)
+get_boot_means(data = c(1,2), B = 20)
+get_ci(c(rep(0, 50), rep(1,50)), .05)
 ```
 
 
 ------
 
-Then check the whole function:
+Check on the tests we wrote earlier:
+
+```{r}
+library(testthat)
+test_that("get_boot_means gives correct results on small datasets", {
+    ## if we only have one sample, all the bootstrap samples are identical
+    expect_equal(get_boot_means(data = 1, B = 100), rep(1, 100))
+    ## If we only have two samples, there are three possible bootstrap samples
+    expect_true(length(unique(get_boot_means(data = c(1,2), B = 100))) <= 3)
+    expect_true(all(unique(get_boot_means(data = c(1,2), B = 100)) %in% c(1, 1.5, 2)))
+})
+test_that("get_ci gives correct results on simple cases", {
+    ## the .025 and .975 quantiles of a dataset that is half 0's and half 1's should be 0 and 1
+    expect_equivalent(get_ci(c(rep(0, 50), rep(1,50)), .05), c(0, 1))
+    ## CI should be of length 2
+    expect_equal(length(get_ci(rnorm(100), .05)), 2)
+    test_ci = get_ci(rnorm(50), .05)
+    ## first element of CI should be less than the second element
+    expect_true(test_ci[1] < test_ci[2])
+})
+```
+
+
+------
+
+Informal tests for the whole function:
 
 ```{r}
 bootstrap_mean_ci(data = rnorm(10), alpha = .05, B = 100)
+bootstrap_mean_ci(data = c(1,2), alpha = .05, B = 100)
 ```
 
 ------
@@ -281,19 +330,20 @@ This would be a good time to write tests for the functions we've defined.
 
 Tests for return types:
 
-- `get_boot_estimates` should have number of rows equal to `B` or else length equal to `B`
+> - `get_boot_estimates` should have number of rows equal to `B` or else length equal to `B`
 
-- If we're just estimating one parameter, `get_ci` should return
+> - If we're just estimating one parameter, `get_ci` should return
 a vector of length 2.
 
-- If we're estimating more than one parameter, `get_ci`should
+> - If we're estimating more than one parameter, `get_ci` should
 return a matrix with number of columns equal to 2 (upper and
 lower confidence bounds) and number of rows equal to the number of things we're estimating.
 
 Test for actual values:
 
-- Check that the `get_ci` function works on a simple case where you
-know the answer.
+> - Check that the `get_ci` function works on a simple case where you know the answer.
+
+> - Check that `get_boot_estimates` gives the correct results when you have a small number of samples and can easily enumerate the possible values.
 
 ------
 
@@ -321,7 +371,6 @@ get_boot_estimates <- function(data, estimator, B) {
     boot_estimates <- replicate(B, expr = {
         resampled_data <- get_bootstrap_sample(data)
         boot_estimate <- estimator(resampled_data)
-        return(boot_estimate)
     })
     return(boot_estimates)
 }

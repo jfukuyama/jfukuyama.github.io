@@ -10,12 +10,21 @@
   <style type="text/css">
     code{white-space: pre-wrap;}
     span.smallcaps{font-variant: small-caps;}
-    span.underline{text-decoration: underline;}
-    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
     div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
-    ul.task-list{list-style: none;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    /* CSS for syntax highlighting */
     pre > code.sourceCode { white-space: pre; position: relative; }
-    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span { line-height: 1.25; }
     pre > code.sourceCode > span:empty { height: 1.2em; }
     .sourceCode { overflow: visible; }
     code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -52,7 +61,7 @@
     code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
     code span.at { color: #7d9029; } /* Attribute */
     code span.bn { color: #40a070; } /* BaseN */
-    code span.bu { } /* BuiltIn */
+    code span.bu { color: #008000; } /* BuiltIn */
     code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
     code span.ch { color: #4070a0; } /* Char */
     code span.cn { color: #880000; } /* Constant */
@@ -65,7 +74,7 @@
     code span.ex { } /* Extension */
     code span.fl { color: #40a070; } /* Float */
     code span.fu { color: #06287e; } /* Function */
-    code span.im { } /* Import */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
     code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
     code span.kw { color: #007020; font-weight: bold; } /* Keyword */
     code span.op { color: #666666; } /* Operator */
@@ -98,8 +107,8 @@ Program Development by Stepwise Refinement</a></p></li>
 Hastie, Computer-Age Statistical Inference</a> 10.2, 11.2</p></li>
 </ul>
 </div>
-<div id="what-does-it-mean" class="slide section level2">
-<h1>What does it mean?</h1>
+<div id="what-is-top-down-design" class="slide section level2">
+<h1>What is top-down design?</h1>
 <p>General approach to problem solving.</p>
 <ul class="incremental">
 <li><p>Identify the problem you want to solve.</p></li>
@@ -125,11 +134,11 @@ rooms.</p></li>
 <div class="slide section level2">
 
 <p>In programming:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>big_function <span class="ot">&lt;-</span> <span class="cf">function</span>(all_arguments) {</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    piece_1 <span class="ot">&lt;-</span> <span class="fu">get_piece_1</span>(some_arguments)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    piece_2 <span class="ot">&lt;-</span> <span class="fu">get_piece_2</span>(other_arguments)</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    output <span class="ot">&lt;-</span> <span class="fu">put_pieces_together</span>(piece_1, piece_2)</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a>big_function <span class="ot">&lt;-</span> <span class="cf">function</span>(all_arguments) {</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>    piece_1 <span class="ot">&lt;-</span> <span class="fu">get_piece_1</span>(some_arguments)</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>    piece_2 <span class="ot">&lt;-</span> <span class="fu">get_piece_2</span>(other_arguments)</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a>    output <span class="ot">&lt;-</span> <span class="fu">put_pieces_together</span>(piece_1, piece_2)</span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>}</span></code></pre></div>
 <p>Then fill out the functions <code>get_piece_1</code>,
 <code>get_piece_2</code>, <code>put_pieces_together</code>.</p>
 </div>
@@ -196,18 +205,22 @@ of <span class="math inline">\(\hat \theta\)</span>.</p>
 \theta^*_1, \ldots, \hat \theta^*_{B}\)</span>, where <span
 class="math inline">\(B\)</span> is the number of “bootstrap
 replicates”, then</p>
-<ul class="incremental">
-<li><p>The bootstrap estimate of the standard error of <span
+<ul>
+<li>The bootstrap estimate of the standard error of <span
 class="math inline">\(\hat \theta\)</span> is <span
 class="math inline">\(\text{sd}(\hat \theta_1^*, \ldots, \hat
-\theta_B^*)\)</span></p></li>
-<li><p>The boostrap confidence interval at level <span
+\theta_B^*)\)</span></li>
+</ul>
+<ul>
+<li>The boostrap confidence interval at level <span
 class="math inline">\(\alpha\)</span> for <span
 class="math inline">\(\hat \theta\)</span> is <span
 class="math inline">\((q_{\alpha/ 2}(\hat \theta_1^*, \ldots,
 \theta_B^*), q_{1 - \alpha / 2}(\hat \theta_1^*, \ldots,
-\theta_B^*))\)</span>, where <span class="math inline">\(q\)</span> is
-the quantile function.</p></li>
+\theta_B^*))\)</span>, where <span
+class="math inline">\(q_{\alpha}\)</span> is the function that computes
+the <span class="math inline">\(\alpha\)</span> quantile of a set of
+points.</li>
 </ul>
 <p>We’ll try to compute bootstrap confidence intervals today.</p>
 </div>
@@ -216,18 +229,18 @@ class="slide section level2">
 <h1>Example: Bootstrap confidence intervals</h1>
 <p>First try at a function to compute bootstrap confidence
 intervals.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>bootstrap_mean_ci <span class="ot">&lt;-</span> <span class="cf">function</span>(data, alpha, B) {</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    n <span class="ot">&lt;-</span> <span class="fu">length</span>(data)</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    boot_means <span class="ot">&lt;-</span> <span class="fu">replicate</span>(B, {</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>        boot_indices <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="at">x =</span> <span class="dv">1</span><span class="sc">:</span>n, <span class="at">size =</span> n, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>        boot_data <span class="ot">&lt;-</span> data[boot_indices]</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>        boot_mean <span class="ot">&lt;-</span> <span class="fu">mean</span>(boot_data)</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    })</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    q_lo <span class="ot">&lt;-</span> alpha <span class="sc">/</span> <span class="dv">2</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    q_hi <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> (alpha <span class="sc">/</span> <span class="dv">2</span>)</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    boot_ci <span class="ot">&lt;-</span> <span class="fu">quantile</span>(boot_means, <span class="at">probs =</span> <span class="fu">c</span>(q_lo, q_hi))</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(boot_ci)</span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>bootstrap_mean_ci <span class="ot">&lt;-</span> <span class="cf">function</span>(data, alpha, B) {</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>    n <span class="ot">&lt;-</span> <span class="fu">length</span>(data)</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>    boot_means <span class="ot">&lt;-</span> <span class="fu">replicate</span>(B, {</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>        boot_indices <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="at">x =</span> <span class="dv">1</span><span class="sc">:</span>n, <span class="at">size =</span> n, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>        boot_data <span class="ot">&lt;-</span> data[boot_indices]</span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>        boot_mean <span class="ot">&lt;-</span> <span class="fu">mean</span>(boot_data)</span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>    })</span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>    q_lo <span class="ot">&lt;-</span> alpha <span class="sc">/</span> <span class="dv">2</span></span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>    q_hi <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> (alpha <span class="sc">/</span> <span class="dv">2</span>)</span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a>    boot_ci <span class="ot">&lt;-</span> <span class="fu">quantile</span>(boot_means, <span class="at">probs =</span> <span class="fu">c</span>(q_lo, q_hi))</span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a>    <span class="fu">return</span>(boot_ci)</span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a>}</span></code></pre></div>
 </div>
 <div class="slide section level2">
 
@@ -241,11 +254,11 @@ mean.</p></li>
 <li><p>Return the quantiles.</p></li>
 </ol>
 <div class="incremental">
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>bootstrap_mean_ci <span class="ot">&lt;-</span> <span class="cf">function</span>(data, alpha, B) {</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    boot_means <span class="ot">&lt;-</span> <span class="fu">get_boot_means</span>(data, B)</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    boot_ci <span class="ot">&lt;-</span> <span class="fu">get_ci</span>(boot_means, alpha)</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(boot_ci)</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>bootstrap_mean_ci <span class="ot">&lt;-</span> <span class="cf">function</span>(data, alpha, B) {</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>    boot_means <span class="ot">&lt;-</span> <span class="fu">get_boot_means</span>(data, B)</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>    boot_ci <span class="ot">&lt;-</span> <span class="fu">get_ci</span>(boot_means, alpha)</span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>    <span class="fu">return</span>(boot_ci)</span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>}</span></code></pre></div>
 </div>
 </div>
 <div class="slide section level2">
@@ -253,81 +266,135 @@ mean.</p></li>
 <p>Notice that now would be a good time to write tests for the
 <code>get_ci</code> and <code>get_boot_means</code> functions.</p>
 <p>In the <code>bootstrap_mean_ci</code> function, we assume that</p>
-<ul class="incremental">
-<li><p><code>get_boot_means</code> returns a vector of length
-<code>B</code>.</p></li>
-<li><p><code>get_ci</code> returns a vector of length 2.</p></li>
+<ul>
+<li><code>get_boot_means</code> returns a vector of length
+<code>B</code>.</li>
+</ul>
+<ul>
+<li><code>get_ci</code> returns a vector of length 2.</li>
 </ul>
 <p>We might also want to check that</p>
-<ul class="incremental">
-<li><p><code>get_ci</code> works on a simple test case.</p></li>
-<li><p>The first element of <code>get_ci</code> is smaller than the
-second.</p></li>
+<ul>
+<li><code>get_ci</code> and <code>get_boot_means</code> work on a simple
+test case.</li>
 </ul>
+<ul>
+<li>The first element of <code>get_ci</code> is smaller than the second
+(the output is in the format we expect).</li>
+</ul>
+<div class="incremental">
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">test_that</span>(<span class="st">&quot;get_boot_means gives correct results on small datasets&quot;</span>, {</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>    <span class="do">## if we only have one sample, all the bootstrap samples are identical</span></span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>    <span class="fu">expect_equal</span>(<span class="fu">get_boot_means</span>(<span class="at">data =</span> <span class="dv">1</span>, <span class="at">B =</span> <span class="dv">100</span>), <span class="fu">rep</span>(<span class="dv">1</span>, <span class="dv">100</span>))</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>    <span class="do">## If we only have two samples, there are three possible bootstrap samples</span></span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>    <span class="fu">expect_true</span>(<span class="fu">length</span>(<span class="fu">unique</span>(<span class="fu">get_boot_means</span>(<span class="at">data =</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>), <span class="at">B =</span> <span class="dv">100</span>))) <span class="sc">&lt;=</span> <span class="dv">3</span>)</span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>    <span class="fu">expect_true</span>(<span class="fu">all</span>(<span class="fu">unique</span>(<span class="fu">get_boot_means</span>(<span class="at">data =</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>), <span class="at">B =</span> <span class="dv">100</span>)) <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="fl">1.5</span>, <span class="dv">2</span>)))</span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>})</span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="fu">test_that</span>(<span class="st">&quot;get_ci gives correct results on simple cases&quot;</span>, {</span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a>    <span class="do">## the .025 and .975 quantiles of a dataset that is half 0&#39;s and half 1&#39;s should be 0 and 1</span></span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a>    <span class="fu">expect_equivalent</span>(<span class="fu">get_ci</span>(<span class="fu">c</span>(<span class="fu">rep</span>(<span class="dv">0</span>, <span class="dv">50</span>), <span class="fu">rep</span>(<span class="dv">1</span>,<span class="dv">50</span>)), .<span class="dv">05</span>), <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>))</span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a>    <span class="do">## CI should be of length 2</span></span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a>    <span class="fu">expect_equal</span>(<span class="fu">length</span>(<span class="fu">get_ci</span>(<span class="fu">rnorm</span>(<span class="dv">100</span>), .<span class="dv">05</span>)), <span class="dv">2</span>)</span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a>    test_ci <span class="ot">=</span> <span class="fu">get_ci</span>(<span class="fu">rnorm</span>(<span class="dv">50</span>), .<span class="dv">05</span>)</span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a>    <span class="do">## first element of CI should be less than the second element</span></span>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a>    <span class="fu">expect_true</span>(test_ci[<span class="dv">1</span>] <span class="sc">&lt;</span> test_ci[<span class="dv">2</span>])</span>
+<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a>})</span></code></pre></div>
+</div>
 </div>
 <div class="slide section level2">
 
 <p>Then we write the two sub-functions:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>get_boot_means <span class="ot">&lt;-</span> <span class="cf">function</span>(data, B) {</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    n <span class="ot">&lt;-</span> <span class="fu">length</span>(data)</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    boot_means <span class="ot">&lt;-</span> <span class="fu">replicate</span>(B, {</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>        boot_indices <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="at">x =</span> <span class="dv">1</span><span class="sc">:</span>n, <span class="at">size =</span> n, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>        boot_data <span class="ot">&lt;-</span> data[boot_indices]</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>        boot_mean <span class="ot">&lt;-</span> <span class="fu">mean</span>(boot_data)</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    })</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(boot_means)</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>get_ci <span class="ot">&lt;-</span> <span class="cf">function</span>(x, alpha){</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    q_lo <span class="ot">&lt;-</span> alpha <span class="sc">/</span> <span class="dv">2</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    q_hi <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> (alpha <span class="sc">/</span> <span class="dv">2</span>)</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    ci <span class="ot">&lt;-</span> <span class="fu">quantile</span>(x, <span class="at">probs =</span> <span class="fu">c</span>(q_lo, q_hi))</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(ci)</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>get_boot_means <span class="ot">&lt;-</span> <span class="cf">function</span>(data, B) {</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>    n <span class="ot">&lt;-</span> <span class="fu">length</span>(data)</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>    boot_means <span class="ot">&lt;-</span> <span class="fu">replicate</span>(B, {</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>        boot_indices <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="at">x =</span> <span class="dv">1</span><span class="sc">:</span>n, <span class="at">size =</span> n, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>        boot_data <span class="ot">&lt;-</span> data[boot_indices]</span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>        boot_mean <span class="ot">&lt;-</span> <span class="fu">mean</span>(boot_data)</span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>    })</span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a>    <span class="fu">return</span>(boot_means)</span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>get_ci <span class="ot">&lt;-</span> <span class="cf">function</span>(x, alpha){</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>    q_lo <span class="ot">&lt;-</span> alpha <span class="sc">/</span> <span class="dv">2</span></span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>    q_hi <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> (alpha <span class="sc">/</span> <span class="dv">2</span>)</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>    ci <span class="ot">&lt;-</span> <span class="fu">quantile</span>(x, <span class="at">probs =</span> <span class="fu">c</span>(q_lo, q_hi))</span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>    <span class="fu">return</span>(ci)</span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>}</span></code></pre></div>
 </div>
 <div class="slide section level2">
 
 <p>Go through the informal tests:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="do">## informal tests</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">length</span>(<span class="fu">get_boot_means</span>(<span class="at">data =</span> <span class="fu">rnorm</span>(<span class="dv">10</span>), <span class="at">B =</span> <span class="dv">20</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="do">## informal tests</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="fu">length</span>(<span class="fu">get_boot_means</span>(<span class="at">data =</span> <span class="fu">rnorm</span>(<span class="dv">10</span>), <span class="at">B =</span> <span class="dv">20</span>))</span></code></pre></div>
 <pre><code>## [1] 20</code></pre>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">get_ci</span>(<span class="dv">0</span><span class="sc">:</span><span class="dv">100</span>, .<span class="dv">05</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="fu">get_boot_means</span>(<span class="at">data =</span> <span class="dv">1</span>, <span class="at">B =</span> <span class="dv">20</span>)</span></code></pre></div>
+<pre><code>##  [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1</code></pre>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="fu">get_boot_means</span>(<span class="at">data =</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>), <span class="at">B =</span> <span class="dv">20</span>)</span></code></pre></div>
+<pre><code>##  [1] 2.0 1.5 1.5 2.0 1.5 1.0 1.0 2.0 1.5 1.5 1.0 1.0 1.5 1.5 1.5 1.5 1.0 1.0 2.0
+## [20] 1.5</code></pre>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="fu">get_ci</span>(<span class="fu">c</span>(<span class="fu">rep</span>(<span class="dv">0</span>, <span class="dv">50</span>), <span class="fu">rep</span>(<span class="dv">1</span>,<span class="dv">50</span>)), .<span class="dv">05</span>)</span></code></pre></div>
 <pre><code>##  2.5% 97.5% 
-##   2.5  97.5</code></pre>
+##     0     1</code></pre>
 </div>
 <div class="slide section level2">
 
-<p>Then check the whole function:</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">bootstrap_mean_ci</span>(<span class="at">data =</span> <span class="fu">rnorm</span>(<span class="dv">10</span>), <span class="at">alpha =</span> .<span class="dv">05</span>, <span class="at">B =</span> <span class="dv">100</span>)</span></code></pre></div>
+<p>Check on the tests we wrote earlier:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="fu">library</span>(testthat)</span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a><span class="fu">test_that</span>(<span class="st">&quot;get_boot_means gives correct results on small datasets&quot;</span>, {</span>
+<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a>    <span class="do">## if we only have one sample, all the bootstrap samples are identical</span></span>
+<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a>    <span class="fu">expect_equal</span>(<span class="fu">get_boot_means</span>(<span class="at">data =</span> <span class="dv">1</span>, <span class="at">B =</span> <span class="dv">100</span>), <span class="fu">rep</span>(<span class="dv">1</span>, <span class="dv">100</span>))</span>
+<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a>    <span class="do">## If we only have two samples, there are three possible bootstrap samples</span></span>
+<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a>    <span class="fu">expect_true</span>(<span class="fu">length</span>(<span class="fu">unique</span>(<span class="fu">get_boot_means</span>(<span class="at">data =</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>), <span class="at">B =</span> <span class="dv">100</span>))) <span class="sc">&lt;=</span> <span class="dv">3</span>)</span>
+<span id="cb15-7"><a href="#cb15-7" tabindex="-1"></a>    <span class="fu">expect_true</span>(<span class="fu">all</span>(<span class="fu">unique</span>(<span class="fu">get_boot_means</span>(<span class="at">data =</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>), <span class="at">B =</span> <span class="dv">100</span>)) <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="fl">1.5</span>, <span class="dv">2</span>)))</span>
+<span id="cb15-8"><a href="#cb15-8" tabindex="-1"></a>})</span></code></pre></div>
+<pre><code>## Test passed 🥇</code></pre>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a><span class="fu">test_that</span>(<span class="st">&quot;get_ci gives correct results on simple cases&quot;</span>, {</span>
+<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a>    <span class="do">## the .025 and .975 quantiles of a dataset that is half 0&#39;s and half 1&#39;s should be 0 and 1</span></span>
+<span id="cb17-3"><a href="#cb17-3" tabindex="-1"></a>    <span class="fu">expect_equivalent</span>(<span class="fu">get_ci</span>(<span class="fu">c</span>(<span class="fu">rep</span>(<span class="dv">0</span>, <span class="dv">50</span>), <span class="fu">rep</span>(<span class="dv">1</span>,<span class="dv">50</span>)), .<span class="dv">05</span>), <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>))</span>
+<span id="cb17-4"><a href="#cb17-4" tabindex="-1"></a>    <span class="do">## CI should be of length 2</span></span>
+<span id="cb17-5"><a href="#cb17-5" tabindex="-1"></a>    <span class="fu">expect_equal</span>(<span class="fu">length</span>(<span class="fu">get_ci</span>(<span class="fu">rnorm</span>(<span class="dv">100</span>), .<span class="dv">05</span>)), <span class="dv">2</span>)</span>
+<span id="cb17-6"><a href="#cb17-6" tabindex="-1"></a>    test_ci <span class="ot">=</span> <span class="fu">get_ci</span>(<span class="fu">rnorm</span>(<span class="dv">50</span>), .<span class="dv">05</span>)</span>
+<span id="cb17-7"><a href="#cb17-7" tabindex="-1"></a>    <span class="do">## first element of CI should be less than the second element</span></span>
+<span id="cb17-8"><a href="#cb17-8" tabindex="-1"></a>    <span class="fu">expect_true</span>(test_ci[<span class="dv">1</span>] <span class="sc">&lt;</span> test_ci[<span class="dv">2</span>])</span>
+<span id="cb17-9"><a href="#cb17-9" tabindex="-1"></a>})</span></code></pre></div>
+<pre><code>## Test passed 😸</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>Informal tests for the whole function:</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a><span class="fu">bootstrap_mean_ci</span>(<span class="at">data =</span> <span class="fu">rnorm</span>(<span class="dv">10</span>), <span class="at">alpha =</span> .<span class="dv">05</span>, <span class="at">B =</span> <span class="dv">100</span>)</span></code></pre></div>
 <pre><code>##       2.5%      97.5% 
-## -0.6497091  0.3970639</code></pre>
+## -0.5714356  0.8196715</code></pre>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a><span class="fu">bootstrap_mean_ci</span>(<span class="at">data =</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>), <span class="at">alpha =</span> .<span class="dv">05</span>, <span class="at">B =</span> <span class="dv">100</span>)</span></code></pre></div>
+<pre><code>##  2.5% 97.5% 
+##     1     2</code></pre>
 </div>
 <div id="example-2" class="slide section level2">
 <h1>Example 2</h1>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>bootstrap_mean_ci <span class="ot">&lt;-</span> <span class="cf">function</span>(data, alpha, B) {</span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    n <span class="ot">&lt;-</span> <span class="fu">length</span>(data)</span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    boot_means <span class="ot">&lt;-</span> <span class="fu">replicate</span>(B, {</span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>        boot_indices <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="at">x =</span> <span class="dv">1</span><span class="sc">:</span>n, <span class="at">size =</span> n, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>        boot_data <span class="ot">&lt;-</span> data[boot_indices]</span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>        boot_mean <span class="ot">&lt;-</span> <span class="fu">mean</span>(boot_data)</span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    })</span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    q_lo <span class="ot">&lt;-</span> alpha <span class="sc">/</span> <span class="dv">2</span></span>
-<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>    q_hi <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> (alpha <span class="sc">/</span> <span class="dv">2</span>)</span>
-<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>    boot_ci <span class="ot">&lt;-</span> <span class="fu">quantile</span>(boot_means, <span class="at">probs =</span> <span class="fu">c</span>(q_lo, q_hi))</span>
-<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(boot_ci)</span>
-<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>bootstrap_lm_ci <span class="ot">&lt;-</span> <span class="cf">function</span>(data, formula, alpha, B) {</span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(data)</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    boot_sampled_coefs <span class="ot">&lt;-</span> <span class="fu">replicate</span>(B, {</span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>        boot_indices <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="at">x =</span> <span class="dv">1</span><span class="sc">:</span>n, <span class="at">size =</span> n, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>        boot_data <span class="ot">&lt;-</span> data[boot_indices,]</span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>        boot_lm <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="at">formula =</span> formula, <span class="at">data =</span> boot_data)</span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>        boot_coefs <span class="ot">&lt;-</span> <span class="fu">coef</span>(boot_lm)</span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    })</span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>    q_lo <span class="ot">&lt;-</span> alpha <span class="sc">/</span> <span class="dv">2</span></span>
-<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>    q_hi <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> (alpha <span class="sc">/</span> <span class="dv">2</span>)</span>
-<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>    boot_ci <span class="ot">&lt;-</span> plyr<span class="sc">::</span><span class="fu">aaply</span>(boot_sampled_coefs, <span class="dv">1</span>, <span class="cf">function</span>(x) <span class="fu">quantile</span>(x, <span class="at">probs =</span> <span class="fu">c</span>(q_lo, q_hi)))</span>
-<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(boot_ci)</span>
-<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" tabindex="-1"></a>bootstrap_mean_ci <span class="ot">&lt;-</span> <span class="cf">function</span>(data, alpha, B) {</span>
+<span id="cb23-2"><a href="#cb23-2" tabindex="-1"></a>    n <span class="ot">&lt;-</span> <span class="fu">length</span>(data)</span>
+<span id="cb23-3"><a href="#cb23-3" tabindex="-1"></a>    boot_means <span class="ot">&lt;-</span> <span class="fu">replicate</span>(B, {</span>
+<span id="cb23-4"><a href="#cb23-4" tabindex="-1"></a>        boot_indices <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="at">x =</span> <span class="dv">1</span><span class="sc">:</span>n, <span class="at">size =</span> n, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb23-5"><a href="#cb23-5" tabindex="-1"></a>        boot_data <span class="ot">&lt;-</span> data[boot_indices]</span>
+<span id="cb23-6"><a href="#cb23-6" tabindex="-1"></a>        boot_mean <span class="ot">&lt;-</span> <span class="fu">mean</span>(boot_data)</span>
+<span id="cb23-7"><a href="#cb23-7" tabindex="-1"></a>    })</span>
+<span id="cb23-8"><a href="#cb23-8" tabindex="-1"></a>    q_lo <span class="ot">&lt;-</span> alpha <span class="sc">/</span> <span class="dv">2</span></span>
+<span id="cb23-9"><a href="#cb23-9" tabindex="-1"></a>    q_hi <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> (alpha <span class="sc">/</span> <span class="dv">2</span>)</span>
+<span id="cb23-10"><a href="#cb23-10" tabindex="-1"></a>    boot_ci <span class="ot">&lt;-</span> <span class="fu">quantile</span>(boot_means, <span class="at">probs =</span> <span class="fu">c</span>(q_lo, q_hi))</span>
+<span id="cb23-11"><a href="#cb23-11" tabindex="-1"></a>    <span class="fu">return</span>(boot_ci)</span>
+<span id="cb23-12"><a href="#cb23-12" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" tabindex="-1"></a>bootstrap_lm_ci <span class="ot">&lt;-</span> <span class="cf">function</span>(data, formula, alpha, B) {</span>
+<span id="cb24-2"><a href="#cb24-2" tabindex="-1"></a>    n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(data)</span>
+<span id="cb24-3"><a href="#cb24-3" tabindex="-1"></a>    boot_sampled_coefs <span class="ot">&lt;-</span> <span class="fu">replicate</span>(B, {</span>
+<span id="cb24-4"><a href="#cb24-4" tabindex="-1"></a>        boot_indices <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="at">x =</span> <span class="dv">1</span><span class="sc">:</span>n, <span class="at">size =</span> n, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb24-5"><a href="#cb24-5" tabindex="-1"></a>        boot_data <span class="ot">&lt;-</span> data[boot_indices,]</span>
+<span id="cb24-6"><a href="#cb24-6" tabindex="-1"></a>        boot_lm <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="at">formula =</span> formula, <span class="at">data =</span> boot_data)</span>
+<span id="cb24-7"><a href="#cb24-7" tabindex="-1"></a>        boot_coefs <span class="ot">&lt;-</span> <span class="fu">coef</span>(boot_lm)</span>
+<span id="cb24-8"><a href="#cb24-8" tabindex="-1"></a>    })</span>
+<span id="cb24-9"><a href="#cb24-9" tabindex="-1"></a>    q_lo <span class="ot">&lt;-</span> alpha <span class="sc">/</span> <span class="dv">2</span></span>
+<span id="cb24-10"><a href="#cb24-10" tabindex="-1"></a>    q_hi <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> (alpha <span class="sc">/</span> <span class="dv">2</span>)</span>
+<span id="cb24-11"><a href="#cb24-11" tabindex="-1"></a>    boot_ci <span class="ot">&lt;-</span> plyr<span class="sc">::</span><span class="fu">aaply</span>(boot_sampled_coefs, <span class="dv">1</span>, <span class="cf">function</span>(x) <span class="fu">quantile</span>(x, <span class="at">probs =</span> <span class="fu">c</span>(q_lo, q_hi)))</span>
+<span id="cb24-12"><a href="#cb24-12" tabindex="-1"></a>    <span class="fu">return</span>(boot_ci)</span>
+<span id="cb24-13"><a href="#cb24-13" tabindex="-1"></a>}</span></code></pre></div>
 </div>
 <div class="slide section level2">
 
@@ -350,11 +417,11 @@ the common tasks into single functions.</p></li>
 </div>
 <div class="slide section level2">
 
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>bootstrap_ci <span class="ot">&lt;-</span> <span class="cf">function</span>(data, estimator, alpha, B) {</span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    boot_estimates <span class="ot">&lt;-</span> <span class="fu">get_boot_estimates</span>(data, estimator, B)</span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    boot_ci <span class="ot">&lt;-</span> <span class="fu">get_ci</span>(boot_estimates, alpha)</span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(boot_ci)</span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" tabindex="-1"></a>bootstrap_ci <span class="ot">&lt;-</span> <span class="cf">function</span>(data, estimator, alpha, B) {</span>
+<span id="cb25-2"><a href="#cb25-2" tabindex="-1"></a>    boot_estimates <span class="ot">&lt;-</span> <span class="fu">get_boot_estimates</span>(data, estimator, B)</span>
+<span id="cb25-3"><a href="#cb25-3" tabindex="-1"></a>    boot_ci <span class="ot">&lt;-</span> <span class="fu">get_ci</span>(boot_estimates, alpha)</span>
+<span id="cb25-4"><a href="#cb25-4" tabindex="-1"></a>    <span class="fu">return</span>(boot_ci)</span>
+<span id="cb25-5"><a href="#cb25-5" tabindex="-1"></a>}</span></code></pre></div>
 <p>We’re assuming:</p>
 <ul class="incremental">
 <li><p><code>data</code> is either a vector or a data frame.</p></li>
@@ -372,46 +439,54 @@ want.</p></li>
 <p>This would be a good time to write tests for the functions we’ve
 defined.</p>
 <p>Tests for return types:</p>
-<ul class="incremental">
-<li><p><code>get_boot_estimates</code> should have number of rows equal
-to <code>B</code> or else length equal to <code>B</code></p></li>
-<li><p>If we’re just estimating one parameter, <code>get_ci</code>
-should return a vector of length 2.</p></li>
-<li><p>If we’re estimating more than one parameter,
-<code>get_ci</code>should return a matrix with number of columns equal
-to 2 (upper and lower confidence bounds) and number of rows equal to the
-number of things we’re estimating.</p></li>
+<ul>
+<li><code>get_boot_estimates</code> should have number of rows equal to
+<code>B</code> or else length equal to <code>B</code></li>
+</ul>
+<ul>
+<li>If we’re just estimating one parameter, <code>get_ci</code> should
+return a vector of length 2.</li>
+</ul>
+<ul>
+<li>If we’re estimating more than one parameter, <code>get_ci</code>
+should return a matrix with number of columns equal to 2 (upper and
+lower confidence bounds) and number of rows equal to the number of
+things we’re estimating.</li>
 </ul>
 <p>Test for actual values:</p>
-<ul class="incremental">
+<ul>
 <li>Check that the <code>get_ci</code> function works on a simple case
 where you know the answer.</li>
+</ul>
+<ul>
+<li>Check that <code>get_boot_estimates</code> gives the correct results
+when you have a small number of samples and can easily enumerate the
+possible values.</li>
 </ul>
 </div>
 <div class="slide section level2">
 
 <p>Next step: fill out the functions</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>get_ci <span class="ot">&lt;-</span> <span class="cf">function</span>(estimates, alpha) {</span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    q_lo <span class="ot">&lt;-</span> alpha <span class="sc">/</span> <span class="dv">2</span></span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    q_hi <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> (alpha <span class="sc">/</span> <span class="dv">2</span>)</span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(<span class="sc">!</span><span class="fu">is.null</span>(<span class="fu">dim</span>(estimates))) {</span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>        <span class="do">## if we have multi-dimensional estimates</span></span>
-<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>        cis <span class="ot">&lt;-</span> plyr<span class="sc">::</span><span class="fu">aaply</span>(estimates, <span class="dv">1</span>, <span class="cf">function</span>(x) <span class="fu">quantile</span>(x, <span class="at">probs =</span> <span class="fu">c</span>(q_lo, q_hi)))</span>
-<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
-<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>        <span class="do">## if we have one-dimensional estimates</span></span>
-<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>        cis <span class="ot">&lt;-</span> <span class="fu">quantile</span>(estimates, <span class="at">probs =</span> <span class="fu">c</span>(q_lo, q_hi))</span>
-<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(cis)</span>
-<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" tabindex="-1"></a>get_ci <span class="ot">&lt;-</span> <span class="cf">function</span>(estimates, alpha) {</span>
+<span id="cb26-2"><a href="#cb26-2" tabindex="-1"></a>    q_lo <span class="ot">&lt;-</span> alpha <span class="sc">/</span> <span class="dv">2</span></span>
+<span id="cb26-3"><a href="#cb26-3" tabindex="-1"></a>    q_hi <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> (alpha <span class="sc">/</span> <span class="dv">2</span>)</span>
+<span id="cb26-4"><a href="#cb26-4" tabindex="-1"></a>    <span class="cf">if</span>(<span class="sc">!</span><span class="fu">is.null</span>(<span class="fu">dim</span>(estimates))) {</span>
+<span id="cb26-5"><a href="#cb26-5" tabindex="-1"></a>        <span class="do">## if we have multi-dimensional estimates</span></span>
+<span id="cb26-6"><a href="#cb26-6" tabindex="-1"></a>        cis <span class="ot">&lt;-</span> plyr<span class="sc">::</span><span class="fu">aaply</span>(estimates, <span class="dv">1</span>, <span class="cf">function</span>(x) <span class="fu">quantile</span>(x, <span class="at">probs =</span> <span class="fu">c</span>(q_lo, q_hi)))</span>
+<span id="cb26-7"><a href="#cb26-7" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb26-8"><a href="#cb26-8" tabindex="-1"></a>        <span class="do">## if we have one-dimensional estimates</span></span>
+<span id="cb26-9"><a href="#cb26-9" tabindex="-1"></a>        cis <span class="ot">&lt;-</span> <span class="fu">quantile</span>(estimates, <span class="at">probs =</span> <span class="fu">c</span>(q_lo, q_hi))</span>
+<span id="cb26-10"><a href="#cb26-10" tabindex="-1"></a>    }</span>
+<span id="cb26-11"><a href="#cb26-11" tabindex="-1"></a>    <span class="fu">return</span>(cis)</span>
+<span id="cb26-12"><a href="#cb26-12" tabindex="-1"></a>}</span></code></pre></div>
 <div class="incremental">
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>get_boot_estimates <span class="ot">&lt;-</span> <span class="cf">function</span>(data, estimator, B) {</span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    boot_estimates <span class="ot">&lt;-</span> <span class="fu">replicate</span>(B, <span class="at">expr =</span> {</span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>        resampled_data <span class="ot">&lt;-</span> <span class="fu">get_bootstrap_sample</span>(data)</span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>        boot_estimate <span class="ot">&lt;-</span> <span class="fu">estimator</span>(resampled_data)</span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>        <span class="fu">return</span>(boot_estimate)</span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    })</span>
-<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(boot_estimates)</span>
-<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" tabindex="-1"></a>get_boot_estimates <span class="ot">&lt;-</span> <span class="cf">function</span>(data, estimator, B) {</span>
+<span id="cb27-2"><a href="#cb27-2" tabindex="-1"></a>    boot_estimates <span class="ot">&lt;-</span> <span class="fu">replicate</span>(B, <span class="at">expr =</span> {</span>
+<span id="cb27-3"><a href="#cb27-3" tabindex="-1"></a>        resampled_data <span class="ot">&lt;-</span> <span class="fu">get_bootstrap_sample</span>(data)</span>
+<span id="cb27-4"><a href="#cb27-4" tabindex="-1"></a>        boot_estimate <span class="ot">&lt;-</span> <span class="fu">estimator</span>(resampled_data)</span>
+<span id="cb27-5"><a href="#cb27-5" tabindex="-1"></a>    })</span>
+<span id="cb27-6"><a href="#cb27-6" tabindex="-1"></a>    <span class="fu">return</span>(boot_estimates)</span>
+<span id="cb27-7"><a href="#cb27-7" tabindex="-1"></a>}</span></code></pre></div>
 </div>
 <div class="incremental">
 <p>We made another problem for ourselves! Still need
@@ -421,81 +496,81 @@ where you know the answer.</li>
 <div class="slide section level2">
 
 <p>Fill out <code>get_bootstrap_sample</code></p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>get_bootstrap_sample <span class="ot">&lt;-</span> <span class="cf">function</span>(data) {</span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(<span class="sc">!</span><span class="fu">is.null</span>(<span class="fu">dim</span>(data))) {</span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>        <span class="do">## in this case, data is rectangular, and we want to sample rows</span></span>
-<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>        n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(data)</span>
-<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>        boot_idx <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span>n, <span class="at">size =</span> n, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>        bootstrap_sample <span class="ot">&lt;-</span> data[boot_idx,]</span>
-<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
-<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>        <span class="do">## in this case, data is a vector and we want to sample elements of the vector</span></span>
-<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>        n <span class="ot">&lt;-</span> <span class="fu">length</span>(data)</span>
-<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>        boot_idx <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span>n, <span class="at">size =</span> n, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>        bootstrap_sample <span class="ot">&lt;-</span> data[boot_idx]</span>
-<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(bootstrap_sample)</span>
-<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" tabindex="-1"></a>get_bootstrap_sample <span class="ot">&lt;-</span> <span class="cf">function</span>(data) {</span>
+<span id="cb28-2"><a href="#cb28-2" tabindex="-1"></a>    <span class="cf">if</span>(<span class="sc">!</span><span class="fu">is.null</span>(<span class="fu">dim</span>(data))) {</span>
+<span id="cb28-3"><a href="#cb28-3" tabindex="-1"></a>        <span class="do">## in this case, data is rectangular, and we want to sample rows</span></span>
+<span id="cb28-4"><a href="#cb28-4" tabindex="-1"></a>        n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(data)</span>
+<span id="cb28-5"><a href="#cb28-5" tabindex="-1"></a>        boot_idx <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span>n, <span class="at">size =</span> n, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb28-6"><a href="#cb28-6" tabindex="-1"></a>        bootstrap_sample <span class="ot">&lt;-</span> data[boot_idx,]</span>
+<span id="cb28-7"><a href="#cb28-7" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb28-8"><a href="#cb28-8" tabindex="-1"></a>        <span class="do">## in this case, data is a vector and we want to sample elements of the vector</span></span>
+<span id="cb28-9"><a href="#cb28-9" tabindex="-1"></a>        n <span class="ot">&lt;-</span> <span class="fu">length</span>(data)</span>
+<span id="cb28-10"><a href="#cb28-10" tabindex="-1"></a>        boot_idx <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span>n, <span class="at">size =</span> n, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb28-11"><a href="#cb28-11" tabindex="-1"></a>        bootstrap_sample <span class="ot">&lt;-</span> data[boot_idx]</span>
+<span id="cb28-12"><a href="#cb28-12" tabindex="-1"></a>    }</span>
+<span id="cb28-13"><a href="#cb28-13" tabindex="-1"></a>    <span class="fu">return</span>(bootstrap_sample)</span>
+<span id="cb28-14"><a href="#cb28-14" tabindex="-1"></a>}</span></code></pre></div>
 <div class="incremental">
 <p>Could make an argument for breaking into two functions:</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>get_bootstrap_sample <span class="ot">&lt;-</span> <span class="cf">function</span>(data) {</span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(<span class="sc">!</span><span class="fu">is.null</span>(<span class="fu">dim</span>(data))) {</span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>        boot_sample <span class="ot">&lt;-</span> <span class="fu">bootstrap_sample_rows</span>(data)</span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
-<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>        boot_sample <span class="ot">&lt;-</span> <span class="fu">bootstrap_sample_elements</span>(data)</span>
-<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(boot_sample)</span>
-<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>bootstrap_sample_rows <span class="ot">&lt;-</span> <span class="cf">function</span>(data) {</span>
-<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>    n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(data)</span>
-<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>    boot_idx <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span>n, <span class="at">size =</span> n, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>    bootstrap_sample <span class="ot">&lt;-</span> data[boot_idx,]</span>
-<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(bootstrap_sample)</span>
-<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>bootstrap_sample_elements <span class="ot">&lt;-</span> <span class="cf">function</span>(data) {</span>
-<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a>    n <span class="ot">&lt;-</span> <span class="fu">length</span>(data)</span>
-<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a>    boot_idx <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span>n, <span class="at">size =</span> n, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a>    bootstrap_sample <span class="ot">&lt;-</span> data[boot_idx]</span>
-<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(bootstrap_sample)</span>
-<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" tabindex="-1"></a>get_bootstrap_sample <span class="ot">&lt;-</span> <span class="cf">function</span>(data) {</span>
+<span id="cb29-2"><a href="#cb29-2" tabindex="-1"></a>    <span class="cf">if</span>(<span class="sc">!</span><span class="fu">is.null</span>(<span class="fu">dim</span>(data))) {</span>
+<span id="cb29-3"><a href="#cb29-3" tabindex="-1"></a>        boot_sample <span class="ot">&lt;-</span> <span class="fu">bootstrap_sample_rows</span>(data)</span>
+<span id="cb29-4"><a href="#cb29-4" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb29-5"><a href="#cb29-5" tabindex="-1"></a>        boot_sample <span class="ot">&lt;-</span> <span class="fu">bootstrap_sample_elements</span>(data)</span>
+<span id="cb29-6"><a href="#cb29-6" tabindex="-1"></a>    }</span>
+<span id="cb29-7"><a href="#cb29-7" tabindex="-1"></a>    <span class="fu">return</span>(boot_sample)</span>
+<span id="cb29-8"><a href="#cb29-8" tabindex="-1"></a>}</span>
+<span id="cb29-9"><a href="#cb29-9" tabindex="-1"></a></span>
+<span id="cb29-10"><a href="#cb29-10" tabindex="-1"></a>bootstrap_sample_rows <span class="ot">&lt;-</span> <span class="cf">function</span>(data) {</span>
+<span id="cb29-11"><a href="#cb29-11" tabindex="-1"></a>    n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(data)</span>
+<span id="cb29-12"><a href="#cb29-12" tabindex="-1"></a>    boot_idx <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span>n, <span class="at">size =</span> n, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb29-13"><a href="#cb29-13" tabindex="-1"></a>    bootstrap_sample <span class="ot">&lt;-</span> data[boot_idx,]</span>
+<span id="cb29-14"><a href="#cb29-14" tabindex="-1"></a>    <span class="fu">return</span>(bootstrap_sample)</span>
+<span id="cb29-15"><a href="#cb29-15" tabindex="-1"></a>}</span>
+<span id="cb29-16"><a href="#cb29-16" tabindex="-1"></a></span>
+<span id="cb29-17"><a href="#cb29-17" tabindex="-1"></a>bootstrap_sample_elements <span class="ot">&lt;-</span> <span class="cf">function</span>(data) {</span>
+<span id="cb29-18"><a href="#cb29-18" tabindex="-1"></a>    n <span class="ot">&lt;-</span> <span class="fu">length</span>(data)</span>
+<span id="cb29-19"><a href="#cb29-19" tabindex="-1"></a>    boot_idx <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span>n, <span class="at">size =</span> n, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb29-20"><a href="#cb29-20" tabindex="-1"></a>    bootstrap_sample <span class="ot">&lt;-</span> data[boot_idx]</span>
+<span id="cb29-21"><a href="#cb29-21" tabindex="-1"></a>    <span class="fu">return</span>(bootstrap_sample)</span>
+<span id="cb29-22"><a href="#cb29-22" tabindex="-1"></a>}</span></code></pre></div>
 </div>
 </div>
 <div class="slide section level2">
 
 <p>Does it work?</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">bootstrap_ci</span>(<span class="at">data =</span> <span class="fu">rnorm</span>(<span class="dv">10</span>), <span class="at">estimator =</span> mean, <span class="at">alpha =</span> .<span class="dv">05</span>, <span class="at">B =</span> <span class="dv">1000</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" tabindex="-1"></a><span class="fu">bootstrap_ci</span>(<span class="at">data =</span> <span class="fu">rnorm</span>(<span class="dv">10</span>), <span class="at">estimator =</span> mean, <span class="at">alpha =</span> .<span class="dv">05</span>, <span class="at">B =</span> <span class="dv">1000</span>)</span></code></pre></div>
 <pre><code>##       2.5%      97.5% 
-## -0.8179141  0.3978340</code></pre>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">bootstrap_ci</span>(<span class="at">data =</span> <span class="fu">rnorm</span>(<span class="dv">100</span>, <span class="at">sd =</span> <span class="dv">2</span>),</span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>             <span class="at">estimator =</span> sd,</span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">alpha =</span> .<span class="dv">05</span>, <span class="at">B =</span> <span class="dv">1000</span>)</span></code></pre></div>
+## -0.8760293  0.1134295</code></pre>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" tabindex="-1"></a><span class="fu">bootstrap_ci</span>(<span class="at">data =</span> <span class="fu">rnorm</span>(<span class="dv">100</span>, <span class="at">sd =</span> <span class="dv">2</span>),</span>
+<span id="cb32-2"><a href="#cb32-2" tabindex="-1"></a>             <span class="at">estimator =</span> sd,</span>
+<span id="cb32-3"><a href="#cb32-3" tabindex="-1"></a>             <span class="at">alpha =</span> .<span class="dv">05</span>, <span class="at">B =</span> <span class="dv">1000</span>)</span></code></pre></div>
 <pre><code>##     2.5%    97.5% 
-## 1.690279 2.312691</code></pre>
+## 1.672592 2.206522</code></pre>
 </div>
 <div class="slide section level2">
 
 <p>The more complicated example: bootstrap confidence intervals for
 coefficients from a linear model:</p>
-<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(iris)</span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>iris_coef_estimator <span class="ot">=</span> <span class="cf">function</span>(d) {</span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>    iris_lm <span class="ot">=</span> <span class="fu">lm</span>(Sepal.Length <span class="sc">~</span> Sepal.Width <span class="sc">+</span> Petal.Length, <span class="at">data =</span> d)</span>
-<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>    iris_coef <span class="ot">=</span> <span class="fu">coef</span>(iris_lm)</span>
-<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(iris_coef)</span>
-<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" tabindex="-1"></a><span class="fu">data</span>(iris)</span>
+<span id="cb34-2"><a href="#cb34-2" tabindex="-1"></a>iris_coef_estimator <span class="ot">=</span> <span class="cf">function</span>(d) {</span>
+<span id="cb34-3"><a href="#cb34-3" tabindex="-1"></a>    iris_lm <span class="ot">=</span> <span class="fu">lm</span>(Sepal.Length <span class="sc">~</span> Sepal.Width <span class="sc">+</span> Petal.Length, <span class="at">data =</span> d)</span>
+<span id="cb34-4"><a href="#cb34-4" tabindex="-1"></a>    iris_coef <span class="ot">=</span> <span class="fu">coef</span>(iris_lm)</span>
+<span id="cb34-5"><a href="#cb34-5" tabindex="-1"></a>    <span class="fu">return</span>(iris_coef)</span>
+<span id="cb34-6"><a href="#cb34-6" tabindex="-1"></a>}</span></code></pre></div>
 <div class="incremental">
-<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">bootstrap_ci</span>(<span class="at">data =</span> iris,</span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>             <span class="at">estimator =</span> iris_coef_estimator,</span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">alpha =</span> .<span class="dv">05</span>,</span>
-<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>             <span class="at">B =</span> <span class="dv">1000</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" tabindex="-1"></a><span class="fu">bootstrap_ci</span>(<span class="at">data =</span> iris,</span>
+<span id="cb35-2"><a href="#cb35-2" tabindex="-1"></a>             <span class="at">estimator =</span> iris_coef_estimator,</span>
+<span id="cb35-3"><a href="#cb35-3" tabindex="-1"></a>             <span class="at">alpha =</span> .<span class="dv">05</span>,</span>
+<span id="cb35-4"><a href="#cb35-4" tabindex="-1"></a>             <span class="at">B =</span> <span class="dv">1000</span>)</span></code></pre></div>
 <pre><code>##               
-## X1                  2.5%     97.5%
-##   (Intercept)  1.8003519 2.6854084
-##   Sepal.Width  0.4638855 0.7215460
-##   Petal.Length 0.4405438 0.5042192</code></pre>
-<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="do">## compare with</span></span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>iris_lm <span class="ot">&lt;-</span> <span class="fu">lm</span>(Sepal.Length <span class="sc">~</span> Sepal.Width <span class="sc">+</span> Petal.Length, <span class="at">data =</span> iris)</span>
-<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a><span class="fu">confint</span>(iris_lm)</span></code></pre></div>
+## X1                  2.5%    97.5%
+##   (Intercept)  1.8054505 2.714468
+##   Sepal.Width  0.4638994 0.716341
+##   Petal.Length 0.4377103 0.503800</code></pre>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" tabindex="-1"></a><span class="do">## compare with</span></span>
+<span id="cb37-2"><a href="#cb37-2" tabindex="-1"></a>iris_lm <span class="ot">&lt;-</span> <span class="fu">lm</span>(Sepal.Length <span class="sc">~</span> Sepal.Width <span class="sc">+</span> Petal.Length, <span class="at">data =</span> iris)</span>
+<span id="cb37-3"><a href="#cb37-3" tabindex="-1"></a><span class="fu">confint</span>(iris_lm)</span></code></pre></div>
 <pre><code>##                  2.5 %    97.5 %
 ## (Intercept)  1.7590943 2.7391860
 ## Sepal.Width  0.4585161 0.7325334
