@@ -10,10 +10,18 @@
   <style type="text/css">
     code{white-space: pre-wrap;}
     span.smallcaps{font-variant: small-caps;}
-    span.underline{text-decoration: underline;}
-    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
     div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
-    ul.task-list{list-style: none;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
   </style>
   <link rel="stylesheet" type="text/css" media="screen, projection, print"
     href="https://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
@@ -51,22 +59,31 @@ files with different names: <code>final_project.Rmd</code>,
 <div id="git" class="slide section level1">
 <h1>Git</h1>
 <p>Basic idea:</p>
-<ul class="incremental">
-<li><p>Stores snapshots of the project at different points in time,
-these are <em>commits</em>.</p></li>
-<li><p>You can easily display differences between commits (= states of
-the project at different points in time).</p></li>
-<li><p>You can easily move between commits (= states of the project at
-different points in time).</p></li>
+<ul>
+<li>Stores snapshots of the project at different points in time, these
+are <em>commits</em>.</li>
+</ul>
+<ul>
+<li>You can easily display differences between commits (= states of the
+project at different points in time).</li>
+</ul>
+<ul>
+<li>You can easily move between commits (= states of the project at
+different points in time).</li>
 </ul>
 <p>Some nice features:</p>
-<ul class="incremental">
-<li><p>If you’ve changed some things and don’t like the results, you can
-go back to an older version and start over</p></li>
-<li><p>Allows multiple people to work on the same project</p></li>
-<li><p>Allows for resolving simultaneous changes as easily as
-possible</p></li>
-<li><p>We have a complete history of who changed what and why</p></li>
+<ul>
+<li>If you’ve changed some things and don’t like the results, you can go
+back to an older version and start over</li>
+</ul>
+<ul>
+<li>Allows multiple people to work on the same project</li>
+</ul>
+<ul>
+<li>Allows for resolving simultaneous changes as easily as possible</li>
+</ul>
+<ul>
+<li>We have a complete history of who changed what and why</li>
 </ul>
 </div>
 <div id="two-important-concepts" class="slide section level1">
@@ -81,7 +98,7 @@ in time.</p></li>
 <div id="getting-started" class="slide section level1">
 <h1>Getting started</h1>
 <p>Two ways to make a git repository:</p>
-<ul class="incremental">
+<ul>
 <li>Start from scratch. Make a project directory (= folder) where you
 want to store the files you will track. On the command line, navigate to
 the project directory and then type</li>
@@ -89,7 +106,7 @@ the project directory and then type</li>
 <pre><code>git init</code></pre>
 <p>There will now be a <code>.git</code> folder in the project
 directory. This is where the history of the project is stored.</p>
-<ul class="incremental">
+<ul>
 <li>Clone an existing repository.</li>
 </ul>
 <pre><code>git clone https://github.com/tidyverse/ggplot2</code></pre>
@@ -111,15 +128,21 @@ the changes that you made.</p>
 <p>When you make changes to files, Git sees that they are different from
 the last version recorded.</p>
 <p>Files can be in four states:</p>
-<ul class="incremental">
-<li><p>Untracked: The file was not tracked (not part of the most recent
-commit) and is not in the staging area.</p></li>
-<li><p>Unmodified: The file was part of the most recent commit but
-hasn’t been modified since.</p></li>
-<li><p>Modified: The file was part of the most recent commit and has
-been modified.</p></li>
-<li><p>Staged: The file was modified or added since the most recent
-commit and the new version should be part of the next commit.</p></li>
+<ul>
+<li>Untracked: The file was not tracked (not part of the most recent
+commit) and is not in the staging area.</li>
+</ul>
+<ul>
+<li>Unmodified: The file was part of the most recent commit but hasn’t
+been modified since.</li>
+</ul>
+<ul>
+<li>Modified: The file was part of the most recent commit and has been
+modified.</li>
+</ul>
+<ul>
+<li>Staged: The file was modified or added since the most recent commit
+and the new version should be part of the next commit.</li>
 </ul>
 <p><img src="lifecycle.png" /></p>
 </div>
@@ -191,29 +214,38 @@ the text editor opening.</p></li>
 <h1>Viewing the commit history</h1>
 <p>The command <code>git log</code> shows the commit history.</p>
 <p>Some useful flags:</p>
-<ul class="incremental">
-<li><p><code>-p</code>: For “patch”, shows the differences between
-commits</p></li>
-<li><p><code>--stat</code>: Shows statistics for files modified in each
-commit</p></li>
-<li><p><code>--graph</code>: Shows a graph of the branches and merges
-next to the commit history</p></li>
-<li><p><code>--relative-date</code>: Shows the date in relative terms
-instead of absolute</p></li>
+<ul>
+<li><code>-p</code>: For “patch”, shows the differences between
+commits</li>
+</ul>
+<ul>
+<li><code>--stat</code>: Shows statistics for files modified in each
+commit</li>
+</ul>
+<ul>
+<li><code>--graph</code>: Shows a graph of the branches and merges next
+to the commit history</li>
+</ul>
+<ul>
+<li><code>--relative-date</code>: Shows the date in relative terms
+instead of absolute</li>
 </ul>
 </div>
 <div id="branches" class="slide section level1">
 <h1>Branches</h1>
 <p>Problem: We have made a lot of commits. If we want to switch between
 them, how do we do that?</p>
-<ul class="incremental">
-<li><p>A <em>branch</em> is a pointer to one commit. Can think of it as
-a name for that commit.</p></li>
-<li><p>By default, you start off with a branch called
-<code>master</code>, but you can make more, and with any names you
-want.</p></li>
-<li><p>There is nothing special about the <code>master</code>
-branch.</p></li>
+<ul>
+<li>A <em>branch</em> is a pointer to one commit. Can think of it as a
+name for that commit.</li>
+</ul>
+<ul>
+<li>By default, you start off with a branch called <code>master</code>
+or <code>main</code>, but you can make more, and with any names you
+want.</li>
+</ul>
+<ul>
+<li>There is nothing special about the <code>master</code> branch.</li>
 </ul>
 </div>
 <div id="head" class="slide section level1">
@@ -222,12 +254,16 @@ branch.</p></li>
 want a pointer to the most recent commit. We would like branches to move
 when we make a new commit. HEAD solves the problem of updating branches
 after commits.</p>
-<ul class="incremental">
-<li><p>HEAD is a pointer to a branch.</p></li>
-<li><p>When you make a new commit, the branch HEAD points to moves to
-the new commit.</p></li>
-<li><p>The <code>checkout</code> function allows you to change the
-branch HEAD points to.</p></li>
+<ul>
+<li>HEAD is a pointer to a branch.</li>
+</ul>
+<ul>
+<li>When you make a new commit, the branch HEAD points to moves to the
+new commit.</li>
+</ul>
+<ul>
+<li>The <code>checkout</code> function allows you to change the branch
+HEAD points to.</li>
 </ul>
 </div>
 <div class="slide section level1">
@@ -251,11 +287,15 @@ branch HEAD points to.</p></li>
 <div id="how-all-the-data-is-stored" class="slide section level1">
 <h1>How all the data is stored</h1>
 <p>Three basic types of objects:</p>
-<ul class="incremental">
-<li><p>blobs: contents of a file</p></li>
-<li><p>trees: an object describing the contents of a directory</p></li>
-<li><p>commits: an object describing the state of the repository at a
-particular point in time</p></li>
+<ul>
+<li>blobs: contents of a file</li>
+</ul>
+<ul>
+<li>trees: an object describing the contents of a directory</li>
+</ul>
+<ul>
+<li>commits: an object describing the state of the repository at a
+particular point in time</li>
 </ul>
 <p>All these objects are stored by their <em>hash</em></p>
 </div>
@@ -286,9 +326,11 @@ hard to create a file that has that value)</p></li>
 </div>
 <div id="trees" class="slide section level1">
 <h1>Trees</h1>
-<ul class="incremental">
-<li><p>Blobs just store the contents of the file</p></li>
-<li><p>Trees store the file name and the directory structure</p></li>
+<ul>
+<li>Blobs just store the contents of the file</li>
+</ul>
+<ul>
+<li>Trees store the file name and the directory structure</li>
 </ul>
 <p>To see the tree, you can use:</p>
 <pre><code>git cat-file -p master^{tree}</code></pre>
@@ -302,11 +344,17 @@ hard to create a file that has that value)</p></li>
 <div class="slide section level1">
 
 <p>Conceptually, if we have a directory containing</p>
-<ul class="incremental">
-<li><p><code>README</code>,</p></li>
-<li><p><code>Rakefile</code>,</p></li>
-<li><p>A subdirectory called <code>lib</code>,</p></li>
-<li><p>A file <code>samplegit.rb</code> in <code>lib</code>,</p></li>
+<ul>
+<li><code>README</code>,</li>
+</ul>
+<ul>
+<li><code>Rakefile</code>,</li>
+</ul>
+<ul>
+<li>A subdirectory called <code>lib</code>,</li>
+</ul>
+<ul>
+<li>A file <code>samplegit.rb</code> in <code>lib</code>,</li>
 </ul>
 <p>Git would store a snapshot of the directory as three blobs and two
 trees:</p>
@@ -316,11 +364,15 @@ trees:</p>
 <h1>Commits</h1>
 <p>Remember that a <em>commit</em> records the state of the repository
 at a particular point in time. It contains:</p>
-<ul class="incremental">
-<li><p>Hash of the tree object for the top level directory</p></li>
-<li><p>Hash of the parent commit</p></li>
-<li><p>Meta-information about the commit (author, commit message, date,
-etc.)</p></li>
+<ul>
+<li>Hash of the tree object for the top level directory</li>
+</ul>
+<ul>
+<li>Hash of the parent commit</li>
+</ul>
+<ul>
+<li>Meta-information about the commit (author, commit message, date,
+etc.)</li>
 </ul>
 <p>Commits are also referred to by their hashes, and you should think of
 git as storing a set of commits.</p>
@@ -334,8 +386,8 @@ that were present at different commits:</p>
 <div id="overall" class="slide section level1">
 <h1>Overall</h1>
 <ul class="incremental">
-<li><p>A git repository contains a set of commits, which describe the
-contents of a directory at a certain point in time</p></li>
+<li><p>A git repository contains a set of commits, which describe a set
+of files at a certain point in time</p></li>
 <li><p>The main things we want to be able to do are add new commits and
 move to different commits</p></li>
 <li><p>A branch is just a name for a specific commit, and it allows us
