@@ -10,10 +10,18 @@
   <style type="text/css">
     code{white-space: pre-wrap;}
     span.smallcaps{font-variant: small-caps;}
-    span.underline{text-decoration: underline;}
-    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
     div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
-    ul.task-list{list-style: none;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
   </style>
   <link rel="stylesheet" type="text/css" media="screen, projection, print"
     href="https://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
@@ -41,6 +49,22 @@ for the top-level directory, hash of the parent commit, and
 meta-information about the commit.</p></li>
 <li><p>By default, a commit has as its parent the commit that HEAD was
 pointing to when you made the commit.</p></li>
+</ul>
+</div>
+<div id="changing-to-different-commits" class="slide section level1">
+<h1>Changing to different commits</h1>
+<p>Use <code>git checkout &lt;branch&gt;</code> or
+<code>git checkout &lt;commit hash&gt;</code>.</p>
+<ul>
+<li>The state of your directory will change to reflect the commit that
+<code>&lt;branch&gt;</code> points to and <code>HEAD</code> change to
+point to <code>&lt;branch&gt;</code> in the first case.</li>
+</ul>
+<ul>
+<li>The state of your directory will change to reflect the commit
+<code>&lt;commit hash&gt;</code> and you will be in a “detached HEAD”
+state in the second case. (<code>HEAD</code> is supposed to point to a
+branch but it doesn’t here.)</li>
 </ul>
 </div>
 <div id="merging-and-rebasing" class="slide section level1">
@@ -105,16 +129,21 @@ git merge branch2</code></pre>
 <div class="slide section level1">
 
 <p>What happens?</p>
-<ul class="incremental">
-<li><p>Find the most recent common ancestor of <code>branch1</code> and
-<code>branch2</code></p></li>
-<li><p>Find all the differences between <code>branch2</code> and the
-most recent common ancestor</p></li>
-<li><p>Apply those changes to <code>branch1</code> to get a new
-commit</p></li>
-<li><p>The new commit is special in that it has two parents: the commit
+<ul>
+<li>Find the most recent common ancestor of <code>branch1</code> and
+<code>branch2</code></li>
+</ul>
+<ul>
+<li>Find all the differences between <code>branch2</code> and the most
+recent common ancestor</li>
+</ul>
+<ul>
+<li>Apply those changes to <code>branch1</code> to get a new commit</li>
+</ul>
+<ul>
+<li>The new commit is special in that it has two parents: the commit
 that <code>branch1</code> was pointing to <em>and</em> the commit that
-<code>branch2</code> was pointing to.</p></li>
+<code>branch2</code> was pointing to.</li>
 </ul>
 </div>
 <div class="slide section level1">
@@ -190,8 +219,8 @@ entirely).</p></li>
 </div>
 <div class="slide section level1">
 
-<p>After fixing merge conflicts and running <code>git add
-index.html</code>:</p>
+<p>After fixing merge conflicts and running
+<code>git add index.html</code>:</p>
 <pre><code>$ git status
 On branch master
 All conflicts fixed but you are still merging.
@@ -359,8 +388,8 @@ repository.</p></li>
 </div>
 <div id="inspecting-remotes" class="slide section level1">
 <h1>Inspecting remotes</h1>
-<p>If you want more information about a remote, you can use <code>git
-remote show &lt;remote-name&gt;</code>.</p>
+<p>If you want more information about a remote, you can use
+<code>git remote show &lt;remote-name&gt;</code>.</p>
 <p>For example:</p>
 <pre><code>$ git remote show origin
 * remote origin
@@ -402,69 +431,86 @@ remote show &lt;remote-name&gt;</code>.</p>
 <div id="tracking-branches" class="slide section level1">
 <h1>Tracking branches</h1>
 <p>Tracking branches: not the same as remote-tracking branches</p>
-<ul class="incremental">
-<li><p>A local branch that has a relationship with a remote-tracking
-branch.</p></li>
-<li><p>The branch it tracks is called the ‘upstream’.</p></li>
+<ul>
+<li>A local branch that has a relationship with a remote-tracking
+branch.</li>
 </ul>
+<ul>
+<li>The branch it tracks is called the ‘upstream’.</li>
+</ul>
+<div class="incremental">
 <p>When/how are they created?</p>
-<ul class="incremental">
-<li><p>By default, all of the branches in the remote repository will be
+<ul>
+<li>By default, all of the branches in the remote repository will be
 available to you with names
-<code>&lt;remote&gt;/&lt;branch-name&gt;</code>.</p></li>
-<li><p>Also by default, when you clone a repository, git will
-automatically create a branch <code>master</code> that tracks
-<code>origin/master</code>.</p></li>
-<li><p>If you want to track other remote branches, you can use <code>git
-checkout -b &lt;branch&gt; &lt;remote&gt;/&lt;branch&gt;</code> or
-<code>git checkout --track &lt;remote&gt;/&lt;branch-name&gt;</code>,
+<code>&lt;remote&gt;/&lt;branch-name&gt;</code>.</li>
+</ul>
+<ul>
+<li>Also by default, when you clone a repository, git will automatically
+create a branch <code>master</code> that tracks
+<code>origin/master</code>.</li>
+</ul>
+<ul>
+<li>If you want to track other remote branches, you can use
+<code>git checkout -b &lt;branch&gt; &lt;remote&gt;/&lt;branch&gt;</code>
+or <code>git checkout --track &lt;remote&gt;/&lt;branch-name&gt;</code>,
 which will create a local branch called <code>&lt;branch-name&gt;</code>
-that tracks <code>&lt;remote&gt;/&lt;branch-name&gt;</code>.</p></li>
+that tracks <code>&lt;remote&gt;/&lt;branch-name&gt;</code>.</li>
 </ul>
 <p>What are they for?</p>
-<ul class="incremental">
-<li><p>Setting defaults for pushing</p></li>
-<li><p>Setting defaults for pulling</p></li>
+<ul>
+<li>Setting defaults for pushing</li>
 </ul>
+<ul>
+<li>Setting defaults for pulling</li>
+</ul>
+</div>
 </div>
 <div id="pushing-to-remote-repositories" class="slide section level1">
 <h1>Pushing to remote repositories</h1>
 <p>Method 1: Explicitly naming the local and remote branches</p>
-<ul class="incremental">
-<li><p><code>git push
-&lt;local-branch-name&gt;:&lt;remote-branch-name&gt;</code> will push
-the commits in <code>&lt;local-branch-name&gt;</code>to
-<code>&lt;remote&gt;/&lt;remote-branch-name&gt;</code></p></li>
-<li><p>Take my local branch <code>&lt;local-branch-name&gt;</code> and
-make it the remote’s branch
-<code>&lt;remote-branch-name&gt;</code></p></li>
-<li><p>You can use shorthands: if the two branches have the same name,
-can just use <code>git push &lt;branch-name&gt;</code>.</p></li>
+<ul>
+<li><code>git push &lt;local-branch-name&gt;:&lt;remote-branch-name&gt;</code>
+will push the commits in <code>&lt;local-branch-name&gt;</code>to
+<code>&lt;remote&gt;/&lt;remote-branch-name&gt;</code></li>
 </ul>
+<ul>
+<li>Take my local branch <code>&lt;local-branch-name&gt;</code> and make
+it the remote’s branch <code>&lt;remote-branch-name&gt;</code></li>
+</ul>
+<ul>
+<li>You can use shorthands: if the two branches have the same name, can
+just use <code>git push &lt;branch-name&gt;</code>.</li>
+</ul>
+<div class="incremental">
 <p>Method 2: If you are on a tracking branch</p>
-<ul class="incremental">
-<li><p>Can use <code>git push</code> with no extra arguments</p></li>
-<li><p>This is equivalent to pushing the tracking branch you are
-currently on to the tracking branch’s upstream branch in the
-remote</p></li>
+<ul>
+<li>Can use <code>git push</code> with no extra arguments</li>
+</ul>
+<ul>
+<li>This is equivalent to pushing the tracking branch you are currently
+on to the tracking branch’s upstream branch in the remote</li>
 </ul>
 <p>Note:</p>
-<ul class="incremental">
-<li><p>This only works if nobody has pushed to the branch you’re pushing
-to since you last fetched from the remote.</p></li>
-<li><p>If someone else has pushed in the meantime, you need to fetch
-their commits and integrate their work with yours (by e.g. merging or
-rebasing your commits).</p></li>
+<ul>
+<li>This only works if nobody has pushed to the branch you’re pushing to
+since you last fetched from the remote.</li>
 </ul>
+<ul>
+<li>If someone else has pushed in the meantime, you need to fetch their
+commits and integrate their work with yours (by e.g. merging or rebasing
+your commits).</li>
+</ul>
+</div>
 </div>
 <div id="pulling" class="slide section level1">
 <h1>Pulling</h1>
 <p>Setup: You are on a tracking branch, and you want to get any new
 commits from the upstream branch on the remote.</p>
 <p>You can use <code>git pull</code>, which is usually equivalent to
-<code>git fetch</code> plus <code>git merge &lt;tracking-branch&gt;
-&lt;remote&gt;/&lt;upstream&gt;</code>, where
-<code>&lt;tracking-branch&gt;</code> is the branch that you are
+<code>git fetch</code> plus
+<code>git merge &lt;tracking-branch&gt; &lt;remote&gt;/&lt;upstream&gt;</code>,
+where <code>&lt;tracking-branch&gt;</code> is the branch that you are
 currently on, and <code>&lt;remote&gt;/&lt;upstream&gt;</code> is the
 upstream branch that your <code>&lt;tracking-branch&gt;</code>
 tracks.</p>
