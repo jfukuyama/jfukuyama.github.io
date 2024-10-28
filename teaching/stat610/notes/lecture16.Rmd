@@ -231,16 +231,31 @@ As before, we can check that our definitions are consistent:
 ## generate random variables from a binomial distribution with size = 2 and prob = .5
 X = rbinom(n = 1000, size = 2, prob = .5)
 head(X)
-## compute the fraction of the random variables that took value exactly equal to 1
+## compute the fraction of the random variables that took value exactly equal to 2
 x = 2
 mean(X == x)
-## compute the pmf for the distribution at x = 1
+## compute the pmf for the distribution at x = 2
 dbinom(x = x, size = 2, prob = .5)
 ```
 
 Apologies for the notation, but the norm is to denote random variables by capital letters and to denote the actual values they take by lower-case letters.
 
 You'll often see things like $P(X = x)$, which means the probability that a random variable $X$ takes value $x$.
+
+------
+
+Instead of looking at just one value of $x$, we can look at the whole distribution:
+
+```{r}
+X = rbinom(n = 1000, size = 5, prob = .5)
+x_vec = 0:5
+expected_probability = sapply(x_vec, dbinom, size = 5, prob = .5)
+empirical_probability = sapply(x_vec, function(x) mean(X == x))
+plot(expected_probability ~ x_vec, type = 'h',
+     ## we need this because otherwise some of the points might be outside of the plotting region
+     ylim = c(0, max(c(expected_probability, empirical_probability))))
+points(empirical_probability ~ x_vec, col = 'red')
+```
 
 ------
 
