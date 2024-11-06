@@ -7,23 +7,17 @@ opts_chunk$set(fig.cap="",
 ```
 
 
-So far
-
-- Newton's method
-
-- Things that reduce to Newton's method
-
 Today: modifications of Newton's method
 
-- Fisher scoring (if you want to make sure the Hessian term is negative definite)
+> - Fisher scoring (if you want to make sure the Hessian term is negative definite)
 
-- Hessian approximations (if it takes too long to re-compute/re-invert the Hessian)
+> - Hessian approximations (if it takes too long to re-compute/re-invert the Hessian)
 
-- Gradient descent (if you don't want to ever compute or invert the Hessian)
+> - Gradient descent (if you don't want to ever compute or invert the Hessian)
 
 Reading:
 
-- Lange Chapter 11.1-11.4, 11.6; Boyd and Vandenberghe, Chapter 9.1-9.4
+> - Lange Chapter 11.1-11.4, 11.6
 
 ## Fisher Scoring
 
@@ -31,9 +25,9 @@ Idea: Use the expected information, $I(\theta)= E[-d^2 \ell(\theta)]$ instead of
 
 Algorithm:
 
-- Pick a starting parameter estimate $\theta_0$
+> - Pick a starting parameter estimate $\theta_0$
 
-- Set $\theta_{n+1} = \theta_n + I(\theta)^{-1} d\ell(\theta_n)$
+> - Set $\theta_{n+1} = \theta_n + I(\theta)^{-1} d\ell(\theta_n)$
 
 . . .
 
@@ -45,15 +39,15 @@ Sometimes $I(\theta)$ is easier to compute than $-d^2 \ell(\theta)$.
 
 Inputs:
 
-- Data $y_1,\ldots, y_n$.
+> - Data $y_1,\ldots, y_n$.
 
-- Covariates $x_1,\ldots, x_n$.
+> - Covariates $x_1,\ldots, x_n$.
 
-- Parameter vector $\theta$
+> - Parameter vector $\theta$
 
-- Non-linear function $\mu$, with $\mu(x, \theta_1, \theta_2, \theta_3) = \frac{\theta_3}{1 + e^{-\theta_1 - \theta_2 x}}$
+> - Non-linear function $\mu$, with $\mu(x, \theta_1, \theta_2, \theta_3) = \frac{\theta_3}{1 + e^{-\theta_1 - \theta_2 x}}$
 
-- For notational purposes, let $\mu_i (\theta) = \mu(x_i, \theta_1,\theta_2,\theta_3)$.
+> - For notational purposes, let $\mu_i (\theta) = \mu(x_i, \theta_1,\theta_2,\theta_3)$.
 
 -----
 
@@ -194,13 +188,13 @@ Idea: If you don't move very far in one step, the Hessian shouldn't change that 
 
 Instead of recomputing the Hessian at each step, compute an approximate update.
 
-- Start with an initial guess at a parameter $\theta^{(0)}$.
+> - Start with an initial guess at a parameter $\theta^{(0)}$.
 
-- Let $A^{(0)} = d^2 \ell(\theta)$.
+> - Let $A^{(0)} = d^2 \ell(\theta)$.
 
-- Set $\theta^{(n+1)} = \theta^{(n)} - (A^{(n)})^{-1} d \ell(\theta^{(n)})$
+> - Set $\theta^{(n+1)} = \theta^{(n)} - (A^{(n)})^{-1} d \ell(\theta^{(n)})$
 
-- Set $A^{(n+1)} = A^{(n)} - c^{(n)} v^{(n)} (v^{(n)})^T$
+> - Set $A^{(n+1)} = A^{(n)} - c^{(n)} v^{(n)} (v^{(n)})^T$
 
 $A^{(n)}$ are approximations to the Hessian.
 
@@ -225,9 +219,9 @@ Finding an approximation $A^{(n+1)}$ of $-d^2\ell(\theta^{(n+1)})$ that satisfie
 
 Several different ways to make the approximation:
 
-- Symmetric rank-1 update is Davidon's method, described in Lange.
+> - Symmetric rank-1 update is Davidon's method, described in Lange.
 
-- Symmetric rank-2 update is BFGS (Broyden–Fletcher–Goldfarb–Shanno).
+> - Symmetric rank-2 update is BFGS (Broyden–Fletcher–Goldfarb–Shanno).
 
 -----
 
@@ -288,9 +282,9 @@ $u = y^{(k)}$, $v = A^{(n)} s^{(n)}$, $\alpha = -1 / (g^{(k)})^T s^{(k)}$, $\bet
 
 Why are these useful?
 
-- This makes it easy to compute an approximation of $-d^2 \ell(\theta)$, but we still need to invert it to take an approximate Newton step
+> - This makes it easy to compute an approximation of $-d^2 \ell(\theta)$, but we still need to invert it to take an approximate Newton step
 
-- [Woodbury matrix identity](https://en.wikipedia.org/wiki/Woodbury_matrix_identity) allows us to compute the inverse of a low-rank update quickly
+> - [Woodbury matrix identity](https://en.wikipedia.org/wiki/Woodbury_matrix_identity) allows us to compute the inverse of a low-rank update quickly
 
 $$
 (A + UCV)^{-1}= A^{-1} - A^{-1} U(C^{-1} + VA^{-1} U)^{-1} V A^{-1}
@@ -315,11 +309,11 @@ Start with a point $x$
 
 Repeat
 
-- Choose a descent direction $\Delta x$
+> - Choose a descent direction $\Delta x$
 
-- Choose step size $t$.
+> - Choose step size $t$.
 
-- Update: $x \leftarrow x + t \Delta x$
+> - Update: $x \leftarrow x + t \Delta x$
 
 Until the stopping criterion is satisfied, usually $\|\nabla f(x)\|_2
 \le \epsilon$.
@@ -341,11 +335,11 @@ Start with a point $x$
 
 Repeat
 
-- $\Delta x \leftarrow - \nabla f(x)$.
+> - $\Delta x \leftarrow - \nabla f(x)$.
 
-- Choose a step size t. Can be deterministic based on the step or adaptive.
+> - Choose a step size t. Can be deterministic based on the step or adaptive.
 
-- Update: $x \leftarrow x + t \Delta x$
+> - Update: $x \leftarrow x + t \Delta x$
 
 Until the stopping criterion is satisfied, usually $\|\nabla f(x)\|_2
 \le \epsilon$.
@@ -356,17 +350,21 @@ A lot of options, grouped into deterministic and adaptive.
 
 Deterministic methods:
 
-- Time-based schedules, e.g. $t_{n+1} = t_n / (1 + di)$ ($d$ a decay parameter, $i$ the iteration)
+> - Time-based schedules, e.g. $t_{n+1} = t_n / (1 + di)$ ($d$ a decay parameter, $i$ the iteration)
 
-- Step-based schedules, e.g. $t_n = t_0 / (1 + i / \tau)$ ($\tau$ a "search time" parameter, $i$ the iteration, $t_0$ an initial step size).
+> - Step-based schedules, e.g. $t_n = t_0 / (1 + i / \tau)$ ($\tau$ a "search time" parameter, $i$ the iteration, $t_0$ an initial step size).
 
-- Exponential schedules, e.g. $t_n = t_0 e^{-di}$ ($i$ the iteration, $d$ a decay parameter, $t_0$ an initial step size).
+> - Exponential schedules, e.g. $t_n = t_0 e^{-di}$ ($i$ the iteration, $d$ a decay parameter, $t_0$ an initial step size).
 
 Adaptive methods:
 
-- Exact line search
+> - Exact line search
 
-- Backtracking line search
+> - Backtracking line search
+
+> - AdaGrad
+
+> - RMSprop
 
 ## Gradient descent example in pictures
 
@@ -483,6 +481,6 @@ plot(log10(abs(thetahat[2] - intermediate_theta_vals[2,])))
 
 ## Summing up
 
-- Everything we've seen has an interpretation as Newton's method with some approximation of the Hessian standing in for the real thing
+> - Everything we've seen has an interpretation as Newton's method with some approximation of the Hessian standing in for the real thing
 
-- You need to trade off between using the analytic information you have about the problem and computational complexity.
+> - You need to trade off between using the analytic information you have about the problem and computational complexity.

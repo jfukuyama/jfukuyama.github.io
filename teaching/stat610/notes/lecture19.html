@@ -10,12 +10,21 @@
   <style type="text/css">
     code{white-space: pre-wrap;}
     span.smallcaps{font-variant: small-caps;}
-    span.underline{text-decoration: underline;}
-    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
     div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
-    ul.task-list{list-style: none;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    /* CSS for syntax highlighting */
     pre > code.sourceCode { white-space: pre; position: relative; }
-    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span { line-height: 1.25; }
     pre > code.sourceCode > span:empty { height: 1.2em; }
     .sourceCode { overflow: visible; }
     code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -52,7 +61,7 @@
     code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
     code span.at { color: #7d9029; } /* Attribute */
     code span.bn { color: #40a070; } /* BaseN */
-    code span.bu { } /* BuiltIn */
+    code span.bu { color: #008000; } /* BuiltIn */
     code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
     code span.ch { color: #4070a0; } /* Char */
     code span.cn { color: #880000; } /* Constant */
@@ -65,7 +74,7 @@
     code span.ex { } /* Extension */
     code span.fl { color: #40a070; } /* Float */
     code span.fu { color: #06287e; } /* Function */
-    code span.im { } /* Import */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
     code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
     code span.kw { color: #007020; font-weight: bold; } /* Keyword */
     code span.op { color: #666666; } /* Operator */
@@ -89,24 +98,22 @@
 <body>
 <div id="more-optimization" class="slide section level2">
 <h1>More optimization…</h1>
-<p>So far</p>
-<ul class="incremental">
-<li><p>Newton’s method</p></li>
-<li><p>Things that reduce to Newton’s method</p></li>
-</ul>
 <p>Today: modifications of Newton’s method</p>
-<ul class="incremental">
-<li><p>Fisher scoring (if you want to make sure the Hessian term is
-negative definite)</p></li>
-<li><p>Hessian approximations (if it takes too long to
-re-compute/re-invert the Hessian)</p></li>
-<li><p>Gradient descent (if you don’t want to ever compute or invert the
-Hessian)</p></li>
+<ul>
+<li>Fisher scoring (if you want to make sure the Hessian term is
+negative definite)</li>
+</ul>
+<ul>
+<li>Hessian approximations (if it takes too long to re-compute/re-invert
+the Hessian)</li>
+</ul>
+<ul>
+<li>Gradient descent (if you don’t want to ever compute or invert the
+Hessian)</li>
 </ul>
 <p>Reading:</p>
-<ul class="incremental">
-<li>Lange Chapter 11.1-11.4, 11.6; Boyd and Vandenberghe, Chapter
-9.1-9.4</li>
+<ul>
+<li>Lange Chapter 11.1-11.4, 11.6</li>
 </ul>
 </div>
 <div id="fisher-scoring" class="slide section level2">
@@ -116,11 +123,13 @@ class="math inline">\(I(\theta)= E[-d^2 \ell(\theta)]\)</span> instead
 of the observed information, <span class="math inline">\(d^2
 \ell(\theta)\)</span>.</p>
 <p>Algorithm:</p>
-<ul class="incremental">
-<li><p>Pick a starting parameter estimate <span
-class="math inline">\(\theta_0\)</span></p></li>
-<li><p>Set <span class="math inline">\(\theta_{n+1} = \theta_n +
-I(\theta)^{-1} d\ell(\theta_n)\)</span></p></li>
+<ul>
+<li>Pick a starting parameter estimate <span
+class="math inline">\(\theta_0\)</span></li>
+</ul>
+<ul>
+<li>Set <span class="math inline">\(\theta_{n+1} = \theta_n +
+I(\theta)^{-1} d\ell(\theta_n)\)</span></li>
 </ul>
 <div class="incremental">
 <p><span class="math inline">\(I(\theta)\)</span> often coincides with
@@ -133,18 +142,24 @@ compute than <span class="math inline">\(-d^2 \ell(\theta)\)</span>.</p>
 <div id="example-non-linear-least-squares" class="slide section level2">
 <h1>Example: Non-linear least squares</h1>
 <p>Inputs:</p>
-<ul class="incremental">
-<li><p>Data <span class="math inline">\(y_1,\ldots,
-y_n\)</span>.</p></li>
-<li><p>Covariates <span class="math inline">\(x_1,\ldots,
-x_n\)</span>.</p></li>
-<li><p>Parameter vector <span
-class="math inline">\(\theta\)</span></p></li>
-<li><p>Non-linear function <span class="math inline">\(\mu\)</span>,
-with <span class="math inline">\(\mu(x, \theta_1, \theta_2, \theta_3) =
-\frac{\theta_3}{1 + e^{-\theta_1 - \theta_2 x}}\)</span></p></li>
-<li><p>For notational purposes, let <span class="math inline">\(\mu_i
-(\theta) = \mu(x_i, \theta_1,\theta_2,\theta_3)\)</span>.</p></li>
+<ul>
+<li>Data <span class="math inline">\(y_1,\ldots, y_n\)</span>.</li>
+</ul>
+<ul>
+<li>Covariates <span class="math inline">\(x_1,\ldots,
+x_n\)</span>.</li>
+</ul>
+<ul>
+<li>Parameter vector <span class="math inline">\(\theta\)</span></li>
+</ul>
+<ul>
+<li>Non-linear function <span class="math inline">\(\mu\)</span>, with
+<span class="math inline">\(\mu(x, \theta_1, \theta_2, \theta_3) =
+\frac{\theta_3}{1 + e^{-\theta_1 - \theta_2 x}}\)</span></li>
+</ul>
+<ul>
+<li>For notational purposes, let <span class="math inline">\(\mu_i
+(\theta) = \mu(x_i, \theta_1,\theta_2,\theta_3)\)</span>.</li>
 </ul>
 </div>
 <div class="slide section level2">
@@ -179,79 +194,79 @@ d\mu_i(\theta)^T
 <div class="slide section level2">
 
 <p>Example</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>fisher_scoring_iterate <span class="ot">=</span> <span class="cf">function</span>(x, y, theta_current) {</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    score <span class="ot">=</span> <span class="fu">compute_score</span>(x, y, theta_current)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    information <span class="ot">=</span> <span class="fu">compute_information</span>(x, theta_current)</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    theta_new <span class="ot">=</span> theta_current <span class="sc">+</span> <span class="fu">solve</span>(information) <span class="sc">%*%</span> score</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>compute_score <span class="ot">=</span> <span class="cf">function</span>(x, y, theta) {</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    fitted <span class="ot">=</span> <span class="fu">nonlin_function</span>(x, theta)</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    grad_mu <span class="ot">=</span> <span class="fu">compute_grad_mu</span>(x, theta)</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rowSums</span>(<span class="fu">sweep</span>(grad_mu, <span class="dv">2</span>, <span class="at">STATS =</span> y <span class="sc">-</span> fitted, <span class="at">FUN =</span> <span class="st">&quot;*&quot;</span>))</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>compute_information <span class="ot">=</span> <span class="cf">function</span>(x, theta) {</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    <span class="do">## a 3 x n matrix</span></span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    grad_mu <span class="ot">=</span> <span class="fu">compute_grad_mu</span>(x, theta)</span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    grad_mu <span class="sc">%*%</span> <span class="fu">t</span>(grad_mu)</span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>compute_grad_mu <span class="ot">=</span> <span class="cf">function</span>(x, theta) {</span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    denom <span class="ot">=</span> <span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(<span class="sc">-</span>theta[<span class="dv">1</span>] <span class="sc">-</span> theta[<span class="dv">2</span>] <span class="sc">*</span> x)</span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>    g1 <span class="ot">=</span> theta[<span class="dv">3</span>] <span class="sc">*</span> <span class="fu">exp</span>(<span class="sc">-</span>theta[<span class="dv">1</span>] <span class="sc">-</span> theta[<span class="dv">2</span>] <span class="sc">*</span> x) <span class="sc">/</span> denom<span class="sc">^</span><span class="dv">2</span></span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>    g2 <span class="ot">=</span> x <span class="sc">*</span> theta[<span class="dv">3</span>] <span class="sc">*</span> <span class="fu">exp</span>(<span class="sc">-</span>theta[<span class="dv">1</span>] <span class="sc">-</span> theta[<span class="dv">2</span>] <span class="sc">*</span> x) <span class="sc">/</span> denom<span class="sc">^</span><span class="dv">2</span></span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    g3 <span class="ot">=</span> <span class="dv">1</span> <span class="sc">/</span> denom</span>
-<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="fu">rbind</span>(g1, g2, g3))</span>
-<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>nonlin_function <span class="ot">=</span> <span class="cf">function</span>(x, theta) {</span>
-<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>    theta[<span class="dv">3</span>] <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(<span class="sc">-</span>theta[<span class="dv">1</span>] <span class="sc">-</span> theta[<span class="dv">2</span>] <span class="sc">*</span> x))</span>
-<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a>fisher_scoring_iterate <span class="ot">=</span> <span class="cf">function</span>(x, y, theta_current) {</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>    score <span class="ot">=</span> <span class="fu">compute_score</span>(x, y, theta_current)</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>    information <span class="ot">=</span> <span class="fu">compute_information</span>(x, theta_current)</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a>    theta_new <span class="ot">=</span> theta_current <span class="sc">+</span> <span class="fu">solve</span>(information) <span class="sc">%*%</span> score</span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>}</span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a>compute_score <span class="ot">=</span> <span class="cf">function</span>(x, y, theta) {</span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a>    fitted <span class="ot">=</span> <span class="fu">nonlin_function</span>(x, theta)</span>
+<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a>    grad_mu <span class="ot">=</span> <span class="fu">compute_grad_mu</span>(x, theta)</span>
+<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a>    <span class="fu">rowSums</span>(<span class="fu">sweep</span>(grad_mu, <span class="dv">2</span>, <span class="at">STATS =</span> y <span class="sc">-</span> fitted, <span class="at">FUN =</span> <span class="st">&quot;*&quot;</span>))</span>
+<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a>}</span>
+<span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a>compute_information <span class="ot">=</span> <span class="cf">function</span>(x, theta) {</span>
+<span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a>    <span class="do">## a 3 x n matrix</span></span>
+<span id="cb1-13"><a href="#cb1-13" tabindex="-1"></a>    grad_mu <span class="ot">=</span> <span class="fu">compute_grad_mu</span>(x, theta)</span>
+<span id="cb1-14"><a href="#cb1-14" tabindex="-1"></a>    grad_mu <span class="sc">%*%</span> <span class="fu">t</span>(grad_mu)</span>
+<span id="cb1-15"><a href="#cb1-15" tabindex="-1"></a>}</span>
+<span id="cb1-16"><a href="#cb1-16" tabindex="-1"></a>compute_grad_mu <span class="ot">=</span> <span class="cf">function</span>(x, theta) {</span>
+<span id="cb1-17"><a href="#cb1-17" tabindex="-1"></a>    denom <span class="ot">=</span> <span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(<span class="sc">-</span>theta[<span class="dv">1</span>] <span class="sc">-</span> theta[<span class="dv">2</span>] <span class="sc">*</span> x)</span>
+<span id="cb1-18"><a href="#cb1-18" tabindex="-1"></a>    g1 <span class="ot">=</span> theta[<span class="dv">3</span>] <span class="sc">*</span> <span class="fu">exp</span>(<span class="sc">-</span>theta[<span class="dv">1</span>] <span class="sc">-</span> theta[<span class="dv">2</span>] <span class="sc">*</span> x) <span class="sc">/</span> denom<span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb1-19"><a href="#cb1-19" tabindex="-1"></a>    g2 <span class="ot">=</span> x <span class="sc">*</span> theta[<span class="dv">3</span>] <span class="sc">*</span> <span class="fu">exp</span>(<span class="sc">-</span>theta[<span class="dv">1</span>] <span class="sc">-</span> theta[<span class="dv">2</span>] <span class="sc">*</span> x) <span class="sc">/</span> denom<span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb1-20"><a href="#cb1-20" tabindex="-1"></a>    g3 <span class="ot">=</span> <span class="dv">1</span> <span class="sc">/</span> denom</span>
+<span id="cb1-21"><a href="#cb1-21" tabindex="-1"></a>    <span class="fu">return</span>(<span class="fu">rbind</span>(g1, g2, g3))</span>
+<span id="cb1-22"><a href="#cb1-22" tabindex="-1"></a>}</span>
+<span id="cb1-23"><a href="#cb1-23" tabindex="-1"></a>nonlin_function <span class="ot">=</span> <span class="cf">function</span>(x, theta) {</span>
+<span id="cb1-24"><a href="#cb1-24" tabindex="-1"></a>    theta[<span class="dv">3</span>] <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(<span class="sc">-</span>theta[<span class="dv">1</span>] <span class="sc">-</span> theta[<span class="dv">2</span>] <span class="sc">*</span> x))</span>
+<span id="cb1-25"><a href="#cb1-25" tabindex="-1"></a>}</span></code></pre></div>
 </div>
 <div class="slide section level2">
 
 <p>At the starting values:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(NISTnls)</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(Ratkowsky3)</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>x <span class="ot">=</span> Ratkowsky3<span class="sc">$</span>x</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>y <span class="ot">=</span> Ratkowsky3<span class="sc">$</span>y</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>theta <span class="ot">=</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">5</span>, <span class="dv">1</span>, <span class="dv">700</span>)</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>xgrid <span class="ot">=</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">15</span>, <span class="at">length.out =</span> <span class="dv">1000</span>)</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>fitted <span class="ot">=</span> <span class="fu">nonlin_function</span>(xgrid, theta)</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(fitted <span class="sc">~</span> xgrid, <span class="at">type =</span> <span class="st">&#39;l&#39;</span>)</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="fu">points</span>(y <span class="sc">~</span> x)</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">library</span>(NISTnls)</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="fu">data</span>(Ratkowsky3)</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>x <span class="ot">=</span> Ratkowsky3<span class="sc">$</span>x</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>y <span class="ot">=</span> Ratkowsky3<span class="sc">$</span>y</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>theta <span class="ot">=</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">5</span>, <span class="dv">1</span>, <span class="dv">700</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>xgrid <span class="ot">=</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">15</span>, <span class="at">length.out =</span> <span class="dv">1000</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>fitted <span class="ot">=</span> <span class="fu">nonlin_function</span>(xgrid, theta)</span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a><span class="fu">plot</span>(fitted <span class="sc">~</span> xgrid, <span class="at">type =</span> <span class="st">&#39;l&#39;</span>)</span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a><span class="fu">points</span>(y <span class="sc">~</span> x)</span></code></pre></div>
 <p><img src="lecture-19-fig/unnamed-chunk-2-1.png" /></p>
 </div>
 <div class="slide section level2">
 
 <p>After one iteration:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>(<span class="at">theta =</span> <span class="fu">fisher_scoring_iterate</span>(x, y, theta))</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>(<span class="at">theta =</span> <span class="fu">fisher_scoring_iterate</span>(x, y, theta))</span></code></pre></div>
 <pre><code>##           [,1]
 ## g1  -3.3298463
 ## g2   0.4649027
 ## g3 677.8340519</code></pre>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>fitted <span class="ot">=</span> <span class="fu">nonlin_function</span>(xgrid, theta)</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(fitted <span class="sc">~</span> xgrid, <span class="at">type =</span> <span class="st">&#39;l&#39;</span>)</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">points</span>(y <span class="sc">~</span> x)</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>fitted <span class="ot">=</span> <span class="fu">nonlin_function</span>(xgrid, theta)</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="fu">plot</span>(fitted <span class="sc">~</span> xgrid, <span class="at">type =</span> <span class="st">&#39;l&#39;</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="fu">points</span>(y <span class="sc">~</span> x)</span></code></pre></div>
 <p><img src="lecture-19-fig/unnamed-chunk-3-1.png" /></p>
 </div>
 <div class="slide section level2">
 
 <p>After two iterations:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>(<span class="at">theta =</span> <span class="fu">fisher_scoring_iterate</span>(x, y, theta))</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>(<span class="at">theta =</span> <span class="fu">fisher_scoring_iterate</span>(x, y, theta))</span></code></pre></div>
 <pre><code>##           [,1]
 ## g1  -4.2780124
 ## g2   0.6775608
 ## g3 664.2494602</code></pre>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>fitted <span class="ot">=</span> <span class="fu">nonlin_function</span>(xgrid, theta)</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(fitted <span class="sc">~</span> xgrid, <span class="at">type =</span> <span class="st">&#39;l&#39;</span>)</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="fu">points</span>(y <span class="sc">~</span> x)</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>fitted <span class="ot">=</span> <span class="fu">nonlin_function</span>(xgrid, theta)</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="fu">plot</span>(fitted <span class="sc">~</span> xgrid, <span class="at">type =</span> <span class="st">&#39;l&#39;</span>)</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a><span class="fu">points</span>(y <span class="sc">~</span> x)</span></code></pre></div>
 <p><img src="lecture-19-fig/unnamed-chunk-4-1.png" /></p>
 </div>
 <div class="slide section level2">
 
 <p>After several more iterations</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>) {</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    theta <span class="ot">=</span> <span class="fu">fisher_scoring_iterate</span>(x, y, theta)</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">print</span>(theta)</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>) {</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>    theta <span class="ot">=</span> <span class="fu">fisher_scoring_iterate</span>(x, y, theta)</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>    <span class="fu">print</span>(theta)</span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>}</span></code></pre></div>
 <pre><code>##          [,1]
 ## g1  -4.438590
 ## g2   0.687286
@@ -275,23 +290,23 @@ d\mu_i(\theta)^T
 </div>
 <div class="slide section level2">
 
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>fitted <span class="ot">=</span> <span class="fu">nonlin_function</span>(xgrid, theta)</span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(fitted <span class="sc">~</span> xgrid, <span class="at">type =</span> <span class="st">&#39;l&#39;</span>)</span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="fu">points</span>(y <span class="sc">~</span> x)</span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a>fitted <span class="ot">=</span> <span class="fu">nonlin_function</span>(xgrid, theta)</span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a><span class="fu">plot</span>(fitted <span class="sc">~</span> xgrid, <span class="at">type =</span> <span class="st">&#39;l&#39;</span>)</span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a><span class="fu">points</span>(y <span class="sc">~</span> x)</span></code></pre></div>
 <p><img src="lecture-19-fig/unnamed-chunk-6-1.png" /></p>
 </div>
 <div class="slide section level2">
 
 <p>Compare with</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">nls</span>(y <span class="sc">~</span> b3 <span class="sc">/</span> ((<span class="dv">1</span><span class="sc">+</span><span class="fu">exp</span>(<span class="sc">-</span>b1<span class="sc">-</span>b2<span class="sc">*</span>x))), <span class="at">data =</span> Ratkowsky3,</span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">start =</span> <span class="fu">c</span>(<span class="at">b1 =</span> <span class="sc">-</span><span class="dv">5</span>, <span class="at">b2 =</span> <span class="fl">0.75</span>, <span class="at">b3 =</span> <span class="dv">700</span>),</span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">trace =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="fu">nls</span>(y <span class="sc">~</span> b3 <span class="sc">/</span> ((<span class="dv">1</span><span class="sc">+</span><span class="fu">exp</span>(<span class="sc">-</span>b1<span class="sc">-</span>b2<span class="sc">*</span>x))), <span class="at">data =</span> Ratkowsky3,</span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a>    <span class="at">start =</span> <span class="fu">c</span>(<span class="at">b1 =</span> <span class="sc">-</span><span class="dv">5</span>, <span class="at">b2 =</span> <span class="fl">0.75</span>, <span class="at">b3 =</span> <span class="dv">700</span>),</span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a>    <span class="at">trace =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
 <pre><code>## 12935.59    (6.67e-01): par = (-5 0.75 700)
 ## 8971.367    (7.04e-02): par = (-4.363867 0.6765795 703.9695)
 ## 8930.131    (5.51e-03): par = (-4.447056 0.6894499 702.678)
 ## 8929.885    (5.50e-04): par = (-4.442017 0.6884684 702.8859)
 ## 8929.883    (5.62e-05): par = (-4.442618 0.6885758 702.8699)
-## 8929.883    (5.74e-06): par = (-4.442558 0.6885649 702.8716)</code></pre>
+## 8929.883    (5.78e-06): par = (-4.442558 0.6885649 702.8716)</code></pre>
 <pre><code>## Nonlinear regression model
 ##   model: y ~ b3/((1 + exp(-b1 - b2 * x)))
 ##    data: Ratkowsky3
@@ -300,7 +315,7 @@ d\mu_i(\theta)^T
 ##  residual sum-of-squares: 8930
 ## 
 ## Number of iterations to convergence: 5 
-## Achieved convergence tolerance: 5.737e-06</code></pre>
+## Achieved convergence tolerance: 5.777e-06</code></pre>
 </div>
 <div id="quasi-newton-methods" class="slide section level2">
 <h1>Quasi-Newton Methods</h1>
@@ -308,15 +323,21 @@ d\mu_i(\theta)^T
 change that much either.</p>
 <p>Instead of recomputing the Hessian at each step, compute an
 approximate update.</p>
-<ul class="incremental">
-<li><p>Start with an initial guess at a parameter <span
-class="math inline">\(\theta^{(0)}\)</span>.</p></li>
-<li><p>Let <span class="math inline">\(A^{(0)} = d^2
-\ell(\theta)\)</span>.</p></li>
-<li><p>Set <span class="math inline">\(\theta^{(n+1)} = \theta^{(n)} -
-(A^{(n)})^{-1} d \ell(\theta^{(n)})\)</span></p></li>
-<li><p>Set <span class="math inline">\(A^{(n+1)} = A^{(n)} - c^{(n)}
-v^{(n)} (v^{(n)})^T\)</span></p></li>
+<ul>
+<li>Start with an initial guess at a parameter <span
+class="math inline">\(\theta^{(0)}\)</span>.</li>
+</ul>
+<ul>
+<li>Let <span class="math inline">\(A^{(0)} = d^2
+\ell(\theta)\)</span>.</li>
+</ul>
+<ul>
+<li>Set <span class="math inline">\(\theta^{(n+1)} = \theta^{(n)} -
+(A^{(n)})^{-1} d \ell(\theta^{(n)})\)</span></li>
+</ul>
+<ul>
+<li>Set <span class="math inline">\(A^{(n+1)} = A^{(n)} - c^{(n)}
+v^{(n)} (v^{(n)})^T\)</span></li>
 </ul>
 <p><span class="math inline">\(A^{(n)}\)</span> are approximations to
 the Hessian.</p>
@@ -340,11 +361,13 @@ class="math inline">\(A^{(n+1)}\)</span> of <span
 class="math inline">\(-d^2\ell(\theta^{(n+1)})\)</span> that satisfies
 the equation above is called the <em>secant condition</em>.</p>
 <p>Several different ways to make the approximation:</p>
-<ul class="incremental">
-<li><p>Symmetric rank-1 update is Davidon’s method, described in
-Lange.</p></li>
-<li><p>Symmetric rank-2 update is BFGS
-(Broyden–Fletcher–Goldfarb–Shanno).</p></li>
+<ul>
+<li>Symmetric rank-1 update is Davidon’s method, described in
+Lange.</li>
+</ul>
+<ul>
+<li>Symmetric rank-2 update is BFGS
+(Broyden–Fletcher–Goldfarb–Shanno).</li>
 </ul>
 </div>
 </div>
@@ -397,14 +420,16 @@ Hessian remains positive definite, while the rank-2 updating method
 <div class="slide section level2">
 
 <p>Why are these useful?</p>
-<ul class="incremental">
-<li><p>This makes it easy to compute an approximation of <span
+<ul>
+<li>This makes it easy to compute an approximation of <span
 class="math inline">\(-d^2 \ell(\theta)\)</span>, but we still need to
-invert it to take an approximate Newton step</p></li>
-<li><p><a
+invert it to take an approximate Newton step</li>
+</ul>
+<ul>
+<li><a
 href="https://en.wikipedia.org/wiki/Woodbury_matrix_identity">Woodbury
 matrix identity</a> allows us to compute the inverse of a low-rank
-update quickly</p></li>
+update quickly</li>
 </ul>
 <p><span class="math display">\[
 (A + UCV)^{-1}= A^{-1} - A^{-1} U(C^{-1} + VA^{-1} U)^{-1} V A^{-1}
@@ -425,12 +450,16 @@ be recast as a maximization and vice versa.</p>
 <p>General algorithm:</p>
 <p>Start with a point <span class="math inline">\(x\)</span></p>
 <p>Repeat</p>
-<ul class="incremental">
-<li><p>Choose a descent direction <span class="math inline">\(\Delta
-x\)</span></p></li>
-<li><p>Choose step size <span class="math inline">\(t\)</span>.</p></li>
-<li><p>Update: <span class="math inline">\(x \leftarrow x + t \Delta
-x\)</span></p></li>
+<ul>
+<li>Choose a descent direction <span class="math inline">\(\Delta
+x\)</span></li>
+</ul>
+<ul>
+<li>Choose step size <span class="math inline">\(t\)</span>.</li>
+</ul>
+<ul>
+<li>Update: <span class="math inline">\(x \leftarrow x + t \Delta
+x\)</span></li>
 </ul>
 <p>Until the stopping criterion is satisfied, usually <span
 class="math inline">\(\|\nabla f(x)\|_2 \le \epsilon\)</span>.</p>
@@ -442,13 +471,17 @@ class="math inline">\(\|\nabla f(x)\|_2 \le \epsilon\)</span>.</p>
 <p>Overall algorithm:</p>
 <p>Start with a point <span class="math inline">\(x\)</span></p>
 <p>Repeat</p>
-<ul class="incremental">
-<li><p><span class="math inline">\(\Delta x \leftarrow - \nabla
-f(x)\)</span>.</p></li>
-<li><p>Choose a step size t. Can be deterministic based on the step or
-adaptive.</p></li>
-<li><p>Update: <span class="math inline">\(x \leftarrow x + t \Delta
-x\)</span></p></li>
+<ul>
+<li><span class="math inline">\(\Delta x \leftarrow - \nabla
+f(x)\)</span>.</li>
+</ul>
+<ul>
+<li>Choose a step size t. Can be deterministic based on the step or
+adaptive.</li>
+</ul>
+<ul>
+<li>Update: <span class="math inline">\(x \leftarrow x + t \Delta
+x\)</span></li>
 </ul>
 <p>Until the stopping criterion is satisfied, usually <span
 class="math inline">\(\|\nabla f(x)\|_2 \le \epsilon\)</span>.</p>
@@ -457,25 +490,36 @@ class="math inline">\(\|\nabla f(x)\|_2 \le \epsilon\)</span>.</p>
 <h1>Choosing the step size</h1>
 <p>A lot of options, grouped into deterministic and adaptive.</p>
 <p>Deterministic methods:</p>
-<ul class="incremental">
-<li><p>Time-based schedules, e.g. <span class="math inline">\(t_{n+1} =
-t_n / (1 + di)\)</span> (<span class="math inline">\(d\)</span> a decay
-parameter, <span class="math inline">\(i\)</span> the
-iteration)</p></li>
-<li><p>Step-based schedules, e.g. <span class="math inline">\(t_n = t_0
-/ (1 + i / \tau)\)</span> (<span class="math inline">\(\tau\)</span> a
+<ul>
+<li>Time-based schedules, e.g. <span class="math inline">\(t_{n+1} = t_n
+/ (1 + di)\)</span> (<span class="math inline">\(d\)</span> a decay
+parameter, <span class="math inline">\(i\)</span> the iteration)</li>
+</ul>
+<ul>
+<li>Step-based schedules, e.g. <span class="math inline">\(t_n = t_0 /
+(1 + i / \tau)\)</span> (<span class="math inline">\(\tau\)</span> a
 “search time” parameter, <span class="math inline">\(i\)</span> the
 iteration, <span class="math inline">\(t_0\)</span> an initial step
-size).</p></li>
-<li><p>Exponential schedules, e.g. <span class="math inline">\(t_n = t_0
+size).</li>
+</ul>
+<ul>
+<li>Exponential schedules, e.g. <span class="math inline">\(t_n = t_0
 e^{-di}\)</span> (<span class="math inline">\(i\)</span> the iteration,
 <span class="math inline">\(d\)</span> a decay parameter, <span
-class="math inline">\(t_0\)</span> an initial step size).</p></li>
+class="math inline">\(t_0\)</span> an initial step size).</li>
 </ul>
 <p>Adaptive methods:</p>
-<ul class="incremental">
-<li><p>Exact line search</p></li>
-<li><p>Backtracking line search</p></li>
+<ul>
+<li>Exact line search</li>
+</ul>
+<ul>
+<li>Backtracking line search</li>
+</ul>
+<ul>
+<li>AdaGrad</li>
+</ul>
+<ul>
+<li>RMSprop</li>
 </ul>
 </div>
 <div id="gradient-descent-example-in-pictures"
@@ -507,50 +551,50 @@ derivative of the negative log likelihood: <span class="math display">\[
 <div class="slide section level2">
 
 <p>Functions for the log likelihood:</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>neg_log_lik <span class="ot">=</span> <span class="cf">function</span>(theta, x) {</span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(.<span class="dv">5</span> <span class="sc">*</span> <span class="fu">sum</span>((x <span class="sc">-</span> theta)<span class="sc">^</span><span class="dv">2</span>))</span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>neg_deriv <span class="ot">=</span> <span class="cf">function</span>(theta, x) {</span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="fu">sum</span>(x <span class="sc">-</span> theta))</span>
-<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>step_size <span class="ot">=</span> <span class="cf">function</span>(i, eta0, tau) {</span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(eta0 <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> i <span class="sc">/</span> tau))</span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>step_size_exponential <span class="ot">=</span> <span class="cf">function</span>(i, t0, d) {</span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(t0 <span class="sc">*</span> <span class="fu">exp</span>(<span class="sc">-</span>i <span class="sc">*</span> d))</span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a>neg_log_lik <span class="ot">=</span> <span class="cf">function</span>(theta, x) {</span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a>    <span class="fu">return</span>(.<span class="dv">5</span> <span class="sc">*</span> <span class="fu">sum</span>((x <span class="sc">-</span> theta)<span class="sc">^</span><span class="dv">2</span>))</span>
+<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a>}</span>
+<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a>neg_deriv <span class="ot">=</span> <span class="cf">function</span>(theta, x) {</span>
+<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a>    <span class="fu">return</span>(<span class="fu">sum</span>(x <span class="sc">-</span> theta))</span>
+<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a>step_size <span class="ot">=</span> <span class="cf">function</span>(i, eta0, tau) {</span>
+<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a>    <span class="fu">return</span>(eta0 <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> i <span class="sc">/</span> tau))</span>
+<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a>}</span>
+<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a>step_size_exponential <span class="ot">=</span> <span class="cf">function</span>(i, t0, d) {</span>
+<span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a>    <span class="fu">return</span>(t0 <span class="sc">*</span> <span class="fu">exp</span>(<span class="sc">-</span>i <span class="sc">*</span> d))</span>
+<span id="cb16-6"><a href="#cb16-6" tabindex="-1"></a>}</span></code></pre></div>
 </div>
 <div class="slide section level2">
 
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">0</span>)</span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>x <span class="ot">=</span> <span class="fu">rnorm</span>(<span class="at">n =</span> <span class="dv">20</span>, <span class="at">mean =</span> <span class="dv">5</span>, <span class="at">sd =</span> <span class="dv">1</span>)</span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(x)</span></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">0</span>)</span>
+<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a>x <span class="ot">=</span> <span class="fu">rnorm</span>(<span class="at">n =</span> <span class="dv">20</span>, <span class="at">mean =</span> <span class="dv">5</span>, <span class="at">sd =</span> <span class="dv">1</span>)</span>
+<span id="cb17-3"><a href="#cb17-3" tabindex="-1"></a><span class="fu">mean</span>(x)</span></code></pre></div>
 <pre><code>## [1] 4.998221</code></pre>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>theta <span class="ot">=</span> <span class="dv">0</span></span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>niter <span class="ot">=</span> <span class="dv">1000</span></span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>intermediate_theta_vals <span class="ot">=</span> <span class="fu">numeric</span>(niter)</span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>niter) {</span>
-<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>    theta <span class="ot">=</span> theta <span class="sc">+</span> <span class="fu">step_size</span>(i, <span class="at">eta0 =</span> <span class="dv">1</span>, <span class="at">tau =</span> <span class="dv">40</span>) <span class="sc">*</span> <span class="fu">neg_deriv</span>(theta, x)</span>
-<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>    intermediate_theta_vals[i] <span class="ot">=</span> theta</span>
-<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">#cat(sprintf(&quot;Value of theta at iteration %i: %.2f\n&quot;, i, theta))</span></span>
-<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>theta</span></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a>theta <span class="ot">=</span> <span class="dv">0</span></span>
+<span id="cb19-2"><a href="#cb19-2" tabindex="-1"></a>niter <span class="ot">=</span> <span class="dv">1000</span></span>
+<span id="cb19-3"><a href="#cb19-3" tabindex="-1"></a>intermediate_theta_vals <span class="ot">=</span> <span class="fu">numeric</span>(niter)</span>
+<span id="cb19-4"><a href="#cb19-4" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>niter) {</span>
+<span id="cb19-5"><a href="#cb19-5" tabindex="-1"></a>    theta <span class="ot">=</span> theta <span class="sc">+</span> <span class="fu">step_size</span>(i, <span class="at">eta0 =</span> <span class="dv">1</span>, <span class="at">tau =</span> <span class="dv">40</span>) <span class="sc">*</span> <span class="fu">neg_deriv</span>(theta, x)</span>
+<span id="cb19-6"><a href="#cb19-6" tabindex="-1"></a>    intermediate_theta_vals[i] <span class="ot">=</span> theta</span>
+<span id="cb19-7"><a href="#cb19-7" tabindex="-1"></a>    <span class="co">#cat(sprintf(&quot;Value of theta at iteration %i: %.2f\n&quot;, i, theta))</span></span>
+<span id="cb19-8"><a href="#cb19-8" tabindex="-1"></a>}</span>
+<span id="cb19-9"><a href="#cb19-9" tabindex="-1"></a>theta</span></code></pre></div>
 <pre><code>## [1] 4.998221</code></pre>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(intermediate_theta_vals)</span></code></pre></div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a><span class="fu">plot</span>(intermediate_theta_vals)</span></code></pre></div>
 <p><img src="lecture-19-fig/unnamed-chunk-10-1.png" /></p>
 </div>
 <div id="logistic-regression" class="slide section level2">
 <h1>Logistic regression</h1>
 <p>Set up the data the same way as last time:</p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>theta_true <span class="ot">=</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>)</span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>n <span class="ot">=</span> <span class="dv">100</span></span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>X <span class="ot">=</span> <span class="fu">cbind</span>(<span class="fu">rep</span>(<span class="dv">1</span>, n), <span class="fu">rnorm</span>(n, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="dv">1</span>))</span>
-<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(X) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">&quot;Intercept&quot;</span>, <span class="st">&quot;x&quot;</span>)</span>
-<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>p <span class="ot">=</span> <span class="fu">exp</span>(X <span class="sc">%*%</span> theta_true) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(X <span class="sc">%*%</span> theta_true))</span>
-<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>y <span class="ot">=</span> <span class="fu">rbinom</span>(<span class="at">n =</span> n, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> p)</span>
-<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(y <span class="sc">~</span> X[,<span class="st">&quot;x&quot;</span>])</span>
-<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a><span class="fu">points</span>(p <span class="sc">~</span> X[,<span class="st">&quot;x&quot;</span>], <span class="at">col =</span> <span class="st">&quot;red&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
+<span id="cb22-2"><a href="#cb22-2" tabindex="-1"></a>theta_true <span class="ot">=</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>)</span>
+<span id="cb22-3"><a href="#cb22-3" tabindex="-1"></a>n <span class="ot">=</span> <span class="dv">100</span></span>
+<span id="cb22-4"><a href="#cb22-4" tabindex="-1"></a>X <span class="ot">=</span> <span class="fu">cbind</span>(<span class="fu">rep</span>(<span class="dv">1</span>, n), <span class="fu">rnorm</span>(n, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="dv">1</span>))</span>
+<span id="cb22-5"><a href="#cb22-5" tabindex="-1"></a><span class="fu">colnames</span>(X) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">&quot;Intercept&quot;</span>, <span class="st">&quot;x&quot;</span>)</span>
+<span id="cb22-6"><a href="#cb22-6" tabindex="-1"></a>p <span class="ot">=</span> <span class="fu">exp</span>(X <span class="sc">%*%</span> theta_true) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(X <span class="sc">%*%</span> theta_true))</span>
+<span id="cb22-7"><a href="#cb22-7" tabindex="-1"></a>y <span class="ot">=</span> <span class="fu">rbinom</span>(<span class="at">n =</span> n, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> p)</span>
+<span id="cb22-8"><a href="#cb22-8" tabindex="-1"></a><span class="fu">plot</span>(y <span class="sc">~</span> X[,<span class="st">&quot;x&quot;</span>])</span>
+<span id="cb22-9"><a href="#cb22-9" tabindex="-1"></a><span class="fu">points</span>(p <span class="sc">~</span> X[,<span class="st">&quot;x&quot;</span>], <span class="at">col =</span> <span class="st">&quot;red&quot;</span>)</span></code></pre></div>
 <p><img src="lecture-19-fig/unnamed-chunk-11-1.png" /></p>
 </div>
 <div class="slide section level2">
@@ -558,48 +602,49 @@ derivative of the negative log likelihood: <span class="math display">\[
 <p>Set up the gradient function (minimizing the negative log likelihood,
 need the negative gradient of the negative log likelihood or the
 gradient of the log likelihood):</p>
-<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>neg_gradient <span class="ot">=</span> <span class="cf">function</span>(theta, X, y) {</span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>    p <span class="ot">=</span> <span class="fu">exp</span>(X <span class="sc">%*%</span> theta) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(X <span class="sc">%*%</span> theta))</span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="fu">t</span>(X) <span class="sc">%*%</span> (y <span class="sc">-</span> p))</span>
-<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" tabindex="-1"></a>neg_gradient <span class="ot">=</span> <span class="cf">function</span>(theta, X, y) {</span>
+<span id="cb23-2"><a href="#cb23-2" tabindex="-1"></a>    p <span class="ot">=</span> <span class="fu">exp</span>(X <span class="sc">%*%</span> theta) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(X <span class="sc">%*%</span> theta))</span>
+<span id="cb23-3"><a href="#cb23-3" tabindex="-1"></a>    <span class="fu">return</span>(<span class="fu">t</span>(X) <span class="sc">%*%</span> (y <span class="sc">-</span> p))</span>
+<span id="cb23-4"><a href="#cb23-4" tabindex="-1"></a>}</span></code></pre></div>
 </div>
 <div class="slide section level2">
 
 <p>Do our gradient calculations:</p>
-<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>theta <span class="ot">=</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">0</span>)</span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>niter <span class="ot">=</span> <span class="dv">10000</span></span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>intermediate_theta_vals <span class="ot">=</span> <span class="fu">matrix</span>(<span class="dv">0</span>, <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">ncol =</span> niter)</span>
-<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>niter) {</span>
-<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>    theta <span class="ot">=</span> theta <span class="sc">+</span> <span class="fu">step_size</span>(i, <span class="at">eta0 =</span> .<span class="dv">1</span>, <span class="at">tau =</span> <span class="dv">1</span>) <span class="sc">*</span> <span class="fu">neg_gradient</span>(theta, X, y)</span>
-<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>    intermediate_theta_vals[,i] <span class="ot">=</span> theta</span>
-<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">#cat(sprintf(&quot;Value of theta at iteration %i: %.2f\n&quot;, i, theta))</span></span>
-<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>theta</span></code></pre></div>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" tabindex="-1"></a>theta <span class="ot">=</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">0</span>)</span>
+<span id="cb24-2"><a href="#cb24-2" tabindex="-1"></a>niter <span class="ot">=</span> <span class="dv">10000</span></span>
+<span id="cb24-3"><a href="#cb24-3" tabindex="-1"></a>intermediate_theta_vals <span class="ot">=</span> <span class="fu">matrix</span>(<span class="dv">0</span>, <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">ncol =</span> niter)</span>
+<span id="cb24-4"><a href="#cb24-4" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>niter) {</span>
+<span id="cb24-5"><a href="#cb24-5" tabindex="-1"></a>    theta <span class="ot">=</span> theta <span class="sc">+</span> <span class="fu">step_size</span>(i, <span class="at">eta0 =</span> .<span class="dv">1</span>, <span class="at">tau =</span> <span class="dv">1</span>) <span class="sc">*</span> <span class="fu">neg_gradient</span>(theta, X, y)</span>
+<span id="cb24-6"><a href="#cb24-6" tabindex="-1"></a>    intermediate_theta_vals[,i] <span class="ot">=</span> theta</span>
+<span id="cb24-7"><a href="#cb24-7" tabindex="-1"></a>    <span class="co">#cat(sprintf(&quot;Value of theta at iteration %i: %.2f\n&quot;, i, theta))</span></span>
+<span id="cb24-8"><a href="#cb24-8" tabindex="-1"></a>}</span>
+<span id="cb24-9"><a href="#cb24-9" tabindex="-1"></a>theta</span></code></pre></div>
 <pre><code>##                [,1]
 ## Intercept 0.9489461
 ## x         2.1634107</code></pre>
-<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>(<span class="at">thetahat =</span> <span class="fu">coef</span>(<span class="fu">glm</span>(y <span class="sc">~</span> <span class="dv">0</span> <span class="sc">+</span> X, <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>)))</span></code></pre></div>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" tabindex="-1"></a>(<span class="at">thetahat =</span> <span class="fu">coef</span>(<span class="fu">glm</span>(y <span class="sc">~</span> <span class="dv">0</span> <span class="sc">+</span> X, <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>)))</span></code></pre></div>
 <pre><code>## XIntercept         Xx 
 ##  0.9532323  2.1784561</code></pre>
-<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(intermediate_theta_vals[<span class="dv">1</span>,])</span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> thetahat[<span class="dv">1</span>])</span></code></pre></div>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" tabindex="-1"></a><span class="fu">plot</span>(intermediate_theta_vals[<span class="dv">1</span>,])</span>
+<span id="cb28-2"><a href="#cb28-2" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> thetahat[<span class="dv">1</span>])</span></code></pre></div>
 <p><img src="lecture-19-fig/unnamed-chunk-13-1.png" /></p>
-<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(intermediate_theta_vals[<span class="dv">2</span>,])</span>
-<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> thetahat[<span class="dv">2</span>])</span></code></pre></div>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" tabindex="-1"></a><span class="fu">plot</span>(intermediate_theta_vals[<span class="dv">2</span>,])</span>
+<span id="cb29-2"><a href="#cb29-2" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> thetahat[<span class="dv">2</span>])</span></code></pre></div>
 <p><img src="lecture-19-fig/unnamed-chunk-13-2.png" /></p>
-<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">log10</span>(<span class="fu">abs</span>(thetahat[<span class="dv">1</span>] <span class="sc">-</span> intermediate_theta_vals[<span class="dv">1</span>,])))</span></code></pre></div>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">log10</span>(<span class="fu">abs</span>(thetahat[<span class="dv">1</span>] <span class="sc">-</span> intermediate_theta_vals[<span class="dv">1</span>,])))</span></code></pre></div>
 <p><img src="lecture-19-fig/unnamed-chunk-13-3.png" /></p>
-<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">log10</span>(<span class="fu">abs</span>(thetahat[<span class="dv">2</span>] <span class="sc">-</span> intermediate_theta_vals[<span class="dv">2</span>,])))</span></code></pre></div>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">log10</span>(<span class="fu">abs</span>(thetahat[<span class="dv">2</span>] <span class="sc">-</span> intermediate_theta_vals[<span class="dv">2</span>,])))</span></code></pre></div>
 <p><img src="lecture-19-fig/unnamed-chunk-13-4.png" /></p>
 </div>
 <div id="summing-up" class="slide section level2">
 <h1>Summing up</h1>
-<ul class="incremental">
-<li><p>Everything we’ve seen has an interpretation as Newton’s method
-with some approximation of the Hessian standing in for the real
-thing</p></li>
-<li><p>You need to trade off between using the analytic information you
-have about the problem and computational complexity.</p></li>
+<ul>
+<li>Everything we’ve seen has an interpretation as Newton’s method with
+some approximation of the Hessian standing in for the real thing</li>
+</ul>
+<ul>
+<li>You need to trade off between using the analytic information you
+have about the problem and computational complexity.</li>
 </ul>
 </div>
 </body>
