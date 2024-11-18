@@ -14,18 +14,18 @@ Today: Approximate Bayesian Computation
 
 Reading: 
 
-- [Bayesian Basics](https://m-clark.github.io/bayesian-basics/intro.html), the introductory chapter
+> - [Bayesian Basics](https://m-clark.github.io/bayesian-basics/intro.html), the introductory chapter
 
-- [Sisson, Fan, Beaumont](https://arxiv.org/pdf/1802.09720.pdf), "Overview of Approximate Bayesian Computation"
+> - [Sisson, Fan, Beaumont](https://arxiv.org/pdf/1802.09720.pdf), "Overview of Approximate Bayesian Computation"
 
 
 ## Our goals
 
 Next two weeks:
 
-- Methods for sampling from arbitrary probability distributions.
+> - Methods for sampling from arbitrary probability distributions.
 
-- Main application: sampling from posterior distributions
+> - Main application: sampling from posterior distributions
 
 
 ## Bayesian Statistics
@@ -45,15 +45,15 @@ $$
 
 For example:
 
-- Data $y_i$ are heights of men entering the military
+> - Data $y_i$ are heights of men entering the military
 
-- We think that the $y_i$ are distributed $\mathcal N(\theta, \sigma^2)$
+> - We think that the $y_i$ are distributed $\mathcal N(\theta, \sigma^2)$
 
-- We have some prior belief about $\theta$, maybe that it is around 70".
+> - We have some prior belief about $\theta$, maybe that it is around 70".
 
-- We quantify our prior belief about $\theta$ as $\theta \sim \mathcal N(70, 5)$
+> - We quantify our prior belief about $\theta$ as $\theta \sim \mathcal N(70, 5)$
 
-- Once we have seen the actual heights, we can "update" our belief about $\theta$ by computing the posterior distribution $P(\theta \mid y_1,\ldots, y_n)$
+> - Once we have seen the actual heights, we can "update" our belief about $\theta$ by computing the posterior distribution $P(\theta \mid y_1,\ldots, y_n)$
 
 . . .
 
@@ -63,21 +63,21 @@ This posterior distribution is the Bayesian analog of a confidence interval for 
 
 Finance:
 
-- Data are historical stock prices.
+> - Data are historical stock prices.
 
-- Stock prices assumed to come from a probabilistic model with parameters having to do with the expected return of each stock and the correlations between them.
+> - Stock prices assumed to come from a probabilistic model with parameters having to do with the expected return of each stock and the correlations between them.
 
-- Given some prior on the expected returns and correlations, we can compute posterior distributions of the expected returns and correlations.
+> - Given some prior on the expected returns and correlations, we can compute posterior distributions of the expected returns and correlations.
 
 . . .
 
 Epidemiology
 
-- Data are dates at which people are infected with a virus
+> - Data are dates at which people are infected with a virus
 
-- Infection dates come from a probabilistic model of disease spread. Parameters in the model are transmission probabilities due to contact between individuals.
+> - Infection dates come from a probabilistic model of disease spread. Parameters in the model are transmission probabilities due to contact between individuals.
 
-- If we specify prior beliefs about the transmission probabilities, we can compute a posterior distribution on transmission probabilities.
+> - If we specify prior beliefs about the transmission probabilities, we can compute a posterior distribution on transmission probabilities.
 
 
 
@@ -90,46 +90,46 @@ P(\theta \mid y_1,\ldots, y_n) &= \frac{P(y_1,\ldots, y_n \mid \theta)P(\theta)}
 \end{align*}
 $$
 
-- We want to know as much about this distribution as possible.
+> - We want to know as much about this distribution as possible.
 
-- For simple cases it is available in closed form
+> - For simple cases it is available in closed form
 
-- For more complicated cases our best hope is to draw samples of it
+> - For more complicated cases our best hope is to draw samples of it
 
-- From those samples we can compute posterior means, variances, etc. using the Monte Carlo methods from last two classes.
+> - From those samples we can estimate posterior means, variances, etc.
 
 ## One way of drawing samples from the posterior
 
 Inputs:
 
-- A target posterior: $P(\theta \mid y_{\text{obs}}) \propto P(y_{\text{obs}} \mid \theta) P(\theta)$
+> - A target posterior: $P(\theta \mid y_{\text{obs}}) \propto P(y_{\text{obs}} \mid \theta) P(\theta)$
 
-- A way of simulating from $P(y_{\text{obs}} \mid \theta)$
+> - A way of simulating from $P(y_{\text{obs}} \mid \theta)$
 
-- A prior on the parameters  $P(\theta)$
+> - A prior on the parameters  $P(\theta)$ and a way of simulating from $P(\theta)$
 
 
 . . .
 
 Sampling: for $i = 1,\ldots, N$:
 
-- Generate $\theta^{(i)} \sim P(\theta)$
+> - Generate $\theta^{(i)} \sim P(\theta)$
 
-- Generate $y^{(i)} \sim P(y \mid \theta^{(i)})$
+> - Generate $y^{(i)} \sim P(y \mid \theta^{(i)})$
 
-- If $y^{(i)} = y_{\text{obs}}$, accept $\theta^{(i)}$
+> - If $y^{(i)} = y_{\text{obs}}$, accept $\theta^{(i)}$
 
 . . .
 
 Why does this work?
 
-- Our draws $(\theta^{(i)}, y^{(i)})$ are samples from the joint distribution $P(\theta, y)$
+> - Our draws $(\theta^{(i)}, y^{(i)})$ are samples from the joint distribution $P(\theta, y)$
 
-- Keeping only the values for which $y^{(i)} = y_{\text{obs}}$ is the definition of conditioning on $y_{\text{obs}}$.
+> - Keeping only the values for which $y^{(i)} = y_{\text{obs}}$ is the definition of conditioning on $y_{\text{obs}}$.
 
-## ABC: Simple Example
+## (Non-)Approximate Bayesian Computation Simple Example
 
-Bayesian analysis for a Poisson random variable.
+Bayesian analysis for a Gamma-Poisson model:
 
 Model is:
 $$
@@ -141,14 +141,17 @@ $$
 
 By Bayes rule, we can find in closed form that the posterior, $P(\theta \mid Y_1, \ldots, Y_n)$ has a $\text{Gamma}(\sum_{i=1}^n Y_i + \alpha, n + \beta)$ distribution.
 
-Let's pretend we can't do that though, and try using ABC.
+Let's pretend we can't do that though, and try using the sampling method we described on the previous slide.
 
 ------
 
 Set up the function:
 
 ```{r}
-generate_abc_sample <- function(observed_data,
+## We call this "ebc" because it is exactly sampling from the
+## posterior ("exact Bayesian computation"). ABC will be a small
+## modification of this method.
+generate_ebc_sample <- function(observed_data,
                                 prior_distribution,
                                 data_generating_function) {
     while(TRUE) {
@@ -163,13 +166,13 @@ generate_abc_sample <- function(observed_data,
 
 -----
 
-Analysis for:
+Sampling from:
 
-- Prior distribution: $\theta \sim \text{Gamma}(1, 1)$
+> - Prior distribution: $\theta \sim \text{Gamma}(1, 1)$
 
-- Likelihood: $y \mid \theta \sim \text{Poisson}(\theta)$
+> - Likelihood: $y \mid \theta \sim \text{Poisson}(\theta)$
 
-- Observed data: $y = 3$
+> - Observed data: $y = 3$
 
 . . .
 
@@ -177,8 +180,8 @@ Analysis for:
 prior_distribution <- function() rgamma(n = 1, shape = 1, rate = 1)
 data_generating_function <- function(theta) rpois(n = 1, lambda = theta)
 observed_data <- 3
-generate_abc_sample(observed_data, prior_distribution, data_generating_function)
-posterior_samples <- replicate(n = 1000, generate_abc_sample(observed_data, prior_distribution, data_generating_function))
+generate_ebc_sample(observed_data, prior_distribution, data_generating_function)
+posterior_samples <- replicate(n = 1000, generate_ebc_sample(observed_data, prior_distribution, data_generating_function))
 ```
 
 -----
@@ -205,58 +208,58 @@ What if you have more than one sample?
 
 We still have
 
-- Prior distribution: $\theta \sim \text{Gamma}(1, 1)$
+> - Prior distribution: $\theta \sim \text{Gamma}(1, 1)$
 
-- Likelihood: $y_i \mid \theta \sim \text{Poisson}(\theta)$
+> - Likelihood: $y_i \mid \theta \sim \text{Poisson}(\theta)$
 
-- Observed data: $y_1 = 3, y_2 = 3$
+> - Observed data: $y_1 = 3, y_2 = 3, y_3 = 3, y_4 = 3$
 
 ```{r}
 n_samples <- 4
 data_generating_function <- function(theta) rpois(n = n_samples, lambda = theta)
 observed_data <- rep(3, n_samples)
-generate_abc_sample(observed_data, prior_distribution, data_generating_function)
-system.time(replicate(n = 1000, generate_abc_sample(observed_data, prior_distribution, data_generating_function)))
+generate_ebc_sample(observed_data, prior_distribution, data_generating_function)
+system.time(replicate(n = 1000, generate_ebc_sample(observed_data, prior_distribution, data_generating_function)))
 ```
 
 (Try changing `n_samples` to something bigger on your own computer...)
 
 ## Problems
 
-- Only works for discrete data.
+> - Only works for discrete data.
 
-- Very low acceptance probabilities, so it can take a very long time.
+> - Very low acceptance probabilities, so it can take a very long time.
 
 Therefore:
 
-- Modify the acceptance parameters.
+> - Modify the acceptance parameters.
 
-- This makes the method give approximate samples from the posterior instead of exact samples.
+> - This makes the method give approximate samples from the posterior instead of exact samples.
 
 
 ## ABC: The algorithm
 
 Inputs:
 
-- A target posterior: $P(\theta \mid y_{\text{obs}}) \propto P(y_{\text{obs}} \mid \theta) P(\theta)$
+> - A target posterior: $P(\theta \mid y_{\text{obs}}) \propto P(y_{\text{obs}} \mid \theta) P(\theta)$
 
-- A way of simulating from $p(y_{\text{obs}} \mid \theta)$
+> - A way of simulating from $p(y_{\text{obs}} \mid \theta)$
 
-- A prior on the parameters  $P(\theta)$
+> - A prior on the parameters  $P(\theta)$
 
-- A summary statistic function $s$
+> - A summary statistic function $s$
 
-- A tolerance $\epsilon$
+> - A tolerance $\epsilon$
 
 . . .
 
 Sampling: for $i = 1,\ldots, N$:
 
-- Generate $\theta^{(i)} \sim g(\theta)$
+> - Generate $\theta^{(i)} \sim g(\theta)$
 
-- Generate $y^{(i)} \sim p(y \mid \theta^{(i)})$
+> - Generate $y^{(i)} \sim p(y \mid \theta^{(i)})$
 
-- If $\|s(y^{(i)}) - s(y_{\text{obs}})\| < \epsilon$, accept $\theta^{(i)}$
+> - If $\|s(y^{(i)}) - s(y_{\text{obs}})\| < \epsilon$, accept $\theta^{(i)}$
 
 . . .
 
@@ -268,7 +271,7 @@ This method generates approximate samples from the posterior distribution
 Set up a function for the approximate version of ABC:
 
 ```{r}
-generate_abc_sample_2 <- function(observed_data,
+generate_abc_sample <- function(observed_data,
                                   summary_statistic,
                                   prior_distribution,
                                   data_generating_function,
@@ -291,15 +294,15 @@ Let's see what happens with the approximate version:
 
 We still have
 
-- Prior distribution: $\theta \sim \text{Gamma}(1, 1)$
+> - Prior distribution: $\theta \sim \text{Gamma}(1, 1)$
 
-- Likelihood: $y_i \mid \theta \sim \text{Poisson}(\theta)$
+> - Likelihood: $y_i \mid \theta \sim \text{Poisson}(\theta)$
 
-- Observed data: $y_i = 3$, $i = 1,\ldots, 10$
+> - Observed data: $y_i = 3$, $i = 1,\ldots, 10$
 
-- Summary statistic $s$ is the mean function, so $s(y_1,\ldots, y_n) = \frac{1}{n} \sum_{i=1}^n y_i$
+> - Summary statistic $s$ is the mean function, so $s(y_1,\ldots, y_n) = \frac{1}{n} \sum_{i=1}^n y_i$
 
-- Our tolerance is $\epsilon = .1$
+> - Our tolerance is $\epsilon = .1$
 
 ```{r}
 n_samples <- 10
@@ -308,9 +311,9 @@ data_generating_function <- function(theta) rpois(n = n_samples, lambda = theta)
 observed_data <- rep(3, n_samples)
 summary_statistic <- mean
 epsilon <- .1
-generate_abc_sample_2(observed_data, summary_statistic, prior_distribution, data_generating_function, epsilon)
+generate_abc_sample(observed_data, summary_statistic, prior_distribution, data_generating_function, epsilon)
 posterior_samples <- replicate(n = 1000,
-    generate_abc_sample_2(observed_data,
+    generate_abc_sample(observed_data,
                           summary_statistic,
                           prior_distribution,
                           data_generating_function,
@@ -320,7 +323,7 @@ posterior_samples <- replicate(n = 1000,
 ```{r}
 system.time(
 replicate(n = 1000,
-    generate_abc_sample_2(observed_data,
+    generate_abc_sample(observed_data,
                           summary_statistic,
                           prior_distribution,
                           data_generating_function,
@@ -353,14 +356,10 @@ plot(dgamma(theta_vec, shape = 1 + sum(observed_data), rate = n_samples + 1) ~ t
 
 ## ABC: Some notes
 
-- Difficulties: choice of summary statistics:
+> - Difficulties: choice of summary statistics: theory says they should be sufficient statistics for the model. In practice, they are chosen by expert opinion to be features of the data that are thought to be informative about the underlying parameters.
 
-    - Theory says they should be sufficient statistics for the model.
+> - Advantage: you need to know hardly anything about the likelihood, you just need to be able to simulate data from it.
 
-    - In practice, they are chosen by expert opinion to be features of the data that are thought to be informative about the underlying parameters.
+> - Interpretation of Bayesian inference: parameters with higher posterior probability are simply those that make the observed data match data that we simulate under those parameters.
 
-- Advantage: you need to know hardly anything about the likelihood, you just need to be able to simulate data from it.
-
-- Interpretation of Bayesian inference: parameters with higher posterior probability are simply those that make the observed data match data that we simulate under those parameters.
-
-- Next week we'll talk about more exact methods for sampling from posteriors, but they will require us to know more about the functions
+> - We'll talk about more exact methods for sampling from posteriors, but they will require us to know more about the functions
