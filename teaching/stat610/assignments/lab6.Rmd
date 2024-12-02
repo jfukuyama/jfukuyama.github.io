@@ -1,0 +1,73 @@
+## Background
+
+In this lab, we will use the Metropolis algorithm to sample random positions of hard balls in a box.
+This is a problem that physicists are interested in, and it is related to solid-liquid phase transitions.
+We're primarily interested in it as an example of the use of the Metropolis algorithm.
+
+Read section 4 in https://math.uchicago.edu/~shmuel/Network-course-readings/MCMCRev.pdf to get an overview of the problem and the algorithm we will use to solve it.
+Briefly, we want a Markov chain that will converge to a uniform distribution over the allowable configurations of hard balls in a box.
+We will create this Markov chain by starting with an allowable configuration of balls, and updating in the following way:
+
+- Pick one of the balls at random.
+- Choose a new center for the ball uniformly at random from a box or a circle of radius or width $\epsilon$ around the old center.
+- If the ball at the new center is in an allowable state (it doesn't overlap with any of the other balls in the box), accept the new configuration. Otherwise, keep the old configuration.
+
+This chain is supposed to converge to a probability distribution that is uniform over all the allowable configuration of balls in the box.
+You should convince yourself that this is a version of the Metropolis-Hastings distribution, and you should be able to describe what the proposal distribution is, what the acceptance probabilities are, and why they are what they are.
+
+## Implementation
+
+In the following code chunk, I give you a function that will create an initial configuration of balls in a box.
+The function is parameterized by what I refer to as `density`.
+This term is the ratio between the number of balls we want in the box and the number of balls that could fit if they were packed hexagonally in the box.
+
+Note that although the reading describes the problem as being balls of size $\epsilon$ in a unit box, I implemented this as balls of diameter 1 in a box of size `box_width` x `box_width`.
+
+```{r}
+initial_position <- function(density, box_width) {
+    wide_rows <- expand.grid(x = seq(.5, box_width - .5, by = 1),
+                            y = seq(.5, box_width - .5, by = sqrt(3)))
+    narrow_rows <- expand.grid(x = seq(1, box_width - 1, by = 1),
+                              y = seq(.5 + sqrt(3) / 2, box_width - .5, by = sqrt(3)))
+    all <- rbind(wide_rows, narrow_rows)
+    num_possible_positions <- nrow(all)
+    sampled_positions <- sample(num_possible_positions,
+                               size = num_possible_positions * density,
+                               replace = FALSE)
+    return(all[sampled_positions,])
+}
+```
+
+We can check that the initial position function gives us non-overlapping balls.
+```{r}
+library(ggforce)
+X <- initial_position(density = .48, box_width = 10)
+## plotting the initial position
+ggplot(data.frame(X)) + geom_circle(aes(x0 = x, y0 = y, r = .5)) + coord_fixed()
+```
+
+
+You should create the function that will take one step in the Markov chain.
+This function should take a current set of positions of balls, should choose one ball uniformly at random to perturb, should perturb it, and accept or reject the perturbation according to whether the new configuration is allowable or not.
+The function should take a term that describes the size of the box because you will need to check that the proposed configuration does not put balls outside the boundary of the box.
+
+```{r}
+## Should take a set of ball positions, the size of the box the balls
+## are in, and a value of epsilon for the perturbation. Should return
+## an updated set of positions.
+update_positions <- function(positions, epsilon, box_width) {
+    
+}
+```
+
+
+Once your `update_positions` function is filled in, you should be able to run the following to get a random ball arrangement.
+```{r, eval = FALSE}
+## updating
+for(i in 1:100000) {
+    X <- update_positions(X, .1, box_width = 10)
+    ## If you uncomment the following lines and run the code interactively you can make a little movie
+#    if(i %% 500 == 0)
+#        print(ggplot(data.frame(X)) + geom_circle(aes(x0 = x, y0 = y, r = .5)) + coord_fixed())
+}
+```
