@@ -1,0 +1,819 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <meta name="author" content="Julia Fukuyama" />
+  <title>Stat 470/670 Lecture 19: Ordered and unordered categorical responses</title>
+  <style type="text/css">
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="https://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js"
+  type="text/javascript"></script>
+  <script src="https://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div class="slide titlepage">
+  <h1 class="title">Stat 470/670 Lecture 19: Ordered and unordered
+categorical responses</h1>
+  <p class="author">
+Julia Fukuyama
+  </p>
+</div>
+<div id="ordered-categorical-responses-polr"
+class="slide section level1">
+<h1>Ordered categorical responses: polr()</h1>
+<p>Optional reading: Gelman &amp; Hill pp. 119–123.</p>
+<p>With categorical regression, the main distinction is between models
+with ordered categories and models with unordered categories. Let’s
+start with the ordered case.</p>
+</div>
+<div id="fake-data-grad-school" class="slide section level1">
+<h1>Fake data: Grad school</h1>
+<p>Let’s use the (simulated) data on the potential grad school
+application of college students at</p>
+<p>http://stats.idre.ucla.edu/r/dae/ordinal-logistic-regression/</p>
+<p>The data purports to be for 400 juniors asked how likely they are to
+apply to grad school.</p>
+<p>The variables:</p>
+<ul>
+<li><code>apply</code> gives a student’s intention to apply to grad
+school, where 0 means unlikely, 1 means somewhat likely, and 2 means
+very likely.</li>
+</ul>
+<ul>
+<li><code>pared</code> is a binary variable indicating whether the
+parent has a graduate degree.</li>
+</ul>
+<ul>
+<li><code>public</code> is a binary variable indicating whether the
+student goes to a public college.</li>
+</ul>
+<ul>
+<li><code>gpa</code> is the student’s GPA.</li>
+</ul>
+<p>We want to model how the likelihood of applying to grad school
+depends on the other factors.</p>
+<p>Notice that <code>apply</code> is an ordered categorical
+variable.</p>
+</div>
+<div class="slide section level1">
+
+<p>We’ll read in the Stata data using <code>import()</code> in the
+<code>rio</code> package:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rio)</span></code></pre></div>
+<pre><code>## The following rio suggested packages are not installed: &#39;arrow&#39;, &#39;feather&#39;, &#39;fst&#39;, &#39;hexView&#39;, &#39;pzfx&#39;, &#39;readODS&#39;, &#39;rmatio&#39;
+## Use &#39;install_formats()&#39; to install them</code></pre>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>gradschool <span class="ot">=</span> <span class="fu">import</span>(<span class="st">&quot;https://stats.idre.ucla.edu/stat/data/ologit.dta&quot;</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(gradschool)</span></code></pre></div>
+<pre><code>##      apply          pared            public            gpa       
+##  Min.   :0.00   Min.   :0.0000   Min.   :0.0000   Min.   :1.900  
+##  1st Qu.:0.00   1st Qu.:0.0000   1st Qu.:0.0000   1st Qu.:2.720  
+##  Median :0.00   Median :0.0000   Median :0.0000   Median :2.990  
+##  Mean   :0.55   Mean   :0.1575   Mean   :0.1425   Mean   :2.999  
+##  3rd Qu.:1.00   3rd Qu.:0.0000   3rd Qu.:0.0000   3rd Qu.:3.270  
+##  Max.   :2.00   Max.   :1.0000   Max.   :1.0000   Max.   :4.000</code></pre>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>gradschool<span class="sc">$</span>Likelihood <span class="ot">=</span> <span class="fu">recode_factor</span>(gradschool<span class="sc">$</span>apply,</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;0&quot;</span> <span class="ot">=</span> <span class="st">&quot;unlikely&quot;</span>, <span class="st">&quot;1&quot;</span> <span class="ot">=</span> <span class="st">&quot;somewhat likely&quot;</span>, <span class="st">&quot;2&quot;</span> <span class="ot">=</span> <span class="st">&quot;very likely&quot;</span>,</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="do">## when we do .ordered = TRUE we create an ordered factor,</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="do">## which makes the default versions of some plots nicer.</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">.ordered =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+</div>
+<div class="slide section level1">
+
+<p>For a preliminary model, we’ll use <code>gpa</code> as our initial
+explanatory variable. Let’s draw a jittered plot showing the
+relationship between <code>gpa</code> and likelihood of applying to grad
+school.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(gradschool, <span class="fu">aes</span>(<span class="at">x =</span> gpa, <span class="at">y =</span> Likelihood, <span class="at">color =</span> Likelihood)) <span class="sc">+</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_jitter</span>(<span class="at">width =</span> <span class="dv">0</span>, <span class="at">height =</span> <span class="fl">0.2</span>) <span class="sc">+</span> <span class="fu">ggtitle</span>(<span class="st">&quot;Likelihood of applying to grad school&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-19-fig/unnamed-chunk-3-1.png" /></p>
+<p>Note: this is not a very good plot.</p>
+<ul>
+<li>It shows the number of samples, the rough distribution of GPA within
+each class of likelihood of applying to grad school.</li>
+</ul>
+<ul>
+<li>It’s ok but not great at showing the distribution of GPA given
+likelihood of going to grad school – better would be a density plot,
+violin plot, boxplot.</li>
+</ul>
+<ul>
+<li>It’s terrible at showing the probability of likelihood of going to
+grad school given GPA.</li>
+</ul>
+</div>
+<div class="slide section level1">
+
+<p>Better ways of showing the distribution of GPA given likelihood of
+applying to grad school:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(gradschool, <span class="fu">aes</span>(<span class="at">x =</span> Likelihood, <span class="at">y =</span> gpa, <span class="at">color =</span> Likelihood)) <span class="sc">+</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_violin</span>() <span class="sc">+</span> <span class="fu">coord_flip</span>() <span class="sc">+</span> <span class="fu">ggtitle</span>(<span class="st">&quot;Likelihood of applying to grad school&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-19-fig/unnamed-chunk-4-1.png" /></p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(gradschool, <span class="fu">aes</span>(<span class="at">x =</span> Likelihood, <span class="at">y =</span> gpa, <span class="at">color =</span> Likelihood)) <span class="sc">+</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>() <span class="sc">+</span> <span class="fu">coord_flip</span>() <span class="sc">+</span> <span class="fu">ggtitle</span>(<span class="st">&quot;Likelihood of applying to grad school&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-19-fig/unnamed-chunk-4-2.png" /></p>
+</div>
+<div class="slide section level1">
+
+<p>Next task: visualize the distribution of likelihood of applying to
+grad school given GPA</p>
+<p>Attempt 1 (ok, but not great):</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(gradschool, <span class="fu">aes</span>(<span class="at">x =</span> gpa, <span class="at">fill =</span> Likelihood)) <span class="sc">+</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_histogram</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="fl">1.8</span>, <span class="dv">4</span>, <span class="fl">0.2</span>)) <span class="sc">+</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggtitle</span>(<span class="st">&quot;Likelihood of applying to grad school&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-19-fig/unnamed-chunk-5-1.png" /></p>
+</div>
+<div class="slide section level1">
+
+<p>Attempt 2:</p>
+<ul>
+<li>Try the same as before, but use <a
+href="https://www.rdocumentation.org/packages/ggplot2/versions/2.1.0/topics/position_fill"><code>position
+= "fill"</code></a>.</li>
+</ul>
+<ul>
+<li>Think of this as a modification of <code>position = "stack"</code>
+where the bars have been expanded to all be the same height.</li>
+</ul>
+<ul>
+<li>The height of each bar is an approximation of <span
+class="math inline">\(P(\text{likelihood} | \text{gpa})\)</span></li>
+</ul>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(gradschool, <span class="fu">aes</span>(<span class="at">x =</span> gpa, <span class="at">fill =</span> Likelihood)) <span class="sc">+</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_histogram</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="fl">1.8</span>, <span class="dv">4</span>, .<span class="dv">2</span>), <span class="at">position =</span> <span class="st">&quot;fill&quot;</span>) <span class="sc">+</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggtitle</span>(<span class="st">&quot;Likelihood of applying to grad school&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-19-fig/unnamed-chunk-6-1.png" /></p>
+</div>
+<div class="slide section level1">
+
+<p>Trying the same thing with density estimates instead of
+histograms:</p>
+<ul>
+<li>The density version of a stacked histogram.</li>
+</ul>
+<ul>
+<li>The y-axis scale is a bit confusing here, since it’s neither a true
+density nor a count. Instead, the total area is scaled to be equal to
+the number of observations (400.)</li>
+</ul>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(gradschool, <span class="fu">aes</span>(<span class="at">x =</span> gpa, <span class="at">fill =</span> Likelihood)) <span class="sc">+</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_density</span>(<span class="at">position =</span> <span class="st">&quot;stack&quot;</span>) <span class="sc">+</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggtitle</span>(<span class="st">&quot;Likelihood of applying to grad school&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-19-fig/unnamed-chunk-7-1.png" /></p>
+</div>
+<div class="slide section level1">
+
+<ul>
+<li>As with the histograms, we can use <a
+href="https://www.rdocumentation.org/packages/ggplot2/versions/2.1.0/topics/position_fill"><code>position
+= "fill"</code></a> to plot conditional density estimates.</li>
+</ul>
+<ul>
+<li>As before, the height of the filled area at any given GPA tells
+gives us an estimate of <span class="math inline">\(P(\text{likelihood}
+| \text{gpa})\)</span></li>
+</ul>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(gradschool, <span class="fu">aes</span>(<span class="at">x =</span> gpa, <span class="at">fill =</span> Likelihood)) <span class="sc">+</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_density</span>(<span class="at">position =</span> <span class="st">&quot;fill&quot;</span>) <span class="sc">+</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggtitle</span>(<span class="st">&quot;Likelihood of applying to grad school&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-19-fig/unnamed-chunk-8-1.png" /></p>
+</div>
+<div id="modeling-ordinal-responses" class="slide section level1">
+<h1>Modeling ordinal responses</h1>
+<p>What if we’d prefer to fit a model? The option we’ll pursue is
+<em>proportional odds logistic regression</em>, fitted in R using the
+<code>polr()</code> function in <code>MASS</code>.</p>
+<p>Let’s first fit the model, then explain what it means.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(MASS)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>gpa.polr <span class="ot">=</span> <span class="fu">polr</span>(Likelihood <span class="sc">~</span> gpa, <span class="at">data =</span> gradschool)</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(arm)</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="fu">display</span>(gpa.polr)</span></code></pre></div>
+<pre><code>## polr(formula = Likelihood ~ gpa, data = gradschool)
+##                             coef.est coef.se
+## gpa                         0.72     0.25   
+## unlikely|somewhat likely    2.37     0.76   
+## somewhat likely|very likely 4.40     0.78   
+## ---
+## n = 400, k = 3 (including 2 intercepts)
+## residual deviance = 732.6, null deviance is not computed by polr</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>The model gives us both a <em>linear predictor</em> (on a logit
+scale) and <em>cutpoints</em>.</p>
+<ul>
+<li>The linear predictor is <span class="math display">\[
+0.72 \times \textrm{GPA}
+\]</span> (Note that the form of the model fitted by <code>polr()</code>
+has no intercept.)</li>
+</ul>
+<ul>
+<li>The cutpoints correspond to boundaries between groups: the boundary
+between group 0 (unlikely) and group 1 (somewhat likely) is 2.37, while
+the boundary between group 1 and group 2 (very likely) is 4.4 (found in
+<code>gpa.polr$zeta</code>).</li>
+</ul>
+<ul>
+<li>To get deterministic predictions, we compare the linear predictor to
+the cutpoints. So if a student has a GPA of 3.5, our linear predictor
+would be <span class="math inline">\(.72 \times 3.5 = 2.52\)</span>.
+Since this is above the cutoff between the “unlikely” and “somewhat
+likely” groups but below the cutoff between the “somewhat likely” and
+“very likely”, so our prediction for someone with a 3.5 GPA is that they
+are “somewhat likely” to apply to grad school.</li>
+</ul>
+</div>
+<div id="polr-and-probability" class="slide section level1">
+<h1>polr() and probability</h1>
+<p>Deterministic predictions are the analog of the maximum likelihood
+predictions in logistic regression. But just as in logistic regression,
+we can also get fitted probabilities of all the possible categories for
+any observation.</p>
+<p>According to the proportional odds logistic regression model, if we
+have an observation with predictor <span
+class="math inline">\(x\)</span>, a coefficient <span
+class="math inline">\(\beta\)</span>, and cutpoints between the
+categories, the probability that the response variable falls in category
+<span class="math inline">\(i\)</span> are <span class="math display">\[
+P(x \beta + \epsilon \in [z_i, z_{i+1}])
+\]</span> if <span class="math inline">\(\epsilon\)</span> is a random
+variable with a <a
+href="https://en.wikipedia.org/wiki/Logistic_distribution">standard
+logistic distribution</a> and <span class="math inline">\(z_i\)</span>
+and <span class="math inline">\(z_{i+1}\)</span> are the cutpoints
+corresponding to the upper and lower boundaries for category <span
+class="math inline">\(i\)</span>.</p>
+</div>
+<div class="slide section level1">
+
+<p>Because we might not be used to the logistic distribution, let’s
+first use simulation to estimate the distribution of the latent variable
+for a person with a 3.5 GPA.</p>
+<p>To find this probability in the model we fit above, we would:</p>
+<ul>
+<li>Find the linear predictor based on their GPA;</li>
+</ul>
+<ul>
+<li>Add random logistic noise;</li>
+</ul>
+<ul>
+<li>Compare this “latent” variable to the cutpoints;</li>
+</ul>
+<ul>
+<li>Repeat lots of times and compute the fraction of times the latent
+variable fell into each of the categories.</li>
+</ul>
+</div>
+<div class="slide section level1">
+
+<p>Their linear predictor is <span class="math inline">\(0.725 \times
+3.5 = 2.54\)</span>. We add logistic noise and see how often they fall
+in each cutpoint range.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>prediction <span class="ot">=</span> <span class="fu">coefficients</span>(gpa.polr) <span class="sc">*</span> <span class="fl">3.5</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>latent <span class="ot">=</span> prediction <span class="sc">+</span> <span class="fu">rlogis</span>(<span class="dv">10000</span>)</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">as.data.frame</span>(latent), <span class="fu">aes</span>(<span class="at">x =</span> latent)) <span class="sc">+</span> <span class="fu">geom_density</span>() <span class="sc">+</span> </span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> gpa.polr<span class="sc">$</span>zeta, <span class="at">color =</span> <span class="st">&quot;red&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-19-fig/unnamed-chunk-10-1.png" /></p>
+<p>We see that the left and middle areas are bigger than the right area.
+This means that “unlikely” and “somewhat likely” are more probable than
+“very likely.”</p>
+<p>We can also find the fraction of times the latent variables fall in
+each range:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="do">## what fraction of the time did the latent variables fall below the cutoff for &quot;unlikely&quot;</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(latent <span class="sc">&lt;=</span> <span class="fl">2.3748</span>)</span></code></pre></div>
+<pre><code>## [1] 0.4649</code></pre>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="do">## what fraction of the time did the latent variables fall between</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="do">## the cutoff values corresponding to the &quot;somewhat likely&quot; category?</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(latent <span class="sc">&gt;</span> <span class="fl">2.3748</span> <span class="sc">&amp;</span> latent <span class="sc">&lt;=</span> <span class="fl">4.3998</span>)</span></code></pre></div>
+<pre><code>## [1] 0.3945</code></pre>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="do">## what fraction of the time did the latent variables fall above the</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="do">## cutoff for &quot;very likely&quot;?</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(latent <span class="sc">&gt;</span> <span class="fl">4.3998</span>)</span></code></pre></div>
+<pre><code>## [1] 0.1406</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>So that we can compare with the predictions in the model later, let’s
+find the exact probabilities. The probability of being “unlikely” is</p>
+<p><span class="math display">\[
+P(\beta x + \epsilon &lt; z_{unlikely|somewhat})
+\]</span></p>
+<p>where <span class="math inline">\(x\)</span> is GPA, <span
+class="math inline">\(\epsilon\)</span> is standard logistic noise, and
+<span class="math inline">\(z_{unlikely|somewhat}\)</span> is the lower
+cutpoint. This is the same as</p>
+<p><span class="math display">\[
+P(\epsilon &lt; z_{unlikely|somewhat} - \beta x)
+\]</span></p>
+<p>i.e., the probabilistic a standard logistic random variable is less
+than <span class="math inline">\(z_{unlikely|somewhat} - \beta
+x\)</span>.</p>
+</div>
+<div class="slide section level1">
+
+<p>We find logistic probabilities using the <code>inv.logit()</code>
+function in <code>boot</code>.</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>beta <span class="ot">=</span> <span class="fu">coefficients</span>(gpa.polr)</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>zeta <span class="ot">=</span> gpa.polr<span class="sc">$</span>zeta</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(boot)</span></code></pre></div>
+<pre><code>## 
+## Attaching package: &#39;boot&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:arm&#39;:
+## 
+##     logit</code></pre>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">inv.logit</span>(zeta[<span class="dv">1</span>] <span class="sc">-</span> beta <span class="sc">*</span> <span class="fl">3.5</span>)</span></code></pre></div>
+<pre><code>## unlikely|somewhat likely 
+##                0.4595418</code></pre>
+<p>There’s a 46% chance a person with a 3.5 GPA is “unlikely” to apply
+to grad school. Similarly, the probability they’re “very likely” to
+apply to grad school is the probability a standard logistic random
+variable is <em>greater</em> than the difference between the second
+cutpoint and the linear predictor:</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span> <span class="sc">-</span> <span class="fu">inv.logit</span>(zeta[<span class="dv">2</span>] <span class="sc">-</span> beta <span class="sc">*</span> <span class="fl">3.5</span>)</span></code></pre></div>
+<pre><code>## somewhat likely|very likely 
+##                   0.1343714</code></pre>
+<p>There’s a 13% chance they’re “very likely.” That leaves a 41% chance
+they’re “somewhat likely.”</p>
+</div>
+<div class="slide section level1">
+
+<p>Now that we know what we’re doing, we can just get these
+probabilities using <code>predict()</code>:</p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">predict</span>(gpa.polr, <span class="at">newdata=</span><span class="fu">data.frame</span>(<span class="at">gpa=</span><span class="fl">3.5</span>), <span class="at">type =</span> <span class="st">&quot;probs&quot;</span>)</span></code></pre></div>
+<pre><code>##        unlikely somewhat likely     very likely 
+##       0.4595418       0.4060868       0.1343714</code></pre>
+</div>
+<div id="graphing-and-checking-the-model" class="slide section level1">
+<h1>Graphing and checking the model</h1>
+<p>Let’s display the fit as a function of GPA.</p>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>gpa <span class="ot">=</span> <span class="fu">seq</span>(<span class="fu">min</span>(gradschool<span class="sc">$</span>gpa), <span class="fu">max</span>(gradschool<span class="sc">$</span>gpa), <span class="fl">0.01</span>)</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>grad.probs <span class="ot">=</span> <span class="fu">predict</span>(gpa.polr, <span class="at">newdata =</span> <span class="fu">data.frame</span>(gpa), <span class="at">type =</span> <span class="st">&quot;prob&quot;</span>)</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>grad.probs.df <span class="ot">=</span> <span class="fu">data.frame</span>(gpa, grad.probs)</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(grad.probs.df) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">&quot;GPA&quot;</span>, <span class="st">&quot;Unlikely&quot;</span>, <span class="st">&quot;Somewhat Likely&quot;</span>, <span class="st">&quot;Very Likely&quot;</span>)</span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>grad.probs.long <span class="ot">=</span> grad.probs.df <span class="sc">%&gt;%</span> <span class="fu">gather</span>(Likelihood, Probability, <span class="dv">2</span><span class="sc">:</span><span class="dv">4</span>)</span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>grad.probs.long<span class="sc">$</span>Likelihood <span class="ot">=</span> <span class="fu">factor</span>(grad.probs.long<span class="sc">$</span>Likelihood, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">&quot;Unlikely&quot;</span>, <span class="st">&quot;Somewhat Likely&quot;</span>, <span class="st">&quot;Very Likely&quot;</span>), <span class="at">ordered =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(grad.probs.long, <span class="fu">aes</span>(<span class="at">x =</span> GPA, <span class="at">y =</span> Probability, <span class="at">group =</span> Likelihood, <span class="at">color =</span> Likelihood)) <span class="sc">+</span></span>
+<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggtitle</span>(<span class="st">&quot;Likelihood of applying to grad school&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-19-fig/unnamed-chunk-15-1.png" /></p>
+<p>The probability of both “somewhat likely” and “very likely” increase
+with GPA, though “very likely” never gets very high.</p>
+</div>
+<div class="slide section level1">
+
+<p>We can also stack the lines and use areas:</p>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(grad.probs.long, <span class="fu">aes</span>(<span class="at">x =</span> GPA, <span class="at">y =</span> Probability, <span class="at">group =</span> Likelihood, <span class="at">fill =</span> Likelihood)) <span class="sc">+</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_area</span>() <span class="sc">+</span></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggtitle</span>(<span class="st">&quot;Likelihood of applying to grad school&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-19-fig/unnamed-chunk-16-1.png" /></p>
+</div>
+<div id="multiple-predictors" class="slide section level1">
+<h1>Multiple predictors</h1>
+<p>Let’s now include two other variables in the model:
+<code>pared</code> is a binary variable indicating whether a parent has
+a grad degree, and <code>public</code> is a binary variable indicating
+whether the student goes to a public college.</p>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>grad.polr <span class="ot">=</span> <span class="fu">polr</span>(Likelihood <span class="sc">~</span> gpa <span class="sc">+</span> pared <span class="sc">+</span> public, <span class="at">data =</span> gradschool)</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a><span class="fu">display</span>(grad.polr)</span></code></pre></div>
+<pre><code>## 
+## Re-fitting to get Hessian</code></pre>
+<pre><code>## polr(formula = Likelihood ~ gpa + pared + public, data = gradschool)
+##                             coef.est coef.se
+## gpa                          0.62     0.26  
+## pared                        1.05     0.27  
+## public                      -0.06     0.30  
+## unlikely|somewhat likely     2.20     0.78  
+## somewhat likely|very likely  4.30     0.80  
+## ---
+## n = 400, k = 5 (including 2 intercepts)
+## residual deviance = 717.0, null deviance is not computed by polr</code></pre>
+<p>The deviance has gone down by about 16 and the coefficients are in
+the direction in you’d expect – your parents going to grad school means
+it’s more probable you’ll go to grad school, while going to a public
+college means it’s slightly less probable.</p>
+</div>
+<div class="slide section level1">
+
+<p>As for numerical responses, we can study the fit by using
+<code>expand.grid()</code> to get a data frame of explanatories and
+making predictions.</p>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>grad.grid <span class="ot">=</span> <span class="fu">expand.grid</span>(<span class="at">gpa =</span> <span class="fu">seq</span>(<span class="fu">min</span>(gradschool<span class="sc">$</span>gpa), <span class="fu">max</span>(gradschool<span class="sc">$</span>gpa), <span class="fl">0.01</span>), <span class="at">pared =</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">1</span>, <span class="at">public =</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">1</span>)</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>grad.predict <span class="ot">=</span> <span class="fu">as.data.frame</span>(<span class="fu">predict</span>(grad.polr, <span class="at">newdata =</span> grad.grid, <span class="at">type =</span> <span class="st">&quot;probs&quot;</span>))</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>grad.polr.df <span class="ot">=</span> <span class="fu">data.frame</span>(grad.grid, grad.predict)</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(grad.polr.df) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">&quot;gpa&quot;</span>, <span class="st">&quot;pared&quot;</span>, <span class="st">&quot;public&quot;</span>, <span class="st">&quot;Unlikely&quot;</span>, <span class="st">&quot;Somewhat Likely&quot;</span>, <span class="st">&quot;Very Likely&quot;</span>)</span></code></pre></div>
+<p>We’ll append a new variable that gives the combination of
+<code>pared</code> and <code>public</code>.</p>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>pared_descriptive <span class="ot">=</span> <span class="fu">recode</span>(grad.polr.df<span class="sc">$</span>pared, <span class="st">&quot;0&quot;</span> <span class="ot">=</span> <span class="st">&quot;No grad parent&quot;</span>, <span class="st">&quot;1&quot;</span> <span class="ot">=</span> <span class="st">&quot;Grad parent&quot;</span>)</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>public_descriptive <span class="ot">=</span> <span class="fu">recode</span>(grad.polr.df<span class="sc">$</span>public, <span class="st">&quot;0&quot;</span> <span class="ot">=</span> <span class="st">&quot;private college&quot;</span>, <span class="st">&quot;1&quot;</span> <span class="ot">=</span> <span class="st">&quot;public college&quot;</span>)</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>grad.polr.df<span class="sc">$</span>Group <span class="ot">=</span> <span class="fu">factor</span>(<span class="fu">paste</span>(pared_descriptive, public_descriptive, <span class="at">sep =</span> <span class="st">&quot;, &quot;</span>))</span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(grad.polr.df)</span></code></pre></div>
+<pre><code>##    gpa pared public  Unlikely Somewhat Likely Very Likely
+## 1 1.90     0      0 0.7376186       0.2204577  0.04192370
+## 2 1.91     0      0 0.7364248       0.2214034  0.04217180
+## 3 1.92     0      0 0.7352275       0.2223512  0.04242130
+## 4 1.93     0      0 0.7340267       0.2233011  0.04267221
+## 5 1.94     0      0 0.7328225       0.2242530  0.04292454
+## 6 1.95     0      0 0.7316148       0.2252070  0.04317830
+##                             Group
+## 1 No grad parent, private college
+## 2 No grad parent, private college
+## 3 No grad parent, private college
+## 4 No grad parent, private college
+## 5 No grad parent, private college
+## 6 No grad parent, private college</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>There are a few ways to view this data frame, but probably the
+clearest is to draw a panel for each category.</p>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>grad.polr.long <span class="ot">=</span> grad.polr.df <span class="sc">%&gt;%</span> <span class="fu">gather</span>(Likelihood, Probability, <span class="st">`</span><span class="at">Unlikely</span><span class="st">`</span><span class="sc">:</span><span class="st">`</span><span class="at">Very Likely</span><span class="st">`</span>)</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>grad.polr.long<span class="sc">$</span>Likelihood <span class="ot">=</span> <span class="fu">factor</span>(grad.polr.long<span class="sc">$</span>Likelihood, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">&quot;Unlikely&quot;</span>, <span class="st">&quot;Somewhat Likely&quot;</span>, <span class="st">&quot;Very Likely&quot;</span>), <span class="at">ordered =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(grad.polr.long, <span class="fu">aes</span>(<span class="at">x =</span> gpa, <span class="at">y =</span> Probability, <span class="at">color =</span> Group)) <span class="sc">+</span> <span class="fu">geom_line</span>() <span class="sc">+</span> <span class="fu">facet_grid</span>(<span class="sc">~</span>Likelihood) <span class="sc">+</span> <span class="fu">ggtitle</span>(<span class="st">&quot;Likelihood of applying to grad school&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-19-fig/unnamed-chunk-20-1.png" /></p>
+<p>We see that private or public college makes almost no difference, so
+we should consider dropping that from the model.</p>
+</div>
+<div id="unordered-categorial-responses-alligator-food"
+class="slide section level1">
+<h1>Unordered categorial responses: Alligator food</h1>
+<p>Optional reading: Agresti, Categorical Data Analysis, section 8.1
+(3rd edition pp. 294–297.)</p>
+<p>What do alligators like to eat? Researcher captured 219 alligators in
+four Florida lakes, and categorized them by the primary contents of
+their stomach.</p>
+<p>The variables they collected were:</p>
+<ul>
+<li><code>lake</code> gives the lake where the alligator was
+captured;</li>
+</ul>
+<ul>
+<li><code>sex</code> is male or female;</li>
+</ul>
+<ul>
+<li><code>size</code> is small or large;</li>
+</ul>
+<ul>
+<li><code>food</code> is fish, invertebrate, reptile, bird, or
+other;</li>
+</ul>
+<ul>
+<li><code>count</code> is how many of the 219 alligators had that
+combination of lake, sex, size, and food.</li>
+</ul>
+</div>
+<div class="slide section level1">
+
+<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>alligator <span class="ot">=</span> <span class="fu">read.table</span>(<span class="st">&quot;../../datasets/alligator.txt&quot;</span>, <span class="at">header =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(alligator)</span></code></pre></div>
+<pre><code>##      lake               sex                size               food          
+##  Length:80          Length:80          Length:80          Length:80         
+##  Class :character   Class :character   Class :character   Class :character  
+##  Mode  :character   Mode  :character   Mode  :character   Mode  :character  
+##                                                                             
+##                                                                             
+##                                                                             
+##      count       
+##  Min.   : 0.000  
+##  1st Qu.: 0.000  
+##  Median : 1.000  
+##  Mean   : 2.737  
+##  3rd Qu.: 3.250  
+##  Max.   :16.000</code></pre>
+<p>Check that there are <span class="math inline">\(4 \times 2 \times 2
+\times 5 = 80\)</span> (lakes times sex times size times food) rows:</p>
+<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(alligator)</span></code></pre></div>
+<pre><code>## [1] 80</code></pre>
+<p>Check that there are 219 alligators:</p>
+<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(alligator<span class="sc">$</span>count)</span></code></pre></div>
+<pre><code>## [1] 219</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>One issue with categorical data is that different R function often
+require the data to be in different formats. To get it over with, let’s
+put the data in wide form. This will also let us print out a table with
+fewer rows that gives all the data.</p>
+<div class="sourceCode" id="cb46"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="do">## The first argument to spread tells the function what variable</span></span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a><span class="do">## you want to spread over the columns (food in this case)</span></span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a><span class="do">## The second argument to spread tells the function what variable</span></span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a><span class="do">## should go in the cells, in this case it is count</span></span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>alligator.wide <span class="ot">=</span> alligator <span class="sc">%&gt;%</span> <span class="fu">spread</span>(food, count)</span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>alligator.wide</span></code></pre></div>
+<pre><code>##        lake    sex  size bird fish invert other reptile
+## 1    George female large    0    8      1     1       0
+## 2    George female small    0    3      9     1       1
+## 3    George   male large    1    9      0     2       0
+## 4    George   male small    2   13     10     2       0
+## 5   Hancock female large    2    3      0     3       1
+## 6   Hancock female small    2   16      3     3       2
+## 7   Hancock   male large    1    4      0     2       0
+## 8   Hancock   male small    0    7      1     5       0
+## 9  Oklawaha female large    1    0      1     0       0
+## 10 Oklawaha female small    0    3      9     2       1
+## 11 Oklawaha   male large    0   13      7     0       6
+## 12 Oklawaha   male small    0    2      2     1       0
+## 13 Trafford female large    0    0      1     0       0
+## 14 Trafford female small    1    2      4     4       1
+## 15 Trafford   male large    3    8      6     5       6
+## 16 Trafford   male small    0    3      7     1       1</code></pre>
+<p>Just by looking at the numbers we see that fish are relatively
+popular, while birds and reptiles are unpopular. Our eventual goal will
+be to build a model that gives the probability an alligator prefers each
+type of food, based on the predictors we have.</p>
+</div>
+<div id="mosaic-plots" class="slide section level1">
+<h1>Mosaic plots</h1>
+<p>As in the previous lecture, we can make mosaic plots describing the
+variables.</p>
+<p>Last time we used <code>moisaic</code> in <code>vcd</code>, but there
+is also <code>geom_mosaic</code> in the <code>ggmosaic</code> package,
+and we’ll use that function this time.</p>
+<p><code>ggmosaic</code> requires the data in “product” format (easily
+achieved with the <code>product()</code> function) and a
+<code>weight</code> variable. Here our weights are the counts of
+alligators in each combination of categories. Let’s first draw a mosaic
+plot breaking up the total sample of alligators by lake and food.</p>
+<div class="sourceCode" id="cb48"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="co"># install.packages(&#39;ggmosaic&#39;)</span></span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggmosaic)</span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(alligator) <span class="sc">+</span></span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_mosaic</span>(<span class="fu">aes</span>(<span class="fu">product</span>(food, lake), <span class="at">weight =</span> count, <span class="at">fill =</span> food)) <span class="sc">+</span></span>
+<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">xlab</span>(<span class="st">&quot;Lake&quot;</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">&quot;Proportion of gators at that lake&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-19-fig/unnamed-chunk-25-1.png" /></p>
+<p>The above plot shows us the <em>conditional</em> distribution of each
+type of food, given the lake, as well as the joint relative frequency of
+each lake/food combination. The preferred types of food do seem to
+differ a lot by lake.</p>
+</div>
+<div class="slide section level1">
+
+<p>We can also look at the other pairs of variables: food/size and
+food/sex.</p>
+<div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(alligator) <span class="sc">+</span></span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_mosaic</span>(<span class="fu">aes</span>(<span class="fu">product</span>(food, size), <span class="at">weight =</span> count, <span class="at">fill =</span> food)) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">&quot;Alligator size&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-19-fig/unnamed-chunk-26-1.png" /></p>
+<div class="sourceCode" id="cb50"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(alligator) <span class="sc">+</span></span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_mosaic</span>(<span class="fu">aes</span>(<span class="fu">product</span>(food, sex), <span class="at">weight =</span> count, <span class="at">fill =</span> food)) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">&quot;Sex&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-19-fig/unnamed-chunk-26-2.png" /></p>
+<p>We see that in the sample, there are more small gators than large
+ones, and more males than females. More importantly, the conditional
+distribution of food looks quite different between big and small gators,
+but quite similar comparing males and females.</p>
+</div>
+<div class="slide section level1">
+
+<p>We could keep on subdividing the bars in an attempt to look for
+interactions, but this is messy. Combining mosaics with faceting is
+preferable. In this case, because the data consists of a sample from
+each lake, it makes sense to facet by lake.</p>
+<div class="sourceCode" id="cb51"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(alligator) <span class="sc">+</span></span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_mosaic</span>(<span class="fu">aes</span>(<span class="fu">product</span>(food, size), <span class="at">weight =</span> count, <span class="at">fill =</span> food)) <span class="sc">+</span></span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">facet_wrap</span>(<span class="sc">~</span>lake, <span class="at">ncol=</span><span class="dv">2</span>, <span class="at">labeller =</span> label_context) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">&quot;Alligator size&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-19-fig/unnamed-chunk-27-1.png" /></p>
+</div>
+<div id="multinomial-regression" class="slide section level1">
+<h1>Multinomial regression</h1>
+<p>Let’s fit a model using <code>lake</code> and <code>size</code> as
+predictors. For categorical responses, we want the conditional
+distribution given the predictors to be <code>multinomial</code>. I use
+the <code>vglm()</code> function (vector GLM) in package
+<code>VGAM</code> to fit multinomial regressions. The syntax is similar
+to that of <code>glm()</code> with family <code>multinomial</code>,
+except you need to specify a matrix of responses (one column for each
+category.) This can be done using <code>cbind()</code> with the data in
+wide format.</p>
+<div class="sourceCode" id="cb52"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="co"># install.packages(&#39;VGAM&#39;)</span></span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(VGAM)</span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>alligator.mlogit <span class="ot">=</span> <span class="fu">vglm</span>(<span class="fu">cbind</span>(bird, fish, invert, other, reptile) <span class="sc">~</span> lake <span class="sc">+</span> size, </span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">family =</span> multinomial, <span class="at">data =</span> alligator.wide)</span>
+<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a>alligator.mlogit</span></code></pre></div>
+<pre><code>## 
+## Call:
+## vglm(formula = cbind(bird, fish, invert, other, reptile) ~ lake + 
+##     size, family = multinomial, data = alligator.wide)
+## 
+## 
+## Coefficients:
+##  (Intercept):1  (Intercept):2  (Intercept):3  (Intercept):4  lakeHancock:1 
+##      1.2214559      3.3145327      1.7655141      1.4102610     -0.5476591 
+##  lakeHancock:2  lakeHancock:3  lakeHancock:4 lakeOklawaha:1 lakeOklawaha:2 
+##     -1.2427766     -2.9011352     -0.4165804     -3.1120797     -2.4588720 
+## lakeOklawaha:3 lakeOklawaha:4 lakeTrafford:1 lakeTrafford:2 lakeTrafford:3 
+##     -1.5216526     -2.4532189     -1.8474865     -2.9352533     -1.8132685 
+## lakeTrafford:4    sizesmall:1    sizesmall:2    sizesmall:3    sizesmall:4 
+##     -1.4188846     -0.2793969      0.3512628      1.8094675      0.6828131 
+## 
+## Degrees of Freedom: 64 Total; 44 Residual
+## Residual deviance: 52.47849 
+## Log-likelihood: -74.42948 
+## 
+## This is a multinomial logit model with 5 levels</code></pre>
+<p>There are lots of coefficients here! These can be interpreted in
+terms of log odds, but instead we’ll examine the model fit
+graphically.</p>
+</div>
+<div class="slide section level1">
+
+<div class="sourceCode" id="cb54"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>alligator.mlogit.df <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="fu">model.frame</span>(alligator.mlogit), <span class="fu">fitted.values</span>(alligator.mlogit))</span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>alligator.mlogit.long <span class="ot">=</span> alligator.mlogit.df <span class="sc">%&gt;%</span> <span class="fu">gather</span>(food, probability, bird<span class="sc">:</span>reptile)</span>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(alligator.mlogit.long, <span class="fu">aes</span>(<span class="at">x =</span> food, <span class="at">y =</span> probability)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
+<span id="cb54-4"><a href="#cb54-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">facet_wrap</span>(<span class="sc">~</span>lake <span class="sc">+</span> size, <span class="at">ncol =</span> <span class="dv">4</span>) <span class="sc">+</span> <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">90</span>))</span></code></pre></div>
+<p><img src="lecture-19-fig/unnamed-chunk-29-1.png" /></p>
+</div>
+<div class="slide section level1">
+
+<p>We could also collapse the large and small rows and color-code:</p>
+<div class="sourceCode" id="cb55"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(alligator.mlogit.long, <span class="fu">aes</span>(<span class="at">x =</span> food, <span class="at">y =</span> probability, <span class="at">col =</span> size)) <span class="sc">+</span> </span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">facet_wrap</span>(<span class="sc">~</span> lake)</span></code></pre></div>
+<p><img src="lecture-19-fig/unnamed-chunk-30-1.png" /></p>
+</div>
+<div class="slide section level1">
+
+<p>Let’s check the deviance of a couple of alternatives:</p>
+<div class="sourceCode" id="cb56"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="fu">deviance</span>(<span class="fu">vglm</span>(<span class="fu">cbind</span>(bird, fish, invert, other, reptile) <span class="sc">~</span> lake <span class="sc">+</span> size <span class="sc">+</span> sex, <span class="at">family =</span> multinomial, <span class="at">data =</span> alligator.wide))</span></code></pre></div>
+<pre><code>## [1] 50.26369</code></pre>
+<div class="sourceCode" id="cb58"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="fu">deviance</span>(<span class="fu">vglm</span>(<span class="fu">cbind</span>(bird, fish, invert, other, reptile) <span class="sc">~</span> lake <span class="sc">*</span> size, <span class="at">family =</span> multinomial, <span class="at">data =</span> alligator.wide))</span></code></pre></div>
+<pre><code>## [1] 35.39866</code></pre>
+<p>Adding sex only reduces deviance by a trivial amount (less than the 4
+extra degrees of freedom), and so is unlikely to be worth it.</p>
+<p>Adding an interaction between lake and size reduces deviance by a
+lot, but also makes the model much more complicated, so that’s a
+judgment call.</p>
+<p>Also note that when we add an interaction between categorical
+predictors, this is just equivalent to taking the raw proportions for
+each two-way combination of predictors. It therefore isn’t good at
+giving us a parsimonious description of the data, but it might be good
+for predictors.</p>
+</div>
+<div id="quantitative-predictors" class="slide section level1">
+<h1>Quantitative predictors</h1>
+<p>We can also fit multinomial models with quantitative predictors. In
+the file <code>gator2.txt</code>, the numerical predictor is the length
+of the alligator in meters.</p>
+<p>The two variables are:</p>
+<ul>
+<li><code>length</code>: Length in meters</li>
+</ul>
+<ul>
+<li><code>food</code>: One of either <code>Invertebrates</code>,
+<code>Fish</code>, or <code>Other</code></li>
+</ul>
+</div>
+<div class="slide section level1">
+
+<p>Let’s read in the data and fit a multinomial logit model:</p>
+<div class="sourceCode" id="cb60"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a>gator2 <span class="ot">=</span> <span class="fu">read.table</span>(<span class="st">&quot;../../datasets/gator2.txt&quot;</span>, <span class="at">header =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(gator2)</span></code></pre></div>
+<pre><code>##      length          food          
+##  Min.   :1.240   Length:59         
+##  1st Qu.:1.575   Class :character  
+##  Median :1.850   Mode  :character  
+##  Mean   :2.130                     
+##  3rd Qu.:2.450                     
+##  Max.   :3.890</code></pre>
+<div class="sourceCode" id="cb62"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>gator2.mlogit <span class="ot">=</span> <span class="fu">vglm</span>(food <span class="sc">~</span> length, <span class="at">family =</span> multinomial, <span class="at">data =</span> gator2)</span>
+<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a>gator2.mlogit</span></code></pre></div>
+<pre><code>## 
+## Call:
+## vglm(formula = food ~ length, family = multinomial, data = gator2)
+## 
+## 
+## Coefficients:
+## (Intercept):1 (Intercept):2      length:1      length:2 
+##      1.617731      5.697444     -0.110109     -2.465446 
+## 
+## Degrees of Freedom: 118 Total; 114 Residual
+## Residual deviance: 98.34124 
+## Log-likelihood: -49.17062 
+## 
+## This is a multinomial logit model with 3 levels</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>As we did in the ordered categories case, let’s start making
+predictions to understand the fit. First, on the linear predictor
+(i.e. transformed) scale:</p>
+<div class="sourceCode" id="cb64"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a>log.ratios <span class="ot">=</span> <span class="fu">predict</span>(gator2.mlogit, <span class="at">newdata =</span> <span class="fu">data.frame</span>(<span class="at">length =</span> <span class="dv">2</span>))</span>
+<span id="cb64-2"><a href="#cb64-2" aria-hidden="true" tabindex="-1"></a>log.ratios</span></code></pre></div>
+<pre><code>##   log(mu[,1]/mu[,3]) log(mu[,2]/mu[,3])
+## 1           1.397513          0.7665519</code></pre>
+<p>This gives us the log probability ratios for one type of food to
+another. The log of the probability ratio for fish to other is <span
+class="math inline">\(1.62 - 0.11 \times 2 \approx 1.4\)</span> and for
+invertebrates to other is <span class="math inline">\(5.7 - 2.47 \times
+2 \approx 0.77\)</span>. (Note that <code>vglm()</code> take the
+<em>last</em> level of the factor as the baseline, which is weird but is
+what it is.)</p>
+</div>
+<div class="slide section level1">
+
+<p>We can look at the predictions on the probability scale, and then
+check that all of our numbers are consistent with each other.</p>
+<div class="sourceCode" id="cb66"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a>twometerprobs <span class="ot">=</span> <span class="fu">predict</span>(gator2.mlogit, <span class="at">newdata =</span> <span class="fu">data.frame</span>(<span class="at">length =</span> <span class="dv">2</span>), <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
+<span id="cb66-2"><a href="#cb66-2" aria-hidden="true" tabindex="-1"></a>twometerprobs</span></code></pre></div>
+<pre><code>##        Fish Invertebrates     Other
+## 1 0.5620216     0.2990405 0.1389379</code></pre>
+<p>To go from the probability scale to the linear predictor scale:</p>
+<div class="sourceCode" id="cb68"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a><span class="do">## note that this is the same as log.ratios above</span></span>
+<span id="cb68-2"><a href="#cb68-2" aria-hidden="true" tabindex="-1"></a><span class="fu">log</span>(twometerprobs[<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>] <span class="sc">/</span> twometerprobs[<span class="dv">3</span>])</span></code></pre></div>
+<pre><code>## [1] 1.3975134 0.7665519</code></pre>
+<p>To go from the linear predictor scale to the probability scale:</p>
+<div class="sourceCode" id="cb70"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a><span class="do">## this is the same as twometerprobs above</span></span>
+<span id="cb70-2"><a href="#cb70-2" aria-hidden="true" tabindex="-1"></a><span class="fu">exp</span>(<span class="fu">c</span>(log.ratios, <span class="dv">0</span>)) <span class="sc">/</span> <span class="fu">sum</span>(<span class="fu">exp</span>(<span class="fu">c</span>(log.ratios, <span class="dv">0</span>)))</span></code></pre></div>
+<pre><code>## [1] 0.5620216 0.2990405 0.1389379</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>Now let’s look at how these probabilities vary with length:</p>
+<div class="sourceCode" id="cb72"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a>length <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="at">length =</span> <span class="fu">seq</span>(<span class="fl">1.24</span>, <span class="fl">3.89</span>, <span class="fl">0.01</span>))</span>
+<span id="cb72-2"><a href="#cb72-2" aria-hidden="true" tabindex="-1"></a>gator2.pred <span class="ot">=</span> <span class="fu">predict</span>(gator2.mlogit, <span class="at">newdata =</span> length, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
+<span id="cb72-3"><a href="#cb72-3" aria-hidden="true" tabindex="-1"></a>gator2.pred.df <span class="ot">=</span> <span class="fu">data.frame</span>(length, gator2.pred)</span>
+<span id="cb72-4"><a href="#cb72-4" aria-hidden="true" tabindex="-1"></a>gator2.pred.long <span class="ot">=</span> gator2.pred.df <span class="sc">%&gt;%</span> <span class="fu">gather</span>(food, probability, Fish<span class="sc">:</span>Other)</span>
+<span id="cb72-5"><a href="#cb72-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(gator2.pred.long, <span class="fu">aes</span>(<span class="at">x =</span> length, <span class="at">y =</span> probability, <span class="at">group =</span> food, <span class="at">color =</span> food)) <span class="sc">+</span> </span>
+<span id="cb72-6"><a href="#cb72-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>() <span class="sc">+</span> <span class="fu">ggtitle</span>(<span class="st">&quot;What do alligators eat?&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-19-fig/unnamed-chunk-37-1.png" /></p>
+<p>Bigger alligators prefer fish and, to a lesser extent, “other.”
+Smaller alligators prefer invertebrates.</p>
+<p>We finally note that just as with the Poisson, multinomial data is
+often overdispersed, so be careful of taking standard errors
+literally.</p>
+</div>
+</body>
+</html>

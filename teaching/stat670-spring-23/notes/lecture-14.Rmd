@@ -1,0 +1,340 @@
+% Stat 470/670 Lecture 14: Model-building with a moderate number of variables
+% Julia Fukuyama
+
+```{r setup, echo = FALSE, message = FALSE}
+library(knitr)
+opts_chunk$set(fig.cap="", fig.width = 5, fig.height = 3, dpi=175, fig.path="lecture-14-fig/", warning = FALSE)
+library(ggplot2)
+library(ggrepel)
+library(magrittr)
+library(tidyverse)
+library(broom)
+library(GGally)
+set.seed(0)
+```
+
+## Model building
+
+> - Over the next couple of weeks we'll get back to building models, and we'll look at models for different kinds of responses (binary, count, categorical).
+
+> - Today we'll look at model-building with a moderate number of variables. Today will be linear models, but the ideas carry over to logistic regression and the generalized linear models we'll talk about later.
+
+>  - Note on terminology: for statisticians, "linear model" means that your response variable follows a normal distribution. "Generalized linear models" will be models for which the response variable follows a different sort of distribution.
+
+## Data: Prostate Cancer
+
+We have a data set containing clinical data on patients who were about
+to receive a radical prostatectomy. The relevant variables are:
+
+Variables about sizes:
+
+> - `lcavol`: log cancer volume
+
+> - `lweight`: log prostate weight
+
+> - `lbph`: log of the amount of benign prostatic hyperplasia
+
+Variables about the individual:
+
+> - `age`: Age in years
+
+Variables measured by the pathologist:
+
+> - `svi`: Seminal vesicle invasion, a measure of how advanced the cancer is.
+
+> - `lcp`: log of capsular penetration
+
+> - `gleason`: A numeric vector giving the [Gleason score](https://www.pcf.org/about-prostate-cancer/diagnosis-staging-prostate-cancer/gleason-score-isup-grade/). In theory can range from 2-10, in practice ranges from 6-10.
+
+> - `pgg45`: Percent of cells with Gleason score 4 or 5.
+
+The "response" variable:
+
+> - `lpsa`: log of the concentration of prostate-stimulating antigen.
+
+We are primarily interested in `lpsa`, which is used as a marker for prostate cancer. We would like to know whether and how it is related to the other variables we have available to us.
+
+
+## First we look at the data
+
+```{r, fig.width = 8, fig.height = 5}
+prostate = read.table("../../datasets/prostate.txt")
+summary(prostate)
+prostate = prostate %>% select(-"train")
+ggpairs(prostate, progress = FALSE)
+```
+
+From the `ggpairs` plot, we see that the distributions of the
+variables are reasonably symmetrical, not that skewed, and that there
+is at least some relationship between most of the variables and `lpsa`.
+
+-----
+
+
+And a side note: this data set has already been transformed for
+you. Many of the variables are logged versions of what were presumably
+the raw measurements. This is actually a really important step: models
+with the logged variables perform substantially better than models
+with the raw variables, as we can see if we un-transform:
+
+```{r}
+prostate_unlogged = prostate %>%
+    mutate(cavol = exp(lcavol), weight = exp(lweight), bph = exp(lbph), cp = exp(lcp)) %>%
+    select(-"lcavol", -"lweight", -"lbph", -"lcp")
+summary(lm(lpsa ~ ., data = prostate))
+summary(lm(lpsa ~ ., data = prostate_unlogged))
+```
+
+-----
+
+If we had started off with the raw data, we would have seen that we
+should log-transform some of the variables by looking at their
+marginal distributions: the variables that were transformed started
+off quite skewed, and the transformation got rid of the skewness.
+
+```{r, fig.width = 8, fig.height = 5}
+ggpairs(prostate_unlogged, progress = FALSE)
+```
+
+## Linear model with all the predictors
+
+As a first step, we can fit a linear model with all the predictors and
+look at the results. We see that a lot of the coefficients are within
+the margin of error of zero, which suggests to us that a model with
+fewer predictors would do better.
+
+```{r}
+prostate_lm = lm(lpsa ~ ., data = prostate)
+prostate_coefs = tidy(prostate_lm, conf.int = TRUE)
+ggplot(prostate_coefs[-1, ], aes(x = estimate, y = term, xmin = conf.low, xmax = conf.high)) +
+    geom_point() + geom_errorbarh() + geom_vline(xintercept = 0)
+```
+
+
+## Automatic ways of choosing subsets of variables
+
+There are a lot of ways of doing variable selection for linear models.
+
+> - Forward stepwise regression: Predictors are added to the model one at a time, stopping when adding a new predictor doesn't seem to help. Computationally efficient.
+
+> - Backward stepwise regression: Predictors are added to or subtracted from the model one at a time, stopping when  subtracting an existing predictor seems to hurt too much (for backward stepwise). Works if you have fewer predictors than observations. Computationally efficient.
+
+> - Best subsets: For every potential number of predictors used in the model, find the combination of predictors that does the best. Computationally intensive.
+
+With eight predictors and a laptop, we can actually just look through all the subsets and see which model performs best.
+
+This is what the `regsubsets` in the package `leaps` does for you.
+
+```{r}
+library(leaps)
+prostate_best_subset = regsubsets(lpsa ~ ., data = prostate)
+summary(prostate_best_subset)$which
+```
+
+This shows us that the best one-predictor model uses `lcavol`, the
+best two-predictor model uses `lcavol` and `lweight`, the best
+three-predictor model uses `lcavol`, `lweight`, and `svi`, and so on.
+
+We can use this set of models as guidance for what variables to
+include, and build up an interpretable model using some of the tools
+we've seen earlier in the course.
+
+-----
+
+`regsubsets` also does forward and backward stepwise regression. In this case they all give the same results.
+
+```{r}
+prostate_forward = regsubsets(lpsa ~ ., data = prostate, method = "forward")
+summary(prostate_forward)$which
+
+prostate_backward = regsubsets(lpsa ~ ., data = prostate, method = "backward")
+summary(prostate_backward)$which
+
+all(summary(prostate_backward)$which == summary(prostate_forward)$which)
+all(summary(prostate_backward)$which == summary(prostate_best_subset)$which)
+```
+
+
+-----
+
+We start off looking at the best one-predictor model, with `lcavol`
+predicting `lpsa`.
+
+```{r}
+ggplot(prostate, aes(x = lcavol, y = lpsa)) + geom_point() + geom_smooth()
+```
+
+We see that the relationship is pretty close to linear (a line would
+go through the entire confidence band of the smoother), and so we're
+ok with using a linear function of `lcavol` to predict `lpsa`.
+
+If there had been a major non-linearity here, we would have wanted to
+ditch the linear modeling approach and do something non-parametric,
+maybe loess.
+
+-----
+
+Then we can move to the two-predictor model, and see what the
+relationship between `lcavol`, `lweight`, and `lpsa` looks like.
+
+We can make a coplot to examine the relationship between `lpsa` and
+`lcavol`, with `lweight`as the given variable
+
+```{r}
+ggplot(prostate, aes(x = lcavol, y = lpsa)) + geom_point() + geom_smooth(span = 1) + 
+    facet_grid(~cut_number(lweight, n = 3))
+```
+
+Here it seems like there is some non-linearity, but only for the
+observations with a high value of `lweight`.
+
+If we had a lot more observations, this might prompt us to move to
+loess, but since the non-linearity is based on just a few points, we
+want to see first whether the non-linearity shows up in other graphs
+as well.
+
+-----
+
+The best three-predictor model identified by `leaps` included `svi` in
+addition to `lcavol` and `lweight`, so we next look at those four
+variables together.
+
+`svi` is binary and there are only 21 cases where `svi` is equal to 1,
+we can't make a lot of facets and we don't trust curves that much.
+
+```{r}
+table(prostate$svi)
+prostate$svi = recode(prostate$svi, `1` = "Yes", `0` = "No")
+ggplot(prostate, aes(x = lcavol, y = lpsa, group = svi, color = svi)) +
+    geom_point() + 
+    geom_smooth(method = "lm", se = FALSE) + facet_wrap(~ cut_number(lweight, n = 2))
+```
+
+The different slopes suggest an interaction, but again, we don't have
+that much data.
+
+-----
+
+Next we try looking at the predictors from the four-predictor
+model. This is pushing the limits of the number of variables we can
+look at all at once, but we will try.
+
+We can look at the relationship between `lpsa`, `lcavol`, and `svi`,
+with `lweight` and `lbph` as the given variables.
+
+```{r}
+ggplot(prostate, aes(x = lcavol, y = lpsa, group = svi, color = svi)) +
+    geom_point() + 
+    geom_smooth(method = "lm", se = FALSE) +
+        facet_grid(cut_number(lweight, n = 2) ~ cut(lbph, breaks = c(-2, -1, 3)))
+```
+
+Based on this visualization, we might not be confident about an interaction: the blue lines vary in slope, but there’s based on very small samples. The red lines have different heights but are similar in slope.
+
+-----
+
+Automatic ways of choosing model sizes:
+
+> - [AIC](https://en.wikipedia.org/wiki/Akaike_information_criterion): $2k - 2 \log(\hat L)$, where $k$ is the number of parameters in the model and $\hat L$ is the likelihood at the fitted parameter values.
+
+> - [Mallows' Cp](https://en.wikipedia.org/wiki/Mallows%27s_Cp): Equivalent to AIC for linear regression.
+
+> - [BIC](https://en.wikipedia.org/wiki/Bayesian_information_criterion): $k \log n - 2 \log(\hat L)$, where $k$ is the number of parameters, $n$ is the number of observations, and $\hat L$ is the likelihood at the fitted parameter values.
+
+With each of these, we choose the model with the lowest value of the selection criterion.
+
+-----
+
+In EDA we’re not always required to find a "best" model, and even if we were we can decide on what best means subjectively.
+
+If you wanted to fit a linear model with `lcavol`, `lweight`, and `svi` as predictors plus interactions, you’re free to do so and then call that "best" because of the complexity you can get out of a relatively small number of variables.
+
+We can also check what the model selection criteria tell us about how many variables to use:
+
+```{r}
+cp_df = data.frame(value  = summary(prostate_best_subset)$cp,
+                   n_params = seq_along(summary(prostate_best_subset)$cp),
+                   type = "Cp")
+bic_df = data.frame(value = summary(prostate_best_subset)$bic,
+                    n_params = seq_along(summary(prostate_best_subset)$bic),
+                    type = "BIC")
+model_selection_criterion_df = rbind(cp_df, bic_df)
+ggplot(model_selection_criterion_df, aes(x = n_params, y = value)) +
+    geom_point() + facet_wrap(~ type, scales = "free_y")
+```
+
+Even though the lowest value of Cp is for 5 predictors, the Cp value for 3 predictors is very close to the value for 5 predictors and BIC has a strong minimum at 5 predictors. The two plots suggest that if we don't believe we need any interactions, we should use a model with an intercept and two predictors.
+
+## Plotting a final model
+
+We would like to do a coplot of `lpsa` as a function of `lcavol` conditioned on `lweight` and `svi` that has fits and predicted values. There are a couple of issues:
+
+> - Since one of the conditioning variables is continuous, we need to cut that variable up into bins (use `cut_number`).
+
+> - We need to get fitted values within each of the bins. Each bin corresponds to a range of values of the conditioning variable `lweight`, so we need to choose one value to compute a fit at in each of the bins (natural thing to do is use the midpoint of the bin).
+
+> - The bins are described by a string, not by their midpoint, so we need to compute the midpoint from the string that describes the bins (can use `separate` and `mutate`, along with regular expressions).
+
+> - We will need to merge the information about the fits with the information about the bins (using `merge`).
+
+----- 
+
+```{r}
+lm_final = lm(lpsa ~ lcavol + lweight + svi, data = prostate)
+final_fits = augment(lm_final)
+
+## get the bins and the bin means
+prostate_with_lweight_bins = prostate %>%
+    mutate(lweight_bins = cut_number(lweight, n = 3)) %>%
+    separate(lweight_bins, into = c(NA, "lo", "hi", NA), remove = FALSE, sep = "\\[|\\(|\\)|\\]|,") %>%
+    mutate(bin_mean = (as.numeric(lo) + as.numeric(hi)) / 2)
+
+## get the grid for prediction
+prostate_grid_final = expand.grid(lweight = unique(prostate_with_lweight_bins$bin_mean),
+                                  lcavol = quantile(prostate$lcavol),
+                                  svi = c("Yes", "No")) %>% data.frame()
+## predictions on the grid
+prostate_fits_on_grid = augment(lm_final, newdata = prostate_grid_final)
+## add information about the bins to the fits
+prostate_fits_on_grid = merge(prostate_fits_on_grid,
+                             unique(prostate_with_lweight_bins[,c("lweight_bins", "bin_mean")]),
+                             by.x = "lweight", by.y = "bin_mean")
+## subset so we don't plot the fits outside the range of the data
+prostate_fits_on_grid = prostate_fits_on_grid %>% subset(!(svi == "Yes" & lcavol < 1))
+
+ggplot(prostate_with_lweight_bins, aes(x = lcavol, y = lpsa, color = svi)) +
+    geom_point() +
+    geom_line(aes(y = .fitted), data = prostate_fits_on_grid) +
+    facet_wrap(~ lweight_bins) +
+    scale_x_continuous("Log Cancer Volume") + scale_y_continuous("Log PSA") +
+    scale_color_discrete("SVI") +
+    ggtitle("Log PSA as a function of log cancer volume,\nfaceted by log weight")
+
+ggplot(prostate_with_lweight_bins, aes(x = exp(lcavol), y = exp(lpsa), color = factor(svi))) +
+    geom_point() +
+    facet_wrap(~ lweight_bins) +
+    geom_line(aes(y = exp(.fitted)), data = prostate_fits_on_grid) +
+    scale_x_continuous("Cancer Volume") + scale_y_continuous("PSA") +
+    scale_color_discrete("SVI") +
+        ggtitle("PSA as a function of cancer volume,\nfaceted by log weight")
+```
+
+## Some notes about this model
+
+The final plots highlight some of the deficiencies of the additive model.
+
+> - Good case to be made for interaction between SVI and log weight.
+
+> - Looks like at the high values of log weight, there is a non-linear relationship between log PSA and log cancer volume.
+
+Next model to consider might be additive for the low log weights and non-linear with no SVI effect for the high values of log weight.
+
+## Overall
+
+> - There are a couple of automatic ways of choosing the best subsets of predictors and the best model sizes.
+
+> - These can be used automatically, or they can be used to guide the order in which we investigate whether and how to include variables.
+
+> - Transformations of the predictors are very important.
+
+> - Best subsets/forward stepwise/backward stepwise don't include variables in the same order as the marginal correlations between the predictors and response. Don't just rely on correlations to decide on which variables to include!

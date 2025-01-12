@@ -1,0 +1,574 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <meta name="author" content="Julia Fukuyama" />
+  <title>Stat 470/670 Lecture 24: Scree plots and choosing the number of dimensions</title>
+  <style type="text/css">
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="https://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="https://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div class="slide titlepage">
+  <h1 class="title">Stat 470/670 Lecture 24: Scree plots and choosing
+the number of dimensions</h1>
+  <p class="author">
+Julia Fukuyama
+  </p>
+</div>
+<div id="today" class="slide section level2">
+<h1>Today</h1>
+<ul class="incremental">
+<li><p>Scree plot and how we interpret it</p></li>
+<li><p>What does the scree plot look like when the data matrix is just
+noise</p></li>
+<li><p>How do we choose a good number of dimensions for PCA</p></li>
+</ul>
+</div>
+<div id="scree-plots" class="slide section level2">
+<h1>Scree plots</h1>
+<p>In a <em>scree plot</em>, we plot the eigenvalues in decreasing
+order.</p>
+<p>It is used to help us choose the number of “important” principal
+components.</p>
+</div>
+<div id="scree-plot-advice" class="slide section level2">
+<h1>Scree plot: Advice</h1>
+<ul>
+<li>Look for an elbow (the plot is supposed to look like a <a
+href="https://en.wikipedia.org/wiki/Scree">scree</a>).</li>
+</ul>
+<ul>
+<li>Take as many components as necessary to get to at least some
+pre-determined fraction of variance explained.</li>
+</ul>
+<ul>
+<li>Compare eigenvalues to a null distribution.</li>
+</ul>
+</div>
+<div id="three-simulated-examples" class="slide section level2">
+<h1>Three simulated examples</h1>
+<ul>
+<li>Simulation A: All of the variables are highly correlated with each
+other. Interpretation: all of the variables are measuring the same
+underlying quantity.</li>
+</ul>
+<ul>
+<li>Simulation B: There are two blocks of variables, with high
+correlations within each block. Interpretation: there are two
+independent underlying factors, and each of the variables measures one
+of them.</li>
+</ul>
+<ul>
+<li>Simulation C: All of the variables are independent. Interpretation:
+there is no lower-dimensional structure to uncover with PCA.</li>
+</ul>
+</div>
+<div id="simulation-a" class="slide section level2">
+<h1>Simulation A</h1>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>n <span class="ot">=</span> <span class="dv">50</span>; p <span class="ot">=</span> <span class="dv">20</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>cov.mat <span class="ot">=</span> <span class="fu">matrix</span>(.<span class="dv">99</span>, <span class="at">nrow =</span> p, <span class="at">ncol =</span> p)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">diag</span>(cov.mat) <span class="ot">=</span> <span class="dv">1</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>X <span class="ot">=</span> <span class="fu">rmvnorm</span>(<span class="at">n =</span> n, <span class="at">sigma =</span> cov.mat)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(X) <span class="ot">=</span> letters[<span class="dv">1</span><span class="sc">:</span>p]</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>out_prcomp <span class="ot">=</span> <span class="fu">prcomp</span>(X, <span class="at">center =</span> <span class="cn">TRUE</span>, <span class="at">scale. =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">ggbiplot</span>(out_prcomp)</span></code></pre></div>
+<p><img src="lecture-24-fig/unnamed-chunk-1-1.png" /></p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(out_prcomp<span class="sc">$</span>sdev<span class="sc">^</span><span class="dv">2</span> <span class="sc">/</span> <span class="fu">sum</span>(out_prcomp<span class="sc">$</span>sdev<span class="sc">^</span><span class="dv">2</span>),</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>     <span class="at">ylab =</span> <span class="st">&quot;Fraction of variance explained&quot;</span>, <span class="at">xlab =</span> <span class="st">&quot;Component&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-24-fig/unnamed-chunk-1-2.png" /></p>
+</div>
+<div id="simulation-b" class="slide section level2">
+<h1>Simulation B</h1>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>cov.mat <span class="ot">=</span> <span class="fu">matrix</span>(<span class="dv">0</span>, <span class="at">nrow =</span> p, <span class="at">ncol =</span> p)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>cov.mat[<span class="dv">1</span><span class="sc">:</span>(p<span class="sc">/</span><span class="dv">2</span>), <span class="dv">1</span><span class="sc">:</span>(p<span class="sc">/</span><span class="dv">2</span>)] <span class="ot">=</span> cov.mat[(p<span class="sc">/</span><span class="dv">2</span> <span class="sc">+</span> <span class="dv">1</span>)<span class="sc">:</span>p, (p<span class="sc">/</span><span class="dv">2</span> <span class="sc">+</span> <span class="dv">1</span>)<span class="sc">:</span>p] <span class="ot">=</span> .<span class="dv">99</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">diag</span>(cov.mat) <span class="ot">=</span> <span class="dv">1</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>X <span class="ot">=</span> <span class="fu">rmvnorm</span>(<span class="at">n =</span> n, <span class="at">sigma =</span> cov.mat)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(X) <span class="ot">=</span> letters[<span class="dv">1</span><span class="sc">:</span>p]</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>out_prcomp <span class="ot">=</span> <span class="fu">prcomp</span>(X, <span class="at">center =</span> <span class="cn">TRUE</span>, <span class="at">scale. =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="fu">ggbiplot</span>(out_prcomp)</span></code></pre></div>
+<p><img src="lecture-24-fig/unnamed-chunk-2-1.png" /></p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(out_prcomp<span class="sc">$</span>sdev<span class="sc">^</span><span class="dv">2</span> <span class="sc">/</span> <span class="fu">sum</span>(out_prcomp<span class="sc">$</span>sdev<span class="sc">^</span><span class="dv">2</span>),</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>     <span class="at">ylab =</span> <span class="st">&quot;Fraction of variance explained&quot;</span>, <span class="at">xlab =</span> <span class="st">&quot;Component&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-24-fig/unnamed-chunk-2-2.png" /></p>
+</div>
+<div id="simulation-c" class="slide section level2">
+<h1>Simulation C</h1>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>X <span class="ot">=</span> <span class="fu">matrix</span>(<span class="fu">rnorm</span>(n <span class="sc">*</span> p), <span class="at">nrow =</span> n)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(X) <span class="ot">=</span> letters[<span class="dv">1</span><span class="sc">:</span>p]</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>out_prcomp <span class="ot">=</span> <span class="fu">prcomp</span>(X, <span class="at">center =</span> <span class="cn">TRUE</span>, <span class="at">scale. =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggbiplot</span>(out_prcomp)</span></code></pre></div>
+<p><img src="lecture-24-fig/unnamed-chunk-3-1.png" /></p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(out_prcomp<span class="sc">$</span>sdev<span class="sc">^</span><span class="dv">2</span> <span class="sc">/</span> <span class="fu">sum</span>(out_prcomp<span class="sc">$</span>sdev<span class="sc">^</span><span class="dv">2</span>),</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>     <span class="at">ylab =</span> <span class="st">&quot;Fraction of variance explained&quot;</span>, <span class="at">xlab =</span> <span class="st">&quot;Component&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-24-fig/unnamed-chunk-3-2.png" /></p>
+</div>
+<div id="comparing-to-a-null-distribution" class="slide section level2">
+<h1>Comparing to a null distribution</h1>
+<ul>
+<li>Assuming the elements of the data matrix are iid Gaussians or the
+sample covariance matrix has a Wishart distribution, the limiting
+distributions of the eigenvalues have been worked out.</li>
+</ul>
+<ul>
+<li>The distribution of the largest eigenvalue follows the <a
+href="https://en.wikipedia.org/wiki/Tracy%E2%80%93Widom_distribution">Tracy-Widom
+law</a>. (Also: <a
+href="https://www.quantamagazine.org/beyond-the-bell-curve-a-new-universal-law-20141015/">an
+article in Quanta</a>)</li>
+</ul>
+<ul>
+<li>The empirical distribution of the eigenvalues will converge to the
+<a
+href="https://en.wikipedia.org/wiki/Marchenko%E2%80%93Pastur_distribution">Marcenko-Pastur</a>
+distribution.</li>
+</ul>
+<ul>
+<li>These limits are a bit different than what you see in your other
+statistical theory courses, they are based on taking both the number of
+samples and the number of variables to infinity in a fixed ratio.</li>
+</ul>
+<ul>
+<li>The package <code>RMTstat</code> contains the relevant
+distributions, we will use <code>pWishartMax</code> for the distribution
+of the maximum eigenvalue of a Wishart matrix.</li>
+</ul>
+</div>
+<div id="simulation-a-1" class="slide section level2">
+<h1>Simulation A</h1>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>n <span class="ot">=</span> <span class="dv">50</span>; p <span class="ot">=</span> <span class="dv">20</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>cov.mat <span class="ot">=</span> <span class="fu">matrix</span>(.<span class="dv">99</span>, <span class="at">nrow =</span> p, <span class="at">ncol =</span> p)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="fu">diag</span>(cov.mat) <span class="ot">=</span> <span class="dv">1</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>X <span class="ot">=</span> <span class="fu">rmvnorm</span>(<span class="at">n =</span> n, <span class="at">sigma =</span> cov.mat)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(X) <span class="ot">=</span> letters[<span class="dv">1</span><span class="sc">:</span>p]</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>out_prcomp <span class="ot">=</span> <span class="fu">prcomp</span>(X, <span class="at">center =</span> <span class="cn">TRUE</span>, <span class="at">scale. =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="fu">ggbiplot</span>(out_prcomp)</span></code></pre></div>
+<p><img src="lecture-24-fig/unnamed-chunk-4-1.png" /></p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(out_prcomp<span class="sc">$</span>sdev<span class="sc">^</span><span class="dv">2</span> <span class="sc">/</span> <span class="fu">sum</span>(out_prcomp<span class="sc">$</span>sdev<span class="sc">^</span><span class="dv">2</span>),</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>     <span class="at">ylab =</span> <span class="st">&quot;Fraction of variance explained&quot;</span>, <span class="at">xlab =</span> <span class="st">&quot;Component&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-24-fig/unnamed-chunk-4-2.png" /></p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pWishartMax</span>(out_prcomp<span class="sc">$</span>sdev[<span class="dv">1</span>]<span class="sc">^</span><span class="dv">2</span>, <span class="at">ndf =</span> n, <span class="at">pdim =</span> p, <span class="at">lower.tail =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
+<pre><code>## [1] 0</code></pre>
+</div>
+<div id="simulation-b-1" class="slide section level2">
+<h1>Simulation B</h1>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>cov.mat <span class="ot">=</span> <span class="fu">matrix</span>(<span class="dv">0</span>, <span class="at">nrow =</span> p, <span class="at">ncol =</span> p)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>cov.mat[<span class="dv">1</span><span class="sc">:</span>(p<span class="sc">/</span><span class="dv">2</span>), <span class="dv">1</span><span class="sc">:</span>(p<span class="sc">/</span><span class="dv">2</span>)] <span class="ot">=</span> cov.mat[(p<span class="sc">/</span><span class="dv">2</span> <span class="sc">+</span> <span class="dv">1</span>)<span class="sc">:</span>p, (p<span class="sc">/</span><span class="dv">2</span> <span class="sc">+</span> <span class="dv">1</span>)<span class="sc">:</span>p] <span class="ot">=</span> .<span class="dv">99</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="fu">diag</span>(cov.mat) <span class="ot">=</span> <span class="dv">1</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>X <span class="ot">=</span> <span class="fu">rmvnorm</span>(<span class="at">n =</span> n, <span class="at">sigma =</span> cov.mat)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(X) <span class="ot">=</span> letters[<span class="dv">1</span><span class="sc">:</span>p]</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>out_prcomp <span class="ot">=</span> <span class="fu">prcomp</span>(X, <span class="at">center =</span> <span class="cn">TRUE</span>, <span class="at">scale. =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="fu">ggbiplot</span>(out_prcomp)</span></code></pre></div>
+<p><img src="lecture-24-fig/unnamed-chunk-5-1.png" /></p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(out_prcomp<span class="sc">$</span>sdev<span class="sc">^</span><span class="dv">2</span> <span class="sc">/</span> <span class="fu">sum</span>(out_prcomp<span class="sc">$</span>sdev<span class="sc">^</span><span class="dv">2</span>),</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>     <span class="at">ylab =</span> <span class="st">&quot;Fraction of variance explained&quot;</span>, <span class="at">xlab =</span> <span class="st">&quot;Component&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-24-fig/unnamed-chunk-5-2.png" /></p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pWishartMax</span>(out_prcomp<span class="sc">$</span>sdev[<span class="dv">1</span>]<span class="sc">^</span><span class="dv">2</span>, <span class="at">ndf =</span> n, <span class="at">pdim =</span> p, <span class="at">lower.tail =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
+<pre><code>## [1] 0</code></pre>
+</div>
+<div id="simulation-c-1" class="slide section level2">
+<h1>Simulation C</h1>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>X <span class="ot">=</span> <span class="fu">matrix</span>(<span class="fu">rnorm</span>(n <span class="sc">*</span> p), <span class="at">nrow =</span> n)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(X) <span class="ot">=</span> letters[<span class="dv">1</span><span class="sc">:</span>p]</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>out_prcomp <span class="ot">=</span> <span class="fu">prcomp</span>(X, <span class="at">center =</span> <span class="cn">TRUE</span>, <span class="at">scale. =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggbiplot</span>(out_prcomp)</span></code></pre></div>
+<p><img src="lecture-24-fig/unnamed-chunk-6-1.png" /></p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(out_prcomp<span class="sc">$</span>sdev<span class="sc">^</span><span class="dv">2</span> <span class="sc">/</span> <span class="fu">sum</span>(out_prcomp<span class="sc">$</span>sdev<span class="sc">^</span><span class="dv">2</span>),</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>     <span class="at">ylab =</span> <span class="st">&quot;Fraction of variance explained&quot;</span>, <span class="at">xlab =</span> <span class="st">&quot;Component&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-24-fig/unnamed-chunk-6-2.png" /></p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pWishartMax</span>(out_prcomp<span class="sc">$</span>sdev[<span class="dv">1</span>]<span class="sc">^</span><span class="dv">2</span>, <span class="at">ndf =</span> n, <span class="at">pdim =</span> p, <span class="at">lower.tail =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
+<pre><code>## [1] 0.8334145</code></pre>
+</div>
+<div id="comparing-to-a-null-distirbution-parallel-analysis"
+class="slide section level2">
+<h1>Comparing to a null distirbution: Parallel analysis</h1>
+<p>Suppose you don’t want to assume that the elements of the data matrix
+are iid Gaussian, or you don’t have a large number of samples/variables.
+You can use parallel analysis.</p>
+<p>Procedure:</p>
+<ul>
+<li>Permute each of the columns of the matrix.</li>
+</ul>
+<ul>
+<li>Compute the eigenvalues for the permuted data matrix.</li>
+</ul>
+<ul>
+<li>Repeat many times.</li>
+</ul>
+<ul>
+<li>Compare observed eigenvalues to the eigenvalues computed from the
+permuted data matrix.</li>
+</ul>
+<p>This procedure gives the distribution of the eigenvalues assuming
+that the variables are uncorrelated and can tell you whether the
+eigenvalues you observed are bigger than you would expect if all the
+variables were uncorrelated.</p>
+<p>Note: the plots will have “adjusted” eigenvalues, for a description
+of these see <a
+href="https://alexisdinno.com/Software/files/PA_for_PCA_vs_FA.pdf">https://alexisdinno.com/Software/files/PA_for_PCA_vs_FA.pdf</a></p>
+</div>
+<div id="simulation-a-2" class="slide section level2">
+<h1>Simulation A</h1>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>n <span class="ot">=</span> <span class="dv">50</span>; p <span class="ot">=</span> <span class="dv">20</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>cov.mat <span class="ot">=</span> <span class="fu">matrix</span>(.<span class="dv">99</span>, <span class="at">nrow =</span> p, <span class="at">ncol =</span> p)</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="fu">diag</span>(cov.mat) <span class="ot">=</span> <span class="dv">1</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>X <span class="ot">=</span> <span class="fu">rmvnorm</span>(<span class="at">n =</span> n, <span class="at">sigma =</span> cov.mat)</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(X) <span class="ot">=</span> letters[<span class="dv">1</span><span class="sc">:</span>p]</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>out_prcomp <span class="ot">=</span> <span class="fu">prcomp</span>(X, <span class="at">center =</span> <span class="cn">TRUE</span>, <span class="at">scale. =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a><span class="fu">ggbiplot</span>(out_prcomp)</span></code></pre></div>
+<p><img src="lecture-24-fig/unnamed-chunk-7-1.png" /></p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(out_prcomp<span class="sc">$</span>sdev<span class="sc">^</span><span class="dv">2</span> <span class="sc">/</span> <span class="fu">sum</span>(out_prcomp<span class="sc">$</span>sdev<span class="sc">^</span><span class="dv">2</span>),</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>     <span class="at">ylab =</span> <span class="st">&quot;Fraction of variance explained&quot;</span>, <span class="at">xlab =</span> <span class="st">&quot;Component&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-24-fig/unnamed-chunk-7-2.png" /></p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">paran</span>(X, <span class="at">graph =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<pre><code>## 
+## Using eigendecomposition of correlation matrix.
+## Computing: 10%  20%  30%  40%  50%  60%  70%  80%  90%  100%
+## 
+## 
+## Results of Horn&#39;s Parallel Analysis for component retention
+## 600 iterations, using the mean estimate
+## 
+## -------------------------------------------------- 
+## Component   Adjusted    Unadjusted    Estimated 
+##             Eigenvalue  Eigenvalue    Bias 
+## -------------------------------------------------- 
+## 1          18.536246   19.877931      1.341684
+## -------------------------------------------------- 
+## 
+## Adjusted eigenvalues &gt; 1 indicate dimensions to retain.
+## (1 components retained)</code></pre>
+<p><img src="lecture-24-fig/unnamed-chunk-7-3.png" /></p>
+</div>
+<div id="simulation-b-2" class="slide section level2">
+<h1>Simulation B</h1>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>cov.mat <span class="ot">=</span> <span class="fu">matrix</span>(<span class="dv">0</span>, <span class="at">nrow =</span> p, <span class="at">ncol =</span> p)</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>cov.mat[<span class="dv">1</span><span class="sc">:</span>(p<span class="sc">/</span><span class="dv">2</span>), <span class="dv">1</span><span class="sc">:</span>(p<span class="sc">/</span><span class="dv">2</span>)] <span class="ot">=</span> cov.mat[(p<span class="sc">/</span><span class="dv">2</span> <span class="sc">+</span> <span class="dv">1</span>)<span class="sc">:</span>p, (p<span class="sc">/</span><span class="dv">2</span> <span class="sc">+</span> <span class="dv">1</span>)<span class="sc">:</span>p] <span class="ot">=</span> .<span class="dv">99</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="fu">diag</span>(cov.mat) <span class="ot">=</span> <span class="dv">1</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>X <span class="ot">=</span> <span class="fu">rmvnorm</span>(<span class="at">n =</span> n, <span class="at">sigma =</span> cov.mat)</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(X) <span class="ot">=</span> letters[<span class="dv">1</span><span class="sc">:</span>p]</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>out_prcomp <span class="ot">=</span> <span class="fu">prcomp</span>(X, <span class="at">center =</span> <span class="cn">TRUE</span>, <span class="at">scale. =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a><span class="fu">ggbiplot</span>(out_prcomp)</span></code></pre></div>
+<p><img src="lecture-24-fig/unnamed-chunk-8-1.png" /></p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(out_prcomp<span class="sc">$</span>sdev<span class="sc">^</span><span class="dv">2</span> <span class="sc">/</span> <span class="fu">sum</span>(out_prcomp<span class="sc">$</span>sdev<span class="sc">^</span><span class="dv">2</span>),</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>     <span class="at">ylab =</span> <span class="st">&quot;Fraction of variance explained&quot;</span>, <span class="at">xlab =</span> <span class="st">&quot;Component&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-24-fig/unnamed-chunk-8-2.png" /></p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">paran</span>(X, <span class="at">graph =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<pre><code>## 
+## Using eigendecomposition of correlation matrix.
+## Computing: 10%  20%  30%  40%  50%  60%  70%  80%  90%  100%
+## 
+## 
+## Results of Horn&#39;s Parallel Analysis for component retention
+## 600 iterations, using the mean estimate
+## 
+## -------------------------------------------------- 
+## Component   Adjusted    Unadjusted    Estimated 
+##             Eigenvalue  Eigenvalue    Bias 
+## -------------------------------------------------- 
+## 1           8.801628   10.153689      1.352060
+## 2           8.654407   9.707843      1.053435
+## -------------------------------------------------- 
+## 
+## Adjusted eigenvalues &gt; 1 indicate dimensions to retain.
+## (2 components retained)</code></pre>
+<p><img src="lecture-24-fig/unnamed-chunk-8-3.png" /></p>
+</div>
+<div id="simulation-c-2" class="slide section level2">
+<h1>Simulation C</h1>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>X <span class="ot">=</span> <span class="fu">matrix</span>(<span class="fu">rnorm</span>(n <span class="sc">*</span> p), <span class="at">nrow =</span> n)</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(X) <span class="ot">=</span> letters[<span class="dv">1</span><span class="sc">:</span>p]</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>out_prcomp <span class="ot">=</span> <span class="fu">prcomp</span>(X, <span class="at">center =</span> <span class="cn">TRUE</span>, <span class="at">scale. =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggbiplot</span>(out_prcomp)</span></code></pre></div>
+<p><img src="lecture-24-fig/unnamed-chunk-9-1.png" /></p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(out_prcomp<span class="sc">$</span>sdev<span class="sc">^</span><span class="dv">2</span> <span class="sc">/</span> <span class="fu">sum</span>(out_prcomp<span class="sc">$</span>sdev<span class="sc">^</span><span class="dv">2</span>),</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>     <span class="at">ylab =</span> <span class="st">&quot;Fraction of variance explained&quot;</span>, <span class="at">xlab =</span> <span class="st">&quot;Component&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-24-fig/unnamed-chunk-9-2.png" /></p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">paran</span>(X, <span class="at">graph =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<pre><code>## 
+## Using eigendecomposition of correlation matrix.
+## Computing: 10%  20%  30%  40%  50%  60%  70%  80%  90%  100%
+## 
+## 
+## Results of Horn&#39;s Parallel Analysis for component retention
+## 600 iterations, using the mean estimate
+## 
+## -------------------------------------------------- 
+## Component   Adjusted    Unadjusted    Estimated 
+##             Eigenvalue  Eigenvalue    Bias 
+## -------------------------------------------------- 
+## 1           0.842456    2.181949      1.339493</code></pre>
+<pre><code>## Error in if (AdjEv[x] &gt;= 0) {: argument is of length zero</code></pre>
+</div>
+<div id="example-congressional-voting-data"
+class="slide section level2">
+<h1>Example: Congressional voting data</h1>
+<p>A dataset containing information about votes taken by Senators in the
+1999 session.</p>
+<p>Information split across three different csvs, one giving the votes,
+one giving information about the members, and one giving information
+about the bills being voted on.</p>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># read in the three data sets</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>vote_descriptions <span class="ot">=</span> <span class="fu">read.csv</span>(<span class="st">&quot;../../datasets/congress_1999/bills.csv&quot;</span>)</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>members <span class="ot">=</span> <span class="fu">read.csv</span>(<span class="st">&quot;../../datasets/congress_1999/members.csv&quot;</span>)</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>votes <span class="ot">=</span> <span class="fu">read.csv</span>(<span class="st">&quot;../../datasets/congress_1999/votes.csv&quot;</span>)</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a><span class="do">## match the column names of votes and the vote_id column in vote_descriptions</span></span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>vote_descriptions <span class="ot">=</span> vote_descriptions <span class="sc">%&gt;%</span></span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">vote_id =</span> <span class="fu">str_replace</span>(vote_id, <span class="st">&quot;-&quot;</span>, <span class="st">&quot;.&quot;</span>))</span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a><span class="do">## match names and orders for members and votes</span></span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a>joined <span class="ot">=</span> <span class="fu">join</span>(members, votes, <span class="at">by =</span> <span class="st">&quot;id&quot;</span>)</span>
+<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a>votes <span class="ot">=</span> joined[,(<span class="sc">-</span><span class="dv">1</span><span class="sc">:-</span><span class="dv">6</span>)]</span>
+<span id="cb32-12"><a href="#cb32-12" aria-hidden="true" tabindex="-1"></a>members <span class="ot">=</span> joined[,<span class="dv">1</span><span class="sc">:</span><span class="dv">6</span>]</span>
+<span id="cb32-13"><a href="#cb32-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-14"><a href="#cb32-14" aria-hidden="true" tabindex="-1"></a><span class="do">## Look at the vote_descriptions data frame</span></span>
+<span id="cb32-15"><a href="#cb32-15" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(vote_descriptions<span class="sc">$</span>category)</span></code></pre></div>
+<pre><code>## 
+##  amendment    cloture conviction nomination    passage procedural     treaty 
+##        103         36          2         10         61        161          1</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>We would like to perform PCA, so we need te recode the votes from
+Yea/Nay to a number.</p>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Decide how to recode the variables</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>recode_votes <span class="ot">=</span> <span class="cf">function</span>(vote) {</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(<span class="fu">is.na</span>(vote)) {</span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>        <span class="fu">return</span>(<span class="dv">0</span>)</span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> <span class="cf">if</span>(vote <span class="sc">==</span> <span class="st">&quot;Yea&quot;</span>) {</span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>        <span class="fu">return</span>(<span class="dv">1</span>)</span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> <span class="cf">if</span>(vote <span class="sc">==</span> <span class="st">&quot;Nay&quot;</span>) {</span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a>        <span class="fu">return</span>(<span class="sc">-</span><span class="dv">1</span>)</span>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a>        <span class="fu">return</span>(<span class="dv">0</span>)</span>
+<span id="cb34-11"><a href="#cb34-11" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb34-12"><a href="#cb34-12" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb34-13"><a href="#cb34-13" aria-hidden="true" tabindex="-1"></a>votes_numeric <span class="ot">=</span> <span class="fu">apply</span>(votes, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>, recode_votes)</span>
+<span id="cb34-14"><a href="#cb34-14" aria-hidden="true" tabindex="-1"></a><span class="do">## These votes are going to cause problems for parallel analysis, so we remove them</span></span>
+<span id="cb34-15"><a href="#cb34-15" aria-hidden="true" tabindex="-1"></a>votes_to_remove <span class="ot">=</span> <span class="fu">which</span>(<span class="fu">apply</span>(votes_numeric, <span class="dv">2</span>, sd) <span class="sc">==</span> <span class="dv">0</span>)</span>
+<span id="cb34-16"><a href="#cb34-16" aria-hidden="true" tabindex="-1"></a>votes_numeric <span class="ot">=</span> votes_numeric[,<span class="sc">-</span>votes_to_remove]</span>
+<span id="cb34-17"><a href="#cb34-17" aria-hidden="true" tabindex="-1"></a>vote_descriptions <span class="ot">=</span> vote_descriptions[<span class="sc">-</span>votes_to_remove,]</span>
+<span id="cb34-18"><a href="#cb34-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-19"><a href="#cb34-19" aria-hidden="true" tabindex="-1"></a><span class="do">## PCA</span></span>
+<span id="cb34-20"><a href="#cb34-20" aria-hidden="true" tabindex="-1"></a>out_prcomp <span class="ot">=</span> <span class="fu">prcomp</span>(votes_numeric)</span>
+<span id="cb34-21"><a href="#cb34-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-22"><a href="#cb34-22" aria-hidden="true" tabindex="-1"></a><span class="do">## scree plot</span></span>
+<span id="cb34-23"><a href="#cb34-23" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(out_prcomp<span class="sc">$</span>sdev<span class="sc">^</span><span class="dv">2</span> <span class="sc">/</span> <span class="fu">sum</span>(out_prcomp<span class="sc">$</span>sdev<span class="sc">^</span><span class="dv">2</span>),</span>
+<span id="cb34-24"><a href="#cb34-24" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="st">&quot;Component&quot;</span>, <span class="at">ylab =</span> <span class="st">&quot;Fraction of variance explained&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-24-fig/unnamed-chunk-11-1.png" /></p>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">paran</span>(votes_numeric, <span class="at">graph =</span> <span class="cn">TRUE</span>, <span class="at">iterations =</span> <span class="dv">100</span>)</span></code></pre></div>
+<pre><code>## 
+## Using eigendecomposition of correlation matrix.
+## Computing: 10%  20%  30%  40%  50%  60%  70%  80%  90%  100%
+## 
+## 
+## Results of Horn&#39;s Parallel Analysis for component retention
+## 100 iterations, using the mean estimate
+## 
+## -------------------------------------------------- 
+## Component   Adjusted    Unadjusted    Estimated 
+##             Eigenvalue  Eigenvalue    Bias 
+## -------------------------------------------------- 
+## 1         169.50319  176.781706      7.278510
+## 2          16.274826   23.231897      6.957071
+## 3           2.875923   9.615791      6.739868
+## 4           3.023778   9.557597      6.533818
+## 5           1.109663    7.472130      6.362466
+## -------------------------------------------------- 
+## 
+## Adjusted eigenvalues &gt; 1 indicate dimensions to retain.
+## (5 components retained)</code></pre>
+<p><img src="lecture-24-fig/unnamed-chunk-12-1.png" /></p>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="do">## let&#39;s look at who the senators are</span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>members_and_scores <span class="ot">=</span> <span class="fu">data.frame</span>(members, out_prcomp<span class="sc">$</span>x)</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(members_and_scores, <span class="fu">aes</span>(<span class="at">x =</span> PC1, <span class="at">y =</span> PC2)) <span class="sc">+</span></span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">color =</span> party)) <span class="sc">+</span></span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_text_repel</span>(<span class="fu">aes</span>(<span class="at">label =</span> display_name))</span></code></pre></div>
+<p><img src="lecture-24-fig/unnamed-chunk-13-1.png" /></p>
+</div>
+<div id="looking-at-just-the-passage-votes"
+class="slide section level2">
+<h1>Looking at just the “passage” votes</h1>
+<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>out_prcomp_passage <span class="ot">=</span> <span class="fu">prcomp</span>(votes_numeric[,vote_descriptions<span class="sc">$</span>category <span class="sc">==</span> <span class="st">&quot;passage&quot;</span>])</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(out_prcomp_passage<span class="sc">$</span>sdev<span class="sc">^</span><span class="dv">2</span> <span class="sc">/</span> <span class="fu">sum</span>(out_prcomp_passage<span class="sc">$</span>sdev<span class="sc">^</span><span class="dv">2</span>),</span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>     <span class="at">ylab =</span> <span class="st">&quot;Fraction of variance explained&quot;</span>, <span class="at">xlab =</span> <span class="st">&quot;Component&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-24-fig/unnamed-chunk-14-1.png" /></p>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>out_prcomp_passage<span class="sc">$</span>sdev[<span class="dv">1</span>]<span class="sc">^</span><span class="dv">2</span> <span class="sc">/</span> <span class="fu">sum</span>(out_prcomp_passage<span class="sc">$</span>sdev<span class="sc">^</span><span class="dv">2</span>)</span></code></pre></div>
+<pre><code>## [1] 0.499316</code></pre>
+<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="fu">paran</span>(votes_numeric[,vote_descriptions<span class="sc">$</span>category <span class="sc">==</span> <span class="st">&quot;passage&quot;</span>], <span class="at">graph =</span> <span class="cn">TRUE</span>, <span class="at">iterations =</span> <span class="dv">100</span>)</span></code></pre></div>
+<pre><code>## 
+## Using eigendecomposition of correlation matrix.
+## Computing: 10%  20%  30%  40%  50%  60%  70%  80%  90%  100%
+## 
+## 
+## Results of Horn&#39;s Parallel Analysis for component retention
+## 100 iterations, using the mean estimate
+## 
+## -------------------------------------------------- 
+## Component   Adjusted    Unadjusted    Estimated 
+##             Eigenvalue  Eigenvalue    Bias 
+## -------------------------------------------------- 
+## 1          12.904483   14.866993      1.962509
+## 2           7.196930    8.941067      1.744137
+## 3           2.314958    3.918645      1.603687
+## 4           1.698357    3.179481      1.481123
+## 5           1.061265    2.422535      1.361270
+## -------------------------------------------------- 
+## 
+## Adjusted eigenvalues &gt; 1 indicate dimensions to retain.
+## (5 components retained)</code></pre>
+<p><img src="lecture-24-fig/unnamed-chunk-15-1.png" /></p>
+<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>members_and_scores_passage <span class="ot">=</span> <span class="fu">data.frame</span>(members, out_prcomp_passage<span class="sc">$</span>x)</span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(members_and_scores_passage, <span class="fu">aes</span>(<span class="at">x =</span> PC1, <span class="at">y =</span> PC2)) <span class="sc">+</span></span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">color =</span> party)) <span class="sc">+</span></span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_text_repel</span>(<span class="fu">aes</span>(<span class="at">label =</span> display_name))</span></code></pre></div>
+<p><img src="lecture-24-fig/unnamed-chunk-16-1.png" /></p>
+</div>
+<div id="looking-at-just-the-procedural-votes"
+class="slide section level2">
+<h1>Looking at just the “procedural” votes</h1>
+<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>out_prcomp_procedural <span class="ot">=</span> <span class="fu">prcomp</span>(votes_numeric[,vote_descriptions<span class="sc">$</span>category <span class="sc">==</span> <span class="st">&quot;procedural&quot;</span>])</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(out_prcomp_procedural<span class="sc">$</span>sdev<span class="sc">^</span><span class="dv">2</span> <span class="sc">/</span> <span class="fu">sum</span>(out_prcomp_procedural<span class="sc">$</span>sdev<span class="sc">^</span><span class="dv">2</span>),</span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>     <span class="at">ylab =</span> <span class="st">&quot;Fraction of variance explained&quot;</span>, <span class="at">xlab =</span> <span class="st">&quot;Component&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-24-fig/unnamed-chunk-17-1.png" /></p>
+<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>out_prcomp_procedural<span class="sc">$</span>sdev[<span class="dv">1</span>]<span class="sc">^</span><span class="dv">2</span> <span class="sc">/</span> <span class="fu">sum</span>(out_prcomp_procedural<span class="sc">$</span>sdev<span class="sc">^</span><span class="dv">2</span>)</span></code></pre></div>
+<pre><code>## [1] 0.670782</code></pre>
+<div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="fu">paran</span>(votes_numeric[,vote_descriptions<span class="sc">$</span>category <span class="sc">==</span> <span class="st">&quot;procedural&quot;</span>], <span class="at">graph =</span> <span class="cn">TRUE</span>, <span class="at">iterations =</span> <span class="dv">100</span>)</span></code></pre></div>
+<pre><code>## 
+## Using eigendecomposition of correlation matrix.
+## Computing: 10%  20%  30%  40%  50%  60%  70%  80%  90%  100%
+## 
+## 
+## Results of Horn&#39;s Parallel Analysis for component retention
+## 100 iterations, using the mean estimate
+## 
+## -------------------------------------------------- 
+## Component   Adjusted    Unadjusted    Estimated 
+##             Eigenvalue  Eigenvalue    Bias 
+## -------------------------------------------------- 
+## 1          93.440562   97.330067      3.889504
+## 2           1.622993    5.285660      3.662667
+## -------------------------------------------------- 
+## 
+## Adjusted eigenvalues &gt; 1 indicate dimensions to retain.
+## (2 components retained)</code></pre>
+<p><img src="lecture-24-fig/unnamed-chunk-18-1.png" /></p>
+<div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>members_and_scores_procedural <span class="ot">=</span> <span class="fu">data.frame</span>(members, out_prcomp_procedural<span class="sc">$</span>x)</span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(members_and_scores_procedural, <span class="fu">aes</span>(<span class="at">x =</span> PC1, <span class="at">y =</span> PC2)) <span class="sc">+</span></span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">color =</span> party)) <span class="sc">+</span></span>
+<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_text_repel</span>(<span class="fu">aes</span>(<span class="at">label =</span> display_name))</span></code></pre></div>
+<p><img src="lecture-24-fig/unnamed-chunk-19-1.png" /></p>
+</div>
+<div id="what-did-we-learn" class="slide section level2">
+<h1>What did we learn?</h1>
+<ul>
+<li>We always see one dimension that explains a very large fraction of
+the variance.</li>
+</ul>
+<ul>
+<li>In both the votes overall and in the passage votes, we get five
+dimensions that have more information than we would expect if all the
+votes were uncorrelated with each other.</li>
+</ul>
+<ul>
+<li>In just the procedural votes, the first dimension explains more of
+the variance and there are only two dimensions that have more
+information than we would expect if all the votes were uncorrelated with
+each other.</li>
+</ul>
+</div>
+<div id="overall" class="slide section level2">
+<h1>Overall</h1>
+<ul>
+<li>Important to look at the scree plot</li>
+</ul>
+<ul>
+<li>Comparing to a null distribution can help with interpretation.
+Parallel analysis is probably the most useful, but you can also use the
+random matrix theory-based results as well.</li>
+</ul>
+<ul>
+<li>Parallel analysis usually more accurate.</li>
+</ul>
+<ul>
+<li>RMT results faster.</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,519 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <meta name="author" content="Julia Fukuyama" />
+  <title>Stat 470/670 Lecture 23: Principal Components</title>
+  <style type="text/css">
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="https://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js"
+  type="text/javascript"></script>
+  <script src="https://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div class="slide titlepage">
+  <h1 class="title">Stat 470/670 Lecture 23: Principal Components</h1>
+  <p class="author">
+Julia Fukuyama
+  </p>
+</div>
+<div id="today" class="slide section level2">
+<h1>Today</h1>
+<p>Today: PCA</p>
+<ul>
+<li>Intuition</li>
+</ul>
+<ul>
+<li>Math</li>
+</ul>
+<ul>
+<li>Examples</li>
+</ul>
+</div>
+<div id="a-contrived-example" class="slide section level2">
+<h1>A contrived example</h1>
+<p>Suppose we have a 3-dimensional object that we want to
+investigate.</p>
+<p>Due to some strange set of constraints, we are only allowed to see
+its shadow.</p>
+<p>Without knowing anything about the object, what sort of a shadow
+would you expect to be most useful?</p>
+</div>
+<div class="slide section level2">
+
+<p><img src="camel1.png" /></p>
+</div>
+<div class="slide section level2">
+
+<p><img src="camel2.png" /></p>
+</div>
+<div class="slide section level2">
+
+<p>It seems like the most useful shadow is the biggest one: If we were
+only allowed one view, we would ask for the one that took up the most
+space.</p>
+<p>It’s easy to come up with examples where this isn’t the most useful,
+but it’s a good place to start if you don’t know anything about the
+data.</p>
+<p>The same will be true of PCA.</p>
+</div>
+<div id="pca-as-variance-maximization" class="slide section level2">
+<h1>PCA as variance maximization</h1>
+<p>In PCA, we have a data matrix <span class="math inline">\(\mathbf X
+\in \mathbb R^{n \times p}\)</span> with centered columns.</p>
+<p>We think of the rows of <span class="math inline">\(\mathbf
+X\)</span> as points in <span
+class="math inline">\(p\)</span>-dimensional space, and we want to
+project the points down into a lower-dimensional space so we can
+visualize them.</p>
+<p>There are a lot of different ways we could do this, but in PCA we
+want to find the projection that maximizes the variance of the projected
+points.</p>
+</div>
+<div id="the-pca-optimization-problem" class="slide section level2">
+<h1>The PCA optimization problem</h1>
+<p>First consider projecting the points onto a line.</p>
+<p>The PCA problem is to find <span class="math display">\[
+\mathbf w_{(1)} = \text{arg max}_{\mathbf w : \|\mathbf w \| = 1}
+\sum_{i=1}^n (\mathbf x_i \cdot \mathbf w)^2
+\]</span> where <span class="math inline">\(\mathbf x_i\)</span> is the
+<span class="math inline">\(i\)</span>th row of <span
+class="math inline">\(\mathbf X\)</span>.</p>
+<p><span class="math inline">\(\mathbf w_{(1)}\)</span> is then the
+first principal component.</p>
+</div>
+<div class="slide section level2">
+
+<p>If we want projections into higher-dimensional spaces, we take more
+principal components.</p>
+<p>We find the <span class="math inline">\(k\)</span>th principal
+component as <span class="math display">\[
+\mathbf w_{(k)} = \text{arg max}_{\mathbf w :\| \mathbf w \| = 1,
+\mathbf w^T \mathbf w_{(j)} = 0, j = 1, \ldots, k-1} \sum_{i=1}^n
+(\mathbf x_i \cdot \mathbf w)^2
+\]</span></p>
+<p>The constraint that <span class="math inline">\(\mathbf w^T \mathbf
+w_{(k)} = 0, j = 1,\ldots, k-1\)</span> means that the <span
+class="math inline">\(k\)</span>th principal component is orthogonal to
+all the previous principal components, and is needed to ensure a unique
+solution to the problem.</p>
+</div>
+<div id="solution-to-the-pca-problem" class="slide section level2">
+<h1>Solution to the PCA problem</h1>
+<p>The solution to the PCA is given by the SVD.</p>
+<p>If <span class="math inline">\(\mathbf X\)</span> has centered
+columns and <span class="math inline">\(\mathbf X = \mathbf U \mathbf D
+\mathbf V^T\)</span> is the SVD of <span class="math inline">\(\mathbf
+X\)</span>, then</p>
+<ul>
+<li>The <span class="math inline">\(k\)</span>th principal component is
+the <span class="math inline">\(k\)</span>th column of <span
+class="math inline">\(\mathbf V\)</span>.</li>
+</ul>
+<ul>
+<li>The projections of the points onto the <span
+class="math inline">\(k\)</span>th principal component are given by the
+<span class="math inline">\(k\)</span>th row of <span
+class="math inline">\(\mathbf U \mathbf D\)</span>.</li>
+</ul>
+</div>
+<div id="example" class="slide section level2">
+<h1>Example</h1>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(devtools)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">install_github</span>(<span class="st">&quot;vqv/ggbiplot&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ade4)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggbiplot)</span></code></pre></div>
+<pre><code>## Loading required package: plyr</code></pre>
+<pre><code>## Loading required package: scales</code></pre>
+<pre><code>## Loading required package: grid</code></pre>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(viridis)</span></code></pre></div>
+<pre><code>## Loading required package: viridisLite</code></pre>
+<pre><code>## 
+## Attaching package: &#39;viridis&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:scales&#39;:
+## 
+##     viridis_pal</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>Olympic dataset</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(olympic)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(olympic<span class="sc">$</span>tab)</span></code></pre></div>
+<pre><code>##       100             long            poid            haut      
+##  Min.   :10.62   Min.   :6.220   Min.   :10.27   Min.   :1.790  
+##  1st Qu.:11.02   1st Qu.:7.000   1st Qu.:13.15   1st Qu.:1.940  
+##  Median :11.18   Median :7.090   Median :14.12   Median :1.970  
+##  Mean   :11.20   Mean   :7.133   Mean   :13.98   Mean   :1.983  
+##  3rd Qu.:11.43   3rd Qu.:7.370   3rd Qu.:14.97   3rd Qu.:2.030  
+##  Max.   :11.57   Max.   :7.720   Max.   :16.60   Max.   :2.270  
+##       400             110             disq            perc      
+##  Min.   :47.44   Min.   :14.18   Min.   :34.36   Min.   :4.000  
+##  1st Qu.:48.34   1st Qu.:14.72   1st Qu.:39.08   1st Qu.:4.600  
+##  Median :49.15   Median :15.00   Median :42.32   Median :4.700  
+##  Mean   :49.28   Mean   :15.05   Mean   :42.35   Mean   :4.739  
+##  3rd Qu.:49.98   3rd Qu.:15.38   3rd Qu.:44.80   3rd Qu.:4.900  
+##  Max.   :51.28   Max.   :16.20   Max.   :50.66   Max.   :5.700  
+##       jave            1500      
+##  Min.   :49.52   Min.   :256.6  
+##  1st Qu.:55.42   1st Qu.:266.4  
+##  Median :59.48   Median :272.1  
+##  Mean   :59.44   Mean   :276.0  
+##  3rd Qu.:64.00   3rd Qu.:286.0  
+##  Max.   :72.60   Max.   :303.2</code></pre>
+</div>
+<div class="slide section level2">
+
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>oly_noscale <span class="ot">=</span> <span class="fu">prcomp</span>(olympic<span class="sc">$</span>tab, <span class="at">scale. =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>oly_noscale<span class="sc">$</span>rotation[,<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>]</span></code></pre></div>
+<pre><code>##                PC1          PC2
+## 100  -0.0045042348  0.005632863
+## long  0.0084964324 -0.013772028
+## poid -0.0294931259 -0.155510542
+## haut  0.0007153041 -0.002667193
+## 400  -0.0455887408 -0.001324105
+## 110  -0.0050441978  0.010836485
+## disq -0.1184059716 -0.352166545
+## perc  0.0003427802 -0.019704006
+## jave -0.0525411029 -0.917592971
+## 1500 -0.9900266310  0.095301595</code></pre>
+</div>
+<div id="pca-biplots" class="slide section level2">
+<h1>PCA Biplots</h1>
+<p>Two types of biplots, <em>form</em> and <em>covariance</em>. Let’s
+start off with the <em>form</em> biplot.</p>
+<ul>
+<li>For each sample we plot a point with the sample scores along the
+principal axes.</li>
+</ul>
+<ul>
+<li>For each variable, we make an arrow with the variable weights along
+the principal axes.</li>
+</ul>
+<p>This allows us to read off the sample scores along the principal axes
+and the variable weights along the principal axes.</p>
+<div class="incremental">
+<p>However, there’s another way to interpret the PCA biplot:</p>
+<ul>
+<li>Since the PCA solution is given by the SVD, the biplot is the same
+as the reduced-rank biplot (up to choices of how to scale the biplot
+points and biplot axes).</li>
+</ul>
+<ul>
+<li>In particular, the form biplot is a reduced-rank biplot where we use
+<span class="math inline">\(\mathbf U_{(2)} \mathbf D_{(2)}\)</span> to
+plot the biplot points, and <span class="math inline">\(\mathbf
+V_{(2)}\)</span> to plot the biplot axes.</li>
+</ul>
+<ul>
+<li>Therefore, we can read the PCA biplot as giving us an approximation
+to the centered data matrix <span class="math inline">\(\mathbf
+X\)</span></li>
+</ul>
+</div>
+</div>
+<div id="pca-biplot-for-the-olympic-data" class="slide section level2">
+<h1>PCA biplot for the olympic data</h1>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="do">## scale = 0 means form biplot</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggbiplot</span>(oly_noscale, <span class="at">scale =</span> <span class="dv">0</span>) <span class="sc">+</span> <span class="fu">ylim</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="dv">17</span>, <span class="dv">10</span>))</span></code></pre></div>
+<p><img src="lecture-23-fig/unnamed-chunk-5-1.png" /></p>
+</div>
+<div id="covariance-biplot" class="slide section level2">
+<h1>Covariance biplot</h1>
+<p>The <em>covariance</em> biplot is very subtly different from the form
+biplot, the difference being how the singular values are allocated.</p>
+<p>In the covariance biplot, we use</p>
+<ul>
+<li><span class="math inline">\(\mathbf U_{(2)}\)</span> for the biplot
+points</li>
+</ul>
+<ul>
+<li><span class="math inline">\(\mathbf V_{(2)} \mathbf D_{(2)}\)</span>
+for the biplot axes.</li>
+</ul>
+<p>In this form of the biplot, angles between biplot axes give us
+approximations of the covariances.</p>
+<p>Why is this?</p>
+</div>
+<div class="slide section level2">
+
+<p>Following up on what we talked about regarding correlations between
+variables, note the following two relationships:</p>
+<ul>
+<li>If <span class="math inline">\(\mathbf X\)</span> has centered
+columns, then <span class="math inline">\(\mathbf X^T \mathbf X\)</span>
+is proportional to the sample covariance matrix.</li>
+</ul>
+<ul>
+<li>If <span class="math inline">\(\mathbf X = \mathbf U \mathbf D
+\mathbf V^T\)</span>, then <span class="math inline">\(\mathbf X^T
+\mathbf X = \mathbf V \mathbf D^2 \mathbf V^T\)</span>.</li>
+</ul>
+<p>Therefore, the columns of <span class="math inline">\(\mathbf V
+\mathbf D\)</span> can be seen as giving us both biplot points and
+biplot axes for approximating the <em>covariance</em> matrix, and
+projections of one biplot axis onto another biplot axis tells us about
+the covariance between the two variables.</p>
+</div>
+<div id="covariance-biplot-1" class="slide section level2">
+<h1>Covariance biplot</h1>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="do">## scale = 1 means covariance biplot</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggbiplot</span>(oly_noscale, <span class="at">scale =</span> <span class="dv">1</span>)</span></code></pre></div>
+<p><img src="lecture-23-fig/unnamed-chunk-6-1.png" /></p>
+</div>
+<div id="correlation-based-pca" class="slide section level2">
+<h1>Correlation-based PCA</h1>
+<p>The example above suggests that doing PCA when the variables are on
+different scales isn’t always that useful.</p>
+<p>When the variables are on different scales and measure different
+things, we often standardize the columns of <span
+class="math inline">\(\mathbf X\)</span> (divide each column by its
+standard deviation) before performing PCA.</p>
+<p>This is sometimes referred to as correlation-based PCA, as opposed to
+covariance-based PCA.</p>
+</div>
+<div id="correlation-based-pca-biplot" class="slide section level2">
+<h1>Correlation-based PCA biplot</h1>
+<p>Analogous to the covariance-based PCA biplot:</p>
+<ul>
+<li>Sample points represent the scores on the principal axes.</li>
+</ul>
+<ul>
+<li>Variable points represent variable weights on the principal
+axes.</li>
+</ul>
+<p>Interpretation as a reduced-rank biplot:</p>
+<ul>
+<li>Correlation-based PCA biplot is just a reduced-rank biplot
+approximating a centered and scaled data matrix.</li>
+</ul>
+<ul>
+<li>We still have biplot points and axes, and they describe the elements
+of the centered and scaled data matrix.</li>
+</ul>
+<p>Relationships between the variables:</p>
+<ul>
+<li>Projections of biplot axes onto each other now describe correlations
+between variables instead of covariances.</li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>Covariance PCA biplot based on correlations, with some extra
+information:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>oly_scale <span class="ot">=</span> <span class="fu">prcomp</span>(olympic<span class="sc">$</span>tab, <span class="at">scale. =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="do">## scale = 1 means covariance biplot</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ggbiplot</span>(oly_scale, <span class="at">scale =</span> <span class="dv">1</span>)</span></code></pre></div>
+<p><img src="lecture-23-fig/unnamed-chunk-7-1.png" /></p>
+<p>How would you interpret the first principal component?</p>
+</div>
+<div class="slide section level2">
+
+<p>Covariance PCA biplot based on correlations, with some extra
+information:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="do">## scale = 1 means covariance biplot</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggbiplot</span>(oly_scale, <span class="at">scale =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">color =</span> olympic<span class="sc">$</span>score)) <span class="sc">+</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_color_viridis</span>(<span class="st">&quot;Score&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-23-fig/unnamed-chunk-8-1.png" /></p>
+</div>
+<div id="wine-example" class="slide section level2">
+<h1>Wine example</h1>
+<p>Wine dataset</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ggbiplot is not on cran, so you have to use</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="co"># library(devtools)</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="co"># install_github(&quot;vqv/ggbiplot&quot;)</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggbiplot)</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(wine)</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(wine)</span></code></pre></div>
+<pre><code>## [1] 178</code></pre>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(wine)</span></code></pre></div>
+<pre><code>##     Alcohol        MalicAcid          Ash            AlcAsh     
+##  Min.   :11.03   Min.   :0.740   Min.   :1.360   Min.   :10.60  
+##  1st Qu.:12.36   1st Qu.:1.603   1st Qu.:2.210   1st Qu.:17.20  
+##  Median :13.05   Median :1.865   Median :2.360   Median :19.50  
+##  Mean   :13.00   Mean   :2.336   Mean   :2.367   Mean   :19.49  
+##  3rd Qu.:13.68   3rd Qu.:3.083   3rd Qu.:2.558   3rd Qu.:21.50  
+##  Max.   :14.83   Max.   :5.800   Max.   :3.230   Max.   :30.00  
+##        Mg            Phenols           Flav       NonFlavPhenols  
+##  Min.   : 70.00   Min.   :0.980   Min.   :0.340   Min.   :0.1300  
+##  1st Qu.: 88.00   1st Qu.:1.742   1st Qu.:1.205   1st Qu.:0.2700  
+##  Median : 98.00   Median :2.355   Median :2.135   Median :0.3400  
+##  Mean   : 99.74   Mean   :2.295   Mean   :2.029   Mean   :0.3619  
+##  3rd Qu.:107.00   3rd Qu.:2.800   3rd Qu.:2.875   3rd Qu.:0.4375  
+##  Max.   :162.00   Max.   :3.880   Max.   :5.080   Max.   :0.6600  
+##       Proa           Color             Hue               OD       
+##  Min.   :0.410   Min.   : 1.280   Min.   :0.4800   Min.   :1.270  
+##  1st Qu.:1.250   1st Qu.: 3.220   1st Qu.:0.7825   1st Qu.:1.938  
+##  Median :1.555   Median : 4.690   Median :0.9650   Median :2.780  
+##  Mean   :1.591   Mean   : 5.058   Mean   :0.9574   Mean   :2.612  
+##  3rd Qu.:1.950   3rd Qu.: 6.200   3rd Qu.:1.1200   3rd Qu.:3.170  
+##  Max.   :3.580   Max.   :13.000   Max.   :1.7100   Max.   :4.000  
+##     Proline      
+##  Min.   : 278.0  
+##  1st Qu.: 500.5  
+##  Median : 673.5  
+##  Mean   : 746.9  
+##  3rd Qu.: 985.0  
+##  Max.   :1680.0</code></pre>
+</div>
+<div class="slide section level2">
+
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>wine.pca <span class="ot">=</span> <span class="fu">prcomp</span>(wine, <span class="at">scale. =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>wine.pca<span class="sc">$</span>rotation[, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>]</span></code></pre></div>
+<pre><code>##                         PC1          PC2
+## Alcohol        -0.144329395  0.483651548
+## MalicAcid       0.245187580  0.224930935
+## Ash             0.002051061  0.316068814
+## AlcAsh          0.239320405 -0.010590502
+## Mg             -0.141992042  0.299634003
+## Phenols        -0.394660845  0.065039512
+## Flav           -0.422934297 -0.003359812
+## NonFlavPhenols  0.298533103  0.028779488
+## Proa           -0.313429488  0.039301722
+## Color           0.088616705  0.529995672
+## Hue            -0.296714564 -0.279235148
+## OD             -0.376167411 -0.164496193
+## Proline        -0.286752227  0.364902832</code></pre>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>wine.pca<span class="sc">$</span>x[<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>]</span></code></pre></div>
+<pre><code>##             PC1        PC2
+##  [1,] -3.307421  1.4394023
+##  [2,] -2.203250 -0.3324551
+##  [3,] -2.509661  1.0282507
+##  [4,] -3.746497  2.7486184
+##  [5,] -1.006070  0.8673840
+##  [6,] -3.041674  2.1164309
+##  [7,] -2.442201  1.1715453
+##  [8,] -2.053644  1.6044371
+##  [9,] -2.503811  0.9154885
+## [10,] -2.745882  0.7872170</code></pre>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>principal_axes <span class="ot">=</span> <span class="fu">data.frame</span>(wine.pca<span class="sc">$</span>rotation)</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>scores <span class="ot">=</span> <span class="fu">data.frame</span>(wine.pca<span class="sc">$</span>x)</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(principal_axes) <span class="sc">+</span> <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">x =</span> PC1, <span class="at">y =</span> PC2, <span class="at">xend =</span> <span class="dv">0</span>, <span class="at">yend =</span> <span class="dv">0</span>))</span></code></pre></div>
+<p><img src="lecture-23-fig/unnamed-chunk-10-1.png" /></p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(scores) <span class="sc">+</span> <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> PC1, <span class="at">y =</span> PC2))</span></code></pre></div>
+<p><img src="lecture-23-fig/unnamed-chunk-10-2.png" /></p>
+</div>
+<div class="slide section level2">
+
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggbiplot</span>(wine.pca, <span class="at">scale =</span> <span class="dv">1</span>, <span class="at">var.axes =</span> <span class="cn">FALSE</span>, <span class="at">groups =</span> wine.class)</span></code></pre></div>
+<p><img src="lecture-23-fig/unnamed-chunk-11-1.png" /></p>
+</div>
+<div class="slide section level2">
+
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggbiplot</span>(wine.pca, <span class="at">scale =</span> <span class="dv">1</span>, <span class="at">var.axes =</span> <span class="cn">TRUE</span>, <span class="at">groups =</span> wine.class) <span class="sc">+</span> <span class="fu">xlim</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>))</span></code></pre></div>
+<p><img src="lecture-23-fig/unnamed-chunk-12-1.png" /></p>
+</div>
+<div id="summing-up" class="slide section level2">
+<h1>Summing up</h1>
+<p>Interpretation of PCA:</p>
+<ul>
+<li>Visualization of the elements of the matrix</li>
+</ul>
+<ul>
+<li>Visualization of the correlation/covariance among the variables</li>
+</ul>
+<p>Two kinds of PCA:</p>
+<ul>
+<li>Covariance-based PCA: columns of the data matrix are centered but
+not scaled, implemented with <code>scale. = FALSE</code> in
+<code>prcomp</code> (the default)</li>
+</ul>
+<ul>
+<li>Correlation-based PCA: columns of the data matrix are centered and
+scaled, implemented with <code>scale. = TRUE</code> in
+<code>prcomp</code></li>
+</ul>
+<p>Two kinds of PCA biplot:</p>
+<ul>
+<li>Form biplot: Plot <span class="math inline">\(\mathbf U_{(2)}
+\mathbf D_{(2)}\)</span> and <span class="math inline">\(\mathbf
+V_{(2)}\)</span>, implemented with <code>scale = 0</code> in
+<code>ggbiplot</code></li>
+</ul>
+<ul>
+<li>Covariance biplot: Plot <span class="math inline">\(\mathbf
+U_{(2)}\)</span> and <span class="math inline">\(\mathbf V_{(2)} \mathbf
+D_{(2)}\)</span>, implemented with <code>scale = 1</code> in
+<code>ggbiplot</code></li>
+</ul>
+</div>
+</body>
+</html>

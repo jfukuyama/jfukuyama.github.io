@@ -1,0 +1,789 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <meta name="author" content="Julia Fukuyama" />
+  <title>Stat 470/670 Lecture 25: Multi-Dimensional Scaling</title>
+  <style type="text/css">
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="https://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js"
+  type="text/javascript"></script>
+  <script src="https://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div class="slide titlepage">
+  <h1 class="title">Stat 470/670 Lecture 25: Multi-Dimensional
+Scaling</h1>
+  <p class="author">
+Julia Fukuyama
+  </p>
+</div>
+<div id="setup-for-multi-dimensional-scaling"
+class="slide section level2">
+<h1>Setup for multi-dimensional scaling</h1>
+<p>Instead of measurements on variables, like in PCA, we have distances
+between the samples.</p>
+<p>The distances can be what was measured initially, or the distance
+could be constructed by the analyst from other variables that were
+measured directly.</p>
+<p>In multi-dimensional scaling, the goal is to make a map of the
+samples in a low-dimensional space (probably 2-dimensional space) so
+that the distances in that map match the distances between the samples
+as closely as possible.</p>
+</div>
+<div id="some-examples-of-inputs-for-multi-dimensional-scaling"
+class="slide section level2">
+<h1>Some examples of inputs for multi-dimensional scaling</h1>
+<ul>
+<li>Subjective ratings of dissimilarities between objects</li>
+</ul>
+<ul>
+<li>Distances between politicians based on voting records</li>
+</ul>
+<ul>
+<li>Travel times between cities</li>
+</ul>
+</div>
+<div id="fake-data-1" class="slide section level2">
+<h1>Fake Data 1</h1>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>D <span class="ot">=</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="fu">sqrt</span>(<span class="dv">2</span>),</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>             <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>,</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>             <span class="fu">sqrt</span>(<span class="dv">2</span>), <span class="dv">1</span>, <span class="dv">0</span>),</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">nrow =</span> <span class="dv">3</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(D, <span class="at">digits =</span> <span class="dv">2</span>)</span></code></pre></div>
+<pre><code>##      [,1] [,2] [,3]
+## [1,] 0.00    1 1.41
+## [2,] 1.00    0 1.00
+## [3,] 1.41    1 0.00</code></pre>
+<p>Here <code>D</code> is a distance matrix, and the <span
+class="math inline">\((i,j)\)</span> element of <code>D</code> tells us
+the distance between sample <span class="math inline">\(i\)</span> and
+sample <span class="math inline">\(j\)</span>.</p>
+<p>How would you position these samples in space so that the distances
+between them matched the distances in <code>D</code>?</p>
+</div>
+<div id="embedding-into-euclidean-space" class="slide section level2">
+<h1>Embedding into Euclidean space</h1>
+<p>In multi-dimensional scaling, we want to find an <em>embedding</em>
+of the samples into Euclidean space so that the distances between the
+embedded points match the distances between the samples as closely as
+possible.</p>
+<p>This sounds fancy, but all it means is that we create a set of
+coordinates and assign each sample a value along each coordinate so that
+the distances between the samples match the input distances.</p>
+</div>
+<div class="slide section level2">
+
+<p>How does this work on our fake data?</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cmdscale</span>(D)</span></code></pre></div>
+<pre><code>##               [,1]       [,2]
+## [1,]  7.071068e-01  0.2357023
+## [2,] -1.110223e-16 -0.4714045
+## [3,] -7.071068e-01  0.2357023</code></pre>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>mds_points <span class="ot">=</span> <span class="fu">cmdscale</span>(D)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(mds_points)) <span class="sc">+</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">x =</span> X1, <span class="at">y =</span> X2, <span class="at">label =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>)) <span class="sc">+</span> <span class="fu">coord_fixed</span>()</span></code></pre></div>
+<p><img src="lecture-25-fig/unnamed-chunk-2-1.png" /></p>
+</div>
+<div class="slide section level2">
+
+<p>We can check that the distances match:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="do">## The dist function computes distances (Euclidean</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="do">## by default) between the rows of a data frame</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="fu">dist</span>(mds_points)</span></code></pre></div>
+<pre><code>##          1        2
+## 2 1.000000         
+## 3 1.414214 1.000000</code></pre>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="do">## compare with D, the input distances</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>D</span></code></pre></div>
+<pre><code>##          [,1] [,2]     [,3]
+## [1,] 0.000000    1 1.414214
+## [2,] 1.000000    0 1.000000
+## [3,] 1.414214    1 0.000000</code></pre>
+</div>
+<div id="classical-multi-dimensional-scaling"
+class="slide section level2">
+<h1>Classical Multi-Dimensional Scaling</h1>
+<p>One solution to the multi-dimensional scaling problem is given by
+classical multi-dimensional scaling.</p>
+<p>Let <span class="math inline">\(\mathbf D \in \mathbb R^{n \times
+n}\)</span> be a matrix where <span class="math inline">\(\mathbf
+D_{ij}\)</span> contains the square of the distance between sample <span
+class="math inline">\(i\)</span> and sample <span
+class="math inline">\(j\)</span>.</p>
+<p>Let <span class="math inline">\(\mathbf H \in \mathbb R^{n \times
+n}\)</span> be the centering matrix, <span class="math inline">\(\mathbf
+H = \mathbf I - \frac{1}{n} \mathbf 1 \mathbf 1^T\)</span>.</p>
+<p>Create the doubly-centered distance matrix <span
+class="math inline">\(\mathbf B = -\frac{1}{2} \mathbf H \mathbf D
+\mathbf H\)</span>, and let <span class="math inline">\(\mathbf U
+\mathbf \Lambda \mathbf U^T\)</span> be the singular value decomposition
+of <span class="math inline">\(\mathbf B\)</span>.</p>
+<p>Then the <span class="math inline">\(k\)</span>-dimensional solution
+to the multi-dimensional scaling problem is obtained by taking <span
+class="math inline">\(\mathbf U_{(k)} \mathbf
+\Lambda_{(k)}^{1/2}\)</span>.</p>
+</div>
+<div class="slide section level2">
+
+<p>Idea behind this solution:</p>
+<p>Suppose the distance really did come from a matrix <span
+class="math inline">\(\mathbf X \in \mathbb R^{n \times k}\)</span>,
+where we computed the Euclidean distances between the rows of <span
+class="math inline">\(\mathbf X\)</span>. For definiteness, assume that
+the columns of <span class="math inline">\(\mathbf X\)</span> are
+centered.</p>
+<p>Then it turns out (linear algebra exercise: verify this) that <span
+class="math inline">\((\mathbf H \mathbf X) (\mathbf H \mathbf X)^T =
+\mathbf B\)</span>.</p>
+<p>The top <span class="math inline">\(k\)</span> left singular vectors
+of <span class="math inline">\(\mathbf X\)</span> (which is the same as
+<span class="math inline">\(\mathbf H \mathbf X\)</span> because <span
+class="math inline">\(\mathbf X\)</span> already has centered columns)
+will therefore give the optimal representation of the true embedded
+points that we got the distances from.</p>
+<p>The singular vectors of <span class="math inline">\(\mathbf H \mathbf
+X\)</span> are the same as the singular vectors of <span
+class="math inline">\(\mathbf B\)</span>, so if we start off with <span
+class="math inline">\(\mathbf B\)</span> instead of <span
+class="math inline">\(\mathbf X\)</span>, we can still get the optimal
+low-dimensional embedding by taking the top singular vectors of <span
+class="math inline">\(\mathbf B\)</span>.</p>
+</div>
+<div id="checking-the-quality-of-the-mds-solution"
+class="slide section level2">
+<h1>Checking the quality of the MDS solution</h1>
+<p>Just as in PCA and with the SVD, we have a measure of the quality of
+the approximation.</p>
+<p>In classical multi-dimensional scaling, these are given by the
+eigenvalues of <span class="math inline">\(\mathbf B\)</span>, and
+plotting the eigenvalues tells us how how much of the “variance” is
+explained by the multi-dimensional scaling axes.</p>
+<p>If we can represent the distances perfectly with an embedding into
+<span class="math inline">\(k\)</span>-dimensional space, the top <span
+class="math inline">\(k\)</span> eigenvalues will be non-zero and the
+remainder will be zero.</p>
+<p>We can check this on our fake data, where we constructed the
+distances so that they could be exactly represented in two-dimensional
+space.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cmdscale</span>(D, <span class="at">eig =</span> <span class="cn">TRUE</span>)<span class="sc">$</span>eig</span></code></pre></div>
+<pre><code>## [1] 1.000000e+00 3.333333e-01 2.220446e-16</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>In general, you won’t be able to get an exact representation in a
+number of dimensions that’s easy to visualize, but you will want to know
+how well you’re doing with the number of dimensions you take.</p>
+<p>We use the eigenvalues to make a scree plot, analogous to the PCA
+scree plot, to measure the quality of the embedding</p>
+<p>Major difference between MDS and PCA:.</p>
+<ul>
+<li>The eigenvalues can be negative.</li>
+</ul>
+<ul>
+<li>Negative eigenvalues mean that there is no embedding of the points
+so that the Euclidean distances between them exactly match the input
+distances, and the size of the negative eigenvalues indicate how severe
+the problem is.</li>
+</ul>
+<ul>
+<li>Not that important, but the terminology is that if you see negative
+eigenvalues, it means that your distances are
+<em>non-Euclidean</em>.</li>
+</ul>
+</div>
+<div id="example-of-non-embeddable-set-of-points"
+class="slide section level2">
+<h1>Example of non-embeddable set of points</h1>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>D <span class="ot">=</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, .<span class="dv">1</span>,</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>             <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">5</span>,</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>             <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">5</span>,</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>             .<span class="dv">1</span>, <span class="dv">5</span>, <span class="dv">5</span>, <span class="dv">0</span>),</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">nrow =</span> <span class="dv">4</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>D</span></code></pre></div>
+<pre><code>##      [,1] [,2] [,3] [,4]
+## [1,]  0.0    1    1  0.1
+## [2,]  1.0    0    1  5.0
+## [3,]  1.0    1    0  5.0
+## [4,]  0.1    5    5  0.0</code></pre>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>mds_points <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="fu">cmdscale</span>(D))</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">dist</span>(mds_points)</span></code></pre></div>
+<pre><code>##          1        2        3
+## 2 2.436166                  
+## 3 2.436166 1.000000         
+## 4 2.605269 5.014562 5.014562</code></pre>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(mds_points) <span class="sc">+</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">x =</span> X1, <span class="at">y =</span> X2, <span class="at">label =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>)) <span class="sc">+</span> <span class="fu">coord_fixed</span>()</span></code></pre></div>
+<p><img src="lecture-25-fig/unnamed-chunk-5-1.png" /></p>
+</div>
+<div class="slide section level2">
+
+<p>As promised, this shows up in negative eigenvalues:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>mds_eig <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="at">eig =</span> <span class="fu">cmdscale</span>(D, <span class="at">eig =</span> <span class="cn">TRUE</span>)<span class="sc">$</span>eig, <span class="at">index =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>mds_eig</span></code></pre></div>
+<pre><code>##         eig index
+## 1 16.987227     1
+## 2  0.500000     2
+## 3  0.000000     3
+## 4 -4.234727     4</code></pre>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(mds_eig) <span class="sc">+</span> <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> index, <span class="at">y =</span> eig)) <span class="sc">+</span> <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>)</span></code></pre></div>
+<p><img src="lecture-25-fig/unnamed-chunk-6-1.png" /></p>
+</div>
+<div id="contrived-example-1-state-locations"
+class="slide section level2">
+<h1>Contrived Example 1: State locations</h1>
+<p>R contains data on state locations, including one called
+<code>state.center</code> that gives the latitude and longitude of the
+center of each state.</p>
+<p>What happens if we compute distances between the centers of the
+states and run multi-dimensional scaling on those distances?</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>state_locations <span class="ot">=</span> <span class="fu">data.frame</span>(state.center)</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>state_distances <span class="ot">=</span> <span class="fu">dist</span>(state_locations, <span class="at">method =</span> <span class="st">&quot;euclidean&quot;</span>)</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>state_mds <span class="ot">=</span> <span class="fu">cmdscale</span>(state_distances, <span class="at">eig =</span> <span class="cn">TRUE</span>, <span class="at">k =</span> <span class="dv">2</span>)</span></code></pre></div>
+</div>
+<div class="slide section level2">
+
+<p>Before we get to the MDS plot, let’s look at the scree plot to see
+the quality of the MDS solution.</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(<span class="at">eig =</span> state_mds<span class="sc">$</span>eig, <span class="at">index =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">50</span>)) <span class="sc">+</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> index, <span class="at">y =</span> eig)) <span class="sc">+</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggtitle</span>(<span class="st">&quot;Scree plot for MDS on distances between states&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-25-fig/unnamed-chunk-8-1.png" /></p>
+<p>Why do we only get non-zero eigenvalues for the first two MDS
+axes?</p>
+</div>
+<div class="slide section level2">
+
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(state_mds<span class="sc">$</span>points), <span class="fu">aes</span>(<span class="at">x =</span> X1, <span class="at">y =</span> X2, <span class="at">label =</span> state.name)) <span class="sc">+</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_text_repel</span>() <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">coord_fixed</span>()</span></code></pre></div>
+<p><img src="lecture-25-fig/unnamed-chunk-9-1.png" /></p>
+<p>When we plot the MDS solution, we get a map!</p>
+<p>The states all have the correct relative locations, but the
+north-south axis is going the wrong way.</p>
+<p>This is just due to an indeterminacy in the solution: the singular
+value decomposition is only determined up to a sign change for the
+singular vectors.</p>
+<p>More heuristically, since we only provide MDS with distances, we can
+only expect it to give us good approximations to the distances between
+the samples, we can’t expect it to know about north and south.</p>
+</div>
+<div id="non-metric-mds" class="slide section level2">
+<h1>Non-metric MDS</h1>
+<p>Non-metric MDS is a robust alternative to classical MDS, and it is
+used when we want a map that preserves relative distances instead of
+absolute distances.</p>
+<p>The idea is that we want to find a an embedding of the points into a
+lower-dimensional space so that the ranks of the distances are preserved
+as well as possible (the points that are the farthest from each other in
+the embedded space have the largest input distance, the points that are
+closest to each other in the embedded space have the smallest input
+distance, etc.).</p>
+<p>To do this, we find an embedding of the points into a
+lower-dimensional space <em>and</em> a monotonic transformation of the
+embedded distances so that the transformed distances recapitulate the
+input distances as well as possible. The monotone transformation is
+essentially a trick that allows us to match ranks of distances instead
+of absolute distances.</p>
+</div>
+<div class="slide section level2">
+
+<p>Notes:</p>
+<ul>
+<li>NMDS is more resistant to outliers than classical MDS: if one point
+has a very large distance from all the others, the first classical MDS
+axis will tend to separate that point from the others and not be
+informative about the remaining distances.</li>
+</ul>
+<ul>
+<li>Unlike classical MDS, NMDS does not give nested solutions: if we do
+NMDS with 2 axes, the first axis will not be equal to the NMDS solution
+with 1 axis.</li>
+</ul>
+<ul>
+<li>There is no notion of percentage of variation explained by
+individual axes as in classical MDS.</li>
+</ul>
+</div>
+<div id="implementation-of-nmds" class="slide section level2">
+<h1>Implementation of NMDS</h1>
+<p>Let <span class="math inline">\(d_i\)</span> contain the input
+distances, and let <span class="math inline">\(f\)</span> be a monotone
+increasing function.</p>
+<p>Note that since <span class="math inline">\(f\)</span> is monotone,
+<span class="math inline">\(d_i &lt; d_j\)</span> implies that <span
+class="math inline">\(f(d_i) &lt; f(d_j)\)</span>, and so the
+<em>relative</em> distances between the points are preserved under <span
+class="math inline">\(f\)</span>.</p>
+<p>In NMDS, we want to minimize the stress function, defined as <span
+class="math display">\[
+\text{STRESS}^2 = \frac{\sum_i (f(\tilde d_i) - d_i)^2}{\sum_j d_j^2}
+\]</span> where <span class="math inline">\(d\)</span> represents the
+input distances, and <span class="math inline">\(\tilde d\)</span>
+represent the distances between the embedded points.</p>
+<p>The NMDS algorithm is as follows:</p>
+<ul>
+<li>Find a random embedding of the samples, e. g. by sampling from a
+normal distribution.</li>
+</ul>
+<ul>
+<li>Calculate the distances <span class="math inline">\(\tilde
+d\)</span> between the embedded sample points.</li>
+</ul>
+<ul>
+<li>Find the optimal monotonic transformation of the distances <span
+class="math inline">\(f\)</span> so that <span
+class="math inline">\(f(\tilde d)\)</span> matches <span
+class="math inline">\(d\)</span> as closely as possible.</li>
+</ul>
+<ul>
+<li>Find the embedding of the samples such that the distances between
+the embedded points matches <span class="math inline">\(f(d)\)</span> as
+closely as possible.</li>
+</ul>
+<ul>
+<li>Compare the stress to some criterion. If the change in stress is
+small enough then exit the algorithm, otherwise return to to step
+2.</li>
+</ul>
+</div>
+<div id="example-on-colors" class="slide section level2">
+<h1>Example on colors</h1>
+<p>In a psychology study (Ekman, Gosta. 1954. “Dimensions of Color
+Vision.” The Journal of Psychology 38 (2). Taylor &amp; Francis:
+467–74.), the investigator asked subjects to rate similarities between
+colors.</p>
+<p>These were combined to give overall measure of similarities between
+colors, and the results are in <code>ekman.txt</code>.</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>ekm <span class="ot">=</span> <span class="fu">read.table</span>(<span class="st">&quot;../../datasets/ekman.txt&quot;</span>, <span class="at">header=</span><span class="cn">TRUE</span>)</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(ekm) <span class="ot">=</span> <span class="fu">colnames</span>(ekm)</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="do">## the elements in ekm are similarities, but we</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="do">## need dissimilarities instead. We can create</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a><span class="do">## dissimilarities by taking the complement of</span></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a><span class="do">## the similarities and setting the diagonal to zero.</span></span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>ekm_dist <span class="ot">=</span> <span class="dv">1</span> <span class="sc">-</span> ekm <span class="sc">-</span> <span class="fu">diag</span>(<span class="dv">1</span>, <span class="fu">ncol</span>(ekm))</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>ekm_dist[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>]</span></code></pre></div>
+<pre><code>##      w434 w445 w465 w472 w490
+## w434 0.00 0.14 0.58 0.58 0.82
+## w445 0.14 0.00 0.50 0.56 0.78
+## w465 0.58 0.50 0.00 0.19 0.53
+## w472 0.58 0.56 0.19 0.00 0.46
+## w490 0.82 0.78 0.53 0.46 0.00</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>Let’s try classical MDS first:</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>ekm_mds <span class="ot">=</span> <span class="fu">cmdscale</span>(ekm_dist, <span class="at">eig =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="do">## we can make a scree plot giving</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="do">## the fraction of variance explained</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(<span class="at">eig =</span> ekm_mds<span class="sc">$</span>eig,</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>                  <span class="at">index =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(ekm_mds<span class="sc">$</span>eig))) <span class="sc">+</span></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>                      <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> index, <span class="at">y =</span> eig))</span></code></pre></div>
+<p><img src="lecture-25-fig/unnamed-chunk-11-1.png" /></p>
+<p>Note that the negative eigenvalues at the end indicate that the
+dissimilarities cannot be exactly represented in Euclidean space, but
+the values are not that large and so we aren’t too concerned.</p>
+<p>The top two eigenvalues are quite large, indicating that a
+two-dimensional MDS solution does a reasonable job at recapitulating the
+dissimilarities between the samples.</p>
+</div>
+<div class="slide section level2">
+
+<p>And finally the plot:</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Here we&#39;re changing variable names and</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="do">## adding some additional information to</span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a><span class="do">## the data frame we will use to plot the</span></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a><span class="do">## MDS solution</span></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>ekm_points <span class="ot">=</span> ekm_mds<span class="sc">$</span>points[,<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>] <span class="sc">%&gt;%</span></span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>    as_tibble <span class="sc">%&gt;%</span></span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">setNames</span>(<span class="fu">paste0</span>(<span class="st">&quot;MDS&quot;</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>        <span class="at">name =</span> <span class="fu">rownames</span>(ekm),</span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>        <span class="at">rgb =</span> photobiology<span class="sc">::</span><span class="fu">w_length2rgb</span>(<span class="fu">as.numeric</span>(<span class="fu">sub</span>(<span class="st">&quot;w&quot;</span>, <span class="st">&quot;&quot;</span>, name))))</span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(ekm_points, <span class="fu">aes</span>(<span class="at">x =</span> MDS1, <span class="at">y =</span> MDS2)) <span class="sc">+</span></span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">col =</span> ekm_points<span class="sc">$</span>rgb, <span class="at">size =</span> <span class="dv">2</span>) <span class="sc">+</span> </span>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text_repel</span>(<span class="fu">aes</span>(<span class="at">label =</span> name)) <span class="sc">+</span> <span class="fu">coord_fixed</span>()</span></code></pre></div>
+<p><img src="lecture-25-fig/unnamed-chunk-12-1.png" /></p>
+</div>
+<div id="color-data-with-nmds" class="slide section level2">
+<h1>Color data with NMDS</h1>
+<p>Remember that NMDS is a randomized algorithm, so each run can in
+principle give a different solution.</p>
+<p>The <code>metaMDS</code> function (in the package <code>vegan</code>)
+repeats the NMDS algorithm many times (20 by default) and looks for the
+best solution among the results.</p>
+<p>The output here tells us that for each run of the algorithm, the
+stresses are about the same, suggesting that the corresponding solutions
+are the same.</p>
+<p>The part of the output that says</p>
+<p><code>Procrustes: rmse 1.060348e-06  max resid
+1.960065e-06</code></p>
+<p>is checking for similarity between the solutions directly:
+<code>rmse</code> and <code>max resid</code> describe the discrepancies
+between the solution and the previous best solution.</p>
+<p>Here we see that the algorithm converges ot the same solution every
+time.</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>ekm_nmds <span class="ot">=</span> <span class="fu">metaMDS</span>(ekm_dist, <span class="at">k =</span> <span class="dv">2</span>, <span class="at">autotransform =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
+<pre><code>## Run 0 stress 0.02310251 
+## Run 1 stress 0.02310251 
+## ... Procrustes: rmse 2.102867e-06  max resid 3.320966e-06 
+## ... Similar to previous best
+## Run 2 stress 0.02310251 
+## ... Procrustes: rmse 7.088863e-06  max resid 1.145484e-05 
+## ... Similar to previous best
+## Run 3 stress 0.02310251 
+## ... Procrustes: rmse 6.438299e-06  max resid 1.040306e-05 
+## ... Similar to previous best
+## Run 4 stress 0.02310251 
+## ... New best solution
+## ... Procrustes: rmse 4.681247e-06  max resid 7.620905e-06 
+## ... Similar to previous best
+## Run 5 stress 0.02310251 
+## ... New best solution
+## ... Procrustes: rmse 3.633134e-06  max resid 6.162556e-06 
+## ... Similar to previous best
+## Run 6 stress 0.02310251 
+## ... Procrustes: rmse 3.021893e-06  max resid 5.156862e-06 
+## ... Similar to previous best
+## Run 7 stress 0.02310251 
+## ... New best solution
+## ... Procrustes: rmse 1.146055e-06  max resid 2.470557e-06 
+## ... Similar to previous best
+## Run 8 stress 0.02310251 
+## ... New best solution
+## ... Procrustes: rmse 9.659437e-07  max resid 2.036998e-06 
+## ... Similar to previous best
+## Run 9 stress 0.02310251 
+## ... Procrustes: rmse 4.787886e-06  max resid 8.130221e-06 
+## ... Similar to previous best
+## Run 10 stress 0.02310251 
+## ... Procrustes: rmse 5.616317e-07  max resid 8.747772e-07 
+## ... Similar to previous best
+## Run 11 stress 0.02310251 
+## ... Procrustes: rmse 5.527651e-07  max resid 1.104713e-06 
+## ... Similar to previous best
+## Run 12 stress 0.02310251 
+## ... Procrustes: rmse 2.855771e-06  max resid 4.601952e-06 
+## ... Similar to previous best
+## Run 13 stress 0.02310251 
+## ... Procrustes: rmse 1.506129e-06  max resid 2.440185e-06 
+## ... Similar to previous best
+## Run 14 stress 0.02310251 
+## ... Procrustes: rmse 6.926222e-06  max resid 1.15127e-05 
+## ... Similar to previous best
+## Run 15 stress 0.02310251 
+## ... Procrustes: rmse 8.158106e-07  max resid 1.29539e-06 
+## ... Similar to previous best
+## Run 16 stress 0.02310251 
+## ... Procrustes: rmse 1.780811e-06  max resid 2.655272e-06 
+## ... Similar to previous best
+## Run 17 stress 0.02310251 
+## ... Procrustes: rmse 6.859623e-07  max resid 1.288504e-06 
+## ... Similar to previous best
+## Run 18 stress 0.02310251 
+## ... Procrustes: rmse 5.879151e-07  max resid 8.94391e-07 
+## ... Similar to previous best
+## Run 19 stress 0.02310251 
+## ... Procrustes: rmse 4.007526e-06  max resid 6.695112e-06 
+## ... Similar to previous best
+## Run 20 stress 0.02310251 
+## ... Procrustes: rmse 3.797161e-06  max resid 5.754955e-06 
+## ... Similar to previous best
+## *** Best solution repeated 13 times</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>We would like an analog of the scree plot so that we can evaluate how
+many dimensions to use.</p>
+<p>One way to do this is to compute the stress function for each number
+of dimensions and plot that.</p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="do">## since the algorithm is random, it would be</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="do">## better to do this many times for each value</span></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a><span class="do">## of k and take the average</span></span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>stresses <span class="ot">=</span> <span class="fu">sapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="cf">function</span>(k) <span class="fu">metaMDS</span>(ekm_dist, <span class="at">k =</span> k, <span class="at">autotransform =</span> <span class="cn">FALSE</span>)<span class="sc">$</span>stress)</span></code></pre></div>
+<pre><code>## Run 0 stress 0.2721258 
+## Run 1 stress 0.5212407 
+## Run 2 stress 0.4856468 
+## Run 3 stress 0.490962 
+## Run 4 stress 0.2567348 
+## ... New best solution
+## ... Procrustes: rmse 0.05564529  max resid 0.1384309 
+## Run 5 stress 0.2687508 
+## Run 6 stress 0.4533083 
+## Run 7 stress 0.4373748 
+## Run 8 stress 0.4843117 
+## Run 9 stress 0.5071186 
+## Run 10 stress 0.5291604 
+## Run 11 stress 0.4866729 
+## Run 12 stress 0.4983676 
+## Run 13 stress 0.4942408 
+## Run 14 stress 0.4915839 
+## Run 15 stress 0.4584145 
+## Run 16 stress 0.5006447 
+## Run 17 stress 0.5165007 
+## Run 18 stress 0.5246208 
+## Run 19 stress 0.5003296 
+## Run 20 stress 0.5081357 
+## *** Best solution was not repeated -- monoMDS stopping criteria:
+##     20: scale factor of the gradient &lt; sfgrmin
+## Run 0 stress 0.02310251 
+## Run 1 stress 0.02310251 
+## ... Procrustes: rmse 1.603649e-06  max resid 2.608348e-06 
+## ... Similar to previous best
+## Run 2 stress 0.02310251 
+## ... New best solution
+## ... Procrustes: rmse 1.283596e-06  max resid 2.203181e-06 
+## ... Similar to previous best
+## Run 3 stress 0.02310251 
+## ... Procrustes: rmse 9.753636e-07  max resid 1.832654e-06 
+## ... Similar to previous best
+## Run 4 stress 0.2925016 
+## Run 5 stress 0.02310251 
+## ... Procrustes: rmse 5.337933e-06  max resid 8.633325e-06 
+## ... Similar to previous best
+## Run 6 stress 0.02310251 
+## ... Procrustes: rmse 1.579965e-06  max resid 3.45673e-06 
+## ... Similar to previous best
+## Run 7 stress 0.02310251 
+## ... Procrustes: rmse 3.284343e-06  max resid 5.161338e-06 
+## ... Similar to previous best
+## Run 8 stress 0.02310251 
+## ... Procrustes: rmse 2.555243e-06  max resid 4.933159e-06 
+## ... Similar to previous best
+## Run 9 stress 0.02310251 
+## ... New best solution
+## ... Procrustes: rmse 1.01295e-06  max resid 2.103083e-06 
+## ... Similar to previous best
+## Run 10 stress 0.02310251 
+## ... Procrustes: rmse 2.232036e-06  max resid 4.119736e-06 
+## ... Similar to previous best
+## Run 11 stress 0.02310251 
+## ... Procrustes: rmse 1.663214e-06  max resid 3.072049e-06 
+## ... Similar to previous best
+## Run 12 stress 0.02310251 
+## ... Procrustes: rmse 2.237823e-06  max resid 4.174616e-06 
+## ... Similar to previous best
+## Run 13 stress 0.02310251 
+## ... New best solution
+## ... Procrustes: rmse 1.327781e-06  max resid 2.668128e-06 
+## ... Similar to previous best
+## Run 14 stress 0.02310251 
+## ... Procrustes: rmse 3.930095e-06  max resid 6.673939e-06 
+## ... Similar to previous best
+## Run 15 stress 0.02310251 
+## ... Procrustes: rmse 1.227083e-06  max resid 2.181569e-06 
+## ... Similar to previous best
+## Run 16 stress 0.02310251 
+## ... Procrustes: rmse 1.61893e-06  max resid 2.611836e-06 
+## ... Similar to previous best
+## Run 17 stress 0.02310251 
+## ... Procrustes: rmse 4.812507e-06  max resid 7.680302e-06 
+## ... Similar to previous best
+## Run 18 stress 0.02310251 
+## ... New best solution
+## ... Procrustes: rmse 9.04642e-07  max resid 1.366657e-06 
+## ... Similar to previous best
+## Run 19 stress 0.02310251 
+## ... Procrustes: rmse 2.685811e-06  max resid 5.192665e-06 
+## ... Similar to previous best
+## Run 20 stress 0.02310251 
+## ... Procrustes: rmse 4.933418e-06  max resid 7.938065e-06 
+## ... Similar to previous best
+## *** Best solution repeated 3 times
+## Run 0 stress 0.01253494 
+## Run 1 stress 0.01703834 
+## Run 2 stress 0.1085453 
+## Run 3 stress 0.01715047 
+## Run 4 stress 0.01483193 
+## Run 5 stress 0.0156638 
+## Run 6 stress 0.01253473 
+## ... New best solution
+## ... Procrustes: rmse 0.000744619  max resid 0.00139024 
+## ... Similar to previous best
+## Run 7 stress 0.01253767 
+## ... Procrustes: rmse 0.0008841715  max resid 0.001456 
+## ... Similar to previous best
+## Run 8 stress 0.01678396 
+## Run 9 stress 0.0171508 
+## Run 10 stress 0.01529306 
+## Run 11 stress 0.01529293 
+## Run 12 stress 0.01253648 
+## ... Procrustes: rmse 0.001276111  max resid 0.002392105 
+## ... Similar to previous best
+## Run 13 stress 0.01619717 
+## Run 14 stress 0.01514985 
+## Run 15 stress 0.01617106 
+## Run 16 stress 0.012539 
+## ... Procrustes: rmse 0.001555727  max resid 0.00261888 
+## ... Similar to previous best
+## Run 17 stress 0.0160428 
+## Run 18 stress 0.01777524 
+## Run 19 stress 0.0140412 
+## Run 20 stress 0.0124441 
+## ... New best solution
+## ... Procrustes: rmse 0.01877198  max resid 0.04687448 
+## *** Best solution was not repeated -- monoMDS stopping criteria:
+##     11: no. of iterations &gt;= maxit
+##      9: stress ratio &gt; sratmax
+## Run 0 stress 0.006273768 
+## Run 1 stress 0.004990382 
+## ... New best solution
+## ... Procrustes: rmse 0.1007591  max resid 0.1849666 
+## Run 2 stress 0.00487154 
+## ... New best solution
+## ... Procrustes: rmse 0.01068611  max resid 0.02011363 
+## Run 3 stress 0.006313356 
+## Run 4 stress 0.005815049 
+## Run 5 stress 0.005724101 
+## Run 6 stress 0.01109444 
+## Run 7 stress 0.003030431 
+## ... New best solution
+## ... Procrustes: rmse 0.04301309  max resid 0.07967849 
+## Run 8 stress 0.003766835 
+## Run 9 stress 0.002812255 
+## ... New best solution
+## ... Procrustes: rmse 0.007655836  max resid 0.01192655 
+## Run 10 stress 0.002872299 
+## ... Procrustes: rmse 0.01055606  max resid 0.01956895 
+## Run 11 stress 0.006120003 
+## Run 12 stress 0.1316872 
+## Run 13 stress 0.003452073 
+## Run 14 stress 0.005912479 
+## Run 15 stress 0.006849582 
+## Run 16 stress 0.003751898 
+## Run 17 stress 0.006483368 
+## Run 18 stress 0.003709185 
+## Run 19 stress 0.004488317 
+## Run 20 stress 0.002733593 
+## ... New best solution
+## ... Procrustes: rmse 0.008442853  max resid 0.01632713 
+## *** Best solution was not repeated -- monoMDS stopping criteria:
+##     19: no. of iterations &gt;= maxit
+##      1: stress ratio &gt; sratmax
+## Run 0 stress 0.0009367835 
+## Run 1 stress 0.002131138 
+## Run 2 stress 0.003907969 
+## Run 3 stress 0.001706481 
+## Run 4 stress 0.005466837 
+## Run 5 stress 0.002919591 
+## Run 6 stress 0.00258284 
+## Run 7 stress 0.003337378 
+## Run 8 stress 0.005895784 
+## Run 9 stress 0.001076621 
+## ... Procrustes: rmse 0.09829673  max resid 0.2129623 
+## Run 10 stress 0.002311725 
+## Run 11 stress 0.002533747 
+## Run 12 stress 0.001741355 
+## Run 13 stress 0.002134076 
+## Run 14 stress 0.001557201 
+## Run 15 stress 0.0006962816 
+## ... New best solution
+## ... Procrustes: rmse 0.08041192  max resid 0.1217456 
+## Run 16 stress 0.001892428 
+## Run 17 stress 0.002917626 
+## Run 18 stress 0.001702046 
+## Run 19 stress 0.002460906 
+## Run 20 stress 0.002818138 
+## *** Best solution was not repeated -- monoMDS stopping criteria:
+##     20: no. of iterations &gt;= maxit</code></pre>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="do">## note about above, autotransform is a parameter</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="do">## that is specific to ecology data, we want to</span></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a><span class="do">## set it to FALSE</span></span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(stresses, <span class="at">k =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>)) <span class="sc">+</span> <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> k, <span class="at">y =</span> stresses))</span></code></pre></div>
+<p><img src="lecture-25-fig/unnamed-chunk-14-1.png" /></p>
+<p>Here we see that the stress drops substantially going from 1 to 2
+dimensions, and then doesn’t go down that much once we increase the
+number of dimensions further.</p>
+<p>This indicates to us that the two-dimensional solution is likely to
+be pretty good, just as it was with classical MDS.</p>
+</div>
+<div class="slide section level2">
+
+<p>And the plot:</p>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>nmds_points <span class="ot">=</span> ekm_nmds<span class="sc">$</span>points[,<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>] <span class="sc">%&gt;%</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>    as_tibble <span class="sc">%&gt;%</span></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">setNames</span>(<span class="fu">paste0</span>(<span class="st">&quot;NMDS&quot;</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">bind_cols</span>(<span class="fu">select</span>(ekm_points, rgb, name))</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(nmds_points, <span class="fu">aes</span>(<span class="at">x =</span> NMDS1, <span class="at">y =</span> NMDS2)) <span class="sc">+</span></span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">col =</span> ekm_points<span class="sc">$</span>rgb, <span class="at">size =</span> <span class="dv">2</span>) <span class="sc">+</span> </span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text_repel</span>(<span class="fu">aes</span>(<span class="at">label =</span> name)) <span class="sc">+</span> <span class="fu">coord_fixed</span>()</span></code></pre></div>
+<p><img src="lecture-25-fig/unnamed-chunk-15-1.png" /></p>
+</div>
+</body>
+</html>

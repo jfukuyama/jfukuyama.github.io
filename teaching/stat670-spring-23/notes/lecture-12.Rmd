@@ -1,0 +1,590 @@
+% Stat 470/670 Lecture 12: More interactions, coplots, and modeling
+% Julia Fukuyama
+
+```{r setup, echo = FALSE, message = FALSE}
+library(knitr)
+opts_chunk$set(fig.cap="", fig.width = 5, fig.height = 3, dpi=175, fig.path="lecture-12-fig/", warning = FALSE)
+
+library(magrittr)
+library(tidyverse)
+library(ggplot2)
+library(broom)
+
+make_coplot_df = function(data_frame, faceting_variable, number_bins = 6) {
+    ## co.intervals gets the limits used for the conditioning intervals
+    intervals = co.intervals(data_frame[[faceting_variable]], number = number_bins)
+    ## indices is a list, with the ith element containing the indices of the
+    ## observations falling into the ith interval
+    indices = apply(intervals, 1, function(x)
+        which(data_frame[[faceting_variable]] <= x[2] & data_frame[[faceting_variable]] >= x[1]))
+    ## interval_descriptions is formatted like indices, but has interval
+    ## names instead of indices of the samples falling in the index
+    interval_descriptions = apply(intervals, 1, function(x) {
+        num_in_interval = sum(data_frame[[faceting_variable]] <= x[2] & data_frame[[faceting_variable]] >= x[1])
+        interval_description = sprintf("(%.2f, %.2f)", x[1], x[2])
+        return(rep(interval_description, num_in_interval))
+    })
+    ## df_expanded has all the points we need for each interval, and the
+    ## 'interval' column tells us which part of the coplot the point should
+    ## be plotted in
+    df_expanded = data_frame[as.vector(unlist(indices)),]
+    df_expanded$interval = factor(unlist(interval_descriptions),
+        levels = unique(unlist(interval_descriptions)), ordered = TRUE)
+    return(df_expanded)
+}
+get_interval_mean = function(interval_description) {
+    interval_description = gsub("\\(|\\)", "", interval_description)
+    lo_and_hi = strsplit(interval_description, split = ", ")[[1]]
+    interval_mean = mean(as.numeric(lo_and_hi))
+    return(interval_mean)
+}
+get_interval_means = function(interval_descriptions){
+    sapply(interval_descriptions, get_interval_mean)
+}
+```
+
+
+## Today: building and checking models with trivariate data
+
+## Modifying LOESS for two predictor variables
+
+Now we have a response variable $y$, a predictor variable $x = (u, v)$, and $n$ samples.
+
+The parameters are still:
+
+> - $\alpha$: The span, controls the fraction of points that contribute to the local fit.
+
+> - $\lambda$: The degree of the local fit, usually $1$, corresponding to a locally linear fit, or $2$, corresponding to a local quadratic fit.
+
+
+-----
+
+Suppose $\lambda = 1$
+
+To find the value of the LOESS smoother at a point $x_0 = (u_0, v_0)$, we solve for the coefficients in the weighted regression problem
+$$
+(\hat \beta_0, \hat \beta_1, \hat \beta_2) = \text{argmin}_{ \beta_0,  \beta_1,  \beta_2} \sum_{i=1}^n w_i(x_0) (y_i - ( \beta_0 +  \beta_1 u_i +  \beta_2 v_i ))^2,
+$$
+
+The value of the LOESS smoother at $x_0$ is then $\hat \beta_0 + \hat \beta_1 u_0 + \hat \beta_2 v_0$.
+
+------
+
+If $\lambda = 2$, to find the value of the LOESS smoother at a point $x_0 = (u_0, v_0)$, we solve for the coefficients in the weighted regression problem
+$$
+(\hat \beta_0, \hat \beta_1, \hat \beta_2, \hat \beta_3, \hat \beta_4, \hat \beta_5) = \text{min}_{ \beta_0,  \beta_1,  \beta_2,  \beta_3,  \beta_4,  \beta_5} \sum_{i=1}^n w_i(x_0) (y_i - ( \beta_0 +  \beta_1 u_i +  \beta_2 v_i +  \beta_3 u_i v_i +  \beta_4 u_i^2 +  \beta_5 v_i^2))^2,
+$$
+
+The value of the LOESS smoother at $x_0$ is then $\hat \beta_0 + \hat \beta_1 u_0 + \hat \beta_2 v_i + \hat \beta_3 u_0 v_0 + \hat \beta_4 u_0^2 + \hat \beta_5 v_0^2$.
+
+## Weights for LOESS with two predictors
+
+The weights are:
+$$
+w_i(x_0) = T(\Delta_i(x_0) / \Delta_{(q)}(x_0))
+$$
+with
+
+> - $\Delta_i(x_0) = \sqrt{(u_i - u_0)^2 + (v_i - v_0)^2}$
+
+> - $\Delta_{(i)}(x_0)$ are the ordered values of $\Delta_{i}(x_0)$
+
+> - $q = \alpha n$, rounded to the nearest integer.
+
+. . .
+
+Since the two predictor variables are potentially on different scales, they are usually normalized using a robust estimate of the spread before the distances are computed. Some options
+
+> - Median absolute deviation.
+
+> - Trimmed standard deviation.
+
+Cleveland suggests using a 10\% trimmed standard deviation as the measure of spread for normalization.
+
+## A useful modification of LOESS
+
+What if we think some of the conditional relations are from a parametric family?
+For example, the dependence of NOx on C seems to always be linear, no matter what value of E we look at.
+
+We can modify LOESS so that it fits some of the conditional relations globally instead of locally.
+
+. . .
+
+Let $\hat g(u,v)$ be our fitted LOESS surface, and suppose we want $\hat g(u, v)$, seen as a function of $u$, to be from a parametric family (e.g. linear or quadratic).
+
+To do this, we simply drop the $u_i$'s from our distances when computing the weights.
+
+Suppose we want to modify locally linear LOESS in this way.
+To find the value of the LOESS smoother at a point $x_0$, we find $\hat \beta_0, \hat \beta_1, \hat \beta_2, \hat \beta_3$ as
+$$
+(\hat \beta_0, \hat \beta_1, \hat \beta_2, \hat \beta_3) = \text{argmin}_{\beta_0, \beta_1, \beta_2, \beta_3} \sum_{i=1}^n w_i(x_0) (y_i - ( \beta_0 +  \beta_1 u_i +  \beta_2 v_i +  \beta_3 u_i v_i))^2
+$$
+where the weights $w_i(x_0)$ only take into account the $v$ coordinates.
+
+The fitted value of the LOESS smoother at $x_0$, $\hat g(x_0) = \hat g(u_0, v_0)$, is then equal to $\hat \beta_0 + \hat \beta_1 u_0 + \hat \beta_2 v_0 + \hat \beta_3 u_0 v_0$.
+
+This leads to a fit that is locally linear in $v$ and globally linear in $u$, with different slopes in $u$ conditional on different values of $v$.
+
+To check your understanding: how would the fit change if you didn't include the $u_iv_i$ term?
+
+----
+
+Locally quadratic fit in $v$ with a globally quadratic fit in $u$:
+
+To find the value of the LOESS smoother at a point $x_0$, we find $\hat \beta_0, \ldots, \hat \beta_5$ as
+$$
+(\hat \beta_0, \ldots, \hat \beta_5) = \text{argmin}_{\beta_0, \ldots, \beta_5}\sum_{i=1}^n w_i(x_0) (y_i - ( \beta_0 +  \beta_1 u_i +  \beta_2 v_i +  \beta_3 u_i v_i +  \beta_4 u_i^2 +  \beta_5 v_i^2))^2
+$$
+where the weights $w_i(x_0)$ only take into account the $v$ coordinates.
+
+The fitted value of the LOESS smoother at $x_0$, $\hat g(x_0) = \hat g(u_0, v_0)$, is then equal to $\hat \beta_0 + \hat \beta_1 u_0 + \hat \beta_2 v_0 + \hat \beta_3 u_0 v_0 + \hat \beta_4 u_i^2 + \hat \beta_5 v_i^2$.
+
+-----
+
+Locally quadratic fit in $v$ with a globally linear fit in $u$:
+
+To find the value of the LOESS smoother at a point $x_0$, we find $\hat \beta_0, \ldots, \hat \beta_4$ as
+$$
+\hat \beta_0, \ldots, \hat \beta_4 = \text{argmin}_{\beta_0, \ldots, \beta_4}\sum_{i=1}^n w_i(x_0) (y_i - ( \beta_0 +  \beta_1 u_i +  \beta_2 v_i +  \beta_3 u_i v_i +  \beta_4 v_i^2))^2
+$$
+where the weights $w_i(x_0)$ only take into account the $v$ coordinates.
+
+The fitted value of the LOESS smoother at $x_0$, $\hat g(x_0) = \hat g(u_0, v_0)$, is then equal to $\hat \beta_0 + \hat \beta_1 u_0 + \hat \beta_2 v_0 + \hat \beta_3 u_0 v_0+ \hat \beta_4 v_i^2$.
+
+
+
+## LOESS on ethanol data
+
+```{r}
+load("../../datasets/lattice.RData")
+head(ethanol)
+```
+
+```{r}
+ethanol_lo = loess(NOx ~ C * E, data = ethanol, span = 1/3, parametric = "C", 
+    drop.square = "C", family = "symmetric", degree = 2)
+```
+
+-----
+
+Arguments to the `loess` function:
+
+> - First argument is the formula: we want to model `NOx` as a function of `C` and `E`, with an interaction between the two variables.
+
+> - `data` gives tha data frame the variables come from.
+
+> - `span` gives the fraction of the observations that have non-zero weight for each of the local regressions, the same as $\alpha$ in the text.
+
+> - `degree` gives the degree of the local polynomial. If we have variables $u$ and $v$, degree = $1$ means the local regressions use $u$ and $v$ as predictors, and degree = $2$ means the local regressions will use $u$, $v$, $uv$, $u^2$, and $v^2$ as predictors.
+
+> - `family` is either symmetric or gaussian, gaussian means the local regressions are fit by least squares, while symmetric means they are fit with robust regression using Tukey's biweight.
+
+> - `parametric`: The names of variables for which we want to constrain the fit to be parametric. The parametric fit is achieved by excluding these variables from the distance calculations when deciding on observation weights in the local regressions.
+
+> - `drop.square`: By default, if degree = $2$ and one of the variables is constrained to be fit parametrically, the parametric fit will be of a degree $2$ polynomial. `drop.square = TRUE` changes this so that the parametric fit is linear instead of quadratic.
+
+
+
+
+-----
+
+What do the fitted values look like? First let's make a coplot of the fitted value given `E`.
+
+```{r}
+prediction_grid = data.frame(expand.grid(C = c(7.5, 9, 12, 15, 18), E = seq(0.6, 1.2, length.out = 11)))
+ethanol_preds = augment(ethanol_lo, newdata = prediction_grid)
+ggplot(ethanol_preds) +
+    geom_line(aes(x = C, y = .fitted)) +
+    facet_wrap(~ E, ncol = 11)  +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+    scale_x_continuous(breaks = c(8, 12, 16)) +
+    scale_y_continuous("Fitted value of NOx")
+```
+
+Note: The idea behind coplots of fitted values is the same as the idea behind coplots of data. Still have:
+
+> - Response: This is now the fitted value instead of one of the variables in the dataset.
+> - Predictor: One of the original variables.
+> - Given: One of the original variables.
+
+We still:
+
+> - Plot the response on the vertical axis, predictor on the horizontal axis, and facet by given.
+
+Difference:
+
+> - Data don't appear everywhere, but we can calculate fits for any combination of response, predictor, and given variables.
+> - Therefore, we don't have to worry about creating intervals of the given variable or anything like that. We can directly plot the fitted values as a function of the predictor for any specified value of the given variable.
+
+-----
+
+Then a coplot of the fitted values given `C`.
+
+```{r}
+ggplot(ethanol_preds) +
+    geom_line(aes(x = E, y = .fitted)) +
+    facet_wrap(~ C, ncol = 3) +
+    scale_y_continuous("Fitted value of NOx")
+```
+
+-----
+
+More useful without the faceting:
+```{r}
+ggplot(ethanol_preds) +
+    geom_line(aes(x = E, y = .fitted, color = factor(C, levels = unique(C), ordered = TRUE))) +
+    guides(color = guide_legend(title = "C")) +
+    scale_y_continuous("Fitted value of NOx")
+```
+
+
+## Plotting residuals
+
+
+Remember `augment` from `broom`: if you just ask it to augment the output from a linear model, it will give back a data frame with the predictor variables used in the model along with residuals and fitted values.
+
+Here we're looking for structure: systematic relationships between the residuals and the preditor variables. If we see a relationship between the predictors and the residuals, it indicates that the form of the model doesn't fit well and we need to use something more flexible.
+
+We first look at the residuals by `E` and `C`:
+
+```{r}
+ethanol_resid = augment(ethanol_lo)
+ggplot(ethanol_resid, aes(x = E, y = .resid)) +
+    geom_point() +
+    stat_smooth(method = "loess", method.args = list(degree = 1, family = "symmetric")) +
+    scale_y_continuous("NOx Residual")
+```
+
+```{r}
+ggplot(ethanol_resid, aes(x = C, y = .resid)) +
+    geom_point() +
+    stat_smooth(method = "loess", method.args = list(degree = 1, family = "symmetric"))  +
+    scale_y_continuous("NOx Residual")
+```
+
+-----
+
+Note: using the robust version of loess (`family = "symmetric"`) helps a lot here. If we use the non-robust version, the loess curve is pulled away from zero by the outliers.
+
+```{r}
+ethanol_resid = augment(ethanol_lo)
+ggplot(ethanol_resid, aes(x = E, y = .resid)) +
+    geom_point() +
+    stat_smooth(method = "loess", method.args = list(degree = 1)) +
+    scale_y_continuous("NOx Residual")
+```
+
+```{r}
+ggplot(ethanol_resid, aes(x = C, y = .resid)) +
+    geom_point() +
+    stat_smooth(method = "loess", method.args = list(degree = 1)) +
+    scale_y_continuous("NOx Residual")
+```
+
+
+-----
+
+It's also useful to look at coplots:
+
+```{r}
+ggplot(ethanol_resid, aes(x = E, y = .resid)) +
+    geom_point() +
+    facet_grid(~ C) +
+    stat_smooth(method = "loess", method.args = list(degree = 1, family = "symmetric")) +
+    scale_y_continuous("NOx Residual")
+```
+
+In all of the residual plots, we see outliers, but not any major dependence of the residuals on the predictors.
+
+## Residuals to check model assumptions
+
+It's also a good idea to check on homoscedasticity and normality of the residuals.
+
+
+To check for homoscedasticity, we plot the absolute value of the residuals by the fitted value:
+```{r}
+ggplot(ethanol_resid, aes(x = .fitted, y = abs(.resid))) +
+    geom_point() + 
+    stat_smooth(method = "loess", method.args = list(degree = 1, family = "symmetric")) +
+    scale_y_continuous("Absolute value of NOx residual") +
+    scale_x_continuous("NOx fitted value")
+```
+
+
+----
+
+To check for normality, we make a QQ plot:
+```{r}
+ggplot(ethanol_resid) + stat_qq(aes(sample = .resid))
+```
+
+We see that the residuals are quite heavy-tailed. This means:
+
+> - It's good that we used a robust linear model.
+
+> - We shouldn't use normal-theory based confidence intervals or tests for this data.
+
+
+## What we've learned
+
+> - NOx depends on equivalence ratio in a non-monotonic way.
+
+> - Conditional on equivalence ratio, NOx depends on concentration in an approximately linear way.
+
+> - The interaction is important: there’s no real way to remove it from the data.
+
+> - The usual inference based on an assumption of normal errors is inappropriate.
+
+
+## Rubber data
+
+Reading: Cleveland pp. 180-187, 200-213
+
+The data frame rubber in `lattice.RData` contains three measurements on 30 specimens of tire rubber.
+
+The variables are:
+
+> - `hardness`: How much the rubber rebounds after being indented.
+
+> - `tensile.strength`: The force per cross-sectional area required to break the rubber (in kg/cm2).
+
+> - `abrasion.loss`: The amount of material lost to abrasion when rubbing it per unit energy (in grams per hp-hour). This gives you an idea how fast the tire will wear away when you drive. If we had to choose a “response” variable, it would be this one.
+
+
+## Pairs plot of the three variables
+
+```{r, fig.height=5}
+library(GGally)
+ggpairs(rubber[,c("hardness", "tensile.strength", "abrasion.loss")])
+```
+
+## Coplot of abrasion loss and tensile strength given hardness
+
+```{r}
+coplot_hardness = make_coplot_df(rubber, "hardness", number_bins = 8)
+ggplot(coplot_hardness, aes(x = tensile.strength, y = abrasion.loss)) +
+    geom_point() +
+    facet_wrap(~ interval, ncol = 4) +
+    stat_smooth(method = "lm", se = FALSE)
+ggplot(coplot_hardness, aes(x = tensile.strength, y = abrasion.loss)) +
+    geom_point() +
+    facet_wrap(~ interval, ncol = 4) +
+    stat_smooth(method = "loess", method.args = list(degree = 1), se = FALSE)
+```
+
+An easier way to make a coplot with ggplot is to use the `cut_number` function:
+```{r}
+ggplot(rubber, aes(x = tensile.strength, y = abrasion.loss)) +
+    geom_point() +
+    facet_grid(. ~ cut_number(hardness, n = 4)) +
+    stat_smooth(method = "loess", method.args = list(degree = 1, span = .9), se = FALSE)
+```
+
+
+## Coplot of abrasion loss and hardness given tensile strength
+
+```{r}
+coplot_ts = make_coplot_df(rubber, "tensile.strength", number_bins = 8)
+ggplot(coplot_ts, aes(x = hardness, y = abrasion.loss)) +
+    geom_point() +
+    facet_wrap(~ interval, ncol = 4) +
+    stat_smooth(method = "lm", se = FALSE)
+```
+
+
+```{r}
+ggplot(coplot_ts, aes(x = hardness, y = abrasion.loss)) +
+    geom_point() +
+    facet_wrap(~ interval, ncol = 4) +
+    stat_smooth(method = "loess", method.args = list(span = .5, degree = 1), se = FALSE)
+ggplot(coplot_ts, aes(x = hardness, y = abrasion.loss, color = interval)) +
+    stat_smooth(method = "loess", method.args = list(span = .5, degree = 1), se = FALSE)
+```
+
+## Exercises
+
+Try making the following additional plots:
+
+> - Make the same coplot as in the previous slide, but with a loess smooth instead of a linear smooth. What do you think are good parameters for the degree and span arguments?
+
+> - It is sometimes easier to compare smoothers to each other if they are on the same plot instead of faceted out. Using the same `coplot_ts` data frame as on the previous slide, make a plot with one smoother per `tensile.strength` interval, i.e., the same smoothers as in the previous plot, but not faceted out. Let color indicate which `tensile.strength` interval the smoother corresponds to.
+
+Questions:
+
+> - What do these plots tell you about the interaction between `tensile.strength` and `hardness`? Do you think that we need to fit an interaction?
+
+> - Based on the coplots given `hardness` and given `tensile.strength`, do you think a linear fit is sufficient for predicting `abrasion.loss`, or do we need to use a non-linear function?
+
+
+## Building a model
+
+
+Let's start off building a model with no interaction but with a non-linear function of `tensile.strength`.
+
+To do this, we need to:
+
+> - Decide on a non-linear function to use.
+
+> - Implement this function in R.
+
+> - Apply the function to `tensile.strength`.
+
+## Deciding on a function
+
+We want our non-linear function to be linear for values of `tensile.strength` below 180, flat for values above 180, and continuous. One such function is
+$$
+f(x) = \begin{cases}
+x - 180 & x \le 180\\
+0 & x > 180
+\end{cases}
+$$
+
+## Writing the function in R
+
+The way we would write this in R would be
+```{r}
+tslow = function(x) {
+    return((x - 180) * (x < 180))
+}
+```
+
+## Applying the function to `tensile.strength`
+
+And to create a variable corresponding to this transformation of tensile strength, we could use
+
+```{r, eval = FALSE}
+rubber %>% mutate(ts.low = tslow(tensile.strength))
+```
+
+However, we don't need to do that because Cleveland has already done it for us (the variable `ts.low` already exists in the data set and is exactly this function of `tensile.strength`).
+
+## Fitting and visualizing the model
+
+To fit the model:
+
+```{r}
+library(MASS)
+rubber.rlm = rlm(abrasion.loss ~ hardness + ts.low, data = rubber, 
+    psi = psi.bisquare)
+```
+
+-----
+
+To visualize the fitted model, we need to get fitted values from the model on a grid of values of the two predictors.
+
+```{r}
+library(broom)
+rubber.grid = expand.grid(hardness = c(54, 64, 74, 84),
+                          tensile.strength = c(144, 162, 180, 198)) %>% data.frame
+rubber.grid = rubber.grid %>% mutate(ts.low = tslow(tensile.strength))
+rubber.predict = augment(rubber.rlm, newdata = rubber.grid)
+rubber.predict
+```
+
+-----
+
+Once we have the fitted values, we can make a coplot of the fitted model. We'll start with `hardness` as the given variable:
+```{r}
+ggplot(rubber.predict) +
+    geom_line(aes(x = tensile.strength, y = .fitted)) +
+    facet_grid(~ hardness) +
+    scale_y_continuous("Fitted abrasion loss") +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+ggplot(rubber.predict) +
+    geom_line(aes(x = tensile.strength, y = .fitted, color = factor(hardness, ordered = TRUE))) +
+    guides(color = guide_legend(title = "Hardness")) +
+    scale_y_continuous("Fitted abrasion loss") +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+
+Note that the first plot is a coplot, the second doesn't have a name but reports the same information in a different way.
+
+-----
+
+Then a coplot with `tensile.strength` as the given variable:
+```{r}
+ggplot(rubber.predict) +
+    geom_line(aes(x = hardness, y = .fitted)) +
+    facet_grid(~ tensile.strength) +
+    scale_y_continuous("Fitted abrasion loss") +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+ggplot(rubber.predict) +
+    geom_line(aes(x = hardness, y = .fitted, color = factor(tensile.strength, ordered = TRUE))) +
+    guides(color = guide_legend(title = "Tensile strength")) +
+    scale_y_continuous("Fitted abrasion loss") +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+
+
+## Residuals
+
+```{r}
+rubber.resid = data.frame(rubber, .resid = residuals(rubber.rlm))
+ggplot(rubber.resid, aes(x = tensile.strength, y = .resid)) + geom_point() + 
+    stat_smooth(method = "loess", span = 1, method.args = list(degree = 1, family = "symmetric")) + 
+    geom_abline(slope = 0, intercept = 0) +
+    scale_y_continuous("Abrasion loss residuals")
+```
+
+-----
+
+```{r}
+ggplot(rubber.resid, aes(x = hardness, y = .resid)) + geom_point() + 
+    stat_smooth(method = "loess", span = 1, method.args = list(degree = 1, family = "symmetric")) + 
+    geom_abline(slope = 0, intercept = 0) +
+    scale_y_continuous("Abrasion loss residuals")
+```
+
+## Coplots of the residuals
+
+```{r}
+resid_co_hardness = make_coplot_df(rubber.resid, faceting_variable = "hardness", number_bins = 4)
+ggplot(resid_co_hardness, aes(x = tensile.strength, y = .resid)) +
+    geom_point() +
+    facet_grid(~ interval) +
+    stat_smooth(method = "loess", method.args = list(degree = 1, family = "symmetric")) +
+    scale_y_continuous("Abrasion loss residuals")
+```
+
+
+```{r}
+resid_co_ts = make_coplot_df(rubber.resid, faceting_variable = "tensile.strength", number_bins = 4)
+ggplot(resid_co_ts, aes(x = hardness, y = .resid)) +
+    geom_point() +
+    facet_grid(~ interval) +
+    stat_smooth(method = "loess", method.args = list(degree = 1, family = "symmetric")) +
+    scale_y_continuous("Abrasion loss residuals")
+```
+
+
+## Second-round model
+
+From the residual plots, it looks like we might actually do better fitting an interaction between `tensile.strength` and hardness.
+
+Exercises:
+
+> - Refit a linear model that predicts `abrasion.loss` using an interaction between our non-linear transformation of `tensile.strength` and `hardness` (i.e., change `abrasion.loss ~ ts.low + hardness` to `abrasion.loss ~ ts.low * hardness`).
+
+> - Plot the fitted values from the interaction model on the same grid of predictor variables we used in the no-interaction model. How does the form of the fits change when you add the interaction? Why is this?
+
+> - Make residual plots and coplots for the interaction model in the same way we did for the no-interaction model. Do you like this model better?
+
+## Final plots
+
+```{r}
+coplot_hardness = coplot_hardness %>% mutate(interval_mean = get_interval_means(interval))
+rubber.grid.final = expand.grid(hardness = unique(coplot_hardness$interval_mean),
+                          tensile.strength = c(125, 180, 240)) %>% data.frame
+rubber.grid.final = rubber.grid.final %>% mutate(ts.low = tslow(tensile.strength))
+rubber.predict.final = augment(rubber.rlm, newdata = rubber.grid.final)
+rubber.predict.final = merge(rubber.predict.final,
+                             unique(coplot_hardness[,c("interval", "interval_mean")]),
+                             by.x = "hardness", by.y = "interval_mean")
+
+ggplot(coplot_hardness, aes(x = tensile.strength, y = abrasion.loss)) +
+    geom_point() +
+    geom_line(aes(x = tensile.strength, y = .fitted), data = rubber.predict.final) +
+    facet_wrap(~ interval, ncol = 4) +
+    scale_y_continuous("Abrasion loss") +
+    scale_x_continuous("Tensile strength")
+```

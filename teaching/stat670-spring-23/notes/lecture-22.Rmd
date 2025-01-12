@@ -1,0 +1,259 @@
+% Stat 470/670 Lecture 22: Matrix Approximation, the SVD, and Reduced Rank Biplots
+% Julia Fukuyama
+
+```{r setup, echo = FALSE}
+library(knitr)
+opts_chunk$set(fig.cap="", fig.width = 5, fig.height = 3, dpi=175, fig.path="lecture-22-fig/", warning = FALSE)
+library(ggplot2)
+library(ggrepel)
+set.seed(0)
+```
+
+## Today
+
+> - Singular Value Decomposition
+
+> - Reduced Rank Biplots
+
+Reading: Greenacre, Biplots in Practice, Chapter 5. The [book website](http://www.multivariatestatistics.org/biplots.html) contains links to all the chapters. Also [here](http://www.fbbva.es/TLFU/dat/greenacre_c05_2010.pdf).
+
+## What to know about biplots
+
+> - A biplot is a generalization of a scatterplot to an arbitrary number of variables.
+
+> - The value of each observation for each variable is read off of the biplot by projecting the point onto the variable "axis", just as in a scatterplot.
+
+> - We can represent a matrix $\mathbf S \in \mathbb R^{n \times p}$ as a biplot if we can write $\mathbf S = \mathbf L \mathbf R^T$, where $\mathbf L \in \mathbb R^{n \times 2}$ and $\mathbf R \in \mathbb R^{p \times 2}$.
+
+
+## Rank of a matrix
+
+One more concept from linear algebra:
+
+The _rank_ of a matrix is the maximum number of linearly independent rows or columns of a matrix.
+
+> - A set of vectors $\mathbf v_1, \ldots, \mathbf v_n$ is _linearly dependent_ if there exist a set of scalar values $a_1, \ldots, a_n$ such that $\sum_{i=1}^n a_i \mathbf v_i = \mathbf 0$, where $\mathbf 0$ represents the vector containing all zero values.
+
+> - A set of vectors $\mathbf v_1, \ldots, \mathbf v_n$ is _linearly independent_ if it is not linearly dependent.
+
+Note: If you've had linear algebra this should be familiar to you. If you haven't had linear algebra or don't particularly remember about ranks that's ok too, the main idea here is going to be that the rank of a matrix controls whether we can represent it exactly in two dimensions or not.
+
+-----
+
+Properties of the rank:
+
+> - The rank is well defined, for any matrix the number of linearly independent rows and the number of linearly independent columns is the same.
+
+> - An $n \times p$ matrix has rank at most $\text{min}(n, p)$.
+
+> - If a matrix $\mathbf S \in \mathbb R^{n \times p}$ has rank $k$, there exist matrices $\mathbf L \in \mathbb R^{n \times k}$ and $\mathbf R \in \mathbb R^{p \times k}$ such that $\mathbf S = \mathbf L \mathbf R^T$.
+
+
+## Problem we need to solve to make a biplot of a high-dimensional matrix
+
+Suppose we have a matrix $\mathbf S \in \mathbb R^{n \times p}$, and $\mathbf S$ has rank greater than 2.
+
+To make a biplot, we need to have $\mathbf S = \mathbf L \mathbf R^T$,  where $\mathbf L \in \mathbb R^{n \times 2}$ and $\mathbf R \in \mathbb R^{p \times 2}$.
+
+If the rank if $\mathbf S$ is more than 2, such matrices don't exist!
+
+. . .
+
+Solution: Find the rank-2 matrix $\hat {\mathbf S}$ that most closely approximates $\mathbf S$, and use that to make a biplot.
+
+$$
+\hat {\mathbf S} = \text{argmin}_{\mathbf T : \text{rank}(\mathbf T) = 2} \sum_{i=1}^n \sum_{j=1}^p (\mathbf S_{ij} - \mathbf T_{ij})^2
+$$
+
+## Singular Value Decomposition
+
+The [Singular Value Decomposition (SVD)](https://en.wikipedia.org/wiki/Singular_value_decomposition) is one of the most useful matrix decompositions.
+
+It says that any matrix $\mathbf S$ of rank $r$ can be written as
+$$
+\mathbf S = \mathbf U \mathbf D \mathbf V^T
+$$
+where:
+
+> - $\mathbf U \in \mathbb R^{n \times r}$, with orthogonal columns (the scalar product between any two distinct columns is 0, the scalar product between any column and itself is 1).
+
+> - $\mathbf D \in \mathbb R^{r \times r}$ is a diagonal matrix, with positive numbers on the diagonal. These are written in decreasing order.
+
+> - $\mathbf V \in \mathbb R^{p \times r}$, with orthogonal columns.
+
+## Matrix Approximation by the SVD
+
+We can use the SVD to find the solution to our problem on the previous slide:
+
+We want $\hat{\mathbf S}$ such that
+$$
+\hat {\mathbf S} = \text{argmin}_{\mathbf T : \text{rank}(\mathbf T) = 2} \sum_{i=1}^n \sum_{j=1}^p (\mathbf S_{ij} - \mathbf T_{ij})^2
+$$
+
+. . .
+
+It turns out that $\hat{\mathbf S} = \mathbf U_{(2)} \mathbf D_{(2)} \mathbf V_{(2)}^T$, where
+
+> - $\mathbf U_{(2)} \in \mathbb R^{n \times 2}$ is the matrix containing the first two columns of the matrix $\mathbf U$ in the SVD of $\mathbf S$
+
+> - $\mathbf D_{(2)} \in \mathbb R^{2 \times 2}$ is the diagonal matrix containing the first two rows and columns of $\mathbf D$ in the SVD of $\mathbf S$.
+
+> - $\mathbf V_{(2)} \in \mathbb R^{p \times 2}$ is the matrix containing the first two columns of the matrix $\mathbf V$ in the SVD of $\mathbf S$
+
+
+## Quality of the approximation
+
+The values in $\mathbf D$ tell us about how well $\hat {\mathbf S}$ approximates $\mathbf S$.
+
+We have
+
+$$
+1 - \frac{\mathbf D_{11}^2 + \mathbf D_{22}^2}{\sum_{i=1}^r \mathbf D_{ii}^2} = \frac{\sum_{i=1}^n \sum_{j=1}^p (\hat {\mathbf S}_{ij} - \mathbf S_{ij})^2}{\sum_{i=1}^n \sum_{j=1}^p \mathbf S_{ij}^2}
+$$
+
+This is the quality of a rank-2 approximation because we are interested in biplots and representations of $\mathbf S$ in the plane, but the analogous result holds for approximations of any rank.
+
+## Biplot representation of the SVD approximation
+
+$\hat{\mathbf S} = \mathbf U_{(2)} \mathbf D_{(2)} \mathbf V_{(2)}^T$ is almost in the right form for a biplot, but not quite. We need just a left and a right matrix, and we have $\mathbf D_{(2)}$ in the middle.
+
+We have a couple of options:
+
+> - Left matrix $\mathbf U_{(2)}$, right matrix $\mathbf V_{(2)} \mathbf D_{(2)}$
+
+> - Left matrix $\mathbf U_{(2)} \mathbf D_{(2)}$, right matrix $\mathbf V_{(2)}$
+
+> - Left matrix $\mathbf U_{(2)} \mathbf D_{(2)}^{1/2}$, right matrix $\mathbf V_{(2)} \mathbf D_{(2)}^{1/2}$
+
+The last is referred to as the symmetric biplot, and we'll go with that for now.
+
+## Example
+
+```{r}
+## HairEyeColor dataset, we'll just use the women
+HairEyeColor
+```
+
+-----
+
+```{r}
+hec_svd = svd(HairEyeColor[,,2])
+hec_svd
+## Quality of the rank-2 approximation:
+sum(hec_svd$d[1:2]^2) / sum(hec_svd$d^2)
+```
+
+-----
+
+```{r}
+## Distribute the singular values evenly between the left and right singular vectors
+left_matrix = hec_svd$u[,1:2] %*% diag(hec_svd$d[1:2]^(.5))
+right_matrix = hec_svd$v[,1:2] %*% diag(hec_svd$d[1:2]^(.5))
+```
+
+. . .
+
+Let's check the quality of the approximations
+```{r}
+HairEyeColor[,,2]
+round(left_matrix %*% t(right_matrix), digits = 1)
+```
+
+-----
+
+Set up for making a biplot:
+```{r}
+## Change the matrices to data frames and add a column describing the variables
+left_df = data.frame(left_matrix, HairColor = paste0(rownames(HairEyeColor), "Hair"))
+right_df = data.frame(right_matrix, EyeColor = paste0(colnames(HairEyeColor), "Eyes"))
+```
+. . .
+
+```{r}
+left_df
+right_df
+```
+
+
+
+-----
+
+. . .
+```{r, fig.height=4.5}
+ggplot(left_df) + geom_text_repel(aes(x = X1, y = X2, label = HairColor)) +
+    geom_point(aes(x = X1, y = X2)) +
+    coord_fixed() +
+    geom_segment(aes(xend = X1, yend = X2, x = 0, y = 0),
+                 data = right_df, arrow = arrow(length = unit(0.03, "npc"))) +
+    geom_text_repel(aes(x = X1, y = X2, label = EyeColor), data = right_df)
+```
+
+
+-----
+
+We can look at what happens the other way as well:
+
+```{r}
+## Distribute the singular values only to the right singular vectors
+left_matrix = hec_svd$u[,1:2]
+right_matrix = hec_svd$v[,1:2] %*% diag(hec_svd$d[1:2])
+```
+
+. . .
+
+Let's check the quality of the approximations
+```{r}
+HairEyeColor[,,2]
+round(left_matrix %*% t(right_matrix), digits = 1)
+```
+
+-----
+
+Set up for making a biplot:
+```{r}
+## Change the matrices to data frames and add a column describing the variables
+left_df = data.frame(left_matrix, HairColor = paste0(rownames(HairEyeColor), "Hair"))
+right_df = data.frame(right_matrix, EyeColor = paste0(colnames(HairEyeColor),"Eyes"))
+```
+. . .
+
+```{r}
+left_df
+right_df
+```
+
+-----
+
+. . .
+```{r, fig.height=3.5, fig.width=4.5}
+ggplot(left_df) + geom_text_repel(aes(x = X1, y = X2, label = HairColor)) +
+    geom_point(aes(x = X1, y = X2)) +
+    coord_fixed() +
+    geom_segment(aes(xend = X1, yend = X2, x = 0, y = 0),
+                 data = right_df, arrow = arrow(length = unit(0.03, "npc"))) +
+    geom_text_repel(aes(x = X1, y = X2, label = EyeColor), data = right_df)
+```
+
+-----
+
+```{r, fig.height = 3, fig.width = 5}
+p1 = ggplot(left_df) + geom_text_repel(aes(x = X1, y = X2, label = HairColor)) +
+    geom_point(aes(x = X1, y = X2))
+
+p2 = ggplot(right_df) +
+    geom_segment(aes(xend = X1, yend = X2, x = 0, y = 0), arrow = arrow(length = unit(0.03, "npc"))) +
+    geom_text(aes(x = X1, y = X2, label = EyeColor), nudge_y = 2, nudge_x = -30) + xlim(c(-125, 0))
+multiplot(p1, p2, cols = 2)
+```
+
+-----
+
+Overall:
+
+> - Not every matrix can be written as the product of two two-column matrices.
+
+> - The SVD gives us the best approximation in terms of MSE.
+
+> - We have some freedom in how to make the biplot based on the SVD.
+
+> - Notice that there is no estimation here: we are trying to represent the matrix, both the signal and the noise.
