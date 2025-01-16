@@ -89,59 +89,6 @@ singer.gg + stat_ecdf() +
 
 
 
-## Quantile function: Definition
-
-The $f$ quantile, $q(f)$, of a set of data is a value with the property that _approximately_ a fraction $f$ of the data are less than or equal to $q(f)$.
-
-
-Note: This definition doesn't completely specify the quantile function.
-
-----
-
-
-For concreteness, we use Cleveland's definition of the quantile function:
-
-- Let $x_1, \ldots, x_n$ be the data from the $n$ samples.
-- Let $x_{(1)}, \ldots, x_{(n)}$ be the ordered data, so that $x_{(1)} \le x_{(2)} \le \cdots \le x_{(n)}$
-- Let $f_i = \frac{i - .5}{n}$
-- Let $q(f_i) = x_{(i)}$
-
-Now we have a partial specification of a quantile function.
-
-Create the remainder by linear interpolation of the points we do have.
-
-----
-
-
-There isn't a nice R function for making quantile plots using Cleveland's definition, but we can still work it out by hand.
-```{r quantile-plot-setup}
-## quantile plots by hand
-Tenor1 = singer %>%
-    subset(voice.part == "Tenor 1") %>%
-    arrange(height)
-## exactly the same as
-Tenor1 = arrange(
-    subset(singer, voice.part == "Tenor 1"), height)
-## close to the same as
-sort(singer$height[singer$voice.part == "Tenor 1"])
-nTenor1 = nrow(Tenor1)
-f.value = (0.5:(nTenor1 - 0.5))/nTenor1
-Tenor1$f.value = f.value
-```
-
-----
-
-```{r quantile-plot}
-ggplot(Tenor1, aes(x = f.value, y = height)) +
-    geom_line() +
-    geom_point()
-```
-
----- 
-
-Exercise: Do this for all the voice parts (either by hand, one at a time, or preferably programmatically), and plot all of the quantile plots faceted out by voice part or plotted all on the same color scale
-
-
 
 ## Other interpretations of the ECDF
 
@@ -240,7 +187,64 @@ Drawbacks of histograms:
 
 ## Q-Q Plots
 
-Goal: Compare two univariate samples to each other
+Goal: Compare two univariate samples to each other.
+
+Before doing that, we need to define the quantile function.
+
+## Quantile function: Definition
+
+The $f$ quantile, $q(f)$, of a set of data is a value with the property that _approximately_ a fraction $f$ of the data are less than or equal to $q(f)$.
+
+
+Note: This definition doesn't completely specify the quantile function.
+
+----
+
+
+For concreteness, we use Cleveland's definition of the quantile function:
+
+- Let $x_1, \ldots, x_n$ be the data from the $n$ samples.
+- Let $x_{(1)}, \ldots, x_{(n)}$ be the ordered data, so that $x_{(1)} \le x_{(2)} \le \cdots \le x_{(n)}$
+- Let $f_i = \frac{i - .5}{n}$
+- Let $q(f_i) = x_{(i)}$
+
+Now we have a partial specification of a quantile function.
+
+Create the remainder by linear interpolation of the points we do have.
+
+----
+
+
+There isn't a nice R function for making quantile plots using Cleveland's definition, but we can still work it out by hand.
+```{r quantile-plot-setup}
+## quantile plots by hand
+Tenor1 = singer %>%
+    subset(voice.part == "Tenor 1") %>%
+    arrange(height)
+## exactly the same as
+Tenor1 = arrange(
+    subset(singer, voice.part == "Tenor 1"), height)
+## close to the same as
+sort(singer$height[singer$voice.part == "Tenor 1"])
+nTenor1 = nrow(Tenor1)
+f.value = (0.5:(nTenor1 - 0.5))/nTenor1
+Tenor1$f.value = f.value
+```
+
+----
+
+```{r quantile-plot}
+ggplot(Tenor1, aes(x = f.value, y = height)) +
+    geom_line() +
+    geom_point()
+```
+
+---- 
+
+Exercise: Do this for all the voice parts (either by hand, one at a time, or preferably programmatically), and plot all of the quantile plots faceted out by voice part or plotted all on the same color scale
+
+
+
 
 
 ## Quantile-Quantile (q-q) plot definition
