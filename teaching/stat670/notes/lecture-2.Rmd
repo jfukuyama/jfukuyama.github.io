@@ -239,9 +239,16 @@ ggplot(Tenor1, aes(x = f.value, y = height)) +
     geom_point()
 ```
 
----- 
+----
 
-Exercise: Do this for all the voice parts (either by hand, one at a time, or preferably programmatically), and plot all of the quantile plots faceted out by voice part or plotted all on the same color scale
+You can also use the `quantile` function:
+
+```{r quantile-function-r}
+f.values = seq(0,1,length.out = 100)
+q.values = quantile(Tenor1$height, probs = f.values)
+ggplot(data.frame(f.values, q.values)) + geom_line(aes(x = f.values, y = q.values))
+```
+
 
 
 
@@ -268,22 +275,40 @@ So in this case, we are simply plotting $x_{(i)}$ against $y_{(i)}$
 
 ## Q-Q plot demonstration
 
-There isn't a nice way to do q-q plots in ggplot, but there is a function in base R that will return a data frame with the values we need to plot.
-```{r qq-base}
+I will show three ways to make a QQ plot for two samples.
+
+The simplest way is to use the `qqplot` function:
+
+```{r qq-base, fig.width = 5, fig.height = 4}
 Tenor1 = singer %>% subset(voice.part == "Tenor 1")
 Bass2 = singer %>% subset(voice.part == "Bass 2")
-qq.df = as.data.frame(qqplot(Tenor1$height, Bass2$height,
-    plot.it = FALSE))
+qqplot(Tenor1$height, Bass2$height)
 ```
 
 ----
 
+If you really want all your plots to be in ggplot, you can ask the `qqplot`function to return a data frame that you can plot with ggplot.
+
 ```{r qq-ggplot}
+qq.df = as.data.frame(qqplot(Tenor1$height, Bass2$height,
+    plot.it = FALSE))
 ggplot(qq.df, aes(x = x, y = y)) +
     geom_point() +
-    geom_abline(slope = 1, intercept = 0) +
     xlab("Tenor 1") + ylab("Bass 2")
 
+```
+
+----
+
+If you want to do it more "by hand," you can use the `quantile` function to get the quantiles of both distributions and plot them against each other.
+
+The `quantile` function seems to handle ties a bit differently than the `qqplot` function, but this should give quite similar results.
+
+```{r qq-r-quantile-version}
+f.values = (0:(nrow(Tenor1) - 1)) / nrow(Tenor1)
+q.values.tenor = quantile(Tenor1$height, probs = f.values)
+q.values.bass = quantile(Bass2$height, probs = f.values)
+ggplot(data.frame(q.values.tenor, q.values.bass)) + geom_point(aes(x = q.values.tenor, y = q.values.bass))
 ```
 
 ## Alternative: compare two histograms or density estimates
