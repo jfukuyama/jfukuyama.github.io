@@ -8,100 +8,11 @@ opts_chunk$set(fig.cap="", warning = FALSE, message = FALSE, fig.width = 4, fig.
 
 ## Today: Comparing many univariate distributions
 
-> - Tidy data/reshaping
-
 > - Measures of center and spread
 
 > - Boxplots
 
-## Computational Interlude: Tidy Data
-
-Reading: [http://r4ds.had.co.nz/tidy-data.html](http://r4ds.had.co.nz/tidy-data.html)
-
-Tidy data means:
-
-> - Every column is a variable.
-
-> - Every row is an observation.
-
-> - Every element is a value.
-
-
-------
-
-```{r tidy-data}
-library(tidyverse)
-table1
-table2
-table3
-table4a
-table4b
-```
-
-## Pipes
-
-The `magrittr` library offers the "pipe" operation, `%>%`.
-
-In words: "Pipe the output of the last function as input to the next function".
-
-. . .
-
-Suppose `f1` and `f2` are functions. These are equivalent:
-
-> - `f2(f1(x))`
-
-> - `f1(x) %>% f2()`
-
-The output of `f1(x)` is used as the first argument to `f2`.
-
-. . .
-
-For example:
-
-```{r}
-head(seq(.5, 11, by = 1))
-seq(.5, 11, by = 1) %>% head()
-```
-
-
-## Pivot longer
-
-Problem: some of the column names are not names of variables, but values of a variable
-
-To solve this problem, we need to _pivot longer_.
-To describe that operation, we need three parameters:
-
-> - The set of columns whose names are values, not variables.
-
-> - The name of the variable to move the column names to.
-
-> - The name of the variable to move the column values to.
-
-```{r gather}
-table4a %>%
-    pivot_longer(c(`1999`, `2000`), names_to = "year", values_to = "cases") %>%
-    head(n = 3)
-
-head(pivot_longer(table4a, c(`1999`, `2000`), names_to = "year", values_to = "cases"), n = 3)
-```
-
-## Pivot wider
-
-Problem: an observation is scattered across multiple rows.
-
-To solve this problem, we need to _pivot wider_.
-To describe that operation, we need two parameters:
-
-> - The column to take variable names from.
-
-> - The column to take values from.
-
-```{r spread}
-table2
-table2 %>%
-    pivot_wider(names_from = type, values_from = count)
-```
-
+> - Tidy data/reshaping
 
 
 # Measures of center and spread
@@ -131,8 +42,6 @@ $$
 > - What if some fraction of the values are corrupted? (e.g. someone coded missing values as 999)
 
 ## Breakdown point
-
-
 
 Let $x_1, \ldots, x_n$ be a sample of size $n$.
 
@@ -193,9 +102,36 @@ Why would we want to use a less robust estimator?
 > - Robust version might not estimate what you want, or could be biased for the quantity you want
 
 
-## Computational Interlude: Aggregation
+## Computational interlude: Pipes
 
-dplyr makes it easy to compute data summaries.
+There are two "pipe" operations in R, with minor differences between them.
+
+Base R has `|>` and `magrittr` has `%>%`.
+
+In words: "Pipe the output of the last function as input to the next function".
+
+. . .
+
+Suppose `f1` and `f2` are functions. These are equivalent:
+
+> - `f2(f1(x))`
+
+> - `f1(x) %>% f2()`
+
+The output of `f1(x)` is used as the first argument to `f2`.
+
+. . .
+
+For example:
+
+```{r}
+head(seq(.5, 11, by = 1))
+seq(.5, 11, by = 1) %>% head()
+```
+
+## Aggregation
+
+`dplyr` makes it easy to compute data summaries.
 
 The summarise function will compute a summary statistic of one of the variables in the data table.
 
@@ -352,3 +288,69 @@ ggplot(df) +
     geom_boxplot(aes(x = x, y = y)) +
     coord_flip() + xlab("") + ggtitle("Boxplot of 3000 normal samples")
 ```
+
+
+## Computational Interlude: Tidy Data
+
+Reading: [http://r4ds.had.co.nz/tidy-data.html](http://r4ds.had.co.nz/tidy-data.html)
+
+Tidy data means:
+
+> - Every column is a variable.
+
+> - Every row is an observation.
+
+> - Every element is a value.
+
+
+------
+
+```{r tidy-data}
+library(tidyverse)
+table1
+table2
+table3
+table4a
+table4b
+```
+
+
+## Pivot longer
+
+Problem: some of the column names are not names of variables, but values of a variable
+
+To solve this problem, we need to _pivot longer_.
+To describe that operation, we need three parameters:
+
+> - The set of columns whose names are values, not variables.
+
+> - The name of the variable to move the column names to.
+
+> - The name of the variable to move the column values to.
+
+```{r gather}
+table4a %>%
+    pivot_longer(c(`1999`, `2000`), names_to = "year", values_to = "cases") %>%
+    head(n = 3)
+
+head(pivot_longer(table4a, c(`1999`, `2000`), names_to = "year", values_to = "cases"), n = 3)
+```
+
+## Pivot wider
+
+Problem: an observation is scattered across multiple rows.
+
+To solve this problem, we need to _pivot wider_.
+To describe that operation, we need two parameters:
+
+> - The column to take variable names from.
+
+> - The column to take values from.
+
+```{r spread}
+table2
+table2 %>%
+    pivot_wider(names_from = type, values_from = count)
+```
+
+
