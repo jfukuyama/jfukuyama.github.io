@@ -1,4 +1,4 @@
-% Stat 470/670 Lecture 11: Interactions and coplots for trivariate data
+% Stat 470/670 Lecture 11: Trivariate Data
 % Julia Fukuyama
 
 ```{r setup, echo = FALSE, message = FALSE}
@@ -21,15 +21,96 @@ Questions we will want to answer:
 
 > - How can we describe the dependence of a response variable on two predictors?
 
+> - If we "hold one predictor constant," what does the relationship between the other predictor and the response look like?
+
 > - How can we identify interactions between the predictors?
 
 > - How can we model interactions between the predictors?
 
 
-## Recall interactions in a linear model
+## Example: Birth weight, gestational age, mother's age
+
+We have a dataset containing a subset of the live birth data that the CDC collects.
+
+Our subset contains information on
+
+> - Gestational age of baby at the time of birth
+
+> - Mother's age at the time of birth
+
+> - Weight of baby at time of birth
+
+We want to know about the relationship between birth weight and the other two variables.
+
+-----
+
+Before we try to see what's going on with all three, we need to look at what the marginal relationships between each pair look like (marginal means not conditioning on anything else).
+
+I'm getting the mean birthweight for each gestational age and the mean birth weight for each mother's age to deal with the overplotting that we would otherwise have.
+
+```{r}
+live_births = read.csv("denom-data-subset.csv")
+live_births |> group_by(gest_age) |> summarise(bw = mean(birth_weight)) |>
+    ggplot() + geom_point(aes(x = gest_age, y = bw))
+live_births |> group_by(mothers_age) |> summarise(bw = mean(birth_weight)) |>
+    ggplot() + geom_point(aes(x = mothers_age, y = bw))
+```
+
+-----
+
+Gestational age (unsurprisingly) has a huge effect on birth weight.
+Mother's age also has an effect on birth weight, but it is much smaller and not monotonic.
+Could it be that there is a relationship between mother's age and gestational age that makes it look like there is a link between mother's age and birth weight?
+
+```{r}
+live_births |> group_by(mothers_age) |> summarise(ga = mean(gest_age, na.rm = TRUE)) |>
+    ggplot() + geom_point(aes(x = mothers_age, y = ga))
+```
+
+-----
+
+A better way to look at this is to look at the effect of mother's age _holding gestational age constant_ (in statistics-speak, "conditioning on" gestational age.)
+
+Below, each facet shows birth weight as a function of mother's age for each value of gestational age.
+
+
+```{r, fig.width = 7, fig.height = 6}
+live_births |>
+    group_by(mothers_age, gest_age) |>
+    summarise(bw = mean(birth_weight)) |>
+    ggplot() + geom_point(aes(x = mothers_age, y = bw)) + facet_wrap(~ gest_age, scales = "free_y")
+```
+
+For gestational ages below 35 and above 43 there is a lot of noise, but we can see some patterns.
+
+> - For gestational ages of 39 and 40, there is a clear pattern of birth weight increasing with mother's age up to about mother's age of 40 followed by a decrease with mother's age over 40.
+
+> - This same pattern might hold for gestational ages 36-38 and 41-44, but there's enough noise that it's hard to tell.
+
+> - Below 36 weeks, if we can see a pattern, it seems to be different: birth weight monotonically declines with mother's age.
+
+
+## Summing up
+
+> - We look at the marginal relationships between each predictor and the response (that is, look at the relationship between one predictor and response without trying to hold the other predictor constant).
+
+> - We look at the conditional relationship between one predictor and the response holding the other constant.
+
+
+## Additive vs. interaction models
 
 Suppose we have a response variable, $y$, and two predictor variables,
 $u$ and $v$.
+
+The additive model is
+$$
+y = \beta_0 + \beta_1 u + \beta_2 v + \varepsilon
+$$
+with
+$$
+\varepsilon \sim N(0, \sigma^2)
+$$
+
 
 The interaction model is
 $$
@@ -40,7 +121,11 @@ $$
 \varepsilon \sim N(0, \sigma^2)
 $$
 
-What does this mean when one of the variables is binary? If both are continuous?
+
+> - In the additive model, the relationship between $y$ and $u$ has the same slope for every value of $v$.
+
+> - In the interaction model, there is a different slope for the relationship between $y$ and $u$ for every value of $v$.
+
 
 ## Coplots
 
@@ -53,6 +138,8 @@ A coplot is defined by three variables:
 > - predictor: The variable plotted along the $x$-axis.
 
 > - given: The variable used for faceting. If the "given" variable is categorical, we facet in the usual way, with one facet for each value of the given variable. Otherwise, we break the observations into groups that have similar values of the given variable and facet on those groups.
+
+The plot of birth weight by mother's age conditional on gestational age above was an example of a coplot.
 
 
 ## Coplots with categorical variables
@@ -338,13 +425,21 @@ The fitted value of the LOESS smoother at $x_0$, $\hat g(x_0) = \hat g(u_0, v_0)
 
 ## LOESS function in R
 
-Now we know what the following arguments in the LOESS function do:
+Arguments to the `loess` function:
 
-> - `parametric`: Default is `FALSE`. You can give the function names of variables that you want LOESS to fit globally instead of locall.
+> - First argument is the formula: we want to model `NOx` as a function of `C` and `E`, with an interaction between the two variables.
 
-> - `drop.square`: Default is `FALSE`. If you have a variable you're fitting globally instead of locally *and* you want the fit to be linear instead of quadratic, you can specify `drop.square = TRUE`.
+> - `data` gives tha data frame the variables come from.
 
-> - `normalize`: Default is `TRUE`. Should the predictor variables be normalized to have the same spread before computing distances?
+> - `span` gives the fraction of the observations that have non-zero weight for each of the local regressions, the same as $\alpha$ in the text.
+
+> - `degree` gives the degree of the local polynomial. If we have variables $u$ and $v$, degree = $1$ means the local regressions use $u$ and $v$ as predictors, and degree = $2$ means the local regressions will use $u$, $v$, $uv$, $u^2$, and $v^2$ as predictors.
+
+> - `family` is either symmetric or gaussian, gaussian means the local regressions are fit by least squares, while symmetric means they are fit with robust regression using Tukey's biweight.
+
+> - `parametric`: The names of variables for which we want to constrain the fit to be parametric. The parametric fit is achieved by excluding these variables from the distance calculations when deciding on observation weights in the local regressions.
+
+> - `drop.square`: By default, if degree = $2$ and one of the variables is constrained to be fit parametrically, the parametric fit will be of a degree $2$ polynomial. `drop.square = TRUE` changes this so that the parametric fit is linear instead of quadratic.
 
 ## LOESS on ethanol data
 
@@ -394,10 +489,100 @@ ggplot(ethanol_preds) +
         guides(color = guide_legend(title = "C"))
 ```
 
-## Summing up
 
-> - Coplots allow us to visualize the relationship between one variable and another conditional on a third.
+## Plotting residuals
 
-> - Loess allows us to fit either completely non-parametric relationships between a response and two predictors or a partly parametric relationship.
 
-> - Next time: Evaluating the fits, more on interactions, more examples.
+Remember `augment` from `broom`: if you just ask it to augment the output from a linear model, it will give back a data frame with the predictor variables used in the model along with residuals and fitted values.
+
+Here we're looking for structure: systematic relationships between the residuals and the preditor variables. If we see a relationship between the predictors and the residuals, it indicates that the form of the model doesn't fit well and we need to use something more flexible.
+
+We first look at the residuals by `E` and `C`:
+
+```{r}
+ethanol_resid = augment(ethanol_lo)
+ggplot(ethanol_resid, aes(x = E, y = .resid)) +
+    geom_point() +
+    stat_smooth(method = "loess", method.args = list(degree = 1, family = "symmetric")) +
+    scale_y_continuous("NOx Residual")
+```
+
+```{r}
+ggplot(ethanol_resid, aes(x = C, y = .resid)) +
+    geom_point() +
+    stat_smooth(method = "loess", method.args = list(degree = 1, family = "symmetric"))  +
+    scale_y_continuous("NOx Residual")
+```
+
+-----
+
+Note: using the robust version of loess (`family = "symmetric"`) helps a lot here. If we use the non-robust version, the loess curve is pulled away from zero by the outliers.
+
+```{r}
+ethanol_resid = augment(ethanol_lo)
+ggplot(ethanol_resid, aes(x = E, y = .resid)) +
+    geom_point() +
+    stat_smooth(method = "loess", method.args = list(degree = 1)) +
+    scale_y_continuous("NOx Residual")
+```
+
+```{r}
+ggplot(ethanol_resid, aes(x = C, y = .resid)) +
+    geom_point() +
+    stat_smooth(method = "loess", method.args = list(degree = 1)) +
+    scale_y_continuous("NOx Residual")
+```
+
+
+-----
+
+It's also useful to look at coplots:
+
+```{r}
+ggplot(ethanol_resid, aes(x = E, y = .resid)) +
+    geom_point() +
+    facet_grid(~ C) +
+    stat_smooth(method = "loess", method.args = list(degree = 1, family = "symmetric")) +
+    scale_y_continuous("NOx Residual")
+```
+
+In all of the residual plots, we see outliers, but not any major dependence of the residuals on the predictors.
+
+## Residuals to check model assumptions
+
+It's also a good idea to check on homoscedasticity and normality of the residuals.
+
+
+To check for homoscedasticity, we plot the absolute value of the residuals by the fitted value:
+```{r}
+ggplot(ethanol_resid, aes(x = .fitted, y = abs(.resid))) +
+    geom_point() + 
+    stat_smooth(method = "loess", method.args = list(degree = 1, family = "symmetric")) +
+    scale_y_continuous("Absolute value of NOx residual") +
+    scale_x_continuous("NOx fitted value")
+```
+
+
+----
+
+To check for normality, we make a QQ plot:
+```{r}
+ggplot(ethanol_resid) + stat_qq(aes(sample = .resid))
+```
+
+We see that the residuals are quite heavy-tailed. This means:
+
+> - It's good that we used a robust linear model.
+
+> - We shouldn't use normal-theory based confidence intervals or tests for this data.
+
+
+## What we've learned
+
+> - NOx depends on equivalence ratio in a non-monotonic way.
+
+> - Conditional on equivalence ratio, NOx depends on concentration in an approximately linear way.
+
+> - The interaction is important: there’s no real way to remove it from the data.
+
+> - The usual inference based on an assumption of normal errors is inappropriate.
