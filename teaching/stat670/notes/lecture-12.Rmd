@@ -261,15 +261,9 @@ ggplot(resid_co_ts, aes(x = hardness, y = .resid)) +
 
 From the residual plots, it looks like we might actually do better fitting an interaction between `tensile.strength` and hardness.
 
-Exercises:
+Below, we fit a model with the interaction and make a coplot of the fitted and actual values.
 
-> - Refit a linear model that predicts `abrasion.loss` using an interaction between our non-linear transformation of `tensile.strength` and `hardness` (i.e., change `abrasion.loss ~ ts.low + hardness` to `abrasion.loss ~ ts.low * hardness`).
-
-> - Plot the fitted values from the interaction model on the same grid of predictor variables we used in the no-interaction model. How does the form of the fits change when you add the interaction? Why is this?
-
-> - Make residual plots and coplots for the interaction model in the same way we did for the no-interaction model. Do you like this model better?
-
-## Final plots
+We see that with the interaction, the slope of the fit below tensile strengh of 180 changes with hardness (steepest for the lowest values of hardness, shallowest for the highest hardnesses).
 
 ```{r}
 rubber.rlm = rlm(abrasion.loss ~ hardness * ts.low, data = rubber, psi = psi.bisquare)
