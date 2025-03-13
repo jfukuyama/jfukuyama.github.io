@@ -47,6 +47,8 @@ Using percentiles allows comparability between years. Also note that this is rea
 ```{r}
 ANES = read.csv("anes.csv")
 income = ANES$VCF0114
+## income = 0 means NA, per the codebook
+income[income == 0] = NA
 summary(income)
 table(income) / length(income)
 ```
@@ -83,7 +85,7 @@ Republican = vote
 Let's put everything in a data frame, and then filter to just presidential election years:
 ```{r}
 ANES_df = data.frame(year, income, Republican)
-ANES_df = filter(ANES_df, year %in% seq(1948, 2016, 4))
+ANES_df = filter(ANES_df, year %in% seq(1948, 2020, 4))
 summary(ANES_df)
 ```
 
@@ -221,7 +223,7 @@ logit_ANES_subset(my_year = 1992, data = ANES_df)
 
 Once we've checked that it works, we can loop over every presidential election year in our dataset: every four years between 1948 and 2012:
 ```{r}
-years = seq(1948, 2016, 4)
+years = seq(1948, 2020, 4)
 n = length(years)
 income_by_year = data.frame(year = rep(NA, n), income_coef = rep(NA, n), income_se = rep(NA, n))
 for (J in 1:n) {
@@ -274,28 +276,28 @@ gg + ylab("Proportion of two-party vote\nfor Republicans") + labs(color = "Incom
 
 We now have a bit more detail on the trends and the aberrant results.
 
-> - The top income group is reliably the most Republican, but the bottom income group isn’t always the most Democratic (although it was in the middle part of the time period.)
+> - Before 2012, the top income group is reliably the most Republican, but the bottom income group isn’t always the most Democratic (although it was in the middle part of the time period.)
 
 > - In 1948 there were pretty big differences between income groups, but in the 1950s the differences between all groups except the richest were small. It’s guess work whether 1948 was an aberration or whether the small income differences from 1952 to 1968 were historically unusual (though I suspect it’s the latter.)
 
-> - The big coefficient for 1964 (compared to the elections before and after) might be in part an artifact of the logit scale.
+> - The big coefficient for 1964 (compared to the elections before and after) is attributable to the fourth income group having a higher Republican vote share.
 
-> - In 2008 there really was a big difference between income group, which might be attributable to the financial crisis. 
+> - In 2008 there really was a big difference between income group, which might be attributable to the financial crisis.
 
-> - Precipitous drop in fraction of the highest-income group voting for Republicans. Possibly education polarization.
+> - Precipitous drop in fraction of the highest-income group voting for Republicans after 2008. Possibly education polarization.
 
 -----
 
-We can also draw lines to connect income groups by year. Because there are so many different years, we’ll facet them rather than color them. 
+We can also plot income groups by year. Because there are so many different years, we’ll facet them rather than color them. 
 
 
 ```{r, fig.height=4,fig.width=4.5}
 ggplot(income_prop, aes(x = income, y = prop_Republican)) +
-    geom_line() +
+    geom_point() +
     facet_wrap(~ year, ncol = 6) + ylab("Proportion of two-party vote for Republican")
 ```
 
-This yields less insight, but still has interesting features: notably the big magnitude of the uptick in Republicanism for the highest income group for almost every year.
+This yields less insight, but still has interesting features: notably the big magnitude of the uptick in Republican vote share in the highest income group is pretty consistent until 2008, after which the Republican vote share as a function of income starts to flatten out.
 
 ## Data summaries vs. data models
 
