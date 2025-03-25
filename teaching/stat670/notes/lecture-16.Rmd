@@ -10,6 +10,7 @@ library(tidyverse)
 library(dplyr)
 library(viridis)
 library(broom)
+library(patchwork)
 set.seed(0)
 ```
 
@@ -199,8 +200,25 @@ ggplot(wells, aes(x = dist, y = arsenic, color = factor(switch))) +
     scale_color_manual(values = c("#E69F00", "#56B4E9"), labels = c("No", "Yes"))
 ```
 
-We see here that people who didn't switch tend to be at lower arsenic
-levels and larger distances from the nearest safe well, which makes sense.
+We can see that people who are closer to the nearest safe well and people whose well has a higher arsenic level are more likely to switch, but the plot is not ideal for this purpose.
+We can visualize the probability of switching conditional on the nearest safe well more directly with a hexbin plot.
+
+-----
+
+The first plot divides the space up into bins and computes the fraction of people who switched in each bin.
+This is a (often very crude) approximation of the conditional probability P(switch | distance, arsenic), which is also what logistic regression is trying to approximate.
+
+The second plot is for reference and shows the number of samples we have in each bin.
+
+```{r, fig.width=9}
+gg_prob = ggplot(wells, aes(x = arsenic, y = dist, z = switch)) +
+    stat_summary_hex(fun = mean, bins = 30) +
+    scale_fill_viridis_c(name = "Probability of\nswitching")
+gg_num = ggplot(wells, aes(x = arsenic, y = dist)) +
+    geom_hex(bins = 30) +
+    scale_fill_viridis_c(name = "Number of\nhouseholds")
+gg_prob + gg_num
+```
 
 -----
 
@@ -264,6 +282,24 @@ it's about 50--50 whether a household switched. On the other hand, at
 the highest levels of arsenic, households will almost certainly switch
 even if the nearest safe well is quite far.
 
+
+-----
+
+
+We can also visualize the fitted values as a function of distance and arsenic together.
+We need to get predictions on a fine grid for this to work.
+
+```{r}
+arsenic_df_fine = expand.grid(arsenic = seq(.5, 10, .01), dist = seq(0, 300, 1))
+arsenic_pred = augment(switch.logit, type.predict = "response", newdata = arsenic_df_fine)
+ggplot(arsenic_pred, aes(x = arsenic, y = dist, z = .fitted, fill = .fitted)) +
+    geom_raster() +
+    geom_contour() +
+    xlab("Arsenic concentration") +
+    ylab("Distance from nearest safe well") +
+    labs(fill = "Probability of switching") + scale_fill_viridis()
+```
+
 # Adding an interaction
 
 We now add an interaction term between distance and arsenic.
@@ -315,6 +351,21 @@ quickly as arsenic increases, while the curves for long distances rise
 more slowly. Eventually, for exceptionally high levels of arsenic, the
 curves come together (because they can't go any higher than 1.)
 
+-----
+
+As before, we can also visualize the fitted values as a function of both predictors.
+
+```{r}
+arsenic_df_fine = expand.grid(arsenic = seq(.5, 10, .01), dist = seq(0, 300, 1))
+arsenic_pred = augment(switch_int, type.predict = "response", newdata = arsenic_df_fine)
+ggplot(arsenic_pred, aes(x = arsenic, y = dist, z = .fitted, fill = .fitted)) +
+    geom_raster() +
+    geom_contour() +
+    xlab("Arsenic concentration") +
+    ylab("Distance") +
+    labs(fill = "Probability of switching") + scale_fill_viridis()
+```
+
 # Lots of predictors
 
 Distance and arsenic are both good predictors and there's no reason to
@@ -326,16 +377,9 @@ makes sense.
 summary(glm(switch ~ dist * arsenic + assoc + educ, family = "binomial", data = wells))
 ```
 
-Years of education has a positive coefficient, which makes sense. We
-can keep that in the model.
+Years of education has a positive coefficient, which makes sense. We can keep that in the model.
 
-Association membership has a *negative* coefficient, which doesn't
-make causal sense: it would be strange for association membership to
-make you *less* likely to switch wells, unless you were a member of
-the Association for Arsenic Being Good for You. If our sole goal was
-prediction, we could do a careful cross-validation to see if
-association membership did help predict more accurately. Since we're
-doing EDA, we can drop the association term.
+Association membership has a weak *negative* coefficient, and we can probably make a causal story to explain either a positive or negative coefficient here. If our sole goal was prediction, we could do a careful cross-validation to see if association membership did help predict more accurately. Since we're doing EDA, we can drop the association term.
 
 ```{r}
 summary(glm(switch ~ dist * arsenic + educ, family = "binomial", data = wells))
@@ -374,8 +418,7 @@ The points on the plot fall exactly on two lines, so look
 at the smooth instead. We see there's a little bit of waviness. This
 is fairly typical for logistic regression: there's no reason why the
 relationship between probability and the predictors should have that
-exact functional form. But the improvement in fit you get from fitting
-a nonparametric model is fairly small.
+exact functional form.
 
 -----
 
@@ -386,6 +429,11 @@ flexibility in how we use distance to predict switching.
 ```{r}
 ggplot(switch_model_df, aes(x = dist, y = .resid)) +
     geom_point() +
+    geom_smooth(method = "loess", method.args = list(degree = 1)) +
+    xlab("Distance from nearest safe well") +
+    ylab("Residuals")
+
+ggplot(switch_model_df, aes(x = dist, y = .resid)) +
     geom_smooth(method = "loess", method.args = list(degree = 1)) +
     xlab("Distance from nearest safe well") +
     ylab("Residuals")
@@ -405,9 +453,14 @@ ggplot(switch_model_df, aes(x = arsenic, y = .resid)) +
     geom_smooth(method = "loess", method.args = list(degree = 1)) +
     xlab("Arsenic concentration") +
     ylab("Residuals")
+
+ggplot(switch_model_df, aes(x = arsenic, y = .resid)) +
+    geom_smooth(method = "loess", method.args = list(degree = 1)) +
+    xlab("Arsenic concentration") +
+    ylab("Residuals") + xlim(c(0, 5)) + geom_vline(aes(xintercept = 1.35))
 ```
 
-This is much worse. The curve is too low, then rises too high, then
+This is worse. The curve is too low, then rises too high, then
 declines again. In fact, the extreme left hand side is the biggest
 problem, since the lack is fit is real and the data is dense
 there. The negative average residual there means that for arsenic
@@ -432,45 +485,45 @@ Again, the fit is imperfect.
 
 -----
 
-Remember when we said we might need to transform? The last couple of
-graphs suggest that while a transformation of distance is unnecessary,
-a transformation of arsenic is.  A transformation of education would
-probably help too, but since the variable is weird and not that
-important we won't bother. We'll take the log arsenic and refit the
-model.
+The last couple of graphs suggest that there is a different sort of behavior for levels of arsenic above 1.35 and levels of arsenic below 1.35.
+We need a different slope for those two regimes, so we'll make a little function that lets us add a "knot" at 1.35 and have a different slope for the two regimes.
 
 ```{r}
-wells$log.arsenic = log(wells$arsenic)
-log_arsenic_model = glm(switch ~ dist + log.arsenic + educ + dist:log.arsenic + dist:educ + log.arsenic:educ, family = "binomial", data = wells)
-log_arsenic_model_df = augment(log_arsenic_model, type.residuals = "pearson", type.predict = "response")
+amount_over_135 = function(x) ifelse(x > 1.35, x - 1.35, 0)
+knot_model = glm(switch ~ dist + arsenic + I(amount_over_135(arsenic)) + educ, data = wells, family = "binomial")
+knot_model_df = augment(knot_model, type.residuals = "pearson", type.predict = "response")
 ```
 
 -----
 
-Now plot the residuals of this new model against log arsenic:
+We can look at the residuals again, and we see that this completely cleans up the non-linearity.
 
 ```{r}
-ggplot(log_arsenic_model_df, aes(x = log.arsenic, y = .resid)) +
+ggplot(knot_model_df, aes(x = arsenic, y = .resid)) +
     geom_point() +
     geom_smooth(method = "loess", method.args = list(degree = 1))  +
-    xlab("Log arsenic concentration") +
+    xlab("Arsenic concentration") +
     ylab("Residuals")
+
+ggplot(knot_model_df, aes(x = arsenic, y = .resid)) +
+    geom_smooth(method = "loess", method.args = list(degree = 1))  +
+    xlab("Arsenic concentration") +
+    ylab("Residuals")
+
 ```
 
-It's a lot better. I'm fairly happy with the model at this
-point. 
 
 -----
+
 
 Let's take a look at the fit. Fix education at its median, and
 draw arsenic curves for several distances:
 
 ```{r}
 switch_grid = expand.grid(arsenic = seq(0.5, 10, 0.01), dist = seq(0, 100, 25), educ = 5)
-switch_grid$log.arsenic = log(switch_grid$arsenic)
-log_arsenic_pred_grid = augment(log_arsenic_model, newdata = switch_grid,
+knot_pred_grid = augment(knot_model, newdata = switch_grid,
     type.predict = "response", type.residuals = "pearson")
-ggplot(log_arsenic_pred_grid, aes(x = arsenic, y = .fitted, group = dist, color = dist)) +
+ggplot(knot_pred_grid, aes(x = arsenic, y = .fitted, group = dist, color = dist)) +
     geom_line() +
     xlab("Arsenic concentration") +
     ylab("Probability of switching") + scale_color_viridis()
@@ -484,10 +537,9 @@ point, though, so let's just do one more:
 
 ```{r}
 switch_grid_2 = expand.grid(arsenic = seq(0.5, 10, 0.01), dist = median(wells$dist), educ = c(0, 5, 10))
-switch_grid_2$log.arsenic = log(switch_grid_2$arsenic)
-log_arsenic_pred_grid_2 = augment(log_arsenic_model, newdata = switch_grid_2,
+knot_pred_grid_2 = augment(knot_model, newdata = switch_grid_2,
     type.predict = "response", type.residuals = "pearson")
-ggplot(log_arsenic_pred_grid_2,
+ggplot(knot_pred_grid_2,
        aes(x = arsenic, y = .fitted, group = educ, color = factor(educ))) +
     geom_line() +
     xlab("Arsenic concentration") +
