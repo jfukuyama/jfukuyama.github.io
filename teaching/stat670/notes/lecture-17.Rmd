@@ -53,7 +53,7 @@ There are two other variables in the data set:
 The first few rows of this file are a description, so we tell R to skip these when reading the data.
 
 ```{r}
-frisk = read.table("http://www.stat.columbia.edu/~gelman/arm/examples/police/frisk_with_noise.dat", skip = 6, header = TRUE)
+frisk = read.table("frisk_with_noise.dat", skip = 6, header = TRUE)
 nrow(frisk)
 summary(frisk)
 frisk = mutate(frisk, eth = as.factor(eth))
@@ -300,7 +300,7 @@ What do we see?
 
 > - This is the "Pearson residual": 
 $$
-(y_i - \hat y_i) / \sqrt{exp(\hat y_i)}
+(y_i - \hat y_i) / \sqrt{\hat y_i}
 $$
 Numerator = residual and denominator = estimate of variance
 
