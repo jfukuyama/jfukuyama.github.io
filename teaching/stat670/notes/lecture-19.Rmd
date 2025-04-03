@@ -128,8 +128,6 @@ Trying the same thing with density estimates instead of histograms:
 
 > - The density version of a stacked histogram.
 
-> - The y-axis scale is a bit confusing here, since it's neither a true density nor a count. Instead, the total area is scaled to be equal to the number of observations (400.)
-
 ```{r}
 ggplot(gradschool, aes(x = gpa, fill = Likelihood)) +
     geom_density(position = "stack") +
