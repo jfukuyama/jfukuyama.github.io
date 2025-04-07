@@ -8,9 +8,9 @@
     <link href="https://fonts.googleapis.com/css?family=Oxygen:300" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Raleway"rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Inconsolata" rel="stylesheet">
-    <link rel="stylesheet" media="all" href="/res/screen.css?v=20220110152742" type="text/css">
+    <link rel="stylesheet" media="all" href="/res/screen.css?v=20250407120542" type="text/css">
     <link rel="alternate" type="application/atom+xml" title="Julia Fukuyama" href="/atom.xml">
-    <link rel="shortcut icon" href="/tree-round.png?v=20220110152742">
+    <link rel="shortcut icon" href="/tree-round.png?v=20250407120542">
 <!-- Global site tag (gtag.js) - Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=UA-110259368-1"></script>
 <script>
@@ -37,6 +37,76 @@
     
 <div class="row section">
 <div class=left>
+  <h2>mpqDist</h2>
+  
+  <p><code>mpqDist</code> is an R package for computing a family of phylogenetically-informed distances and making a interactive plots based on them.
+The MPQ distances are a family of distance with a continuous tuning parameter which controls the extent to which the distance is influenced by basal vs. terminal phylogenetic structure.
+The package allows the user to give a template for a plot which will be filled in with the full spectrum of tuning parameters.
+Given a template, the package creates an interactive version of the plot that allows the user to scan through all the members of the family.</p>
+
+<p>The package can be installed using</p>
+
+<pre><code>devtools::install_github("jfukuyama/mpqDist")
+</code></pre>
+
+<p>[<a href="https://github.com/jfukuyama/mpqDist">github</a>]</p>
+
+
+</div>
+<div class=right>
+<div class="thumbnail">
+  <img src="/assets/images/mpqDist.png" title="mpqDist" width="200">
+</div>
+</div>
+</div>
+
+<div class="row section">
+<div class=left>
+  <h2>alto</h2>
+  
+  <p><code>alto</code> is an R package for aligning topics across a collection of LDA models.
+It can be used for exploratory analysis (which topics persist across models? which tend to split into sub-topics?) or to aid in the choice of the number of topics in a final model.</p>
+
+<p>The package can be installed using</p>
+<pre><code>devtools::install_github("lasy/alto")
+</code></pre>
+
+<p>[<a href="https://doi.org/10.1093/biostatistics/kxac018">paper</a>] [<a href="https://github.com/lasy/alto">github</a>] [<a href="https://lasy.github.io/alto/index.html">reference</a>]</p>
+
+
+</div>
+<div class=right>
+<div class="thumbnail">
+  <img src="/assets/images/alto.png" title="alto" width="200">
+</div>
+</div>
+</div>
+
+<div class="row section">
+<div class=left>
+  <h2>Local biplots</h2>
+  
+  <p>‘localBiplots’ is an R package for doing local biplots, which provide a representation of the relationship between MDS embedding space and data space.
+An example with precomputed local biplot axes and MDS with several different distances is available <a href="https://jfukuyama.shinyapps.io/local-biplot-antibiotic-vis/">here</a>.
+The example uses several phylogenetically-informed distances, and includes a visualization of the relationship between the local biplot axes and the phylogenetic tree.</p>
+
+<p>The package is available on github, and can be installed using</p>
+<pre><code>devtools::install_github('jfukuyam/localBiplots')
+</code></pre>
+
+<p>[<a href="http://doi.org/10.1080/10618600.2021.2024438">paper</a>] [<a href="https://github.com/jfukuyama/localBiplots">github</a>]</p>
+
+
+</div>
+<div class=right>
+<div class="thumbnail">
+  <img src="/assets/images/local-biplots.png" title="Local biplots" width="200">
+</div>
+</div>
+</div>
+
+<div class="row section">
+<div class=left>
   <h2>adaptiveGPCA</h2>
   
   <p><code>adaptiveGPCA</code> is an R package for dimensionality reduction when the variables measured are related to each other.
@@ -48,7 +118,7 @@ It can also be used to provide a “guided tour” of the data, an example of wh
 <pre><code>install.packages("adaptiveGPCA")
 </code></pre>
 
-<p><a href="https://arxiv.org/abs/1702.00501">[paper]</a> <a href="https://github.com/jfukuyama/adaptivegpca">[github]</a> <a href="http://jfukuyama.github.io/adaptiveGPCA/">[quick start]</a> <a href="https://cran.r-project.org/web/packages/adaptiveGPCA/vignettes/adaptive_gpca_vignette.html">[long vignette]</a></p>
+<p>[<a href="https://arxiv.org/abs/1702.00501">paper</a>] [<a href="https://github.com/jfukuyama/adaptivegpca">github</a>] [<a href="http://jfukuyama.github.io/adaptiveGPCA/">quick start</a>] [<a href="https://cran.r-project.org/web/packages/adaptiveGPCA/vignettes/adaptive_gpca_vignette.html">long vignette</a>]</p>
 
 
 </div>
@@ -69,7 +139,7 @@ It can also be used to provide a “guided tour” of the data, an example of wh
 <pre><code>install.packages("treeDA")
 </code></pre>
 
-<p><a href="https://doi.org/10.1371/journal.pcbi.1005706">[paper]</a> <a href="https://github.com/jfukuyama/treeda">[github]</a> <a href="https://cran.r-project.org/web/packages/treeDA/vignettes/treeda-vignette.html">[vignette]</a></p>
+<p>[<a href="https://doi.org/10.1371/journal.pcbi.1005706">paper</a>] [<a href="https://github.com/jfukuyama/treeda">github</a>] [<a href="https://cran.r-project.org/web/packages/treeDA/vignettes/treeda-vignette.html">vignette</a>]</p>
 
 
 </div>
@@ -90,7 +160,7 @@ It can also be used to provide a “guided tour” of the data, an example of wh
 <pre><code>install.packages("phyloseqGraphTest")
 </code></pre>
 
-<p><a href="graph_testing_poster.pdf">[poster]</a> <a href="https://github.com/jfukuyama/phyloseqGraphTest">[github]</a> <a href="https://cran.r-project.org/web/packages/phyloseqGraphTest/vignettes/gt_vignette.html">[vignette]</a></p>
+<p>[<a href="graph_testing_poster.pdf">poster</a>] [<a href="https://github.com/jfukuyama/phyloseqGraphTest">github</a>] [<a href="https://cran.r-project.org/web/packages/phyloseqGraphTest/vignettes/gt_vignette.html">vignette</a>]</p>
 
 
 
