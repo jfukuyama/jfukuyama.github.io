@@ -1,0 +1,56 @@
+# Example of explore/test split
+
+```{r}
+library(tidyverse)
+drug_age_diversity = read.csv("drug_age_diversity.csv", row.names = 1)
+set.seed(0408)
+explore_idx = sample(nrow(drug_age_diversity), size = nrow(drug_age_diversity) / 2)
+explore_subset = drug_age_diversity[explore_idx,]
+test_subset = drug_age_diversity[-explore_idx,]
+## we do lots of plots on the exploratory set
+ggplot(explore_subset |>
+       group_by(RIDAGEYR) |>
+       summarise(mean_alpha = mean(RB_ObservedOTUs_8000_0, na.rm = TRUE))) +
+    geom_point(aes(x = RIDAGEYR, y = mean_alpha)) +
+    stat_smooth(aes(x = RIDAGEYR, y = mean_alpha))
+
+ggplot(explore_subset |>
+       group_by(RIDAGEYR) |>
+       summarise(mean_alpha = mean(RB_ShanWienDiv_2000_0, na.rm = TRUE))) +
+    geom_point(aes(x = RIDAGEYR, y = mean_alpha)) +
+    stat_smooth(aes(x = RIDAGEYR, y = mean_alpha))
+```
+
+Based on the plots we made, we want to model both observed OTUs and Shannon-Wiener diversity as a piecewise-linear function of year, with the knot at age 28. 
+```{r}
+years_above_28 <- function(year) ifelse(year >= 28, year - 28, 0)
+otu_lm = lm(RB_ObservedOTUs_8000_0 ~ RIDAGEYR + years_above_28(RIDAGEYR), data = explore_subset)
+summary(otu_lm)
+shannon_lm = lm(RB_ShanWienDiv_8000_0 ~ RIDAGEYR + years_above_28(RIDAGEYR), data = explore_subset)
+summary(shannon_lm)
+```
+In this case, we get highly-significant p-values in for all of the coefficients in both models, but these are not "valid" because we have used the data to decide on the form of the model.
+In particular, we decided that we wanted it to be piecewise-linear based on looking at the data and we decided that the hinge in the piecewise-linear function would be at 28 years old based on the plots we made.
+If we want valid p-values in this model, we fit exactly the same model on the test set.
+
+```{r}
+otu_lm = lm(RB_ObservedOTUs_8000_0 ~ RIDAGEYR + years_above_28(RIDAGEYR), data = test_subset)
+summary(otu_lm)
+shannon_lm = lm(RB_ShanWienDiv_8000_0 ~ RIDAGEYR + years_above_28(RIDAGEYR), data = test_subset)
+summary(shannon_lm)
+```
+
+Notice that if we had built our model after seeing the test data, we probably would have put the hinge in the piecewise-linear function at 30 years old, not 28 years old (see the plot below, where the loess smoother suggests the maximal diversity occurs at 30 years old).
+However, we are not allowed to change this when we fit the model on the test data if we want valid p-values.
+```{r}
+ggplot(test_subset |>
+       group_by(RIDAGEYR) |>
+       summarise(mean_alpha = mean(RB_ObservedOTUs_8000_0, na.rm = TRUE))) +
+    geom_point(aes(x = RIDAGEYR, y = mean_alpha)) +
+    stat_smooth(aes(x = RIDAGEYR, y = mean_alpha))
+ggplot(test_subset |>
+       group_by(RIDAGEYR) |>
+       summarise(mean_alpha = mean(RB_ShanWienDiv_8000_0, na.rm = TRUE))) +
+    geom_point(aes(x = RIDAGEYR, y = mean_alpha)) +
+    stat_smooth(aes(x = RIDAGEYR, y = mean_alpha))
+```
