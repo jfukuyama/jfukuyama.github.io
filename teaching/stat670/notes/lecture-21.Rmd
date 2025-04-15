@@ -133,13 +133,13 @@ Suppose we have a matrix $\mathbf S \in \mathbb R^{n \times p}$.
 
 The rows of $\mathbf S$ correspond to observations, and the columns of $\mathbf S$ correspond to the variables measured.
 
-A biplot is a visualization of the matrix $\mathbf S$ that will allow us to read off
+A biplot is a visualization of the matrix $\mathbf S$ that will allow us to read off approximations of
 
 > - The values of $\mathbf S$,
 
-> - (In some cases) the similarities between the variables,
+> - The similarities between the variables,
 
-> - (In most cases) the similarities between the observations.
+> - The similarities between the observations.
 
 To do this, we combine our results about matrix multiplication as scalar products with our results describing scalar products in terms of projections of one variable onto another.
 
@@ -191,7 +191,7 @@ S
 
 The arrows are the biplot vectors, or the rows of $\mathbf Y$.
 
-The points are the byplot points, or the rows of $\mathbf X$.
+The points are the biplot points, or the rows of $\mathbf X$.
 
 ```{r, echo=FALSE}
 Xplot = data.frame(X)
