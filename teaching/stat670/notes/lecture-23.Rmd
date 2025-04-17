@@ -153,7 +153,7 @@ In the covariance biplot, we use
 
 > - $\mathbf V_{(2)} \mathbf D_{(2)}$ for the biplot axes.
 
-In this form of the biplot, angles between biplot axes give us approximations of the covariances.
+In this form of the biplot, the angles between biplot axes and their lengths tell us about the covariances between variables.
 
 Why is this?
 

@@ -11,12 +11,21 @@
   <style type="text/css">
     code{white-space: pre-wrap;}
     span.smallcaps{font-variant: small-caps;}
-    span.underline{text-decoration: underline;}
-    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
     div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
-    ul.task-list{list-style: none;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    /* CSS for syntax highlighting */
     pre > code.sourceCode { white-space: pre; position: relative; }
-    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span { line-height: 1.25; }
     pre > code.sourceCode > span:empty { height: 1.2em; }
     .sourceCode { overflow: visible; }
     code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -53,7 +62,7 @@
     code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
     code span.at { color: #7d9029; } /* Attribute */
     code span.bn { color: #40a070; } /* BaseN */
-    code span.bu { } /* BuiltIn */
+    code span.bu { color: #008000; } /* BuiltIn */
     code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
     code span.ch { color: #4070a0; } /* Char */
     code span.cn { color: #880000; } /* Constant */
@@ -66,7 +75,7 @@
     code span.ex { } /* Extension */
     code span.fl { color: #40a070; } /* Float */
     code span.fu { color: #06287e; } /* Function */
-    code span.im { } /* Import */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
     code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
     code span.kw { color: #007020; font-weight: bold; } /* Keyword */
     code span.op { color: #666666; } /* Operator */
@@ -196,14 +205,14 @@ class="math inline">\(\mathbf U \mathbf D\)</span>.</li>
 </div>
 <div id="example" class="slide section level2">
 <h1>Example</h1>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(devtools)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">install_github</span>(<span class="st">&quot;vqv/ggbiplot&quot;</span>)</span></code></pre></div>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ade4)</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggbiplot)</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(devtools)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">install_github</span>(<span class="st">&quot;vqv/ggbiplot&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">library</span>(ade4)</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="fu">library</span>(ggbiplot)</span></code></pre></div>
 <pre><code>## Loading required package: plyr</code></pre>
 <pre><code>## Loading required package: scales</code></pre>
 <pre><code>## Loading required package: grid</code></pre>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(viridis)</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">library</span>(viridis)</span></code></pre></div>
 <pre><code>## Loading required package: viridisLite</code></pre>
 <pre><code>## 
 ## Attaching package: &#39;viridis&#39;</code></pre>
@@ -214,8 +223,8 @@ class="math inline">\(\mathbf U \mathbf D\)</span>.</li>
 <div class="slide section level2">
 
 <p>Olympic dataset</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(olympic)</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(olympic<span class="sc">$</span>tab)</span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="fu">data</span>(olympic)</span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="fu">summary</span>(olympic<span class="sc">$</span>tab)</span></code></pre></div>
 <pre><code>##       100             long            poid            haut      
 ##  Min.   :10.62   Min.   :6.220   Min.   :10.27   Min.   :1.790  
 ##  1st Qu.:11.02   1st Qu.:7.000   1st Qu.:13.15   1st Qu.:1.940  
@@ -240,8 +249,8 @@ class="math inline">\(\mathbf U \mathbf D\)</span>.</li>
 </div>
 <div class="slide section level2">
 
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>oly_noscale <span class="ot">=</span> <span class="fu">prcomp</span>(olympic<span class="sc">$</span>tab, <span class="at">scale. =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>oly_noscale<span class="sc">$</span>rotation[,<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>]</span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a>oly_noscale <span class="ot">=</span> <span class="fu">prcomp</span>(olympic<span class="sc">$</span>tab, <span class="at">scale. =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a>oly_noscale<span class="sc">$</span>rotation[,<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>]</span></code></pre></div>
 <pre><code>##                PC1          PC2
 ## 100  -0.0045042348  0.005632863
 ## long  0.0084964324 -0.013772028
@@ -290,8 +299,8 @@ X\)</span></li>
 </div>
 <div id="pca-biplot-for-the-olympic-data" class="slide section level2">
 <h1>PCA biplot for the olympic data</h1>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="do">## scale = 0 means form biplot</span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggbiplot</span>(oly_noscale, <span class="at">scale =</span> <span class="dv">0</span>) <span class="sc">+</span> <span class="fu">ylim</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="dv">17</span>, <span class="dv">10</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="do">## scale = 0 means form biplot</span></span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a><span class="fu">ggbiplot</span>(oly_noscale, <span class="at">scale =</span> <span class="dv">0</span>) <span class="sc">+</span> <span class="fu">ylim</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="dv">17</span>, <span class="dv">10</span>))</span></code></pre></div>
 <p><img src="lecture-23-fig/unnamed-chunk-5-1.png" /></p>
 </div>
 <div id="covariance-biplot" class="slide section level2">
@@ -307,8 +316,8 @@ points</li>
 <li><span class="math inline">\(\mathbf V_{(2)} \mathbf D_{(2)}\)</span>
 for the biplot axes.</li>
 </ul>
-<p>In this form of the biplot, angles between biplot axes give us
-approximations of the covariances.</p>
+<p>In this form of the biplot, the angles between biplot axes and their
+lengths tell us about the covariances between variables.</p>
 <p>Why is this?</p>
 </div>
 <div class="slide section level2">
@@ -333,8 +342,8 @@ the covariance between the two variables.</p>
 </div>
 <div id="covariance-biplot-1" class="slide section level2">
 <h1>Covariance biplot</h1>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="do">## scale = 1 means covariance biplot</span></span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggbiplot</span>(oly_noscale, <span class="at">scale =</span> <span class="dv">1</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="do">## scale = 1 means covariance biplot</span></span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a><span class="fu">ggbiplot</span>(oly_noscale, <span class="at">scale =</span> <span class="dv">1</span>)</span></code></pre></div>
 <p><img src="lecture-23-fig/unnamed-chunk-6-1.png" /></p>
 </div>
 <div id="correlation-based-pca" class="slide section level2">
@@ -377,9 +386,9 @@ between variables instead of covariances.</li>
 
 <p>Covariance PCA biplot based on correlations, with some extra
 information:</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>oly_scale <span class="ot">=</span> <span class="fu">prcomp</span>(olympic<span class="sc">$</span>tab, <span class="at">scale. =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="do">## scale = 1 means covariance biplot</span></span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ggbiplot</span>(oly_scale, <span class="at">scale =</span> <span class="dv">1</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a>oly_scale <span class="ot">=</span> <span class="fu">prcomp</span>(olympic<span class="sc">$</span>tab, <span class="at">scale. =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a><span class="do">## scale = 1 means covariance biplot</span></span>
+<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a><span class="fu">ggbiplot</span>(oly_scale, <span class="at">scale =</span> <span class="dv">1</span>)</span></code></pre></div>
 <p><img src="lecture-23-fig/unnamed-chunk-7-1.png" /></p>
 <p>How would you interpret the first principal component?</p>
 </div>
@@ -387,23 +396,23 @@ information:</p>
 
 <p>Covariance PCA biplot based on correlations, with some extra
 information:</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="do">## scale = 1 means covariance biplot</span></span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggbiplot</span>(oly_scale, <span class="at">scale =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">color =</span> olympic<span class="sc">$</span>score)) <span class="sc">+</span></span>
-<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_color_viridis</span>(<span class="st">&quot;Score&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a><span class="do">## scale = 1 means covariance biplot</span></span>
+<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a><span class="fu">ggbiplot</span>(oly_scale, <span class="at">scale =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb17-3"><a href="#cb17-3" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">color =</span> olympic<span class="sc">$</span>score)) <span class="sc">+</span></span>
+<span id="cb17-4"><a href="#cb17-4" tabindex="-1"></a>    <span class="fu">scale_color_viridis</span>(<span class="st">&quot;Score&quot;</span>)</span></code></pre></div>
 <p><img src="lecture-23-fig/unnamed-chunk-8-1.png" /></p>
 </div>
 <div id="wine-example" class="slide section level2">
 <h1>Wine example</h1>
 <p>Wine dataset</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ggbiplot is not on cran, so you have to use</span></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="co"># library(devtools)</span></span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="co"># install_github(&quot;vqv/ggbiplot&quot;)</span></span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggbiplot)</span>
-<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(wine)</span>
-<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(wine)</span></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a><span class="co"># ggbiplot is not on cran, so you have to use</span></span>
+<span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a><span class="co"># library(devtools)</span></span>
+<span id="cb18-3"><a href="#cb18-3" tabindex="-1"></a><span class="co"># install_github(&quot;vqv/ggbiplot&quot;)</span></span>
+<span id="cb18-4"><a href="#cb18-4" tabindex="-1"></a><span class="fu">library</span>(ggbiplot)</span>
+<span id="cb18-5"><a href="#cb18-5" tabindex="-1"></a><span class="fu">data</span>(wine)</span>
+<span id="cb18-6"><a href="#cb18-6" tabindex="-1"></a><span class="fu">nrow</span>(wine)</span></code></pre></div>
 <pre><code>## [1] 178</code></pre>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(wine)</span></code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a><span class="fu">summary</span>(wine)</span></code></pre></div>
 <pre><code>##     Alcohol        MalicAcid          Ash            AlcAsh     
 ##  Min.   :11.03   Min.   :0.740   Min.   :1.360   Min.   :10.60  
 ##  1st Qu.:12.36   1st Qu.:1.603   1st Qu.:2.210   1st Qu.:17.20  
@@ -435,50 +444,50 @@ information:</p>
 </div>
 <div class="slide section level2">
 
-<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>wine.pca <span class="ot">=</span> <span class="fu">prcomp</span>(wine, <span class="at">scale. =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>wine.pca<span class="sc">$</span>rotation[, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>]</span></code></pre></div>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" tabindex="-1"></a>wine.pca <span class="ot">=</span> <span class="fu">prcomp</span>(wine, <span class="at">scale. =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb22-2"><a href="#cb22-2" tabindex="-1"></a>wine.pca<span class="sc">$</span>rotation[, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>]</span></code></pre></div>
 <pre><code>##                         PC1          PC2
-## Alcohol        -0.144329395  0.483651548
-## MalicAcid       0.245187580  0.224930935
-## Ash             0.002051061  0.316068814
-## AlcAsh          0.239320405 -0.010590502
-## Mg             -0.141992042  0.299634003
-## Phenols        -0.394660845  0.065039512
-## Flav           -0.422934297 -0.003359812
-## NonFlavPhenols  0.298533103  0.028779488
-## Proa           -0.313429488  0.039301722
-## Color           0.088616705  0.529995672
-## Hue            -0.296714564 -0.279235148
-## OD             -0.376167411 -0.164496193
-## Proline        -0.286752227  0.364902832</code></pre>
-<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>wine.pca<span class="sc">$</span>x[<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>]</span></code></pre></div>
+## Alcohol        -0.144329395 -0.483651548
+## MalicAcid       0.245187580 -0.224930935
+## Ash             0.002051061 -0.316068814
+## AlcAsh          0.239320405  0.010590502
+## Mg             -0.141992042 -0.299634003
+## Phenols        -0.394660845 -0.065039512
+## Flav           -0.422934297  0.003359812
+## NonFlavPhenols  0.298533103 -0.028779488
+## Proa           -0.313429488 -0.039301722
+## Color           0.088616705 -0.529995672
+## Hue            -0.296714564  0.279235148
+## OD             -0.376167411  0.164496193
+## Proline        -0.286752227 -0.364902832</code></pre>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" tabindex="-1"></a>wine.pca<span class="sc">$</span>x[<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>]</span></code></pre></div>
 <pre><code>##             PC1        PC2
-##  [1,] -3.307421  1.4394023
-##  [2,] -2.203250 -0.3324551
-##  [3,] -2.509661  1.0282507
-##  [4,] -3.746497  2.7486184
-##  [5,] -1.006070  0.8673840
-##  [6,] -3.041674  2.1164309
-##  [7,] -2.442201  1.1715453
-##  [8,] -2.053644  1.6044371
-##  [9,] -2.503811  0.9154885
-## [10,] -2.745882  0.7872170</code></pre>
-<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>principal_axes <span class="ot">=</span> <span class="fu">data.frame</span>(wine.pca<span class="sc">$</span>rotation)</span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>scores <span class="ot">=</span> <span class="fu">data.frame</span>(wine.pca<span class="sc">$</span>x)</span>
-<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(principal_axes) <span class="sc">+</span> <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">x =</span> PC1, <span class="at">y =</span> PC2, <span class="at">xend =</span> <span class="dv">0</span>, <span class="at">yend =</span> <span class="dv">0</span>))</span></code></pre></div>
+##  [1,] -3.307421 -1.4394023
+##  [2,] -2.203250  0.3324551
+##  [3,] -2.509661 -1.0282507
+##  [4,] -3.746497 -2.7486184
+##  [5,] -1.006070 -0.8673840
+##  [6,] -3.041674 -2.1164309
+##  [7,] -2.442201 -1.1715453
+##  [8,] -2.053644 -1.6044371
+##  [9,] -2.503811 -0.9154885
+## [10,] -2.745882 -0.7872170</code></pre>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" tabindex="-1"></a>principal_axes <span class="ot">=</span> <span class="fu">data.frame</span>(wine.pca<span class="sc">$</span>rotation)</span>
+<span id="cb26-2"><a href="#cb26-2" tabindex="-1"></a>scores <span class="ot">=</span> <span class="fu">data.frame</span>(wine.pca<span class="sc">$</span>x)</span>
+<span id="cb26-3"><a href="#cb26-3" tabindex="-1"></a></span>
+<span id="cb26-4"><a href="#cb26-4" tabindex="-1"></a><span class="fu">ggplot</span>(principal_axes) <span class="sc">+</span> <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">x =</span> PC1, <span class="at">y =</span> PC2, <span class="at">xend =</span> <span class="dv">0</span>, <span class="at">yend =</span> <span class="dv">0</span>))</span></code></pre></div>
 <p><img src="lecture-23-fig/unnamed-chunk-10-1.png" /></p>
-<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(scores) <span class="sc">+</span> <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> PC1, <span class="at">y =</span> PC2))</span></code></pre></div>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" tabindex="-1"></a><span class="fu">ggplot</span>(scores) <span class="sc">+</span> <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> PC1, <span class="at">y =</span> PC2))</span></code></pre></div>
 <p><img src="lecture-23-fig/unnamed-chunk-10-2.png" /></p>
 </div>
 <div class="slide section level2">
 
-<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggbiplot</span>(wine.pca, <span class="at">scale =</span> <span class="dv">1</span>, <span class="at">var.axes =</span> <span class="cn">FALSE</span>, <span class="at">groups =</span> wine.class)</span></code></pre></div>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" tabindex="-1"></a><span class="fu">ggbiplot</span>(wine.pca, <span class="at">scale =</span> <span class="dv">1</span>, <span class="at">var.axes =</span> <span class="cn">FALSE</span>, <span class="at">groups =</span> wine.class)</span></code></pre></div>
 <p><img src="lecture-23-fig/unnamed-chunk-11-1.png" /></p>
 </div>
 <div class="slide section level2">
 
-<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggbiplot</span>(wine.pca, <span class="at">scale =</span> <span class="dv">1</span>, <span class="at">var.axes =</span> <span class="cn">TRUE</span>, <span class="at">groups =</span> wine.class) <span class="sc">+</span> <span class="fu">xlim</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" tabindex="-1"></a><span class="fu">ggbiplot</span>(wine.pca, <span class="at">scale =</span> <span class="dv">1</span>, <span class="at">var.axes =</span> <span class="cn">TRUE</span>, <span class="at">groups =</span> wine.class) <span class="sc">+</span> <span class="fu">xlim</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>))</span></code></pre></div>
 <p><img src="lecture-23-fig/unnamed-chunk-12-1.png" /></p>
 </div>
 <div id="summing-up" class="slide section level2">
