@@ -1,0 +1,465 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <meta name="author" content="Julia Fukuyama" />
+  <title>Graphics</title>
+  <style type="text/css">
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    /* CSS for syntax highlighting */
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="https://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="https://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div class="slide titlepage">
+  <h1 class="title">Graphics</h1>
+  <p class="author">
+Julia Fukuyama
+  </p>
+</div>
+<div id="graphics" class="slide section level2">
+<h1>Graphics</h1>
+<ul>
+<li><a
+href="https://clauswilke.com/dataviz/telling-a-story.html">Reading</a></li>
+</ul>
+<ul>
+<li>Example of graphs you would make for yourself vs. what you would
+present</li>
+</ul>
+</div>
+<div id="telling-a-story" class="slide section level2">
+<h1>Telling a story</h1>
+<ul>
+<li>arXiv is a preprint server originally aimed at physicists</li>
+</ul>
+<ul>
+<li>It started to become popular with biologists (arXiv q-bio), but
+interest all of a sudden seemed to level off.</li>
+</ul>
+<p><img src="q-bio-monthly-growth-1.png" /></p>
+</div>
+<div class="slide section level2">
+
+<p>Why did this happen? Appearance of another preprint server that was
+more popular:</p>
+<p><img src="q-bio-monthly-growth-2.png" /></p>
+</div>
+<div id="make-simple-figuresbuild-to-complex-figures"
+class="slide section level2">
+<h1>Make simple figures/build to complex figures</h1>
+</div>
+<div id="flights-example-take-1" class="slide section level2">
+<h1>Flights Example Take 1</h1>
+<pre><code>## Joining with `by = join_by(carrier)`
+## `summarise()` has grouped output by &#39;name&#39;. You can override using the `.groups` argument.</code></pre>
+<p><img src="graphics/unnamed-chunk-1-1.png" /></p>
+</div>
+<div id="flights-example-take-2" class="slide section level2">
+<h1>Flights Example Take 2</h1>
+</div>
+<div class="slide section level2">
+
+<p>Longer flights have longer average delays for American Airlines….</p>
+<p><img src="graphics/unnamed-chunk-2-1.png" /></p>
+</div>
+<div class="slide section level2">
+
+<p>But not for Delta</p>
+<p><img src="graphics/unnamed-chunk-3-1.png" /></p>
+</div>
+<div class="slide section level2">
+
+<p>In fact, most airlines have the opposite trend: longer flights tend
+to be less delayed for Delta and for all the other airlines: <img
+src="graphics/unnamed-chunk-4-1.png" /></p>
+</div>
+<div id="example-prostate-cancer" class="slide section level2">
+<h1>Example: Prostate Cancer</h1>
+<p>We have a data set containing clinical data on patients who were
+about to receive a radical prostatectomy. The relevant variables
+are:</p>
+<p>Variables about sizes:</p>
+<ul>
+<li><code>lcavol</code>: log cancer volume</li>
+</ul>
+<ul>
+<li><code>lweight</code>: log prostate weight</li>
+</ul>
+<ul>
+<li><code>lbph</code>: log of the amount of benign prostatic
+hyperplasia</li>
+</ul>
+<p>Variables about the individual:</p>
+<ul>
+<li><code>age</code>: Age in years</li>
+</ul>
+<p>Variables measured by the pathologist:</p>
+<ul>
+<li><code>svi</code>: Seminal vesicle invasion, a measure of how
+advanced the cancer is.</li>
+</ul>
+<ul>
+<li><code>lcp</code>: log of capsular penetration</li>
+</ul>
+<ul>
+<li><code>gleason</code>: A numeric vector giving the <a
+href="https://www.pcf.org/about-prostate-cancer/diagnosis-staging-prostate-cancer/gleason-score-isup-grade/">Gleason
+score</a>. In theory can range from 2-10, in practice ranges from
+6-10.</li>
+</ul>
+<ul>
+<li><code>pgg45</code>: Percent of cells with Gleason score 4 or 5.</li>
+</ul>
+<p>The “response” variable:</p>
+<ul>
+<li><code>lpsa</code>: log of the concentration of prostate-stimulating
+antigen.</li>
+</ul>
+<p>We are primarily interested in <code>lpsa</code>, which is used as a
+marker for prostate cancer. We would like to know whether and how it is
+related to the other variables we have available to us.</p>
+</div>
+<div id="first-we-look-at-the-data" class="slide section level2">
+<h1>First we look at the data</h1>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>prostate <span class="ot">=</span> <span class="fu">read.table</span>(<span class="st">&quot;prostate.txt&quot;</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="fu">summary</span>(prostate)</span></code></pre></div>
+<pre><code>##      lcavol           lweight           age             lbph        
+##  Min.   :-1.3471   Min.   :2.375   Min.   :41.00   Min.   :-1.3863  
+##  1st Qu.: 0.5128   1st Qu.:3.376   1st Qu.:60.00   1st Qu.:-1.3863  
+##  Median : 1.4469   Median :3.623   Median :65.00   Median : 0.3001  
+##  Mean   : 1.3500   Mean   :3.629   Mean   :63.87   Mean   : 0.1004  
+##  3rd Qu.: 2.1270   3rd Qu.:3.876   3rd Qu.:68.00   3rd Qu.: 1.5581  
+##  Max.   : 3.8210   Max.   :4.780   Max.   :79.00   Max.   : 2.3263  
+##       svi              lcp             gleason          pgg45       
+##  Min.   :0.0000   Min.   :-1.3863   Min.   :6.000   Min.   :  0.00  
+##  1st Qu.:0.0000   1st Qu.:-1.3863   1st Qu.:6.000   1st Qu.:  0.00  
+##  Median :0.0000   Median :-0.7985   Median :7.000   Median : 15.00  
+##  Mean   :0.2165   Mean   :-0.1794   Mean   :6.753   Mean   : 24.38  
+##  3rd Qu.:0.0000   3rd Qu.: 1.1787   3rd Qu.:7.000   3rd Qu.: 40.00  
+##  Max.   :1.0000   Max.   : 2.9042   Max.   :9.000   Max.   :100.00  
+##       lpsa           train        
+##  Min.   :-0.4308   Mode :logical  
+##  1st Qu.: 1.7317   FALSE:30       
+##  Median : 2.5915   TRUE :67       
+##  Mean   : 2.4784                  
+##  3rd Qu.: 3.0564                  
+##  Max.   : 5.5829</code></pre>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>prostate <span class="ot">=</span> prostate <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="sc">-</span><span class="st">&quot;train&quot;</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="fu">ggpairs</span>(prostate, <span class="at">progress =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
+<p><img src="graphics/unnamed-chunk-5-1.png" /></p>
+<p>From the <code>ggpairs</code> plot, we see that the distributions of
+the variables are reasonably symmetrical, not that skewed, and that
+there is at least some relationship between most of the variables and
+<code>lpsa</code>.</p>
+</div>
+<div id="linear-model-with-all-the-predictors"
+class="slide section level2">
+<h1>Linear model with all the predictors</h1>
+<p>As a first step, we can fit a linear model with all the predictors
+and look at the results. We see that a lot of the coefficients are
+within the margin of error of zero, which suggests to us that a model
+with fewer predictors would do better.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>prostate_lm <span class="ot">=</span> <span class="fu">lm</span>(lpsa <span class="sc">~</span> ., <span class="at">data =</span> prostate)</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>prostate_coefs <span class="ot">=</span> <span class="fu">tidy</span>(prostate_lm, <span class="at">conf.int =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="fu">ggplot</span>(prostate_coefs[<span class="sc">-</span><span class="dv">1</span>, ], <span class="fu">aes</span>(<span class="at">x =</span> estimate, <span class="at">y =</span> term, <span class="at">xmin =</span> conf.low, <span class="at">xmax =</span> conf.high)) <span class="sc">+</span></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">geom_errorbarh</span>() <span class="sc">+</span> <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="dv">0</span>)</span></code></pre></div>
+<p><img src="graphics/unnamed-chunk-6-1.png" /></p>
+</div>
+<div
+id="what-do-automatic-methods-for-variable-selection-tell-us-about-which-predictors-should-be-included"
+class="slide section level2">
+<h1>What do automatic methods for variable selection tell us about which
+predictors should be included?</h1>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">library</span>(leaps)</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>prostate_best_subset <span class="ot">=</span> <span class="fu">regsubsets</span>(lpsa <span class="sc">~</span> ., <span class="at">data =</span> prostate)</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="fu">summary</span>(prostate_best_subset)<span class="sc">$</span>which</span></code></pre></div>
+<pre><code>##   (Intercept) lcavol lweight   age  lbph   svi   lcp gleason pgg45
+## 1        TRUE   TRUE   FALSE FALSE FALSE FALSE FALSE   FALSE FALSE
+## 2        TRUE   TRUE    TRUE FALSE FALSE FALSE FALSE   FALSE FALSE
+## 3        TRUE   TRUE    TRUE FALSE FALSE  TRUE FALSE   FALSE FALSE
+## 4        TRUE   TRUE    TRUE FALSE  TRUE  TRUE FALSE   FALSE FALSE
+## 5        TRUE   TRUE    TRUE  TRUE  TRUE  TRUE FALSE   FALSE FALSE
+## 6        TRUE   TRUE    TRUE  TRUE  TRUE  TRUE FALSE   FALSE  TRUE
+## 7        TRUE   TRUE    TRUE  TRUE  TRUE  TRUE  TRUE   FALSE  TRUE
+## 8        TRUE   TRUE    TRUE  TRUE  TRUE  TRUE  TRUE    TRUE  TRUE</code></pre>
+<p>This shows us that the best one-predictor model uses
+<code>lcavol</code>, the best two-predictor model uses
+<code>lcavol</code> and <code>lweight</code>, the best three-predictor
+model uses <code>lcavol</code>, <code>lweight</code>, and
+<code>svi</code>, and so on.</p>
+<p>We can use this set of models as guidance for what variables to
+include, and build up an interpretable model using some of the tools
+we’ve seen earlier in the course.</p>
+</div>
+<div class="slide section level2">
+
+<p><code>regsubsets</code> also does forward and backward stepwise
+regression. In this case they all give the same results.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>prostate_forward <span class="ot">=</span> <span class="fu">regsubsets</span>(lpsa <span class="sc">~</span> ., <span class="at">data =</span> prostate, <span class="at">method =</span> <span class="st">&quot;forward&quot;</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="fu">summary</span>(prostate_forward)<span class="sc">$</span>which</span></code></pre></div>
+<pre><code>##   (Intercept) lcavol lweight   age  lbph   svi   lcp gleason pgg45
+## 1        TRUE   TRUE   FALSE FALSE FALSE FALSE FALSE   FALSE FALSE
+## 2        TRUE   TRUE    TRUE FALSE FALSE FALSE FALSE   FALSE FALSE
+## 3        TRUE   TRUE    TRUE FALSE FALSE  TRUE FALSE   FALSE FALSE
+## 4        TRUE   TRUE    TRUE FALSE  TRUE  TRUE FALSE   FALSE FALSE
+## 5        TRUE   TRUE    TRUE  TRUE  TRUE  TRUE FALSE   FALSE FALSE
+## 6        TRUE   TRUE    TRUE  TRUE  TRUE  TRUE FALSE   FALSE  TRUE
+## 7        TRUE   TRUE    TRUE  TRUE  TRUE  TRUE  TRUE   FALSE  TRUE
+## 8        TRUE   TRUE    TRUE  TRUE  TRUE  TRUE  TRUE    TRUE  TRUE</code></pre>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>prostate_backward <span class="ot">=</span> <span class="fu">regsubsets</span>(lpsa <span class="sc">~</span> ., <span class="at">data =</span> prostate, <span class="at">method =</span> <span class="st">&quot;backward&quot;</span>)</span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="fu">summary</span>(prostate_backward)<span class="sc">$</span>which</span></code></pre></div>
+<pre><code>##   (Intercept) lcavol lweight   age  lbph   svi   lcp gleason pgg45
+## 1        TRUE   TRUE   FALSE FALSE FALSE FALSE FALSE   FALSE FALSE
+## 2        TRUE   TRUE    TRUE FALSE FALSE FALSE FALSE   FALSE FALSE
+## 3        TRUE   TRUE    TRUE FALSE FALSE  TRUE FALSE   FALSE FALSE
+## 4        TRUE   TRUE    TRUE FALSE  TRUE  TRUE FALSE   FALSE FALSE
+## 5        TRUE   TRUE    TRUE  TRUE  TRUE  TRUE FALSE   FALSE FALSE
+## 6        TRUE   TRUE    TRUE  TRUE  TRUE  TRUE FALSE   FALSE  TRUE
+## 7        TRUE   TRUE    TRUE  TRUE  TRUE  TRUE  TRUE   FALSE  TRUE
+## 8        TRUE   TRUE    TRUE  TRUE  TRUE  TRUE  TRUE    TRUE  TRUE</code></pre>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="fu">all</span>(<span class="fu">summary</span>(prostate_backward)<span class="sc">$</span>which <span class="sc">==</span> <span class="fu">summary</span>(prostate_forward)<span class="sc">$</span>which)</span></code></pre></div>
+<pre><code>## [1] TRUE</code></pre>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="fu">all</span>(<span class="fu">summary</span>(prostate_backward)<span class="sc">$</span>which <span class="sc">==</span> <span class="fu">summary</span>(prostate_best_subset)<span class="sc">$</span>which)</span></code></pre></div>
+<pre><code>## [1] TRUE</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>We start off looking at the best one-predictor model, with
+<code>lcavol</code> predicting <code>lpsa</code>.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a><span class="fu">ggplot</span>(prostate, <span class="fu">aes</span>(<span class="at">x =</span> lcavol, <span class="at">y =</span> lpsa)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">geom_smooth</span>()</span></code></pre></div>
+<pre><code>## `geom_smooth()` using method = &#39;loess&#39; and formula = &#39;y ~ x&#39;</code></pre>
+<p><img src="graphics/unnamed-chunk-9-1.png" /></p>
+<p>We see that the relationship is pretty close to linear (a line would
+go through the entire confidence band of the smoother), and so we’re ok
+with using a linear function of <code>lcavol</code> to predict
+<code>lpsa</code>.</p>
+<p>If there had been a major non-linearity here, we would have wanted to
+ditch the linear modeling approach and do something non-parametric,
+maybe loess.</p>
+</div>
+<div class="slide section level2">
+
+<p>Then we can move to the two-predictor model, and see what the
+relationship between <code>lcavol</code>, <code>lweight</code>, and
+<code>lpsa</code> looks like.</p>
+<p>We can make a coplot to examine the relationship between
+<code>lpsa</code> and <code>lcavol</code>, with <code>lweight</code>as
+the given variable</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a><span class="fu">ggplot</span>(prostate, <span class="fu">aes</span>(<span class="at">x =</span> lcavol, <span class="at">y =</span> lpsa)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">geom_smooth</span>(<span class="at">span =</span> <span class="dv">1</span>) <span class="sc">+</span> </span>
+<span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a>    <span class="fu">facet_grid</span>(<span class="sc">~</span><span class="fu">cut_number</span>(lweight, <span class="at">n =</span> <span class="dv">3</span>))</span></code></pre></div>
+<pre><code>## `geom_smooth()` using method = &#39;loess&#39; and formula = &#39;y ~ x&#39;</code></pre>
+<p><img src="graphics/unnamed-chunk-10-1.png" /></p>
+<p>Here it seems like there is some non-linearity, but only for the
+observations with a high value of <code>lweight</code>.</p>
+<p>If we had a lot more observations, this might prompt us to move to
+loess, but since the non-linearity is based on just a few points, we
+want to see first whether the non-linearity shows up in other graphs as
+well.</p>
+</div>
+<div class="slide section level2">
+
+<p>The best three-predictor model identified by <code>leaps</code>
+included <code>svi</code> in addition to <code>lcavol</code> and
+<code>lweight</code>, so we next look at those four variables
+together.</p>
+<p><code>svi</code> is binary and there are only 21 cases where
+<code>svi</code> is equal to 1, we can’t make a lot of facets and we
+don’t trust curves that much.</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a><span class="fu">table</span>(prostate<span class="sc">$</span>svi)</span></code></pre></div>
+<pre><code>## 
+##  0  1 
+## 76 21</code></pre>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" tabindex="-1"></a>prostate<span class="sc">$</span>svi <span class="ot">=</span> <span class="fu">recode</span>(prostate<span class="sc">$</span>svi, <span class="st">`</span><span class="at">1</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Yes&quot;</span>, <span class="st">`</span><span class="at">0</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;No&quot;</span>)</span>
+<span id="cb22-2"><a href="#cb22-2" tabindex="-1"></a><span class="fu">ggplot</span>(prostate, <span class="fu">aes</span>(<span class="at">x =</span> lcavol, <span class="at">y =</span> lpsa, <span class="at">group =</span> svi, <span class="at">color =</span> svi)) <span class="sc">+</span></span>
+<span id="cb22-3"><a href="#cb22-3" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
+<span id="cb22-4"><a href="#cb22-4" tabindex="-1"></a>    <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="at">se =</span> <span class="cn">FALSE</span>) <span class="sc">+</span> <span class="fu">facet_wrap</span>(<span class="sc">~</span> <span class="fu">cut_number</span>(lweight, <span class="at">n =</span> <span class="dv">2</span>))</span></code></pre></div>
+<pre><code>## `geom_smooth()` using formula = &#39;y ~ x&#39;</code></pre>
+<p><img src="graphics/unnamed-chunk-11-1.png" /></p>
+<p>The different slopes suggest an interaction, but again, we don’t have
+that much data.</p>
+</div>
+<div class="slide section level2">
+
+<p>Next we try looking at the predictors from the four-predictor model.
+This is pushing the limits of the number of variables we can look at all
+at once, but we will try.</p>
+<p>We can look at the relationship between <code>lpsa</code>,
+<code>lcavol</code>, and <code>svi</code>, with <code>lweight</code> and
+<code>lbph</code> as the given variables.</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" tabindex="-1"></a><span class="fu">ggplot</span>(prostate, <span class="fu">aes</span>(<span class="at">x =</span> lcavol, <span class="at">y =</span> lpsa, <span class="at">group =</span> svi, <span class="at">color =</span> svi)) <span class="sc">+</span></span>
+<span id="cb24-2"><a href="#cb24-2" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
+<span id="cb24-3"><a href="#cb24-3" tabindex="-1"></a>    <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="at">se =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb24-4"><a href="#cb24-4" tabindex="-1"></a>        <span class="fu">facet_grid</span>(<span class="fu">cut_number</span>(lweight, <span class="at">n =</span> <span class="dv">2</span>) <span class="sc">~</span> <span class="fu">cut</span>(lbph, <span class="at">breaks =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">2</span>, <span class="sc">-</span><span class="dv">1</span>, <span class="dv">3</span>)))</span></code></pre></div>
+<pre><code>## `geom_smooth()` using formula = &#39;y ~ x&#39;</code></pre>
+<p><img src="graphics/unnamed-chunk-12-1.png" /></p>
+<p>Based on this visualization, we might not be confident about an
+interaction: the blue lines vary in slope, but there’s based on very
+small samples. The red lines have different heights but are similar in
+slope.</p>
+</div>
+<div class="slide section level2">
+
+<p>We’re not always required to find a “best” model, and even if we were
+we can decide on what best means subjectively.</p>
+<p>If you wanted to fit a linear model with <code>lcavol</code>,
+<code>lweight</code>, and <code>svi</code> as predictors plus
+interactions, you’re free to do so and then call that “best” because of
+the complexity you can get out of a relatively small number of
+variables.</p>
+<p>We can also check what the model selection criteria tell us about how
+many variables to use:</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" tabindex="-1"></a>cp_df <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="at">value  =</span> <span class="fu">summary</span>(prostate_best_subset)<span class="sc">$</span>cp,</span>
+<span id="cb26-2"><a href="#cb26-2" tabindex="-1"></a>                   <span class="at">n_params =</span> <span class="fu">seq_along</span>(<span class="fu">summary</span>(prostate_best_subset)<span class="sc">$</span>cp),</span>
+<span id="cb26-3"><a href="#cb26-3" tabindex="-1"></a>                   <span class="at">type =</span> <span class="st">&quot;Cp&quot;</span>)</span>
+<span id="cb26-4"><a href="#cb26-4" tabindex="-1"></a>bic_df <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="at">value =</span> <span class="fu">summary</span>(prostate_best_subset)<span class="sc">$</span>bic,</span>
+<span id="cb26-5"><a href="#cb26-5" tabindex="-1"></a>                    <span class="at">n_params =</span> <span class="fu">seq_along</span>(<span class="fu">summary</span>(prostate_best_subset)<span class="sc">$</span>bic),</span>
+<span id="cb26-6"><a href="#cb26-6" tabindex="-1"></a>                    <span class="at">type =</span> <span class="st">&quot;BIC&quot;</span>)</span>
+<span id="cb26-7"><a href="#cb26-7" tabindex="-1"></a>model_selection_criterion_df <span class="ot">=</span> <span class="fu">rbind</span>(cp_df, bic_df)</span>
+<span id="cb26-8"><a href="#cb26-8" tabindex="-1"></a><span class="fu">ggplot</span>(model_selection_criterion_df, <span class="fu">aes</span>(<span class="at">x =</span> n_params, <span class="at">y =</span> value)) <span class="sc">+</span></span>
+<span id="cb26-9"><a href="#cb26-9" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">facet_wrap</span>(<span class="sc">~</span> type, <span class="at">scales =</span> <span class="st">&quot;free_y&quot;</span>)</span></code></pre></div>
+<p><img src="graphics/unnamed-chunk-13-1.png" /></p>
+<p>Even though the lowest value of Cp is for 5 predictors, the Cp value
+for 3 predictors is very close to the value for 5 predictors and BIC has
+a strong minimum at 5 predictors. The two plots suggest that if we don’t
+believe we need any interactions, we should use a model with an
+intercept and two predictors.</p>
+</div>
+<div id="plotting-a-final-model" class="slide section level2">
+<h1>Plotting a final model</h1>
+<p><img src="graphics/unnamed-chunk-14-1.png" /></p>
+</div>
+<div id="another-try-not-all-the-information-in-one-plot"
+class="slide section level2">
+<h1>Another try, not all the information in one plot</h1>
+<p>This set of images is more “for the postdoc” and less “for the
+generals,” but sometimes they are your audience too.</p>
+<p>Cancer volume is the most important determinant of PSA:</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" tabindex="-1"></a><span class="fu">ggplot</span>(prostate, <span class="fu">aes</span>(<span class="at">x =</span> lcavol, <span class="at">y =</span> lpsa)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb27-2"><a href="#cb27-2" tabindex="-1"></a>    <span class="fu">scale_x_continuous</span>(<span class="st">&quot;Log cancer volume&quot;</span>) <span class="sc">+</span> <span class="fu">scale_y_continuous</span>(<span class="st">&quot;Log PSA&quot;</span>)</span></code></pre></div>
+<p><img src="graphics/unnamed-chunk-15-1.png" /></p>
+</div>
+<div class="slide section level2">
+
+<p>Cancer weight is not as important on its own, but cancer weight is
+also important even when we take into account cancer volumes,
+particularly for low cancer volumes:</p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" tabindex="-1"></a><span class="fu">ggplot</span>(prostate_with_lweight_bins, <span class="fu">aes</span>(<span class="at">x =</span> lweight, <span class="at">y =</span> lpsa, <span class="at">color =</span> lcavol_bins)) <span class="sc">+</span></span>
+<span id="cb28-2"><a href="#cb28-2" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">facet_wrap</span>(<span class="sc">~</span> lcavol_bins, <span class="at">scales =</span> <span class="st">&quot;free_x&quot;</span>) <span class="sc">+</span></span>
+<span id="cb28-3"><a href="#cb28-3" tabindex="-1"></a>    <span class="fu">scale_color_discrete</span>(<span class="st">&quot;Cancer volume&quot;</span>) <span class="sc">+</span></span>
+<span id="cb28-4"><a href="#cb28-4" tabindex="-1"></a>    <span class="fu">scale_x_continuous</span>(<span class="st">&quot;Log cancer weight&quot;</span>) <span class="sc">+</span> <span class="fu">scale_y_continuous</span>(<span class="st">&quot;Log PSA&quot;</span>)</span></code></pre></div>
+<p><img src="graphics/unnamed-chunk-16-1.png" /></p>
+</div>
+<div class="slide section level2">
+
+<p>There is a suggestion that SVI has an effect on PSA as well, even
+taking into account cancer weight and volume, but even though we get a
+positive term in the linear model the effect is less consistent and
+convincing.</p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" tabindex="-1"></a><span class="fu">ggplot</span>(prostate_with_lweight_bins, <span class="fu">aes</span>(<span class="at">x =</span> lcavol, <span class="at">y =</span> lpsa, <span class="at">color =</span> svi)) <span class="sc">+</span></span>
+<span id="cb29-2"><a href="#cb29-2" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb29-3"><a href="#cb29-3" tabindex="-1"></a>    <span class="fu">facet_wrap</span>(<span class="sc">~</span> lweight_bins_labeled) <span class="sc">+</span></span>
+<span id="cb29-4"><a href="#cb29-4" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> lcavol, <span class="at">color =</span> svi, <span class="at">y =</span> .fitted),</span>
+<span id="cb29-5"><a href="#cb29-5" tabindex="-1"></a>              <span class="at">data =</span> prostate_fits_on_grid) <span class="sc">+</span></span>
+<span id="cb29-6"><a href="#cb29-6" tabindex="-1"></a>    <span class="fu">scale_color_discrete</span>(<span class="st">&quot;SVI&quot;</span>) <span class="sc">+</span></span>
+<span id="cb29-7"><a href="#cb29-7" tabindex="-1"></a>    <span class="fu">scale_x_continuous</span>(<span class="st">&quot;Log cancer volume&quot;</span>) <span class="sc">+</span> <span class="fu">scale_y_continuous</span>(<span class="st">&quot;Log PSA&quot;</span>)</span></code></pre></div>
+<p><img src="graphics/unnamed-chunk-17-1.png" /></p>
+</div>
+<div id="summing-up" class="slide section level2">
+<h1>Summing up</h1>
+<ul>
+<li>Think about the story you are trying to tell</li>
+</ul>
+<ul>
+<li>Tailor to your audience</li>
+</ul>
+<ul>
+<li>If you need to show a complex figure, it helps to build up to it
+with simpler versions</li>
+</ul>
+</div>
+</body>
+</html>

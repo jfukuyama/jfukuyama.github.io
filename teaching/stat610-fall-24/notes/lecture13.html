@@ -1,0 +1,399 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title>lecture13</title>
+  <style type="text/css">
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="https://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="https://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div id="lecture-13-version-control-and-git"
+class="slide section level1">
+<h1>Lecture 13: Version control and git</h1>
+<ul class="incremental">
+<li><p>Today: Git for local version control</p></li>
+<li><p>Next time: Distributed version
+control/GitHub/merging/rebasing</p></li>
+<li><p>Reading (if you want more detail): <a
+href="https://git-scm.com/book/en/v2">Pro Git</a>, Chapters 1, 2, 3,
+10.</p></li>
+<li><p>Lab this Friday</p></li>
+</ul>
+</div>
+<div id="version-control" class="slide section level1">
+<h1>Version control</h1>
+<ul class="incremental">
+<li><p>Generally, a system that records changes to a set of files over
+time.</p></li>
+<li><p>Allows for experimentation: if you have a good version of a
+project and want to experiment with a change, you can easily go back to
+the good version if the experiment fails.</p></li>
+<li><p>Most informal type of version control is by making copies of
+files with different names: <code>final_project.Rmd</code>,
+<code>final_project_old.Rmd</code>,
+<code>final_project_nov_29.Rmd</code>, etc.</p></li>
+</ul>
+</div>
+<div id="git" class="slide section level1">
+<h1>Git</h1>
+<p>Basic idea:</p>
+<ul>
+<li>Stores snapshots of the project at different points in time, these
+are <em>commits</em>.</li>
+</ul>
+<ul>
+<li>You can easily display differences between commits (= states of the
+project at different points in time).</li>
+</ul>
+<ul>
+<li>You can easily move between commits (= states of the project at
+different points in time).</li>
+</ul>
+<p>Some nice features:</p>
+<ul>
+<li>If you’ve changed some things and don’t like the results, you can go
+back to an older version and start over</li>
+</ul>
+<ul>
+<li>Allows multiple people to work on the same project</li>
+</ul>
+<ul>
+<li>Allows for resolving simultaneous changes as easily as possible</li>
+</ul>
+<ul>
+<li>We have a complete history of who changed what and why</li>
+</ul>
+</div>
+<div id="two-important-concepts" class="slide section level1">
+<h1>Two important concepts</h1>
+<p><em>Commits</em> and <em>branches</em>:</p>
+<ul class="incremental">
+<li><p>A <em>commit</em> is a snapshot of the project at a certain point
+in time.</p></li>
+<li><p>A <em>branch</em> is a pointer to a commit.</p></li>
+</ul>
+</div>
+<div id="getting-started" class="slide section level1">
+<h1>Getting started</h1>
+<p>Two ways to make a git repository:</p>
+<ul>
+<li>Start from scratch. Make a project directory (= folder) where you
+want to store the files you will track. On the command line, navigate to
+the project directory and then type</li>
+</ul>
+<pre><code>git init</code></pre>
+<p>There will now be a <code>.git</code> folder in the project
+directory. This is where the history of the project is stored.</p>
+<ul>
+<li>Clone an existing repository.</li>
+</ul>
+<pre><code>git clone https://github.com/tidyverse/ggplot2</code></pre>
+<p>This will make a directory called <code>ggplot2</code> and copy the
+<code>ggplot2</code> repository into it. This means that you have the
+current state of the <code>ggplot2</code> project and access to all the
+previous versions.</p>
+</div>
+<div id="staging-and-creating-commits" class="slide section level1">
+<h1>Staging and creating commits</h1>
+<p>Once you have the repository, you usually want to change things and
+record those changes = create a commit.</p>
+<p>Our first problem is that you might want to record just a subset of
+the changes that you made.</p>
+<p>This problem is solved with the “staging area.”</p>
+</div>
+<div class="slide section level1">
+
+<p>When you make changes to files, Git sees that they are different from
+the last version recorded.</p>
+<p>Files can be in four states:</p>
+<ul>
+<li>Untracked: The file was not tracked (not part of the most recent
+commit) and is not in the staging area.</li>
+</ul>
+<ul>
+<li>Unmodified: The file was part of the most recent commit but hasn’t
+been modified since.</li>
+</ul>
+<ul>
+<li>Modified: The file was part of the most recent commit and has been
+modified.</li>
+</ul>
+<ul>
+<li>Staged: The file was modified or added since the most recent commit
+and the new version should be part of the next commit.</li>
+</ul>
+<p><img src="lifecycle.png" /></p>
+</div>
+<div id="checking-the-status-of-your-files"
+class="slide section level1">
+<h1>Checking the status of your files</h1>
+<p>The command <code>git status</code> will describe the state of the
+files in your repository.</p>
+<p>If nothing has changed since the last commit, the output will look
+something like this:</p>
+<pre><code>On branch master
+Your branch is up-to-date with &#39;origin/master&#39;.
+nothing to commit, working directory clean</code></pre>
+<p>If there were changes, the files will be shown as untracked, modified
+but not staged, or staged.</p>
+</div>
+<div id="tracking-new-files" class="slide section level1">
+<h1>Tracking new files</h1>
+<p>To start tracking a file that wasn’t part of the last commit, use
+<code>git add &lt;filename&gt;</code>.</p>
+<p>For example, if you’ve made a new file called
+<code>README</code>:</p>
+<pre><code>$ git add README
+$ git status
+
+On branch master
+Your branch is up-to-date with &#39;origin/master&#39;.
+Changes to be committed:
+  (use &quot;git restore --staged &lt;file&gt;...&quot; to unstage)
+
+    new file:   README</code></pre>
+</div>
+<div id="staging-modified-files" class="slide section level1">
+<h1>Staging modified files</h1>
+<p>If we change a file that was tracked in the most recent commit, it
+will be marked as modified.</p>
+<p>If we then use <code>git add &lt;filename&gt;</code>, the file status
+will go from modified to staged.</p>
+</div>
+<div id="viewing-your-staged-and-unstaged-changes"
+class="slide section level1">
+<h1>Viewing your staged and unstaged changes</h1>
+<ul class="incremental">
+<li><p><code>git status</code> tells you about the files that have been
+changed since the last commit, and which changes are staged for the next
+commit.</p></li>
+<li><p><code>git diff</code>, with no extra arguments, tells you about
+the differences between the files that are changes since the last commit
+but not staged.</p></li>
+<li><p><code>git diff --staged</code> tells you about the differences
+between the staged changes and the last commit.</p></li>
+</ul>
+</div>
+<div id="committing-your-changes" class="slide section level1">
+<h1>Committing your changes</h1>
+<p>The command <code>git commit</code> creates a new commit
+corresponding to the staged changes (so the unstaged changes are not
+part of the new commit).</p>
+<ul class="incremental">
+<li><p>If you just write <code>git commit</code> with no extra
+arguments, a text editor will open, either the default (usually vim) or
+one you have set. In the text editor, you are supposed to write a commit
+message describing the changes you have just committed.</p></li>
+<li><p><code>git commit -m "&lt;commit message&gt;"</code> will bypass
+the text editor opening.</p></li>
+</ul>
+</div>
+<div id="viewing-the-commit-history" class="slide section level1">
+<h1>Viewing the commit history</h1>
+<p>The command <code>git log</code> shows the commit history.</p>
+<p>Some useful flags:</p>
+<ul>
+<li><code>-p</code>: For “patch”, shows the differences between
+commits</li>
+</ul>
+<ul>
+<li><code>--stat</code>: Shows statistics for files modified in each
+commit</li>
+</ul>
+<ul>
+<li><code>--graph</code>: Shows a graph of the branches and merges next
+to the commit history</li>
+</ul>
+<ul>
+<li><code>--relative-date</code>: Shows the date in relative terms
+instead of absolute</li>
+</ul>
+</div>
+<div id="branches" class="slide section level1">
+<h1>Branches</h1>
+<p>Problem: We have made a lot of commits. If we want to switch between
+them, how do we do that?</p>
+<ul>
+<li>A <em>branch</em> is a pointer to one commit. Can think of it as a
+name for that commit.</li>
+</ul>
+<ul>
+<li>By default, you start off with a branch called <code>master</code>
+or <code>main</code>, but you can make more, and with any names you
+want.</li>
+</ul>
+<ul>
+<li>There is nothing special about the <code>master</code> branch.</li>
+</ul>
+</div>
+<div id="head" class="slide section level1">
+<h1>HEAD</h1>
+<p>Problem: if you’re making changes (= adding commits), you probably
+want a pointer to the most recent commit. We would like branches to move
+when we make a new commit. HEAD solves the problem of updating branches
+after commits.</p>
+<ul>
+<li>HEAD is a pointer to a branch.</li>
+</ul>
+<ul>
+<li>When you make a new commit, the branch HEAD points to moves to the
+new commit.</li>
+</ul>
+<ul>
+<li>The <code>checkout</code> function allows you to change the branch
+HEAD points to.</li>
+</ul>
+</div>
+<div class="slide section level1">
+
+<p>Start with three commits, two branches</p>
+<p><img src="head_1.png" /></p>
+</div>
+<div class="slide section level1">
+
+<p>Add a commit:</p>
+<p><img src="head_2.png" /></p>
+</div>
+<div class="slide section level1">
+
+<p>Switch branches with checkout:</p>
+<p><img src="head_3.png" /></p>
+</div>
+<div id="the-repository-in-more-detail" class="slide section level1">
+<h1>The repository in more detail</h1>
+</div>
+<div id="how-all-the-data-is-stored" class="slide section level1">
+<h1>How all the data is stored</h1>
+<p>Three basic types of objects:</p>
+<ul>
+<li>blobs: contents of a file</li>
+</ul>
+<ul>
+<li>trees: an object describing the contents of a directory</li>
+</ul>
+<ul>
+<li>commits: an object describing the state of the repository at a
+particular point in time</li>
+</ul>
+<p>All these objects are stored by their <em>hash</em></p>
+</div>
+<div id="hashes" class="slide section level1">
+<h1>Hashes</h1>
+<ul class="incremental">
+<li><p>A <em>hash</em> is a tool from computer security for checking
+whether data has been tampered with</p></li>
+<li><p>Git uses <a
+href="https://en.wikipedia.org/wiki/SHA-1">SHA1</a></p></li>
+<li><p>This is a function that takes data of any size and produces a
+20-byte hash value.</p></li>
+<li><p>This is usually displayed as a 40-digit hexadecimal
+number.</p></li>
+<li><p>Idea behind a hash function is that small perturbations in the
+data lead to large changes in the hash value, and the function is
+designed to be difficult to invert (if you’re given a hash value, it’s
+hard to create a file that has that value)</p></li>
+<li><p>Every object is referred to by its hash value</p></li>
+</ul>
+</div>
+<div id="blobs" class="slide section level1">
+<h1>Blobs</h1>
+<ul class="incremental">
+<li><p>Blobs store the contents of a file</p></li>
+<li><p>Name is the hash value of the contents of the file</p></li>
+</ul>
+</div>
+<div id="trees" class="slide section level1">
+<h1>Trees</h1>
+<ul>
+<li>Blobs just store the contents of the file</li>
+</ul>
+<ul>
+<li>Trees store the file name and the directory structure</li>
+</ul>
+<p>To see the tree, you can use:</p>
+<pre><code>git cat-file -p master^{tree}</code></pre>
+<p>And the output might look like this:</p>
+<pre><code>100644 blob 01b480b010b7fe66e312e1271dd24e128f3a0290    .gitmodules
+100644 blob 1d17afb2a980076fc389f3d2747b0bfefd4df839    Dockerfile
+100644 blob 716007c1456163b933cb086acae151fc6a24ca6d    README.md
+100644 blob 9af5513cf53dfbdedbc69ec43865dec054de0ccd    SConstruct
+040000 tree 100d47915afe22615ff111d390170c7265900b7a    analysis</code></pre>
+</div>
+<div class="slide section level1">
+
+<p>Conceptually, if we have a directory containing</p>
+<ul>
+<li><code>README</code>,</li>
+</ul>
+<ul>
+<li><code>Rakefile</code>,</li>
+</ul>
+<ul>
+<li>A subdirectory called <code>lib</code>,</li>
+</ul>
+<ul>
+<li>A file <code>samplegit.rb</code> in <code>lib</code>,</li>
+</ul>
+<p>Git would store a snapshot of the directory as three blobs and two
+trees:</p>
+<p><img src="tree_1.png" /></p>
+</div>
+<div id="commits" class="slide section level1">
+<h1>Commits</h1>
+<p>Remember that a <em>commit</em> records the state of the repository
+at a particular point in time. It contains:</p>
+<ul>
+<li>Hash of the tree object for the top level directory</li>
+</ul>
+<ul>
+<li>Hash of the parent commit</li>
+</ul>
+<ul>
+<li>Meta-information about the commit (author, commit message, date,
+etc.)</li>
+</ul>
+<p>Commits are also referred to by their hashes, and you should think of
+git as storing a set of commits.</p>
+</div>
+<div class="slide section level1">
+
+<p>Putting everything together, we get a graph that describes the files
+that were present at different commits:</p>
+<p><img src="commits.png" /></p>
+</div>
+<div id="overall" class="slide section level1">
+<h1>Overall</h1>
+<ul class="incremental">
+<li><p>A git repository contains a set of commits, which describe a set
+of files at a certain point in time</p></li>
+<li><p>The main things we want to be able to do are add new commits and
+move to different commits</p></li>
+<li><p>A branch is just a name for a specific commit, and it allows us
+to move between different commits without referring to them by their
+name/hash</p></li>
+</ul>
+</div>
+</body>
+</html>

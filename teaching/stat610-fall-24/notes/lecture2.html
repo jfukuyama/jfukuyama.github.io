@@ -1,0 +1,593 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title>Stat 610 Lecture 2: Flow control and looping</title>
+  <style type="text/css">
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    /* CSS for syntax highlighting */
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="https://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js"
+  type="text/javascript"></script>
+  <script src="https://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div class="slide titlepage">
+  <h1 class="title">Stat 610 Lecture 2: Flow control and looping</h1>
+</div>
+<div id="today" class="slide section level2">
+<h1>Today</h1>
+<p>Reading: Matloff Chapter 7.1, 7.2, 2.9</p>
+<p>Last time/finish up today: Data structures, so that we have something
+to work on.</p>
+<p>This time: Flow control, so we can actually do things.</p>
+</div>
+<div id="flow-control-and-looping" class="slide section level2">
+<h1>Flow control and looping</h1>
+<ul class="incremental">
+<li><p>Conditionals</p></li>
+<li><p>Iteration</p></li>
+<li><p>Vectorization</p></li>
+</ul>
+</div>
+<div id="if-statements" class="slide section level2">
+<h1>if statements</h1>
+<p>Syntax</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="cf">if</span> (condition) {</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>    action1</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>} <span class="cf">else</span> {</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a>    action2</span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>}</span></code></pre></div>
+<div class="incremental">
+<p>So for example:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>weather <span class="ot">&lt;-</span> <span class="st">&quot;sunny&quot;</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="cf">if</span>(weather <span class="sc">==</span> <span class="st">&quot;rainy&quot;</span>) {</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>    <span class="fu">print</span>(<span class="st">&quot;Take your umbrella!&quot;</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>} <span class="cf">else</span> {</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>    <span class="fu">print</span>(<span class="st">&quot;No need for an umbrella today...&quot;</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>}</span></code></pre></div>
+<pre><code>## [1] &quot;No need for an umbrella today...&quot;</code></pre>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>You can make more complicated conditions using either
+<code>else if</code> or nested <code>if</code> statements:</p>
+<div class="incremental">
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>weather <span class="ot">&lt;-</span> <span class="st">&quot;cloudy&quot;</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="cf">if</span>(weather <span class="sc">==</span> <span class="st">&quot;rainy&quot;</span>) {</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>    <span class="fu">print</span>(<span class="st">&quot;Take your umbrella!&quot;</span>)</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>} <span class="cf">else</span> <span class="cf">if</span> (weather <span class="sc">==</span> <span class="st">&quot;cloudy&quot;</span>) {</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>    <span class="fu">print</span>(<span class="st">&quot;Think about taking your umbrella&quot;</span>)</span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>} <span class="cf">else</span> {</span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>    <span class="fu">print</span>(<span class="st">&quot;No need for an umbrella today...&quot;</span>)</span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a>}</span></code></pre></div>
+<pre><code>## [1] &quot;Think about taking your umbrella&quot;</code></pre>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Some rules:</p>
+<ul class="incremental">
+<li><p><code>if</code> requires <em>one</em> boolean, not a vector. It
+will throw a warning if you give it a vector, but it will evaluated
+based on just the first element of that vector.</p></li>
+<li><p><code>else</code> is optional</p></li>
+<li><p>If the action is just one line, you don’t need the braces (but
+you should be consistent about this: choose a way you like and stick to
+it).</p></li>
+</ul>
+</div>
+<div id="combining-booleans-and-lazy-evaluation"
+class="slide section level2">
+<h1>Combining booleans and lazy evaluation</h1>
+<p>We often want to combine conditions, which we can do with boolean
+operations.</p>
+<p>Like all other languages, R has AND and OR functions, but unlike some
+other languages it has two of each.</p>
+<ul class="incremental">
+<li><p><code>&amp;</code> and <code>&amp;&amp;</code> both mean
+AND.</p></li>
+<li><p><code>|</code> and <code>||</code> both mean OR.</p></li>
+</ul>
+<div class="incremental">
+<p>So for example:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>steak_type <span class="ot">&lt;-</span> <span class="st">&quot;med_rare&quot;</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>temp <span class="ot">&lt;-</span> <span class="dv">130</span></span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="cf">if</span>(steak_type <span class="sc">==</span> <span class="st">&quot;rare&quot;</span> <span class="sc">&amp;</span> temp <span class="sc">&gt;</span> <span class="dv">115</span>) {</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>    <span class="fu">print</span>(<span class="st">&quot;take your steak off!&quot;</span>)</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>} <span class="cf">else</span> <span class="cf">if</span>(steak_type <span class="sc">==</span> <span class="st">&quot;med_rare&quot;</span> <span class="sc">&amp;</span> temp <span class="sc">&gt;</span> <span class="dv">125</span>) {</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>    <span class="fu">print</span>(<span class="st">&quot;take your steak off!&quot;</span>)        </span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>} <span class="cf">else</span> {</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>    <span class="fu">print</span>(<span class="st">&quot;you can keep cooking&quot;</span>)</span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>}</span></code></pre></div>
+<pre><code>## [1] &quot;take your steak off!&quot;</code></pre>
+<p>NB: As we’ll see in two slides, <code>&amp;</code> works here but it
+would be better to use <code>&amp;&amp;</code>.</p>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Or, in not so dire a situation:</p>
+<div class="incremental">
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>steak_type <span class="ot">&lt;-</span> <span class="st">&quot;rare&quot;</span></span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>temp <span class="ot">&lt;-</span> <span class="dv">110</span></span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="cf">if</span>(steak_type <span class="sc">==</span> <span class="st">&quot;rare&quot;</span> <span class="sc">&amp;&amp;</span> temp <span class="sc">&gt;</span> <span class="dv">115</span>) {</span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>    <span class="fu">print</span>(<span class="st">&quot;take your steak off!&quot;</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a>} <span class="cf">else</span> <span class="cf">if</span>(steak_type <span class="sc">==</span> <span class="st">&quot;med_rare&quot;</span> <span class="sc">&amp;&amp;</span> temp <span class="sc">&gt;</span> <span class="dv">125</span>) {</span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a>    <span class="fu">print</span>(<span class="st">&quot;take your steak off!&quot;</span>)        </span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a>} <span class="cf">else</span> {</span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a>    <span class="fu">print</span>(<span class="st">&quot;you can keep cooking&quot;</span>)</span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a>}</span></code></pre></div>
+<pre><code>## [1] &quot;you can keep cooking&quot;</code></pre>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>What is the difference between the two?</p>
+<ul class="incremental">
+<li>Double operators give scalars (vectors of length 1), single
+operators give vectors.</li>
+</ul>
+<div class="incremental">
+<ul class="incremental">
+<li>If you call <code>&amp;&amp;</code> or <code>||</code> on a pair of
+vectors with length longer than 1, the expression will be evaluated on
+the first element of the vector.</li>
+</ul>
+</div>
+<div class="incremental">
+<ul class="incremental">
+<li><code>&amp;&amp;</code> and <code>||</code> also support <em>lazy
+evaluation</em>.</li>
+</ul>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Lazy evaluation:</p>
+<ul class="incremental">
+<li><p><code>FALSE</code> followed by <code>&amp;&amp;</code> doesn’t
+evaluate the second expression.</p></li>
+<li><p><code>TRUE</code> followed by <code>||</code> doesn’t evaluate
+the second expression.</p></li>
+<li><p>This will occasionally make your code faster, so if you remember
+to use <code>&amp;&amp;</code> and <code>||</code> for flow control and
+put the expressions that are simpler to evaluate first, you will
+occasionally get performance improvements.</p></li>
+</ul>
+<p>Try this on your computer. Which ones are fast and which ones are
+slow? Why?</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a>(<span class="cn">FALSE</span> <span class="sc">&amp;&amp;</span> <span class="fu">all</span>(<span class="fu">rep</span>(<span class="dv">1</span>, <span class="dv">10</span><span class="sc">^</span><span class="dv">8</span>) <span class="sc">==</span> <span class="dv">1</span>))</span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a>(<span class="cn">FALSE</span> <span class="sc">&amp;</span> <span class="fu">all</span>(<span class="fu">rep</span>(<span class="dv">1</span>, <span class="dv">10</span><span class="sc">^</span><span class="dv">8</span>) <span class="sc">==</span> <span class="dv">1</span>))</span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a>(<span class="fu">all</span>(<span class="fu">rep</span>(<span class="dv">1</span>, <span class="dv">10</span><span class="sc">^</span><span class="dv">8</span>) <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">&amp;&amp;</span> <span class="cn">FALSE</span>)</span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a>(<span class="fu">all</span>(<span class="fu">rep</span>(<span class="dv">1</span>, <span class="dv">10</span><span class="sc">^</span><span class="dv">8</span>) <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">&amp;</span> <span class="cn">FALSE</span>)</span></code></pre></div>
+</div>
+<div class="slide section level2">
+
+<p>Take-away:</p>
+<ul class="incremental">
+<li><p>Use <code>&amp;&amp;</code> and <code>||</code> for flow
+control.</p></li>
+<li><p>Use <code>&amp;</code> and <code>|</code> for operations on
+vectors.</p></li>
+<li><p>Put simpler operations first when using <code>&amp;&amp;</code>
+and <code>||</code>.</p></li>
+</ul>
+</div>
+<div id="iteration" class="slide section level2">
+<h1>Iteration</h1>
+<p>Two types</p>
+<ul class="incremental">
+<li><p>For loops: You know how many iterations you need in
+advance.</p></li>
+<li><p>While loops: You’ll know when to stop when you see it, but you
+don’t know in advance.</p></li>
+</ul>
+</div>
+<div id="for-loops" class="slide section level2">
+<h1>For loops</h1>
+<p>Syntax:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="cf">for</span>(x <span class="cf">in</span> vector) {</span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a>    ...</span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a>}</span></code></pre></div>
+<p>Rules:</p>
+<ul class="incremental">
+<li><p><code>vector</code> is a vector</p></li>
+<li><p><code>x</code> is a variable, which will be set first to
+<code>vector[1]</code>, then to <code>vector[2]</code>, and so on, up to
+<code>vector[n]</code>, where <code>n</code> is the length of
+<code>vector</code>.</p></li>
+<li><p>The actions inside <code>{</code> and <code>}</code> will be
+performed for each value of <code>x</code>.</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>So for example:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span></span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> x) {</span>
+<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a>    <span class="fu">print</span>(i<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a>}</span></code></pre></div>
+<pre><code>## [1] 1
+## [1] 4
+## [1] 9
+## [1] 16
+## [1] 25</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>As with all the other flow control elements, for loops can be
+nested.</p>
+<div class="incremental">
+<p>We can use this to do something slightly more complicated:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a>d <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span></span>
+<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a>D <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="cn">NA</span>, <span class="at">nrow =</span> <span class="fu">length</span>(d), <span class="at">ncol =</span> <span class="fu">length</span>(d))</span>
+<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a>D</span></code></pre></div>
+<pre><code>##      [,1] [,2] [,3] [,4] [,5]
+## [1,]   NA   NA   NA   NA   NA
+## [2,]   NA   NA   NA   NA   NA
+## [3,]   NA   NA   NA   NA   NA
+## [4,]   NA   NA   NA   NA   NA
+## [5,]   NA   NA   NA   NA   NA</code></pre>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(D)) {</span>
+<span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a>    <span class="cf">for</span>(j <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">ncol</span>(D)) {</span>
+<span id="cb18-3"><a href="#cb18-3" tabindex="-1"></a>        <span class="cf">if</span>(i <span class="sc">==</span> j) {</span>
+<span id="cb18-4"><a href="#cb18-4" tabindex="-1"></a>            D[i,j] <span class="ot">&lt;-</span> d[i]</span>
+<span id="cb18-5"><a href="#cb18-5" tabindex="-1"></a>        } <span class="cf">else</span> {</span>
+<span id="cb18-6"><a href="#cb18-6" tabindex="-1"></a>            D[i,j] <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb18-7"><a href="#cb18-7" tabindex="-1"></a>        }</span>
+<span id="cb18-8"><a href="#cb18-8" tabindex="-1"></a>    }</span>
+<span id="cb18-9"><a href="#cb18-9" tabindex="-1"></a>}</span>
+<span id="cb18-10"><a href="#cb18-10" tabindex="-1"></a>D</span></code></pre></div>
+<pre><code>##      [,1] [,2] [,3] [,4] [,5]
+## [1,]    1    0    0    0    0
+## [2,]    0    2    0    0    0
+## [3,]    0    0    3    0    0
+## [4,]    0    0    0    4    0
+## [5,]    0    0    0    0    5</code></pre>
+</div>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<p>They can also be combined with the other flow control elements:</p>
+<p>Don’t worry about this part, just data setup:</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a><span class="do">## install.packages(&quot;Lahman&quot;)</span></span>
+<span id="cb20-2"><a href="#cb20-2" tabindex="-1"></a><span class="do">## install.packages(&quot;pacman&quot;)</span></span>
+<span id="cb20-3"><a href="#cb20-3" tabindex="-1"></a><span class="fu">library</span>(Lahman)</span>
+<span id="cb20-4"><a href="#cb20-4" tabindex="-1"></a><span class="fu">library</span>(pacman)</span>
+<span id="cb20-5"><a href="#cb20-5" tabindex="-1"></a><span class="fu">p_load</span>(Lahman)</span></code></pre></div>
+<p>What the data looks like:</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a><span class="fu">head</span>(People)</span></code></pre></div>
+<pre><code>##    playerID birthYear birthMonth birthDay birthCountry birthState  birthCity
+## 1 aardsda01      1981         12       27          USA         CO     Denver
+## 2 aaronha01      1934          2        5          USA         AL     Mobile
+## 3 aaronto01      1939          8        5          USA         AL     Mobile
+## 4  aasedo01      1954          9        8          USA         CA     Orange
+## 5  abadan01      1972          8       25          USA         FL Palm Beach
+## 6  abadfe01      1985         12       17         D.R.  La Romana  La Romana
+##   deathYear deathMonth deathDay deathCountry deathState deathCity nameFirst
+## 1        NA         NA       NA         &lt;NA&gt;       &lt;NA&gt;      &lt;NA&gt;     David
+## 2      2021          1       22          USA         GA   Atlanta      Hank
+## 3      1984          8       16          USA         GA   Atlanta    Tommie
+## 4        NA         NA       NA         &lt;NA&gt;       &lt;NA&gt;      &lt;NA&gt;       Don
+## 5        NA         NA       NA         &lt;NA&gt;       &lt;NA&gt;      &lt;NA&gt;      Andy
+## 6        NA         NA       NA         &lt;NA&gt;       &lt;NA&gt;      &lt;NA&gt;  Fernando
+##   nameLast        nameGiven weight height bats throws      debut  finalGame
+## 1  Aardsma      David Allan    215     75    R      R 2004-04-06 2015-08-23
+## 2    Aaron      Henry Louis    180     72    R      R 1954-04-13 1976-10-03
+## 3    Aaron       Tommie Lee    190     75    R      R 1962-04-10 1971-09-26
+## 4     Aase   Donald William    190     75    R      R 1977-07-26 1990-10-03
+## 5     Abad    Fausto Andres    184     73    L      L 2001-09-10 2006-04-13
+## 6     Abad Fernando Antonio    235     74    L      L 2010-07-28 2021-10-01
+##    retroID   bbrefID  deathDate  birthDate
+## 1 aardd001 aardsda01       &lt;NA&gt; 1981-12-27
+## 2 aaroh101 aaronha01 2021-01-22 1934-02-05
+## 3 aarot101 aaronto01 1984-08-16 1939-08-05
+## 4 aased001  aasedo01       &lt;NA&gt; 1954-09-08
+## 5 abada001  abadan01       &lt;NA&gt; 1972-08-25
+## 6 abadf001  abadfe01       &lt;NA&gt; 1985-12-17</code></pre>
+</div>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<p>And finally a for loop: What am I doing here?</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(People)) {</span>
+<span id="cb23-2"><a href="#cb23-2" tabindex="-1"></a>    <span class="cf">if</span>(<span class="sc">!</span><span class="fu">is.na</span>(People<span class="sc">$</span>height[i]) <span class="sc">&amp;&amp;</span> People<span class="sc">$</span>height[i] <span class="sc">&lt;=</span> <span class="dv">62</span>) {</span>
+<span id="cb23-3"><a href="#cb23-3" tabindex="-1"></a>        <span class="fu">print</span>(People[i,])</span>
+<span id="cb23-4"><a href="#cb23-4" tabindex="-1"></a>    }</span>
+<span id="cb23-5"><a href="#cb23-5" tabindex="-1"></a>}</span></code></pre></div>
+<pre><code>##       playerID birthYear birthMonth birthDay birthCountry birthState birthCity
+## 6300 gaedeed01      1925          6        8          USA         IL   Chicago
+##      deathYear deathMonth deathDay deathCountry deathState deathCity nameFirst
+## 6300      1961          6       18          USA         IL   Chicago     Eddie
+##      nameLast   nameGiven weight height bats throws      debut  finalGame
+## 6300   Gaedel Edward Carl     65     43    R      L 1951-08-19 1951-08-19
+##       retroID   bbrefID  deathDate  birthDate
+## 6300 gaede101 gaedeed01 1961-06-18 1925-06-08
+##       playerID birthYear birthMonth birthDay birthCountry birthState birthCity
+## 7928 healeto01      1853         NA       NA          USA         RI  Cranston
+##      deathYear deathMonth deathDay deathCountry deathState deathCity nameFirst
+## 7928      1891          2        6          USA         ME  Lewiston       Tom
+##      nameLast nameGiven weight height bats throws      debut  finalGame
+## 7928   Healey Thomas F.    155     55 &lt;NA&gt;      R 1878-06-13 1878-09-09
+##       retroID   bbrefID  deathDate birthDate
+## 7928 healt101 healeto01 1891-02-06      &lt;NA&gt;</code></pre>
+<p>Not a data problem: <a
+href="https://en.wikipedia.org/wiki/Eddie_Gaedel">Eddie Gaedel</a></p>
+<p>Question: does it matter whether we check for NA first?</p>
+</div>
+</div>
+<div id="while-loops" class="slide section level2">
+<h1>While loops</h1>
+<p>Syntax:</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" tabindex="-1"></a><span class="cf">while</span>(condition) {</span>
+<span id="cb25-2"><a href="#cb25-2" tabindex="-1"></a>    ...</span>
+<span id="cb25-3"><a href="#cb25-3" tabindex="-1"></a>}</span></code></pre></div>
+<p>Rules:</p>
+<ul class="incremental">
+<li><p>If <code>condition</code> is <code>TRUE</code>, the code inside
+<code>{</code> and <code>}</code> will be evaluated.</p></li>
+<li><p>After the code inside <code>{</code> and <code>}</code> is
+evaluated, <code>condition</code> is checked again, if it is still
+<code>TRUE</code>, we go again.</p></li>
+<li><p>This repeats until <code>condition</code> is FALSE.</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>If you don’t want your while loop to go forever, you have two
+options:</p>
+<ul class="incremental">
+<li><p>The value of <code>condition</code> needs to eventually be set to
+<code>FALSE</code> by the code inside <code>{</code> and
+<code>}</code>.</p></li>
+<li><p>You have a <code>break</code> statement inside the <code>{</code>
+<code>}</code> that eventually gets you out of the loop.</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>So for example, we could use a while loop to find the largest power
+of 2 less than 1000:</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="dv">2</span></span>
+<span id="cb26-2"><a href="#cb26-2" tabindex="-1"></a><span class="cf">while</span>(x <span class="sc">*</span> <span class="dv">2</span> <span class="sc">&lt;</span> <span class="dv">1000</span>) {</span>
+<span id="cb26-3"><a href="#cb26-3" tabindex="-1"></a>    x <span class="ot">&lt;-</span> x <span class="sc">*</span> <span class="dv">2</span></span>
+<span id="cb26-4"><a href="#cb26-4" tabindex="-1"></a>}</span>
+<span id="cb26-5"><a href="#cb26-5" tabindex="-1"></a>x</span></code></pre></div>
+<pre><code>## [1] 512</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>Or for a slightly less silly example, we could use it to answer a
+modified birthday problem.</p>
+<p>Suppose we want to know how many classes filled with randomly
+selected individuals we would have to attend before we found one where
+there were at least two pairs of people with the same birthday.</p>
+<p>We could go through the math, or we could get partway to an answer
+with a while loop.</p>
+<div class="incremental">
+<p>Here we draw sets of birthdays for classes of size 20, assuming that
+there are 365 days in a year:</p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" tabindex="-1"></a>days_in_year <span class="ot">&lt;-</span> <span class="dv">365</span></span>
+<span id="cb28-2"><a href="#cb28-2" tabindex="-1"></a>class_size <span class="ot">&lt;-</span> <span class="dv">20</span></span>
+<span id="cb28-3"><a href="#cb28-3" tabindex="-1"></a>num_classes <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb28-4"><a href="#cb28-4" tabindex="-1"></a><span class="cf">while</span>(<span class="cn">TRUE</span>) {</span>
+<span id="cb28-5"><a href="#cb28-5" tabindex="-1"></a>    num_classes <span class="ot">&lt;-</span> num_classes <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb28-6"><a href="#cb28-6" tabindex="-1"></a>    birthdays <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span>days_in_year, class_size, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb28-7"><a href="#cb28-7" tabindex="-1"></a>    num_birthdays_per_day <span class="ot">&lt;-</span> <span class="fu">table</span>(birthdays)</span>
+<span id="cb28-8"><a href="#cb28-8" tabindex="-1"></a>    days_with_match <span class="ot">&lt;-</span> num_birthdays_per_day <span class="sc">&gt;=</span> <span class="dv">2</span></span>
+<span id="cb28-9"><a href="#cb28-9" tabindex="-1"></a>    num_days_with_match <span class="ot">&lt;-</span> <span class="fu">sum</span>(days_with_match)</span>
+<span id="cb28-10"><a href="#cb28-10" tabindex="-1"></a>    <span class="cf">if</span>(num_days_with_match <span class="sc">&gt;=</span> <span class="dv">2</span>) {</span>
+<span id="cb28-11"><a href="#cb28-11" tabindex="-1"></a>        <span class="cf">break</span></span>
+<span id="cb28-12"><a href="#cb28-12" tabindex="-1"></a>    }</span>
+<span id="cb28-13"><a href="#cb28-13" tabindex="-1"></a>}</span>
+<span id="cb28-14"><a href="#cb28-14" tabindex="-1"></a>num_classes</span></code></pre></div>
+<pre><code>## [1] 15</code></pre>
+</div>
+<div class="incremental">
+<p>Notes:</p>
+<ul class="incremental">
+<li><p>The <code>while(TRUE)</code> with a <code>break</code> statement
+is a common idiom for while loops.</p></li>
+<li><p><code>break</code> can also be used in for loops.</p></li>
+</ul>
+</div>
+</div>
+<div id="vectorization" class="slide section level2">
+<h1>Vectorization</h1>
+<p>Most basic functions in R are <em>vectorized</em>, which means that
+they are applied to vectors element-by-element.</p>
+<ul class="incremental">
+<li><p>We already saw this with vector operations.</p></li>
+<li><p>Also true of many base functions.</p></li>
+</ul>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">rgamma</span>(<span class="dv">10</span>, <span class="dv">1</span>, .<span class="dv">1</span>)</span>
+<span id="cb30-2"><a href="#cb30-2" tabindex="-1"></a>x</span></code></pre></div>
+<pre><code>##  [1] 13.88731699  0.38576359 14.78245675  0.01564977 17.45660198  6.29483769
+##  [7] 11.87494519  7.47135398 25.78818403  6.68361488</code></pre>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" tabindex="-1"></a><span class="fu">log</span>(x)</span></code></pre></div>
+<pre><code>##  [1]  2.6309760 -0.9525305  2.6934411 -4.1572990  2.8597179  1.8397299
+##  [7]  2.4744307  2.0110762  3.2499164  1.8996590</code></pre>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" tabindex="-1"></a><span class="fu">round</span>(x)</span></code></pre></div>
+<pre><code>##  [1] 14  0 15  0 17  6 12  7 26  7</code></pre>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" tabindex="-1"></a><span class="fu">floor</span>(x)</span></code></pre></div>
+<pre><code>##  [1] 13  0 14  0 17  6 11  7 25  6</code></pre>
+</div>
+<div class="slide section level2">
+
+<p>More on vectorization and its advantages later. Why
+vectorization?</p>
+<ul class="incremental">
+<li><p>More readable code.</p></li>
+<li><p>Instead of writing <em>how</em> you want the computer to perform
+the computations, you tell the computer <em>what</em> you want to
+do.</p></li>
+<li><p>Less typing = less of an opportunity to introduce bugs.</p></li>
+<li><p>Can be faster.</p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>Compare:</p>
+<p>for-loop way of computing the floor of all the elements in the vector
+<code>x</code>:</p>
+<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" tabindex="-1"></a>floor_of_x <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="cn">NA</span>, <span class="fu">length</span>(x)) <span class="do">## pre-allocate a vector to hold our computations</span></span>
+<span id="cb38-2"><a href="#cb38-2" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(x)) {</span>
+<span id="cb38-3"><a href="#cb38-3" tabindex="-1"></a>    floor_of_x[i] <span class="ot">&lt;-</span> <span class="fu">floor</span>(x[i])</span>
+<span id="cb38-4"><a href="#cb38-4" tabindex="-1"></a>}</span>
+<span id="cb38-5"><a href="#cb38-5" tabindex="-1"></a>floor_of_x</span></code></pre></div>
+<pre><code>##  [1] 13  0 14  0 17  6 11  7 25  6</code></pre>
+<div class="incremental">
+<p>Versus the vectorized way:</p>
+<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" tabindex="-1"></a><span class="fu">floor</span>(x)</span></code></pre></div>
+<pre><code>##  [1] 13  0 14  0 17  6 11  7 25  6</code></pre>
+</div>
+</div>
+<div id="vectorized-conditionals" class="slide section level2">
+<h1>Vectorized conditionals</h1>
+<p>Suppose we want to plot the following function.</p>
+<p><span class="math display">\[
+f(x) = \begin{cases}
+\frac{15}{16} (1 - x^2)^2 &amp; |x| &lt; 1\\
+0 &amp; \text{o.w.}
+\end{cases}
+\]</span></p>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<p>Take 1:</p>
+<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="dv">2</span>, <span class="dv">2</span>, <span class="at">length =</span> <span class="dv">200</span>) <span class="do">## a vector with the values at which we want to evaluate f</span></span>
+<span id="cb42-2"><a href="#cb42-2" tabindex="-1"></a>fx <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="cn">NA</span>, <span class="dv">200</span>) <span class="do">## pre-allocate a vector in which to store the values of f(x)</span></span>
+<span id="cb42-3"><a href="#cb42-3" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">200</span>) {</span>
+<span id="cb42-4"><a href="#cb42-4" tabindex="-1"></a>    <span class="cf">if</span>(<span class="fu">abs</span>(x[i]) <span class="sc">&lt;</span> <span class="dv">1</span>) {</span>
+<span id="cb42-5"><a href="#cb42-5" tabindex="-1"></a>        fx[i] <span class="ot">&lt;-</span> <span class="dv">15</span><span class="sc">/</span><span class="dv">16</span> <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> x[i]<span class="sc">^</span><span class="dv">2</span>)<span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb42-6"><a href="#cb42-6" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb42-7"><a href="#cb42-7" tabindex="-1"></a>        fx[i] <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb42-8"><a href="#cb42-8" tabindex="-1"></a>    }</span>
+<span id="cb42-9"><a href="#cb42-9" tabindex="-1"></a>}</span>
+<span id="cb42-10"><a href="#cb42-10" tabindex="-1"></a><span class="fu">plot</span>(fx <span class="sc">~</span> x, <span class="at">type =</span> <span class="st">&#39;l&#39;</span>)</span></code></pre></div>
+<p><img src="lecture-2-fig/unnamed-chunk-22-1.png" /></p>
+</div>
+</div>
+<div id="ifelse-vectorized-conditionals" class="slide section level2">
+<h1>ifelse: Vectorized conditionals</h1>
+<p><code>ifelse</code> syntax:</p>
+<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" tabindex="-1"></a><span class="fu">ifelse</span>(condition, yes, no)</span></code></pre></div>
+<p>Rules:</p>
+<ul class="incremental">
+<li><p><code>ifelse</code> returns a vector</p></li>
+<li><p><code>condition</code> is a vector of Booleans.</p></li>
+<li><p><code>yes</code> and <code>no</code> are vectors, should be of
+the same type.</p></li>
+</ul>
+<div class="incremental">
+<p><code>ifelse</code> goes element-by-element through
+<code>condition</code>, <code>yes</code>, and <code>no</code>.</p>
+<ul class="incremental">
+<li><p>The <code>i</code>th element of the output is <code>yes[i]</code>
+if <code>condition[i]</code> is <code>TRUE</code></p></li>
+<li><p>The <code>i</code>th element of the output is <code>no[i]</code>
+if <code>condition[i]</code> is <code>FALSE</code></p></li>
+</ul>
+</div>
+</div>
+<div class="slide section level2">
+
+<div class="incremental">
+<p>Take 2:</p>
+<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="dv">2</span>, <span class="dv">2</span>, <span class="at">length.out =</span> <span class="dv">200</span>)</span>
+<span id="cb44-2"><a href="#cb44-2" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(<span class="fu">abs</span>(x) <span class="sc">&lt;</span> <span class="dv">1</span>, <span class="dv">15</span><span class="sc">/</span><span class="dv">16</span> <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> x<span class="sc">^</span><span class="dv">2</span>)<span class="sc">^</span><span class="dv">2</span>, <span class="dv">0</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" tabindex="-1"></a><span class="fu">plot</span>(y <span class="sc">~</span> x, <span class="at">type =</span> <span class="st">&#39;l&#39;</span>)</span></code></pre></div>
+<p><img src="lecture-2-fig/unnamed-chunk-25-1.png" /></p>
+</div>
+</div>
+</body>
+</html>

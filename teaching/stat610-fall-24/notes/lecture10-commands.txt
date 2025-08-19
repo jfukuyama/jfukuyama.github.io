@@ -1,0 +1,518 @@
+
+R version 3.5.1 (2018-07-02) -- "Feather Spray"
+Copyright (C) 2018 The R Foundation for Statistical Computing
+Platform: x86_64-apple-darwin15.6.0 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+Warning message:
+package ‘ggplot2’ was built under R version 3.5.2 
+> setwd('/Users/jfukuyam/GitHub/stat-comp-fall-19/lectures/lecture10/')
+> f = function(y, z) {
++     x = y^2 - 3 * z^2
++     w = 28
++     if (x > 0 && a > 0) {
++         u = 1 + x
++     } else {
++         u = 10
++     }
++     return(u)
++ }
+> f(0, 1)
+[1] 10
+> f(1, 0)
+Error in f(1, 0) : object 'a' not found
+> debug(f)
+> f(1, 0)
+debugging in: f(1, 0)
+debug at #1: {
+    x = y^2 - 3 * z^2
+    w = 28
+    if (x > 0 && a > 0) {
+        u = 1 + x
+    }
+    else {
+        u = 10
+    }
+    return(u)
+}
+Browse[2]> ls()
+[1] "y" "z"
+Browse[2]> y
+[1] 1
+Browse[2]> z
+[1] 0
+Browse[2]> n
+debug at #2: x = y^2 - 3 * z^2
+Browse[2]> n
+debug at #3: w = 28
+Browse[2]> x
+[1] 1
+Browse[2]> y^2 - 3 * z^2
+[1] 1
+Browse[2]> w
+Error: object 'w' not found
+Browse[2]> n
+debug at #4: if (x > 0 && a > 0) {
+    u = 1 + x
+} else {
+    u = 10
+}
+Browse[2]> w
+[1] 28
+Browse[2]> x
+[1] 1
+Browse[2]> x > 0
+[1] TRUE
+Browse[2]> a
+Error: object 'a' not found
+Browse[2]> Q
+> f = function(y, z) {
++     x = y^2 - 3 * z^2
++     w = 28
++     browser(expr = x > 0)
++     if (x > 0 && a > 0) {
++         u = 1 + x
++     } else {
++         u = 10
++     }
++     return(u)
++ }
+> f(0, 1)
+[1] 10
+> f(1, 0)
+Called from: f(1, 0)
+Browse[1]> debug at #5: if (x > 0 && a > 0) {
+    u = 1 + x
+} else {
+    u = 10
+}
+Browse[2]> ls()
+[1] "w" "x" "y" "z"
+Browse[2]> x
+[1] 1
+Browse[2]> x > 0
+[1] TRUE
+Browse[2]> a > 0
+Error: object 'a' not found
+Browse[2]> Q
+> g = function(a) {
++     y = a^2 + 3
++     if(y - 10 > 2) {
++         return(y)
++     } else {
++         return(z)
++     }
++ }
+> f = function(y, z) {
++     x = y^2 - 3 * g(z)
++     w = 28
++     if (x > 0 && a > 0) {
++         u = 1 + x
++     } else {
++         u = 10
++     }
++     return(u)
++ }
+> f(0,1)
+Error in g(z) (from #6) : object 'z' not found
+> debug(f)
+> f(0, 1)
+debugging in: f(0, 1)
+debug at #1: {
+    x = y^2 - 3 * g(z)
+    w = 28
+    if (x > 0 && a > 0) {
+        u = 1 + x
+    }
+    else {
+        u = 10
+    }
+    return(u)
+}
+Browse[2]> ls()
+[1] "y" "z"
+Browse[2]> n
+debug at #2: x = y^2 - 3 * g(z)
+Browse[2]> s
+debugging in: g(z)
+debug at #1: {
+    y = a^2 + 3
+    if (y - 10 > 2) {
+        return(y)
+    }
+    else {
+        return(z)
+    }
+}
+Browse[3]> ls()
+[1] "a"
+Browse[3]> a
+[1] 1
+Browse[3]> n
+debug at #2: y = a^2 + 3
+Browse[3]> n
+debug at #3: if (y - 10 > 2) {
+    return(y)
+} else {
+    return(z)
+}
+Browse[3]> y
+[1] 4
+Browse[3]> a^2 +3
+[1] 4
+Browse[3]> y - 10
+[1] -6
+Browse[3]> y - 10 > 2
+[1] FALSE
+Browse[3]> z
+Error: object 'z' not found
+Browse[3]> Q
+> f = function(y, z) {
++     x = y^2 - 3 * z^2
++     w = 28
++     if (x > 0 && a > 0) {
++         u = 1 + x
++     } else {
++         u = 10
++     }
++     return(u)
++ }
+> f(1, 0)
+Error in f(1, 0) (from #4) : object 'a' not found
+> traceback()
+1: f(1, 0)
+> g = function(a) {
++     y = a^2 + 3
++     if(y - 10 > 2) {
++         return(y)
++     } else {
++         return(z)
++     }
++ }
+> f = function(y, z) {
++     x = y^2 - 3 * g(z)
++     w = 28
++     if (x > 0 && a > 0) {
++         u = 1 + x
++     } else {
++         u = 10
++     }
++     return(u)
++ }
+> f(1, 0)
+Error in g(z) (from #6) : object 'z' not found
+> traceback()
+2: g(z) at #2
+1: f(1, 0)
+> f(10, 3.1)
+Error in f(10, 3.1) : object 'a' not found
+> traceback()
+1: f(10, 3.1)
+> options(error = dump.frames)
+> options()$error
+(function (dumpto = "last.dump", to.file = FALSE, include.GlobalEnv = FALSE) 
+{
+    calls <- sys.calls()
+    last.dump <- sys.frames()
+    names(last.dump) <- limitedLabels(calls)
+    if (include.GlobalEnv) {
+        last.dump <- c(.GlobalEnv = as.environment(as.list(.GlobalEnv, 
+            all.names = TRUE)), last.dump)
+    }
+    last.dump <- last.dump[-length(last.dump)]
+    attr(last.dump, "error.message") <- geterrmessage()
+    class(last.dump) <- "dump.frames"
+    if (dumpto != "last.dump") 
+        assign(dumpto, last.dump)
+    if (to.file) 
+        save(list = dumpto, file = paste0(dumpto, ".rda"))
+    else assign(dumpto, last.dump, envir = .GlobalEnv)
+    invisible()
+})()
+> f(1,0)
+Error in g(z) : object 'z' not found
+> debugger()
+Message:  Error in g(z) : object 'z' not found
+Available environments had calls:
+1: f(1, 0)
+2: #2: g(z)
+
+Enter an environment number, or 0 to exit  Selection: 1
+Browsing in the environment with call:
+   f(1, 0)
+Called from: debugger.look(ind)
+Browse[1]> ls()
+[1] "y" "z"
+Browse[1]> y
+[1] 1
+Browse[1]> z
+[1] 0
+Browse[1]> Q
+> debugger()
+Message:  Error in g(z) : object 'z' not found
+Available environments had calls:
+1: f(1, 0)
+2: #2: g(z)
+
+Enter an environment number, or 0 to exit  Selection: 2
+Browsing in the environment with call:
+   #2: g(z)
+Called from: debugger.look(ind)
+Browse[1]> ls()
+[1] "a" "y"
+Browse[1]> a
+[1] 0
+Browse[1]> y
+[1] 3
+Browse[1]> Q
+> findruns = function(x, k) {
++     n = length(x)
++     runs = NULL
++     for(i in 1:(n-k)) {
++         if(all(x[i:i+k-1] == 1)) {
++             runs = c(runs, i)
++         }
++         
++     }
++     return(runs)
++ }
+> debug(findruns)
+> findruns(c(1,0,0,1,1,0,1,1,1),2)
+debugging in: findruns(c(1, 0, 0, 1, 1, 0, 1, 1, 1), 2)
+debug at #1: {
+    n = length(x)
+    runs = NULL
+    for (i in 1:(n - k)) {
+        if (all(x[i:i + k - 1] == 1)) {
+            runs = c(runs, i)
+        }
+    }
+    return(runs)
+}
+Browse[2]> ls()
+[1] "k" "x"
+Browse[2]> x
+[1] 1 0 0 1 1 0 1 1 1
+Browse[2]> k
+[1] 2
+Browse[2]> n
+debug at #2: n = length(x)
+Browse[2]> n
+debug at #3: runs = NULL
+Browse[2]> print(n)
+[1] 9
+Browse[2]> length(x)
+[1] 9
+Browse[2]> n
+debug at #4: for (i in 1:(n - k)) {
+    if (all(x[i:i + k - 1] == 1)) {
+        runs = c(runs, i)
+    }
+}
+Browse[2]> n
+debug at #5: if (all(x[i:i + k - 1] == 1)) {
+    runs = c(runs, i)
+}
+Browse[2]> i
+[1] 1
+Browse[2]> x
+[1] 1 0 0 1 1 0 1 1 1
+Browse[2]> n
+debug at #5: if (all(x[i:i + k - 1] == 1)) {
+    runs = c(runs, i)
+}
+Browse[2]> runs
+NULL
+Browse[2]> n
+debug at #5: if (all(x[i:i + k - 1] == 1)) {
+    runs = c(runs, i)
+}
+Browse[2]> i
+[1] 3
+Browse[2]> x
+[1] 1 0 0 1 1 0 1 1 1
+Browse[2]> all(x[i:i + k - 1] == 1)
+[1] TRUE
+Browse[2]> x[i:i + k - 1] == 1
+[1] TRUE
+Browse[2]> i:i + k - 1
+[1] 4
+Browse[2]> (i:i) + k - 1
+[1] 4
+Browse[2]> i:i
+[1] 3
+Browse[2]> 3 + k - 1
+[1] 4
+Browse[2]> i:(i+k-1)
+[1] 3 4
+Browse[2]> Q
+> findruns = function(x, k) {
++     n = length(x)
++     runs = NULL
++     for(i in 1:(n-k)) {
++         if(all(x[i:(i+k-1)] == 1)) {
++             runs = c(runs, i)
++         }
++         
++     }
++     return(runs)
++ }
+> findruns(c(1,0,0,1,1,0,1,1,1),2)
+[1] 4 7
+> mind = function(d) {
++     n = nrow(d)
++     ## add a column to identify row number for apply()
++     dd = cbind(d, 1:n)
++     wmins = apply(dd[-n, ], 1, imin)
++     ## wmins will be 2xn, 1st row being indices and 2nd being values
++     i = which.min(wmins[1, ])
++     j = wmins[2, i]
++     return(c(d[i, j], i, j))
++ }
+> 
+> ## finds the location, value of the minimum in a row x
+> imin = function(x) {
++     n = length(x)
++     i = x[n]
++     j = which.min(x[(i + 1):(n - 1)])
++     return(c(j, x[j]))
++ }
+> m = rbind(c(0, 12, 5), c(12, 0, 8), c(5, 8, 0))
+> mind(m)
+Error in d[i, j] (from #9) : subscript out of bounds
+> debug(mind)
+> mind(m)
+debugging in: mind(m)
+debug at #1: {
+    n = nrow(d)
+    dd = cbind(d, 1:n)
+    wmins = apply(dd[-n, ], 1, imin)
+    i = which.min(wmins[1, ])
+    j = wmins[2, i]
+    return(c(d[i, j], i, j))
+}
+Browse[2]> ls()
+[1] "d"
+Browse[2]> d
+     [,1] [,2] [,3]
+[1,]    0   12    5
+[2,]   12    0    8
+[3,]    5    8    0
+Browse[2]> n
+debug at #2: n = nrow(d)
+Browse[2]> n
+debug at #4: dd = cbind(d, 1:n)
+Browse[2]> n
+debug at #5: wmins = apply(dd[-n, ], 1, imin)
+Browse[2]> n
+debug at #7: i = which.min(wmins[1, ])
+Browse[2]> n
+debug at #8: j = wmins[2, i]
+Browse[2]> n
+debug at #9: return(c(d[i, j], i, j))
+Browse[2]> i
+[1] 2
+Browse[2]> j
+[1] 12
+Browse[2]> wmins
+     [,1] [,2]
+[1,]    2    1
+[2,]   12   12
+Browse[2]> Q
+> debug(imin)
+> undebug(mind)
+> mind(m)
+debugging in: FUN(newX[, i], ...)
+debug at #1: {
+    n = length(x)
+    i = x[n]
+    j = which.min(x[(i + 1):(n - 1)])
+    return(c(j, x[j]))
+}
+Browse[2]> ls()
+[1] "x"
+Browse[2]> x
+[1]  0 12  5  1
+Browse[2]> n
+debug at #2: n = length(x)
+Browse[2]> n
+debug at #3: i = x[n]
+Browse[2]> print(n)
+[1] 4
+Browse[2]> length(x)
+[1] 4
+Browse[2]> n
+debug at #4: j = which.min(x[(i + 1):(n - 1)])
+Browse[2]> i
+[1] 1
+Browse[2]> x[n]
+[1] 1
+Browse[2]> n
+debug at #5: return(c(j, x[j]))
+Browse[2]> j
+[1] 2
+Browse[2]> x[(i + 1):(n - 1)]
+[1] 12  5
+Browse[2]> Q
+> imin = function(x) {
++     n = length(x)
++     i = x[n]
++     j = which.min(x[(i + 1):(n - 1)])
++     k = i + j
++     return(c(k, x[k]))
++ }
+> debug(imin)
+> mind(m)
+debugging in: FUN(newX[, i], ...)
+debug at #1: {
+    n = length(x)
+    i = x[n]
+    j = which.min(x[(i + 1):(n - 1)])
+    k = i + j
+    return(c(k, x[k]))
+}
+Browse[2]> n
+debug at #2: n = length(x)
+Browse[2]> n
+debug at #3: i = x[n]
+Browse[2]> n
+debug at #4: j = which.min(x[(i + 1):(n - 1)])
+Browse[2]> n
+debug at #5: k = i + j
+Browse[2]> n
+debug at #6: return(c(k, x[k]))
+Browse[2]> k
+[1] 3
+Browse[2]> x[k]
+[1] 5
+Browse[2]> Q
+> mind(m)
+debugging in: FUN(newX[, i], ...)
+debug at #1: {
+    n = length(x)
+    i = x[n]
+    j = which.min(x[(i + 1):(n - 1)])
+    k = i + j
+    return(c(k, x[k]))
+}
+Browse[2]> Q
+> undebug(mind)
+Warning message:
+In undebug(mind) : argument is not being debugged
+> undebug(imin)
+> 
+> mind(m)
+Error in d[i, j] : subscript out of bounds

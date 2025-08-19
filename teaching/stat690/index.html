@@ -8,9 +8,9 @@
     <link href="https://fonts.googleapis.com/css?family=Oxygen:300" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Raleway"rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Inconsolata" rel="stylesheet">
-    <link rel="stylesheet" media="all" href="/res/screen.css?v=20230919095746" type="text/css">
+    <link rel="stylesheet" media="all" href="/res/screen.css?v=20250619103511" type="text/css">
     <link rel="alternate" type="application/atom+xml" title="Julia Fukuyama" href="/atom.xml">
-    <link rel="shortcut icon" href="/tree-round.png?v=20230919095746">
+    <link rel="shortcut icon" href="/tree-round.png?v=20250619103511">
 <!-- Global site tag (gtag.js) - Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=UA-110259368-1"></script>
 <script>
@@ -26,7 +26,7 @@
       <h1><a href="/"></a></h1>
       <ul class="navigation">
 	<li><a href="/teaching/stat690" title="Home">Home</a></li>
-	<li><a href="/teaching/stat690/schedule/" title="Assignments">Schedule</a></li>
+	<li><a href="/teaching/stat690/schedule/" title="Schedule">Schedule</a></li>
 	<li><a href="/teaching/stat690/syllabus.pdf" title="Syllabus">Syllabus</a></li>
       </ul>
       </header>
@@ -35,11 +35,11 @@
 
 <h2 id="logistics">Logistics</h2>
 
-<p>Meetings: Tuesdays and Thursdays, 11:30am-12:45pm, SB220</p>
+<p>Meetings: Tu 3:55-6:25pm, SE220</p>
 
 <p></p>
 
-<p>Website: <a href="http://jfukuyama.github.io/teaching/stat690">http://jfukuyama.github.io/teaching/stat690</a></p>
+<p>Website: <a href=page.website>http://jfukuyama.github.io/teaching/stat690</a></p>
 
 <p></p>
 
@@ -51,83 +51,82 @@
       <td>jfukuyam at iu dot edu</td>
     </tr>
     <tr>
-      <td>Office hours: Mondays 2-4pm</td>
+      <td>Office hours: Mondays and Fridays, 12:45-1:45pm</td>
       <td>           </td>
-      <td>Myles Brand E218</td>
+      <td>Swain East 225</td>
     </tr>
     <tr>
       <td> </td>
       <td>           </td>
       <td> </td>
-    </tr>
-    <tr>
-      <td>Associate Instructor: Mr. Justin Lin</td>
-      <td>           </td>
-      <td>linjus at iu dot edu</td>
-    </tr>
-    <tr>
-      <td>Office hours: TBA</td>
-      <td>           </td>
-      <td>TBA</td>
     </tr>
   </tbody>
 </table>
 
-<h2 id="course-overview">Course Overview</h2>
+<h1 id="course-description">Course description</h1>
 
-<p>This course aims to give students practice at working through and presenting the kinds of projects one might encounter as a statistical consultant.
-To that end, the bulk of the course will be devoted to presentations or discussion of a number of case studies.
-Each case study will be presented by either one student or a small group of students, but everyone is expected to discuss the methods employed by the presenting group and provide feedback to the presenters about what they did well and what they did poorly.</p>
+<p>The objectives of this course are to allow students to practice the following skills:</p>
 
-<p>A rough schedule is as follows:</p>
 <ul>
-  <li>In weeks 1-3 we will read and discuss the first four chapters of the book.</li>
-  <li>Weeks 4-13 will be a combination of presentation/discussion of round-one (smaller) projects and in-class activities (subject to change, but tentatively on graphics, reproducibility, and writing).</li>
-  <li>Weeks 14-15 will be for final project presentations and discussion.</li>
+  <li>Translating client requests into statistical analysis plans.</li>
+  <li>Implementing analysis plans.</li>
+  <li>Communicating results verbally, in writing, and graphically.</li>
 </ul>
 
-<h2 id="textbook">Textbook</h2>
+<p>Weeks 2-13 will focus primarily on the first two objectives through a series of mock consulting projects.
+Each student will lead one project, with the class collaborating on the analysis plan and implementation.</p>
 
-<p>The primary textbook will be <em>Statistical Consulting</em>, by Javier Cabrera and Andrew McDougall.</p>
+<p>Each project will have three stages:</p>
 
-<p>Additional readings will be posted on the course website.</p>
-
-<h2 id="assessment">Assessment</h2>
-
-<p>Final grades will be based on:</p>
 <ul>
-  <li>10% reading responses</li>
-  <li>25% participation (primarily peer feedback)</li>
-  <li>25% round-one projects</li>
-  <li>40% final projects</li>
+  <li><strong>Stage 1 (Week n, in class)</strong>: 
+The professor will act as the client, and the project leader will act as the consultant in a simulated client meeting.
+By the end of this meeting, the consultant should be able to articulate the client’s question and the client’s understanding of the data-generating process.</li>
+  <li><strong>Stage 2 (Between weeks n and n+1, at home)</strong>: 
+The project leader develops an analysis plan to present and defend in the next class. 
+They may also try out elements of their proposed analysis.
+Meanwhile, every other student must submit at least one analysis suggestion for the project.</li>
+  <li><strong>Stage 3 (Week n+1, in class)</strong>:
+The student leader presents and defends an analysis plan.
+To facilitate discussion with the class, this will be done without slides.
+Paper notes are acceptable.
+We will discuss this plan, along with the other students’ suggestions, focusing on the rationale, how well aligned the project is with the client’s question, and whether the analysis accords with the data-generating process.
+Once a plan is agreed upon, we will implement as much of the analysis as possible in R. 
+This will include exploratory analysis, data quality checks, data processing, and model fitting or hypothesis testing. 
+The project leader will guide this process, with input and questions from the class and professor.</li>
 </ul>
 
-<h3 id="reading-responses">Reading responses</h3>
+<p>Overall, there will be not be a huge amount of work to do outside of class, but I expect the actual class time to be challenging.
+I also realize that students bring different backgrounds and knowledge bases.
+You will not be expected to know exactly what to do for every project, although I am going to take students’ backgrounds into consideration when assigning projects.
+At times, we may need to research models or strategies together in class if our prior coursework has not covered the tools required. 
+This is fine, and to be expected.</p>
 
-<p>The first couple weeks of class we’ll read the book and discuss.
-You will be required to submit a short (&lt;1pg) reading response for each reading.</p>
+<p>If you want to practice, you can tell your favorite LLM how the course is set up and ask it to be the professor/client for you.</p>
 
-<h3 id="participation">Participation</h3>
+<p>Weeks 14 and 15 (the two weeks after Thanksgiving) will be devoted to presentations of your final projects.
+The goal is to give you practice verbally describing the results of your analysis.</p>
 
-<p>The participation grade will be based on class attendance, participating in discussions, and providing written feedback on your classmates’ presentations.</p>
+<h1 id="course-schedule">Course schedule</h1>
 
-<h3 id="round-one-projects">Round-one projects</h3>
-
-<p>Every student will present at least one smaller-scale project.
-Rubric for the presentations is available <a href="presentation-rubric.pdf">here</a>.</p>
-
-<h3 id="final-project">Final project</h3>
-
-<p>Final projects will be done in groups, with a target of 3 members per group.
-The deliverables for these projects will be:</p>
 <ul>
-  <li>A mock first-meeting writeup (due week 6)</li>
-  <li>A preliminary analysis writeup/presentation (done in weeks 8-12)</li>
-  <li>A final report (due on the last day of class)</li>
-  <li>A final presentation (in the last 1-2 weeks of class)</li>
+  <li>Week 1: Introductions, syllabus, talking about chatGPT. Talk through the consulting skeleton. Project 1 initial client meeting.</li>
+  <li>Weeks 2-13: Mock projects</li>
+  <li>Weeks 14-15: Final presentations</li>
 </ul>
 
-<p>Options for the final project will be posted around week 4.</p>
+<h1 id="assessment">Assessment</h1>
+
+<p>Grades will be based on:</p>
+
+<ul>
+  <li>Participation: 50%, split evenly between your day and contributing on others’ days. For the project on which you are the leader, you will be graded on how well you perform on the elements of the consulting skeleton. For the other days, you are expected to provide suggestions and comments for the analysis. This can be either conceptual or it can have to do with implementation.</li>
+  <li>Final presentation: 15%, scheduled for the last two weeks of class.</li>
+  <li>Final project writeup: 35%, due Friday, December 19 (the day that is scheduled for our final exam). There will be no final exam, only the writeup for the project. You are not prohibited from using generative AI, but points will be taken off for every incorrect statement present in the report.
+Based on past experience, I expect that if you turn in something that was generated by chatGPT without doing some very thorough vetting, this policy will put you in negative points territory.
+Be sure to only write things that you really believe are true.</li>
+</ul>
+
 
 
   </body>

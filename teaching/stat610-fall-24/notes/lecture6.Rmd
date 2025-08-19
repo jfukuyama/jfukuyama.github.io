@@ -1,0 +1,344 @@
+```{r, echo=FALSE}
+set.seed(0)
+```
+
+## Writing and calling functions
+
+Agenda for today:
+
+- Show some examples of how you might write functions.
+
+> It is my purpose to transmit the importance of good taste and style in programming, [but] the specific elements of style presented serve only to illustrate what benefits can be derived from "style" in general. In this respect I feel akin to the teacher of composition at a conservatory: He does not teach his pupils how to compose a particular symphony, he must help his pupils to find their own style and must explain to them what is implied by this. (It has been this analogy that made me talk about "The Art of Programming.")
+
+Don Knuth, quoting Dijkstra in his book "Literate Programming"
+
+
+
+## Some suggestions for writing functions
+
+- "The first rule of functions is that they should be small. The second rule of functions is that _they should be smaller than that_."
+
+- Functions should _do one thing_. Multiple tasks = multiple functions.
+
+- Related functions should have consistent interfaces: if they take the same input, they should have the same arguments in the same order. If they make the same output, they should give output in the same way.
+
+- No side effects.
+
+- No [magic numbers](https://en.wikipedia.org/wiki/Magic_number_(programming)#Unnamed_numerical_constants).
+
+. . .
+
+But, like [Orwell's last rule for effective writing](http://languagelog.ldc.upenn.edu/nll/?p=992): break any of these rules rather than write something outright barbarous.
+
+## Example: [The birthday problem](https://en.wikipedia.org/wiki/Birthday_problem)
+
+Suppose:
+
+- We have a randomly chosen set of $n$ people
+
+- Each person has a birthday
+
+- Birthdays are distributed uniformly, so every day of the year is equally likely to be a given person's birthday
+
+Question: What is the probability that at least two people share a birthday?
+
+. . .
+
+Logic says: "At least two people share a birthday" is the same as "It's not true that all the birthdays are distinct".
+
+Probability says:
+
+- $P(\text{All birthdays are distinct}) = \frac{365}{365} \frac{364}{365} \cdots \frac{365-(n-1)}{365}$
+
+- $P(\text{At least two people share a birthday}) = 1 - P(\text{All birthdays are distinct}) =  \frac{365}{365} \frac{364}{365} \cdots \frac{365-(n-1)}{365}$
+
+
+-----
+
+We can write a function that computes these probabilities as a function of the number of people:
+
+```{r}
+compute_birthday_probability <- function(n_people) {
+    p_all_distinct <- prod(seq(365-(n_people-1), 365)) / (365^n_people)
+    p_match <- 1 - p_all_distinct
+    return(p_match)
+}
+compute_birthday_probability(1)
+compute_birthday_probability(2)
+compute_birthday_probability(22)
+compute_birthday_probability(23)
+```
+
+
+-----
+
+Suppose we don't know any probability.
+
+We can try simulating to solve the birthday problem.
+
+As we did before, we can simulate birthdays from different numbers of people and check whether any of them share a birthday.
+
+For just one simulation, we can do:
+
+```{r}
+n_people <- 23
+birthdays <- sample(x = 1:365, size = n_people, replace = TRUE)
+n_birthdays_per_day <- rep(0, 365)
+for(day in 1:365) {
+    n_birthdays_per_day[day] <- sum(birthdays == day)
+}
+if(max(n_birthdays_per_day) >= 2) {
+    print("At least two people share a birthday")
+} else {
+    print("No two people share a birthday")
+}
+```
+
+-----
+
+If we wanted to do lots of simulations to get an estimate of the probability of a match, we _could_ use a for loop:
+
+```{r}
+n_sim <- 1000
+n_people <- 23
+match_vector <- character(n_sim)
+for(i in 1:n_sim) {
+    birthdays <- sample(x = 1:365, size = n_people, replace = TRUE)
+    n_birthdays_per_day <- rep(0, 365)
+    for(day in 1:365) {
+        n_birthdays_per_day[day] <- sum(birthdays == day)
+    }
+    if(max(n_birthdays_per_day) >= 2) {
+        match_vector[i] <- "birthdays match"
+    } else {
+        match_vector[i] <- "all unique"
+    }
+}
+p_match <- sum(match_vector == "birthdays match") / length(match_vector)
+p_match
+```
+
+-----
+
+Since we will want to use this code many times and run it for different values of `n_people`, we can write a function that takes `n_people` as an argument.
+
+```{r}
+do_birthdays_match <- function(n_people) {
+    birthdays <- sample(x = 1:365, size = n_people, replace = TRUE)
+    n_birthdays_per_day <- rep(0, 365)
+    for(day in 1:365) {
+        n_birthdays_per_day[day] <- sum(birthdays == day)
+    }
+    if(max(n_birthdays_per_day) >= 2) {
+        return("birthdays match")
+    } else {
+        return("all unique")
+    }
+}
+```
+
+-----
+
+Once we have this, we can write a more readable function that estimates the probability of a match.
+
+. . .
+
+```{r}
+estimate_birthday_match_probability <- function(n_people, n_sim = 1000) {
+    match_vector <- character(n_sim)
+    for(i in 1:n_sim) {
+        match_vector[i] <- do_birthdays_match(n_people)
+    }
+    p_match <- sum(match_vector == "birthdays match") / length(match_vector)
+    return(p_match)
+}
+estimate_birthday_match_probability(n_people = 1)
+estimate_birthday_match_probability(n_people = 23)
+estimate_birthday_match_probability(n_people = 366)
+```
+
+## A more complicated problem
+
+The initial formulation of the birthday problem assumes that every birthday is equally likely.
+
+We know this isn't true though: more babies are born on weekdays, and they tend not to be born on major holidays.
+
+Finding the solution to the birthday problem with unequal birthday probabilities is a hard problem for the probabilists, but easy for us.
+
+-----
+
+Step 1: Modify simulation function to sample birthdays with unequal probabilities
+
+Remember the old version:
+
+```{r}
+do_birthdays_match <- function(n_people) {
+    birthdays <- sample(x = 1:365, size = n_people, replace = TRUE)
+    n_birthdays_per_day <- rep(0, 365)
+    for(day in 1:365) {
+        n_birthdays_per_day[day] <- sum(birthdays == day)
+    }
+    if(max(n_birthdays_per_day) >= 2) {
+        return("birthdays match")
+    } else {
+        return("all unique")
+    }
+}
+```
+
+. . .
+
+We can add another argument, giving the probability of each day of the year:
+
+```{r}
+do_birthdays_match <- function(n_people, birthday_probabilities) {
+    birthdays <- sample(x = 1:length(birthday_probabilities),
+                        size = n_people,
+                        prob = birthday_probabilities,
+                        replace = TRUE)
+    n_birthdays_per_day <- rep(0, 365)
+    for(day in 1:365) {
+        n_birthdays_per_day[day] <- sum(birthdays == day)
+    }
+    if(max(n_birthdays_per_day) >= 2) {
+        return("birthdays match")
+    } else {
+        return("all unique")
+    }
+}
+```
+
+```{r}
+do_birthdays_match(n_people = 23, birthday_probabilities = c(1, rep(0, 364)))
+```
+
+-----
+
+We can add the same argument to our probability estimation function:
+
+```{r}
+estimate_birthday_match_probability <- function(n_people, birthday_probabilities, n_sim = 1000) {
+    match_vector <- character(n_sim)
+    for(i in 1:n_sim) {
+        match_vector[i] <- do_birthdays_match(n_people, birthday_probabilities)
+    }
+    p_match <- sum(match_vector == "birthdays match") / length(match_vector)
+    return(p_match)
+}
+uniform_birthday_probs <- rep(1 / 365, 365)
+weekend_vs_weekday_likelihoods <- c(2,2,2,2,2,1,1)
+nonuniform_birthday_likelihoods <- rep(weekend_vs_weekday_likelihoods, length.out = 365)
+nonuniform_birthday_probs <- nonuniform_birthday_likelihoods / sum(nonuniform_birthday_likelihoods)
+```
+
+. . .
+
+```{r}
+estimate_birthday_match_probability(n_people = 23,
+                                    birthday_probabilities = uniform_birthday_probs,
+                                    n_sim = 10000)
+estimate_birthday_match_probability(n_people = 23,
+                                    birthday_probabilities = nonuniform_birthday_probs,
+                                    n_sim = 10000)
+```
+
+
+## Another example: Data import
+
+We are trying to import data from the CDC's infant mortality records ([zipped data](https://ftp.cdc.gov/pub/Health_Statistics/NCHS/Datasets/DVS/cohortlinkedus/LinkCO15US.zip), [data description](https://ftp.cdc.gov/pub/Health_Statistics/NCHS/Dataset_Documentation/DVS/cohortlinked/LinkCO15Guide.pdf))
+
+The data file consists of lines of characters, each of the same length.
+
+Variables are given by their position within the line, e.g. the four-digit birth year is at indices 9-12, the two-digit age of the mother is at indices 75-76, and so on.
+
+We need to write our own functions to extract any variables we want to work with.
+
+```{r}
+library(stringr)
+num <- read.delim("VS15LKBC.PublicUse.USNUMPUB_2019_11_25")
+## we want to separate all the characters into individual elements
+separated <- strsplit(x = num[,1], split = "")
+n <- length(separated)
+char_matrix <- matrix("",
+                     nrow = length(separated),
+                     ncol = length(separated[[1]]))
+for(i in 1:length(separated)) {
+    char_matrix[i,] <- separated[[i]]
+}
+
+## extract birth year, in indices 9:12
+birth_year <- rep(NA, n)
+for(i in 1:nrow(char_matrix)) {
+    birth_year[i] <- paste(char_matrix[i, 9:12], collapse = "")
+}
+table(birth_year)
+```
+
+
+-----
+
+Suppose we want to be able to extract a lot of different variables. It makes sense to create a function.
+```{r}
+
+extract_variable <- function(start_idx, end_idx, mat, numeric = TRUE) {
+    ## this is the character version of the variable
+    variable_char <- rep(NA, n)
+    for(i in 1:nrow(char_matrix)) {
+        variable_char[i] <- paste(mat[i, start_idx:end_idx, drop = FALSE], collapse = "")
+    }
+
+    ## if we need to change the character to numeric, we do so
+    if(numeric) {
+        variable_numeric <- as.numeric(variable_char)
+        return(variable_numeric)
+    }
+    return(variable_char)
+}
+
+
+birth_year <- extract_variable(9, 12, char_matrix)
+mothers_age <- extract_variable(75, 76, char_matrix)
+summary(birth_year)
+summary(mothers_age)
+```
+
+
+-----
+
+We later learn that some of the variables use specific numbers (e.g. 9, 99, 999) as NA values. We might want to modify our function to deal with these.
+```{r}
+extract_variable <- function(start_idx, end_idx, mat,
+                            numeric = TRUE, na.val = NULL) {
+    variable_char <- rep(NA, n)
+    for(i in 1:nrow(char_matrix)) {
+        variable_char[i] <- paste(mat[i, start_idx:end_idx, drop = FALSE], collapse = "")
+    }
+    ## if we need to change the character to numeric, we do so
+    if(numeric) {
+        variable_numeric <- as.numeric(variable_char)
+        if(!is.null(na.val)) {
+            variable_numeric[variable_numeric == na.val] = NA
+        }
+        return(variable_numeric)
+    }
+    return(variable_char)
+}
+birth_year <- extract_variable(9, 12, char_matrix)
+summary(birth_year)
+mothers_age <- extract_variable(75, 76, char_matrix)
+summary(mothers_age)
+gest_age <- extract_variable(492, 493, char_matrix, na.val = 99)
+summary(gest_age)
+```
+
+-----
+
+From the end of Chapter 3 of _Clean Code_:
+
+>Master programmers think of systems as stories to be told rather than programs to be written.
+
+>They use the facilities of their chosen programming language to construct a much richer and more expressive language that can be used to tell that story.
+
+>Part of that domain-specific language is the hierarchy of functions that describe all the actions that take place within that system.
+
+>In an artful act of recursion those actions are written to use the very domain-specific language they define to tell their own small part of the story.

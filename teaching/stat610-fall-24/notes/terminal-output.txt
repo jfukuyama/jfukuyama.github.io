@@ -1,0 +1,884 @@
+jfukuyam@BL-CITO-YVGG96H tmp % cd git-ex 
+jfukuyam@BL-CITO-YVGG96H git-ex % git init
+Initialized empty Git repository in /Users/jfukuyam/tmp/git-ex/.git/
+jfukuyam@BL-CITO-YVGG96H git-ex % git status
+On branch main
+
+No commits yet
+
+nothing to commit (create/copy files and use "git add" to track)
+jfukuyam@BL-CITO-YVGG96H git-ex % git status
+On branch main
+
+No commits yet
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	fancy-simulation.R
+
+nothing added to commit but untracked files present (use "git add" to track)
+jfukuyam@BL-CITO-YVGG96H git-ex % git add fancy-simulation.R 
+jfukuyam@BL-CITO-YVGG96H git-ex % git status
+On branch main
+
+No commits yet
+
+Changes to be committed:
+  (use "git rm --cached <file>..." to unstage)
+	new file:   fancy-simulation.R
+
+jfukuyam@BL-CITO-YVGG96H git-ex % git commit -m "add fancy simulations"
+[main (root-commit) 9b5a13e] add fancy simulations
+ 1 file changed, 1 insertion(+)
+ create mode 100644 fancy-simulation.R
+jfukuyam@BL-CITO-YVGG96H git-ex % git status
+On branch main
+nothing to commit, working tree clean
+jfukuyam@BL-CITO-YVGG96H git-ex % git log
+commit 9b5a13eae0b6ac257aba00f33aa1c11577a88311 (HEAD -> main)
+Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+Date:   Wed Oct 16 11:46:48 2024 -0400
+
+    add fancy simulations
+jfukuyam@BL-CITO-YVGG96H git-ex % git status
+On branch main
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   fancy-simulation.R
+
+no changes added to commit (use "git add" and/or "git commit -a")
+jfukuyam@BL-CITO-YVGG96H git-ex % git diff 
+diff --git a/fancy-simulation.R b/fancy-simulation.R
+index 91261bf..3beea85 100644
+--- a/fancy-simulation.R
++++ b/fancy-simulation.R
+@@ -1 +1 @@
+-rnorm(10)
+\ No newline at end of file
++rnorm(100)
+\ No newline at end of file
+jfukuyam@BL-CITO-YVGG96H git-ex % git add fancy-simulation.R 
+jfukuyam@BL-CITO-YVGG96H git-ex % git status
+On branch main
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+	modified:   fancy-simulation.R
+
+jfukuyam@BL-CITO-YVGG96H git-ex % git commit -m "increase number of simulations"
+[main 2adffa7] increase number of simulations
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+jfukuyam@BL-CITO-YVGG96H git-ex % git status
+On branch main
+nothing to commit, working tree clean
+jfukuyam@BL-CITO-YVGG96H git-ex % git log
+commit 2adffa7df32f9f16ea021a4b07e5c28bd6189759 (HEAD -> main)
+Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+Date:   Wed Oct 16 11:52:16 2024 -0400
+
+    increase number of simulations
+
+commit 9b5a13eae0b6ac257aba00f33aa1c11577a88311
+Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+Date:   Wed Oct 16 11:46:48 2024 -0400
+
+    add fancy simulations
+jfukuyam@BL-CITO-YVGG96H git-ex % git checkout 9b5a13eae0b6ac257aba00f33aa1c11577a88311
+Note: switching to '9b5a13eae0b6ac257aba00f33aa1c11577a88311'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
+HEAD is now at 9b5a13e add fancy simulations
+jfukuyam@BL-CITO-YVGG96H git-ex % git log
+commit 9b5a13eae0b6ac257aba00f33aa1c11577a88311 (HEAD)
+Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+Date:   Wed Oct 16 11:46:48 2024 -0400
+
+    add fancy simulations
+jfukuyam@BL-CITO-YVGG96H git-ex % git branch
+* (HEAD detached at 9b5a13e)
+  main
+jfukuyam@BL-CITO-YVGG96H git-ex % git checkout main
+Previous HEAD position was 9b5a13e add fancy simulations
+Switched to branch 'main'
+jfukuyam@BL-CITO-YVGG96H git-ex % git log
+commit 2adffa7df32f9f16ea021a4b07e5c28bd6189759 (HEAD -> main)
+Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+Date:   Wed Oct 16 11:52:16 2024 -0400
+
+    increase number of simulations
+
+commit 9b5a13eae0b6ac257aba00f33aa1c11577a88311
+Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+Date:   Wed Oct 16 11:46:48 2024 -0400
+
+    add fancy simulations
+jfukuyam@BL-CITO-YVGG96H git-ex % git branch add-tests
+jfukuyam@BL-CITO-YVGG96H git-ex % git branch
+  add-tests
+* main
+jfukuyam@BL-CITO-YVGG96H git-ex % git log
+commit 2adffa7df32f9f16ea021a4b07e5c28bd6189759 (HEAD -> main, add-tests)
+Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+Date:   Wed Oct 16 11:52:16 2024 -0400
+
+    increase number of simulations
+
+commit 9b5a13eae0b6ac257aba00f33aa1c11577a88311
+Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+Date:   Wed Oct 16 11:46:48 2024 -0400
+
+    add fancy simulations
+jfukuyam@BL-CITO-YVGG96H git-ex % git checkout add-tests
+Switched to branch 'add-tests'
+jfukuyam@BL-CITO-YVGG96H git-ex % git branch
+* add-tests
+  main
+jfukuyam@BL-CITO-YVGG96H git-ex % git log
+commit 2adffa7df32f9f16ea021a4b07e5c28bd6189759 (HEAD -> add-tests, main)
+Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+Date:   Wed Oct 16 11:52:16 2024 -0400
+
+    increase number of simulations
+
+commit 9b5a13eae0b6ac257aba00f33aa1c11577a88311
+Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+Date:   Wed Oct 16 11:46:48 2024 -0400
+
+    add fancy simulations
+jfukuyam@BL-CITO-YVGG96H git-ex % git status
+On branch add-tests
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	tests.R
+
+nothing added to commit but untracked files present (use "git add" to track)
+jfukuyam@BL-CITO-YVGG96H git-ex % git add tests.R 
+jfukuyam@BL-CITO-YVGG96H git-ex % git status
+On branch add-tests
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+	new file:   tests.R
+
+jfukuyam@BL-CITO-YVGG96H git-ex % git commit -m "add tests"
+[add-tests f207a92] add tests
+ 1 file changed, 2 insertions(+)
+ create mode 100644 tests.R
+jfukuyam@BL-CITO-YVGG96H git-ex % git status
+On branch add-tests
+nothing to commit, working tree clean
+jfukuyam@BL-CITO-YVGG96H git-ex % git log 
+commit f207a92cee91a3822ca17c14c1ec670e50b3619f (HEAD -> add-tests)
+Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+Date:   Wed Oct 16 12:13:34 2024 -0400
+
+    add tests
+
+commit 2adffa7df32f9f16ea021a4b07e5c28bd6189759 (main)
+Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+Date:   Wed Oct 16 11:52:16 2024 -0400
+
+    increase number of simulations
+
+commit 9b5a13eae0b6ac257aba00f33aa1c11577a88311
+Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+Date:   Wed Oct 16 11:46:48 2024 -0400
+
+    add fancy simulations
+jfukuyam@BL-CITO-YVGG96H git-ex % git checktout main
+git: 'checktout' is not a git command. See 'git --help'.
+
+The most similar command is
+	checkout
+jfukuyam@BL-CITO-YVGG96H git-ex % git checktou main 
+git: 'checktou' is not a git command. See 'git --help'.
+
+The most similar command is
+	checkout
+jfukuyam@BL-CITO-YVGG96H git-ex % git checkout main
+Switched to branch 'main'
+jfukuyam@BL-CITO-YVGG96H git-ex % git log
+commit 2adffa7df32f9f16ea021a4b07e5c28bd6189759 (HEAD -> main)
+Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+Date:   Wed Oct 16 11:52:16 2024 -0400
+
+    increase number of simulations
+
+commit 9b5a13eae0b6ac257aba00f33aa1c11577a88311
+Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+Date:   Wed Oct 16 11:46:48 2024 -0400
+
+    add fancy simulations
+jfukuyam@BL-CITO-YVGG96H git-ex % get merge add-tests
+zsh: command not found: get
+jfukuyam@BL-CITO-YVGG96H git-ex % git merge add-tests
+Updating 2adffa7..f207a92
+Fast-forward
+ tests.R | 2 ++
+ 1 file changed, 2 insertions(+)
+ create mode 100644 tests.R
+jfukuyam@BL-CITO-YVGG96H git-ex % git log 
+commit f207a92cee91a3822ca17c14c1ec670e50b3619f (HEAD -> main, add-tests)
+Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+Date:   Wed Oct 16 12:13:34 2024 -0400
+
+    add tests
+
+commit 2adffa7df32f9f16ea021a4b07e5c28bd6189759
+Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+Date:   Wed Oct 16 11:52:16 2024 -0400
+
+    increase number of simulations
+
+commit 9b5a13eae0b6ac257aba00f33aa1c11577a88311
+Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+Date:   Wed Oct 16 11:46:48 2024 -0400
+
+    add fancy simulations
+jfukuyam@BL-CITO-YVGG96H git-ex % git checkout add-tests
+Switched to branch 'add-tests'
+jfukuyam@BL-CITO-YVGG96H git-ex % git log
+commit f207a92cee91a3822ca17c14c1ec670e50b3619f (HEAD -> add-tests, main)
+Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+Date:   Wed Oct 16 12:13:34 2024 -0400
+
+    add tests
+
+commit 2adffa7df32f9f16ea021a4b07e5c28bd6189759
+Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+Date:   Wed Oct 16 11:52:16 2024 -0400
+
+    increase number of simulations
+
+commit 9b5a13eae0b6ac257aba00f33aa1c11577a88311
+Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+Date:   Wed Oct 16 11:46:48 2024 -0400
+
+    add fancy simulations
+jfukuyam@BL-CITO-YVGG96H git-ex % git status
+On branch add-tests
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   tests.R
+
+no changes added to commit (use "git add" and/or "git commit -a")
+jfukuyam@BL-CITO-YVGG96H git-ex % git add tests.R 
+jfukuyam@BL-CITO-YVGG96H git-ex % git status
+On branch add-tests
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+	modified:   tests.R
+
+jfukuyam@BL-CITO-YVGG96H git-ex % git commit -m "add comments to test file"
+[add-tests 1a52d20] add comments to test file
+ 1 file changed, 1 insertion(+)
+jfukuyam@BL-CITO-YVGG96H git-ex % git checkout main
+Switched to branch 'main'
+jfukuyam@BL-CITO-YVGG96H git-ex % git log
+commit f207a92cee91a3822ca17c14c1ec670e50b3619f (HEAD -> main)
+Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+Date:   Wed Oct 16 12:13:34 2024 -0400
+
+    add tests
+
+commit 2adffa7df32f9f16ea021a4b07e5c28bd6189759
+Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+Date:   Wed Oct 16 11:52:16 2024 -0400
+
+    increase number of simulations
+
+commit 9b5a13eae0b6ac257aba00f33aa1c11577a88311
+Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+Date:   Wed Oct 16 11:46:48 2024 -0400
+
+    add fancy simulations
+jfukuyam@BL-CITO-YVGG96H git-ex % git branch poisson-experiments
+jfukuyam@BL-CITO-YVGG96H git-ex % git branch
+  add-tests
+* main
+  poisson-experiments
+jfukuyam@BL-CITO-YVGG96H git-ex % git checkout poisson-experiments
+Switched to branch 'poisson-experiments'
+jfukuyam@BL-CITO-YVGG96H git-ex % git log
+commit f207a92cee91a3822ca17c14c1ec670e50b3619f (HEAD -> poisson-experiments, main)
+Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+Date:   Wed Oct 16 12:13:34 2024 -0400
+
+    add tests
+
+commit 2adffa7df32f9f16ea021a4b07e5c28bd6189759
+Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+Date:   Wed Oct 16 11:52:16 2024 -0400
+
+    increase number of simulations
+
+commit 9b5a13eae0b6ac257aba00f33aa1c11577a88311
+Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+Date:   Wed Oct 16 11:46:48 2024 -0400
+
+    add fancy simulations
+jfukuyam@BL-CITO-YVGG96H git-ex % git status
+On branch poisson-experiments
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   fancy-simulation.R
+
+no changes added to commit (use "git add" and/or "git commit -a")
+jfukuyam@BL-CITO-YVGG96H git-ex % git add fancy-simulation.R 
+jfukuyam@BL-CITO-YVGG96H git-ex % git commit -m "poisson is better than normal"
+[poisson-experiments 7df7882] poisson is better than normal
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+jfukuyam@BL-CITO-YVGG96H git-ex % git log
+commit 7df7882f8c5e9e14bec68c20f6c3b9067335e0e3 (HEAD -> poisson-experiments)
+Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+Date:   Wed Oct 16 12:27:39 2024 -0400
+
+    poisson is better than normal
+
+commit f207a92cee91a3822ca17c14c1ec670e50b3619f (main)
+Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+Date:   Wed Oct 16 12:13:34 2024 -0400
+
+    add tests
+
+commit 2adffa7df32f9f16ea021a4b07e5c28bd6189759
+Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+Date:   Wed Oct 16 11:52:16 2024 -0400
+
+    increase number of simulations
+
+commit 9b5a13eae0b6ac257aba00f33aa1c11577a88311
+Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+Date:   Wed Oct 16 11:46:48 2024 -0400
+
+    add fancy simulations
+jfukuyam@BL-CITO-YVGG96H git-ex % git checkout main
+Switched to branch 'main'
+jfukuyam@BL-CITO-YVGG96H git-ex % git merge poisson-experiments
+Updating f207a92..7df7882
+Fast-forward
+ fancy-simulation.R | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+jfukuyam@BL-CITO-YVGG96H git-ex % git log
+commit 7df7882f8c5e9e14bec68c20f6c3b9067335e0e3 (HEAD -> main, poisson-experiments)
+Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+Date:   Wed Oct 16 12:27:39 2024 -0400
+
+    poisson is better than normal
+
+commit f207a92cee91a3822ca17c14c1ec670e50b3619f
+Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+Date:   Wed Oct 16 12:13:34 2024 -0400
+
+    add tests
+
+commit 2adffa7df32f9f16ea021a4b07e5c28bd6189759
+Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+Date:   Wed Oct 16 11:52:16 2024 -0400
+
+    increase number of simulations
+
+commit 9b5a13eae0b6ac257aba00f33aa1c11577a88311
+Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+Date:   Wed Oct 16 11:46:48 2024 -0400
+
+    add fancy simulations
+jfukuyam@BL-CITO-YVGG96H git-ex % git branch
+  add-tests
+* main
+  poisson-experiments
+jfukuyam@BL-CITO-YVGG96H git-ex % git checkout add-tests
+Switched to branch 'add-tests'
+jfukuyam@BL-CITO-YVGG96H git-ex % git log
+commit 1a52d20f996889e64cc7933d79ba32aa7ef31524 (HEAD -> add-tests)
+Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+Date:   Wed Oct 16 12:25:28 2024 -0400
+
+    add comments to test file
+
+commit f207a92cee91a3822ca17c14c1ec670e50b3619f
+Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+Date:   Wed Oct 16 12:13:34 2024 -0400
+
+    add tests
+
+commit 2adffa7df32f9f16ea021a4b07e5c28bd6189759
+Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+Date:   Wed Oct 16 11:52:16 2024 -0400
+
+    increase number of simulations
+
+commit 9b5a13eae0b6ac257aba00f33aa1c11577a88311
+Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+Date:   Wed Oct 16 11:46:48 2024 -0400
+
+    add fancy simulations
+jfukuyam@BL-CITO-YVGG96H git-ex % git checkout main
+Switched to branch 'main'
+jfukuyam@BL-CITO-YVGG96H git-ex % git merge add-tests
+hint: Waiting for your editor to close the file... error: cannot run emacs: No such file or directory
+error: unable to start editor 'emacs'
+Not committing merge; use 'git commit' to complete the merge.
+jfukuyam@BL-CITO-YVGG96H git-ex % commit -m "merge tests and poisson"
+zsh: command not found: commit
+jfukuyam@BL-CITO-YVGG96H git-ex % git commit -m "merge tests and poisson"
+[main 592adfa] merge tests and poisson
+jfukuyam@BL-CITO-YVGG96H git-ex % git log
+commit 592adfacf1da7d3a5613e39f35f9c1d7db421983 (HEAD -> main)
+Merge: 7df7882 1a52d20
+Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+Date:   Wed Oct 16 12:37:36 2024 -0400
+
+    merge tests and poisson
+
+commit 7df7882f8c5e9e14bec68c20f6c3b9067335e0e3 (poisson-experiments)
+Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+Date:   Wed Oct 16 12:27:39 2024 -0400
+
+    poisson is better than normal
+
+commit 1a52d20f996889e64cc7933d79ba32aa7ef31524 (add-tests)
+Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+Date:   Wed Oct 16 12:25:28 2024 -0400
+
+    add comments to test file
+
+commit f207a92cee91a3822ca17c14c1ec670e50b3619f
+Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+Date:   Wed Oct 16 12:13:34 2024 -0400
+
+    add tests
+
+commit 2adffa7df32f9f16ea021a4b07e5c28bd6189759
+Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+Date:   Wed Oct 16 11:52:16 2024 -0400
+
+    increase number of simulations
+jfukuyam@BL-CITO-YVGG96H git-ex % git log --graph
+*   commit 592adfacf1da7d3a5613e39f35f9c1d7db421983 (HEAD -> main)
+|\  Merge: 7df7882 1a52d20
+| | Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+| | Date:   Wed Oct 16 12:37:36 2024 -0400
+| | 
+| |     merge tests and poisson
+| | 
+| * commit 1a52d20f996889e64cc7933d79ba32aa7ef31524 (add-tests)
+| | Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+| | Date:   Wed Oct 16 12:25:28 2024 -0400
+| | 
+| |     add comments to test file
+| | 
+* | commit 7df7882f8c5e9e14bec68c20f6c3b9067335e0e3 (poisson-experiments)
+|/  Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+|   Date:   Wed Oct 16 12:27:39 2024 -0400
+|   
+|       poisson is better than normal
+| 
+* commit f207a92cee91a3822ca17c14c1ec670e50b3619f
+| Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+| Date:   Wed Oct 16 12:13:34 2024 -0400
+| 
+|     add tests
+| 
+* commit 2adffa7df32f9f16ea021a4b07e5c28bd6189759
+| Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+| Date:   Wed Oct 16 11:52:16 2024 -0400
+| 
+|     increase number of simulations
+:...skipping...
+*   commit 592adfacf1da7d3a5613e39f35f9c1d7db421983 (HEAD -> main)
+|\  Merge: 7df7882 1a52d20
+| | Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+| | Date:   Wed Oct 16 12:37:36 2024 -0400
+| | 
+| |     merge tests and poisson
+| | 
+| * commit 1a52d20f996889e64cc7933d79ba32aa7ef31524 (add-tests)
+| | Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+| | Date:   Wed Oct 16 12:25:28 2024 -0400
+| | 
+| |     add comments to test file
+| | 
+* | commit 7df7882f8c5e9e14bec68c20f6c3b9067335e0e3 (poisson-experiments)
+|/  Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+|   Date:   Wed Oct 16 12:27:39 2024 -0400
+|   
+|       poisson is better than normal
+| 
+* commit f207a92cee91a3822ca17c14c1ec670e50b3619f
+| Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+| Date:   Wed Oct 16 12:13:34 2024 -0400
+| 
+|     add tests
+| 
+* commit 2adffa7df32f9f16ea021a4b07e5c28bd6189759
+| Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+| Date:   Wed Oct 16 11:52:16 2024 -0400
+| 
+|     increase number of simulations
+| 
+:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+*   commit 592adfacf1da7d3a5613e39f35f9c1d7db421983 (HEAD -> main)
+|\  Merge: 7df7882 1a52d20
+| | Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+| | Date:   Wed Oct 16 12:37:36 2024 -0400
+| | 
+| |     merge tests and poisson
+| | 
+| * commit 1a52d20f996889e64cc7933d79ba32aa7ef31524 (add-tests)
+| | Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+| | Date:   Wed Oct 16 12:25:28 2024 -0400
+| | 
+| |     add comments to test file
+| | 
+* | commit 7df7882f8c5e9e14bec68c20f6c3b9067335e0e3 (poisson-experiments)
+|/  Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+|   Date:   Wed Oct 16 12:27:39 2024 -0400
+|   
+|       poisson is better than normal
+| 
+* commit f207a92cee91a3822ca17c14c1ec670e50b3619f
+| Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+| Date:   Wed Oct 16 12:13:34 2024 -0400
+| 
+|     add tests
+| 
+* commit 2adffa7df32f9f16ea021a4b07e5c28bd6189759
+| Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+| Date:   Wed Oct 16 11:52:16 2024 -0400
+| 
+|     increase number of simulations
+| 
+:...skipping...
+*   commit 592adfacf1da7d3a5613e39f35f9c1d7db421983 (HEAD -> main)
+|\  Merge: 7df7882 1a52d20
+| | Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+| | Date:   Wed Oct 16 12:37:36 2024 -0400
+| | 
+| |     merge tests and poisson
+| | 
+| * commit 1a52d20f996889e64cc7933d79ba32aa7ef31524 (add-tests)
+| | Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+| | Date:   Wed Oct 16 12:25:28 2024 -0400
+| | 
+| |     add comments to test file
+| | 
+* | commit 7df7882f8c5e9e14bec68c20f6c3b9067335e0e3 (poisson-experiments)
+|/  Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+|   Date:   Wed Oct 16 12:27:39 2024 -0400
+|   
+|       poisson is better than normal
+| 
+* commit f207a92cee91a3822ca17c14c1ec670e50b3619f
+| Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+| Date:   Wed Oct 16 12:13:34 2024 -0400
+| 
+|     add tests
+| 
+* commit 2adffa7df32f9f16ea021a4b07e5c28bd6189759
+| Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+| Date:   Wed Oct 16 11:52:16 2024 -0400
+| 
+|     increase number of simulations
+| 
+* commit 9b5a13eae0b6ac257aba00f33aa1c11577a88311
+:...skipping...
+*   commit 592adfacf1da7d3a5613e39f35f9c1d7db421983 (HEAD -> main)
+|\  Merge: 7df7882 1a52d20
+| | Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+| | Date:   Wed Oct 16 12:37:36 2024 -0400
+| | 
+| |     merge tests and poisson
+| | 
+| * commit 1a52d20f996889e64cc7933d79ba32aa7ef31524 (add-tests)
+| | Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+| | Date:   Wed Oct 16 12:25:28 2024 -0400
+| | 
+| |     add comments to test file
+| | 
+* | commit 7df7882f8c5e9e14bec68c20f6c3b9067335e0e3 (poisson-experiments)
+|/  Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+|   Date:   Wed Oct 16 12:27:39 2024 -0400
+|   
+|       poisson is better than normal
+| 
+* commit f207a92cee91a3822ca17c14c1ec670e50b3619f
+| Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+| Date:   Wed Oct 16 12:13:34 2024 -0400
+| 
+|     add tests
+| 
+* commit 2adffa7df32f9f16ea021a4b07e5c28bd6189759
+| Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+| Date:   Wed Oct 16 11:52:16 2024 -0400
+| 
+|     increase number of simulations
+| 
+* commit 9b5a13eae0b6ac257aba00f33aa1c11577a88311
+  Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+:...skipping...
+*   commit 592adfacf1da7d3a5613e39f35f9c1d7db421983 (HEAD -> main)
+|\  Merge: 7df7882 1a52d20
+| | Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+| | Date:   Wed Oct 16 12:37:36 2024 -0400
+| | 
+| |     merge tests and poisson
+| | 
+| * commit 1a52d20f996889e64cc7933d79ba32aa7ef31524 (add-tests)
+| | Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+| | Date:   Wed Oct 16 12:25:28 2024 -0400
+| | 
+| |     add comments to test file
+| | 
+* | commit 7df7882f8c5e9e14bec68c20f6c3b9067335e0e3 (poisson-experiments)
+|/  Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+|   Date:   Wed Oct 16 12:27:39 2024 -0400
+|   
+|       poisson is better than normal
+| 
+* commit f207a92cee91a3822ca17c14c1ec670e50b3619f
+| Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+| Date:   Wed Oct 16 12:13:34 2024 -0400
+| 
+|     add tests
+| 
+* commit 2adffa7df32f9f16ea021a4b07e5c28bd6189759
+| Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+| Date:   Wed Oct 16 11:52:16 2024 -0400
+| 
+|     increase number of simulations
+| 
+* commit 9b5a13eae0b6ac257aba00f33aa1c11577a88311
+  Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+  Date:   Wed Oct 16 11:46:48 2024 -0400
+:...skipping...
+*   commit 592adfacf1da7d3a5613e39f35f9c1d7db421983 (HEAD -> main)
+|\  Merge: 7df7882 1a52d20
+| | Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+| | Date:   Wed Oct 16 12:37:36 2024 -0400
+| | 
+| |     merge tests and poisson
+| | 
+| * commit 1a52d20f996889e64cc7933d79ba32aa7ef31524 (add-tests)
+| | Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+| | Date:   Wed Oct 16 12:25:28 2024 -0400
+| | 
+| |     add comments to test file
+| | 
+* | commit 7df7882f8c5e9e14bec68c20f6c3b9067335e0e3 (poisson-experiments)
+|/  Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+|   Date:   Wed Oct 16 12:27:39 2024 -0400
+|   
+|       poisson is better than normal
+| 
+* commit f207a92cee91a3822ca17c14c1ec670e50b3619f
+| Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+| Date:   Wed Oct 16 12:13:34 2024 -0400
+| 
+|     add tests
+| 
+* commit 2adffa7df32f9f16ea021a4b07e5c28bd6189759
+| Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+| Date:   Wed Oct 16 11:52:16 2024 -0400
+| 
+|     increase number of simulations
+| 
+* commit 9b5a13eae0b6ac257aba00f33aa1c11577a88311
+  Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+  Date:   Wed Oct 16 11:46:48 2024 -0400
+  
+:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+*   commit 592adfacf1da7d3a5613e39f35f9c1d7db421983 (HEAD -> main)
+|\  Merge: 7df7882 1a52d20
+| | Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+| | Date:   Wed Oct 16 12:37:36 2024 -0400
+| | 
+| |     merge tests and poisson
+| | 
+| * commit 1a52d20f996889e64cc7933d79ba32aa7ef31524 (add-tests)
+| | Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+| | Date:   Wed Oct 16 12:25:28 2024 -0400
+| | 
+| |     add comments to test file
+| | 
+* | commit 7df7882f8c5e9e14bec68c20f6c3b9067335e0e3 (poisson-experiments)
+|/  Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+|   Date:   Wed Oct 16 12:27:39 2024 -0400
+|   
+|       poisson is better than normal
+| 
+* commit f207a92cee91a3822ca17c14c1ec670e50b3619f
+| Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+| Date:   Wed Oct 16 12:13:34 2024 -0400
+| 
+|     add tests
+| 
+* commit 2adffa7df32f9f16ea021a4b07e5c28bd6189759
+| Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+| Date:   Wed Oct 16 11:52:16 2024 -0400
+| 
+|     increase number of simulations
+| 
+* commit 9b5a13eae0b6ac257aba00f33aa1c11577a88311
+  Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+  Date:   Wed Oct 16 11:46:48 2024 -0400
+  
+:...skipping...
+*   commit 592adfacf1da7d3a5613e39f35f9c1d7db421983 (HEAD -> main)
+|\  Merge: 7df7882 1a52d20
+| | Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+| | Date:   Wed Oct 16 12:37:36 2024 -0400
+| | 
+| |     merge tests and poisson
+| | 
+| * commit 1a52d20f996889e64cc7933d79ba32aa7ef31524 (add-tests)
+| | Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+| | Date:   Wed Oct 16 12:25:28 2024 -0400
+| | 
+| |     add comments to test file
+| | 
+* | commit 7df7882f8c5e9e14bec68c20f6c3b9067335e0e3 (poisson-experiments)
+|/  Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+|   Date:   Wed Oct 16 12:27:39 2024 -0400
+|   
+|       poisson is better than normal
+| 
+* commit f207a92cee91a3822ca17c14c1ec670e50b3619f
+| Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+| Date:   Wed Oct 16 12:13:34 2024 -0400
+| 
+|     add tests
+| 
+* commit 2adffa7df32f9f16ea021a4b07e5c28bd6189759
+| Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+| Date:   Wed Oct 16 11:52:16 2024 -0400
+| 
+|     increase number of simulations
+| 
+* commit 9b5a13eae0b6ac257aba00f33aa1c11577a88311
+  Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+  Date:   Wed Oct 16 11:46:48 2024 -0400
+  
+      add fancy simulations
+:...skipping...
+*   commit 592adfacf1da7d3a5613e39f35f9c1d7db421983 (HEAD -> main)
+|\  Merge: 7df7882 1a52d20
+| | Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+| | Date:   Wed Oct 16 12:37:36 2024 -0400
+| | 
+| |     merge tests and poisson
+| | 
+| * commit 1a52d20f996889e64cc7933d79ba32aa7ef31524 (add-tests)
+| | Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+| | Date:   Wed Oct 16 12:25:28 2024 -0400
+| | 
+| |     add comments to test file
+| | 
+* | commit 7df7882f8c5e9e14bec68c20f6c3b9067335e0e3 (poisson-experiments)
+|/  Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+|   Date:   Wed Oct 16 12:27:39 2024 -0400
+|   
+|       poisson is better than normal
+| 
+* commit f207a92cee91a3822ca17c14c1ec670e50b3619f
+| Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+| Date:   Wed Oct 16 12:13:34 2024 -0400
+| 
+|     add tests
+| 
+* commit 2adffa7df32f9f16ea021a4b07e5c28bd6189759
+| Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+| Date:   Wed Oct 16 11:52:16 2024 -0400
+| 
+|     increase number of simulations
+| 
+* commit 9b5a13eae0b6ac257aba00f33aa1c11577a88311
+  Author: Julia Fukuyama <julia.fukuyama@gmail.com>
+  Date:   Wed Oct 16 11:46:48 2024 -0400
+  
+      add fancy simulations
+~
+jfukuyam@BL-CITO-YVGG96H git-ex % 

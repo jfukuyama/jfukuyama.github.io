@@ -1,0 +1,718 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title>lecture18</title>
+  <style type="text/css">
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="https://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js"
+  type="text/javascript"></script>
+  <script src="https://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div id="variations-on-newtons-method" class="slide section level2">
+<h1>Variations on Newton’s Method</h1>
+<p>Agenda today</p>
+<ul class="incremental">
+<li><p>Newton’s method for multivariate problems</p></li>
+<li><p>Generalized linear models and exponential familiies</p></li>
+<li><p>Iteratively reweighted least squares for maximum likelihood in
+generalized linear models</p></li>
+</ul>
+</div>
+<div id="from-last-time" class="slide section level2">
+<h1>From last time</h1>
+<p>Newton’s method:</p>
+<ul class="incremental">
+<li><p>Pick some starting value <span
+class="math inline">\(\theta^{(0)}\)</span></p></li>
+<li><p>Iterate: <span class="math inline">\(\theta^{(m+1)} =
+\theta^{(m)} - d^2 \ell(\theta^{(m)}) d
+\ell(\theta^{(m)})\)</span></p></li>
+<li><p>Stop when <span
+class="math inline">\(d\ell(\theta^{(m)})\)</span> is sufficiently close
+to 0.</p></li>
+</ul>
+</div>
+<div id="newtons-method-for-linear-regression"
+class="slide section level2">
+<h1>Newton’s method for linear regression</h1>
+<p>Linear regression model:</p>
+<ul class="incremental">
+<li><span class="math inline">\(y \in \mathbb R^n\)</span>,</li>
+<li><span class="math inline">\(X \in \mathbb R^{n \times
+p}\)</span>,</li>
+<li><span class="math inline">\(\theta \in \mathbb R^p\)</span>,</li>
+<li><span class="math inline">\(\sigma \in \mathbb R^+\)</span></li>
+<li><span class="math inline">\(y \sim N(X \theta,
+\sigma^2)\)</span></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>Likelihood: <span class="math display">\[
+L(\theta) = (2\pi)^{-n/2} \sigma^{-n}\exp(-(y - X\theta)^T (y - X\theta)
+/ 2)
+\]</span></p>
+<p>Log likelihood: <span class="math display">\[
+\ell(\theta) = -n \log(2\pi) / 2 - n \log \sigma - (y - X \theta)^T (y -
+X \theta) / 2
+\]</span></p>
+<p><span class="math inline">\(d\ell(\theta)\)</span>: <span
+class="math display">\[
+X^T (y - X \theta)
+\]</span></p>
+<p><span class="math inline">\(d^2 \ell(\theta)\)</span>: <span
+class="math display">\[
+-X^T X
+\]</span></p>
+<div class="incremental">
+<p>Newton step: <span class="math display">\[
+\begin{align*}
+\theta^{(1)} &amp;= \theta^{(0)} - d^2 \ell(\theta^{(0)})^{-1} d
+\ell(\theta^{(0)})\\
+&amp;= \theta^{(0)} - (-X^T X)^{-1} X^T(y - X \theta^{(0)}) \\
+&amp;= \theta^{(0)} + (X^T X)^{-1} X^T y - (X^T X)^{-1} X^T X
+\theta^{(0)} \\
+&amp;= (X^T X)^{-1} X^T y
+\end{align*}
+\]</span></p>
+</div>
+</div>
+<div id="newtons-method-for-logistic-regression"
+class="slide section level2">
+<h1>Newton’s method for logistic regression</h1>
+<p>Logistic regression model:</p>
+<ul class="incremental">
+<li><span class="math inline">\(y \in \{0,1\}^n\)</span>,</li>
+<li><span class="math inline">\(x_i \in \mathbb R^p\)</span>, <span
+class="math inline">\(X \in \mathbb R^{n \times p}\)</span>, <span
+class="math inline">\(X = \begin{pmatrix} x_1^T \\ \vdots \\ x_n^T
+\end{pmatrix}\)</span></li>
+<li><span class="math inline">\(\theta \in \mathbb R^p\)</span>,</li>
+<li><span class="math inline">\(y_i \sim \text{Bern}(p_i)\)</span>,
+<span class="math inline">\(p_i=\exp(x_i^T \theta) / (1 + \exp(x_i^T
+\theta))\)</span></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>Likelihood: <span class="math display">\[
+L(\theta) = \prod_{i=1}^n p_i^{y_i} (1 - p_i)^{1 - y_i}
+\]</span></p>
+<p>Log likelihood: <span class="math display">\[
+\begin{align*}
+\ell(\theta)&amp;= \sum_{i=1}^n (y_i \log p_i + (1 - y_i) \log(1 - p_i))
+\\
+&amp;= \sum_{i=1}^n (y_i x_i^T \theta - \log(1 + \exp(x_i^T \theta)))
+\end{align*}
+\]</span></p>
+<p>First derivatives: <span class="math display">\[
+\begin{align*}
+d\ell(\theta) &amp;= \sum_{i=1}^n \left(y_i x_i - \frac{\exp(x_i^T
+\theta)}{1 + \exp(x_i^T \theta)} x_i\right) \\
+&amp;= \sum_{i=1}^n (y_i - p_i) x_i \\
+&amp;= X^T (y - p)
+\end{align*}
+\]</span></p>
+<p>Second derivatives: <span class="math display">\[
+\begin{align*}
+d^2 \ell(\theta) &amp;= -\sum_{i=1}^n p_i(1 - p_i) x_i x_i^T \\
+&amp;= -X^T W X
+\end{align*}
+\]</span> if <span class="math inline">\(W = \text{diag}(p_1(1 - p_1),
+\ldots, p_n(1 - p_n))\)</span></p>
+</div>
+<div class="slide section level2">
+
+<p>Newton step: <span class="math display">\[
+\begin{align*}
+\theta^{(m+1)} &amp;= \theta^{(m)} - (d^2 \ell(\theta))^{-1} d
+\ell(\theta) \\
+&amp;= \theta^{(m)} + (X^T W^{(m)} X)^{-1} X^T (y - p^{(m)})
+\end{align*}
+\]</span></p>
+</div>
+<div class="slide section level2">
+
+<p>Translate the previous two slides into R code:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>log_likelihood <span class="ot">=</span> <span class="cf">function</span>(theta, X, y) {</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    p <span class="ot">=</span> <span class="fu">exp</span>(X <span class="sc">%*%</span> theta)<span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(X <span class="sc">%*%</span> theta))</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="fu">sum</span>(y <span class="sc">*</span> <span class="fu">log</span>(p) <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">-</span> y) <span class="sc">*</span> <span class="fu">log</span>(<span class="dv">1</span> <span class="sc">-</span> p)))</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>d_log_likelihood <span class="ot">=</span> <span class="cf">function</span>(theta, X, y) {</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    p <span class="ot">=</span> <span class="fu">exp</span>(X <span class="sc">%*%</span> theta) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(X <span class="sc">%*%</span> theta))</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="fu">t</span>(X) <span class="sc">%*%</span> (y <span class="sc">-</span> p))</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>d2_log_likelihood <span class="ot">=</span> <span class="cf">function</span>(theta, X, y) {</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    p <span class="ot">=</span> <span class="fu">exp</span>(X <span class="sc">%*%</span> theta) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(X <span class="sc">%*%</span> theta))</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    W <span class="ot">=</span> <span class="fu">diag</span>(<span class="fu">as.vector</span>(p <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> p)))</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="sc">-</span><span class="fu">t</span>(X) <span class="sc">%*%</span> W <span class="sc">%*%</span> X)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>newton_update <span class="ot">=</span> <span class="cf">function</span>(theta_start, d_log_likelihood, d2_log_likelihood, X, y) {</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    step <span class="ot">=</span> <span class="fu">solve</span>(<span class="fu">d2_log_likelihood</span>(theta_start, X, y)) <span class="sc">%*%</span> <span class="fu">d_log_likelihood</span>(theta_start, X, y)</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(theta_start <span class="sc">-</span> step)</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+<div class="slide section level2">
+
+<p>Make some example data</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>theta_true <span class="ot">=</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>n <span class="ot">=</span> <span class="dv">100</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>X <span class="ot">=</span> <span class="fu">cbind</span>(<span class="fu">rep</span>(<span class="dv">1</span>, n), <span class="fu">rnorm</span>(n, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="dv">4</span>))</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(X) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">&quot;Intercept&quot;</span>, <span class="st">&quot;x&quot;</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>p <span class="ot">=</span> <span class="fu">exp</span>(X <span class="sc">%*%</span> theta_true) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(X <span class="sc">%*%</span> theta_true))</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>y <span class="ot">=</span> <span class="fu">rbinom</span>(<span class="at">n =</span> n, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> p)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(y <span class="sc">~</span> X[,<span class="st">&quot;x&quot;</span>])</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="fu">points</span>(p <span class="sc">~</span> X[,<span class="st">&quot;x&quot;</span>], <span class="at">col =</span> <span class="st">&quot;red&quot;</span>)</span></code></pre></div>
+<p><img src="lecture-18-fig/unnamed-chunk-2-1.png" /></p>
+</div>
+<div class="slide section level2">
+
+<p>Perform Newton’s method for 10 iterations:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>n_iter <span class="ot">=</span> <span class="dv">10</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>theta_start <span class="ot">=</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">0</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>theta <span class="ot">=</span> theta_start</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>n_iter) {</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    theta <span class="ot">=</span> <span class="fu">newton_update</span>(theta, d_log_likelihood, d2_log_likelihood, X, y)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;Value of theta at iteration %i: (%.2f, %.2f)</span><span class="sc">\n</span><span class="st">&quot;</span>, i, theta[<span class="dv">1</span>], theta[<span class="dv">2</span>]))</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<pre><code>## Value of theta at iteration 1: (0.34, 0.42)
+## Value of theta at iteration 2: (0.58, 0.81)
+## Value of theta at iteration 3: (0.91, 1.31)
+## Value of theta at iteration 4: (1.35, 1.95)
+## Value of theta at iteration 5: (1.88, 2.76)
+## Value of theta at iteration 6: (2.39, 3.66)
+## Value of theta at iteration 7: (2.76, 4.40)
+## Value of theta at iteration 8: (2.91, 4.73)
+## Value of theta at iteration 9: (2.93, 4.78)
+## Value of theta at iteration 10: (2.93, 4.78)</code></pre>
+<div class="incremental">
+<p>We can check against what the <code>glm</code> function tells us:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glm</span>(y <span class="sc">~</span> <span class="dv">0</span> <span class="sc">+</span> X, <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>)</span></code></pre></div>
+<pre><code>## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</code></pre>
+<pre><code>## 
+## Call:  glm(formula = y ~ 0 + X, family = &quot;binomial&quot;)
+## 
+## Coefficients:
+## XIntercept          Xx  
+##      2.934       4.779  
+## 
+## Degrees of Freedom: 100 Total (i.e. Null);  98 Residual
+## Null Deviance:       138.6 
+## Residual Deviance: 15.26     AIC: 19.26</code></pre>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Look in a little more detail. Define a function that gives us <span
+class="math inline">\(p\)</span> and <span
+class="math inline">\(W\)</span> at an iteration:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>get_fitted_and_weights <span class="ot">=</span> <span class="cf">function</span>(theta, X, y) {</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    p <span class="ot">=</span> <span class="fu">exp</span>(X <span class="sc">%*%</span> theta) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(X <span class="sc">%*%</span> theta))</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    W <span class="ot">=</span> p <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> p)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="fu">list</span>(<span class="at">fitted =</span> p, <span class="at">weights =</span> W))</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<div class="incremental">
+<p>What <span class="math inline">\(W\)</span>, <span
+class="math inline">\(p\)</span>, <span class="math inline">\(y -
+p\)</span> look like starting out:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>theta_start <span class="ot">=</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">0</span>)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>theta <span class="ot">=</span> theta_start</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>fitted_and_weights <span class="ot">=</span> <span class="fu">get_fitted_and_weights</span>(theta, X, y)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>internals_df <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="at">x =</span> X[,<span class="dv">2</span>], <span class="at">y =</span> y, <span class="at">fitted =</span> fitted_and_weights<span class="sc">$</span>fitted, <span class="at">weights =</span> fitted_and_weights<span class="sc">$</span>weights)</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(internals_df) <span class="sc">+</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> fitted, <span class="at">col =</span> weights)) <span class="sc">+</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y)) <span class="sc">+</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_color_viridis</span>()</span></code></pre></div>
+<p><img src="lecture-18-fig/unnamed-chunk-6-1.png" /></p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(internals_df) <span class="sc">+</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> (y <span class="sc">-</span> fitted) <span class="sc">/</span> weights, <span class="at">col =</span> weights)) <span class="sc">+</span> <span class="fu">scale_color_viridis</span>()</span></code></pre></div>
+<p><img src="lecture-18-fig/unnamed-chunk-6-2.png" /></p>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Something suspicious:</p>
+<div class="incremental">
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">lm</span>((y <span class="sc">-</span> fitted) <span class="sc">/</span> weights <span class="sc">~</span> x, <span class="at">data =</span> internals_df, <span class="at">weights =</span> weights)</span></code></pre></div>
+<pre><code>## 
+## Call:
+## lm(formula = (y - fitted)/weights ~ x, data = internals_df, weights = weights)
+## 
+## Coefficients:
+## (Intercept)            x  
+##      0.3366       0.4212</code></pre>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="sc">-</span><span class="fu">solve</span>(<span class="fu">d2_log_likelihood</span>(theta, X, y)) <span class="sc">%*%</span> <span class="fu">d_log_likelihood</span>(theta, X, y)</span></code></pre></div>
+<pre><code>##                [,1]
+## Intercept 0.3365656
+## x         0.4211563</code></pre>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>theta <span class="ot">=</span> <span class="fu">newton_update</span>(theta, d_log_likelihood, d2_log_likelihood, X, y)</span></code></pre></div>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>What <span class="math inline">\(W\)</span>, <span
+class="math inline">\(p\)</span>, <span class="math inline">\(y -
+p\)</span> look like after the first iteration:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>fitted_and_weights <span class="ot">=</span> <span class="fu">get_fitted_and_weights</span>(theta, X, y)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>internals_df <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="at">x =</span> X[,<span class="dv">2</span>], <span class="at">y =</span> y, <span class="at">fitted =</span> fitted_and_weights<span class="sc">$</span>fitted, <span class="at">weights =</span> fitted_and_weights<span class="sc">$</span>weights)</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(internals_df) <span class="sc">+</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> fitted, <span class="at">col =</span> weights)) <span class="sc">+</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y)) <span class="sc">+</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_color_viridis</span>()</span></code></pre></div>
+<p><img src="lecture-18-fig/unnamed-chunk-8-1.png" /></p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(internals_df) <span class="sc">+</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> (y <span class="sc">-</span> fitted) <span class="sc">/</span> weights, <span class="at">col =</span> weights)) <span class="sc">+</span> <span class="fu">scale_color_viridis</span>()</span></code></pre></div>
+<p><img src="lecture-18-fig/unnamed-chunk-8-2.png" /></p>
+</div>
+<div class="slide section level2">
+
+<p>Something suspicious:</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">lm</span>((y <span class="sc">-</span> fitted) <span class="sc">/</span> weights <span class="sc">~</span> x, <span class="at">data =</span> internals_df, <span class="at">weights =</span> weights)</span></code></pre></div>
+<pre><code>## 
+## Call:
+## lm(formula = (y - fitted)/weights ~ x, data = internals_df, weights = weights)
+## 
+## Coefficients:
+## (Intercept)            x  
+##      0.2465       0.3863</code></pre>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="sc">-</span><span class="fu">solve</span>(<span class="fu">d2_log_likelihood</span>(theta, X, y)) <span class="sc">%*%</span> <span class="fu">d_log_likelihood</span>(theta, X, y)</span></code></pre></div>
+<pre><code>##                [,1]
+## Intercept 0.2464510
+## x         0.3863167</code></pre>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>theta <span class="ot">=</span> <span class="fu">newton_update</span>(theta, d_log_likelihood, d2_log_likelihood, X, y)</span></code></pre></div>
+</div>
+<div id="exponential-families-and-generalized-linear-models"
+class="slide section level2">
+<h1>Exponential families and generalized linear models</h1>
+<p><a
+href="https://people.eecs.berkeley.edu/~jordan/courses/260-spring10/other-readings/chapter8.pdf">Exponential
+families</a> are families of probability distributions whose densities
+take the form <span class="math display">\[
+f(x | \eta) = h(x) exp(\eta^T T(x) - A(\eta))
+\]</span></p>
+<p><span class="math inline">\(T\)</span> and <span
+class="math inline">\(A\)</span> are known functions that describe the
+family.</p>
+<p><span class="math inline">\(\eta\)</span> is the natural
+parameter.</p>
+<div class="incremental">
+<p>Properties that we’ll need later:</p>
+<ul class="incremental">
+<li><p><span class="math inline">\(E(X) = A&#39;(\eta)\)</span></p></li>
+<li><p><span class="math inline">\(\text{var}(X)=
+A&#39;&#39;(\eta)\)</span></p></li>
+</ul>
+</div>
+</div>
+<div id="example-bernoulli-distribution" class="slide section level2">
+<h1>Example: Bernoulli distribution</h1>
+<ul class="incremental">
+<li><p>“Normal” parameterization: <span class="math inline">\(p(y \mid
+p) = p^y (1 - p)^{1 - y}\)</span></p></li>
+<li><p>Rewrite as <span class="math display">\[
+p(y \mid p) = \exp\left[ \log(p / (1 - p)) y + \log(1 - p) \right]
+\]</span></p></li>
+<li><p>Then: <span class="math display">\[
+\begin{align*}
+\eta &amp;= p / (1 - p) \\
+T(y) &amp;= y \\
+A(\eta) &amp;= -\log(1 - p) = \log(1 + e^\eta)\\
+h(y) &amp;= 1\\
+\end{align*}
+\]</span></p></li>
+</ul>
+</div>
+<div id="example-normal-distribution-with-just-a-mean"
+class="slide section level2">
+<h1>Example: Normal distribution with just a mean</h1>
+<ul class="incremental">
+<li><p>“Normal” parameterization: <span class="math inline">\(p(y \mid
+\mu) = (2 \pi)^{-1/2} \exp \left[ -\frac{1}{2} (y - \mu)^2
+\right]\)</span></p></li>
+<li><p>Rewrite as <span class="math display">\[
+p(y \mid \mu) = \frac{1}{\sqrt{2\pi}} \exp \left[ \mu y - \frac{1}{2}
+y^2 - \frac{1}{2} \mu^2\right]
+\]</span></p></li>
+<li><p>Then: <span class="math display">\[
+\begin{align*}
+\eta &amp;= \mu\\
+T(y) &amp;= y\\
+A(\eta) &amp;= \frac{\mu^2}{ 2} = \frac{\eta^2}{2}\\
+h(y) &amp;= \frac{1}{\sqrt{2\pi}}\exp(-y^2 / 2)
+\end{align*}
+\]</span></p></li>
+</ul>
+</div>
+<div id="example-normal-distribution-with-mean-and-variance"
+class="slide section level2">
+<h1>Example: Normal distribution with mean and variance</h1>
+<ul class="incremental">
+<li><p>“Normal” parameterization: <span class="math inline">\(p(y \mid
+\mu, \sigma^2) = (2 \pi \sigma^2)^{-1/2} \exp \left[
+-\frac{1}{2\sigma^2} (y - \mu)^2 \right]\)</span></p></li>
+<li><p>Rewrite as <span class="math display">\[
+p(y \mid \mu, \sigma^2) = \frac{1}{\sqrt{2\pi}} \exp \left[
+\frac{\mu}{\sigma^2} y - \frac{1}{2\sigma^2} y^2 - \frac{1}{2\sigma^2}
+\mu^2 - \log \sigma\right]
+\]</span></p></li>
+<li><p>Then: <span class="math display">\[
+\begin{align*}
+\eta &amp;= \begin{pmatrix} \mu / \sigma^2 \\ -1/2\sigma^2
+\end{pmatrix}\\
+T(y) &amp;= \begin{pmatrix} y \\ y^2 \end{pmatrix} \\
+A(\eta) &amp;= \frac{\mu^2}{ 2 \sigma^2} + \log \sigma =
+-\frac{\eta_1^2}{4\eta_2} - \frac{1}{2} \log(-2\eta_2)\\
+h(y) &amp;= \frac{1}{\sqrt{2\pi}}
+\end{align*}
+\]</span></p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>Why do we like them?</p>
+<ul class="incremental">
+<li><p>Many commonly-used distributions: normal, exponential, Poisson,
+binomial, multinomial, etc.</p></li>
+<li><p>Easy to analyze</p></li>
+<li><p>They describe the stochasticity in generalized linear
+models</p></li>
+</ul>
+</div>
+<div id="generalized-linear-models" class="slide section level2">
+<h1>Generalized linear models</h1>
+<p>Models for independent observations, <span class="math inline">\(y_i,
+i = 1,\ldots, n\)</span></p>
+<p>Three components:</p>
+<ul class="incremental">
+<li>Random component: <span class="math display">\[
+y_i \sim f(\eta_i)
+\]</span> where <span class="math inline">\(f\)</span> is an exponential
+family, <span class="math inline">\(\eta_i\)</span> the natural
+parameter</li>
+</ul>
+<div class="incremental">
+<ul class="incremental">
+<li>Systematic component or the linear predictor <span
+class="math display">\[
+\eta_i = x_i^T \theta
+\]</span></li>
+</ul>
+</div>
+<div class="incremental">
+<ul class="incremental">
+<li>Link function: links the mean to the linear predictor <span
+class="math display">\[
+\eta_i = g(\mu_i)
+\]</span> <span class="math inline">\(g\)</span> is the link function.
+The relationship between the means and the predictors is then <span
+class="math display">\[
+\mu_i = g^{-1} (x_i^T \theta)
+\]</span></li>
+</ul>
+</div>
+</div>
+<div id="choice-of-link-functions" class="slide section level2">
+<h1>Choice of link functions</h1>
+<p>The <em>canonical link</em> is the one that maps the mean to the
+natural parameter. If you use the canonical link, the natural parameter
+will be linear in the predictors.</p>
+<ul class="incremental">
+<li><p>Normal: Canonical link is the identity: <span
+class="math inline">\(g(x) = x\)</span></p></li>
+<li><p>Bernoulli: Canonical link is logit: <span
+class="math inline">\(g(x) = \log(x / (1 - x))\)</span></p></li>
+<li><p>Poisson: Canonical link is the log: <span
+class="math inline">\(g(x) = \log(x)\)</span></p></li>
+<li><p>Gamma: Canonical link is inverse: <span
+class="math inline">\(g(x) = x^{-1}\)</span></p></li>
+</ul>
+</div>
+<div id="iteratively-reweighted-least-squares"
+class="slide section level2">
+<h1>Iteratively Reweighted Least Squares</h1>
+<ul class="incremental">
+<li>Start with an estimate of the parameters <span
+class="math inline">\(\theta^{(0)}\)</span>.</li>
+</ul>
+<div class="incremental">
+<ul class="incremental">
+<li><p>Find <span class="math inline">\(\eta_i^{(m)} = x_i^T
+\theta^{(m)}\)</span>, <span class="math inline">\(i = 1,\ldots,
+n\)</span></p></li>
+<li><p>Find <span class="math inline">\(\mu_i^{(m)} = g^{-1}
+(\eta_i^{(m)})\)</span></p></li>
+</ul>
+</div>
+<div class="incremental">
+<ul class="incremental">
+<li>Compute the vector <span class="math inline">\(z^{(m)} \in \mathbb
+R^n\)</span> of “working dependent variables”: <span
+class="math display">\[
+z_i^{(m)} = \eta_i^{(m)} + (y_i -  \mu_i^{(m)}) d\eta_i / d \mu_i
+\]</span></li>
+</ul>
+</div>
+<div class="incremental">
+<ul class="incremental">
+<li>Compute iterative weights: <span class="math display">\[
+w_i^{(m)}  = (A&#39;&#39;(\eta_i^{(m)}) (d\eta_i / d \mu_i)^2)^{-1}
+\]</span> and let <span class="math inline">\(W^{(m)} \in \mathbb R^{n
+\times n}\)</span> be a diagonal matrix with <span
+class="math inline">\(W^{(m)}_{ii} = w_i^{(m)}\)</span></li>
+</ul>
+</div>
+<div class="incremental">
+<ul class="incremental">
+<li>Obtain <span class="math inline">\(\theta^{(m+1)}\)</span> by
+regressing the working dependent variable <span
+class="math inline">\(z_i\)</span> on the predictors <span
+class="math inline">\(x_i\)</span> using weights <span
+class="math inline">\(w_i\)</span>: <span class="math display">\[
+\theta^{(m+1)} = (X^T W^{(m)} X)^{-1} X^T W^{(m)} z^{(m)}
+\]</span></li>
+</ul>
+</div>
+<div class="incremental">
+<ul class="incremental">
+<li>Iterate until convergence</li>
+</ul>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Idea:</p>
+<ul class="incremental">
+<li><p>The problem is linear in the natural parameter space, so try to
+do least squares there</p></li>
+<li><p>“Working dependent variable” is like <span
+class="math inline">\(y_i\)</span> mapped to the natural parameter
+space.</p></li>
+<li><p>In general, a random variable taken from an exponential family
+distribution will have variance that depends on the natural
+parameter.</p></li>
+<li><p>The weights are inversely proportional to the variance of the
+working dependent variable at the current guess for <span
+class="math inline">\(\theta\)</span>.</p></li>
+<li><p>Samples for which the variance should be smaller have larger
+weights, samples for which the variance should be larger get smaller
+weights</p></li>
+</ul>
+</div>
+<div id="example-linear-regression" class="slide section level2">
+<h1>Example: Linear regression</h1>
+<ul class="incremental">
+<li><p>Random component: normal distribution, <span
+class="math inline">\(y_i \sim N(\eta_i, 1)\)</span> (variance 1 for
+ease of notation, everything goes through analogously with unknown
+variance <span class="math inline">\(\sigma\)</span>)</p></li>
+<li><p>Exponential family representation of the normal distribution has
+<span class="math inline">\(A(\eta) = \eta^2 / 2\)</span></p></li>
+<li><p>Systematic component: <span class="math inline">\(\eta_i = x_i^T
+\theta\)</span></p></li>
+<li><p>Canonical link function for the normal distribution is <span
+class="math inline">\(g(x) = x\)</span>, so <span
+class="math inline">\(\eta_i = \mu_i\)</span></p></li>
+<li><p>Identity link means <span class="math inline">\(E(y_i) =
+g^{-1}(\eta_i) = g^{-1}(x_i^T \theta) = x_i^T \theta\)</span></p></li>
+</ul>
+<div class="incremental">
+<ul class="incremental">
+<li>Derivative <span class="math inline">\(\frac{d\eta}{d\mu}=
+1\)</span></li>
+</ul>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Working dependent variable at iteration <span
+class="math inline">\(0\)</span> <span class="math display">\[
+\begin{align*}
+z_i^{(0)} &amp;= \eta_i^{(0)} + (y_i - \mu_i^{(0)}) d \eta_i^{(0)}/
+d\mu\\
+&amp;= \mu_i^{(0)} + (y _i - \mu_i^{(0)}) = y_i
+\end{align*}
+\]</span></p>
+<div class="incremental">
+<p>Iterative weights: <span class="math display">\[
+\begin{align*}
+w_i^{(0)} &amp;= (A&#39;&#39;(\eta_i^{(0)}) d\eta_i^{(0)} / d\mu)^{-1}
+\\
+&amp;= 1
+\end{align*}
+\]</span></p>
+</div>
+<div class="incremental">
+<p>New estimate is <span class="math display">\[
+\begin{align*}
+\theta^{(1)} &amp;= (X^T W^{(0)} X)^{-1} X^T W^{(0)} z\\
+&amp;= (X^T X)^{-1} X^T y
+\end{align*}
+\]</span></p>
+</div>
+</div>
+<div id="example-logistic-regression" class="slide section level2">
+<h1>Example: logistic regression</h1>
+<ul class="incremental">
+<li><p>Random component: Bernoulli distribution, <span
+class="math inline">\(y_i \sim \text{Bernoulli}(\mu_i)\)</span>, <span
+class="math inline">\(\mu_i \in (0,1)\)</span></p></li>
+<li><p>Systematic component: <span class="math inline">\(\eta_i = x_i^T
+\theta\)</span></p></li>
+<li><p>Canonical link for Bernoulli is <span class="math inline">\(g(x)
+= \log(x / (1 - x))\)</span>, so <span class="math inline">\(\eta_i =
+\log(\mu_i / (1 - \mu_i))\)</span></p></li>
+<li><p>Exponential family representation of Bernoulli has <span
+class="math inline">\(A(\eta) = \log (1 + e^\eta)\)</span></p></li>
+</ul>
+</div>
+<div class="slide section level2">
+
+<p>Quantities we will need: <span class="math display">\[
+\eta = \log (\mu / (1 - \mu))
+\]</span></p>
+<p><span class="math display">\[
+d\eta / d\mu = 1/\mu + 1 / (1 - \mu) = 1 / (\mu(1 - \mu))
+\]</span></p>
+<p><span class="math display">\[
+A(\eta) = \log(1 + e^\eta)
+\]</span></p>
+<p><span class="math display">\[
+A&#39;(\eta) = \frac{e^\eta}{1 + e^\eta}
+\]</span></p>
+<p><span class="math display">\[
+\begin{align*}
+A&#39;&#39;(\eta) &amp;= \frac{e^\eta}{(1 + e^\eta)^2}\\
+&amp;= \mu(1 - \mu)
+\end{align*}
+\]</span></p>
+</div>
+<div class="slide section level2">
+
+<p>Working dependent variables: <span class="math display">\[
+z_i = \eta_i + (y_i - \mu_i) \frac{d\eta_i}{d \mu_i}\\
+= \eta_i + \frac{y_i - \mu_i}{\mu_i(1 - \mu_i)}
+\]</span></p>
+<div class="incremental">
+<p>Iterative weights: <span class="math display">\[
+\begin{align*}
+w_i &amp;= (A&#39;&#39;(\eta_i) (\frac{d\eta_i}{d\mu_i})^2)^{-1} \\
+&amp;= (\mu_i(1 - \mu_i) (\mu_i(1 - \mu_i))^{-2})^{-1}\\
+&amp;=  \mu_i(1 - \mu_i)
+\end{align*}
+\]</span></p>
+</div>
+<div class="incremental">
+<p>Update formula:</p>
+<p><span class="math display">\[
+\theta^{(m+1)} = (X^T W^{(m)} X)^{-1} X^T W^{(m)} z^{(m)}
+\]</span></p>
+</div>
+</div>
+<div class="slide section level2">
+
+<p>Notice that we can rewrite this: <span class="math display">\[
+\begin{align*}
+\theta^{(m+1)} &amp;= (X^T W^{(m)} X)^{-1} X^T W^{(m)} z^{(m)} \\
+&amp;= (X^T W^{(m)} X)^{-1} X^T W^{(m)} (\eta^{(m)} + \frac{y^{(m)} -
+\mu^{(m)}}{\mu^{(w)}(1 - \mu^{(m)})}) \\
+&amp;= (X^T W^{(m)} X)^{-1} X^T W^{(m)} (X\theta^{(m)} +
+(W^{(m)})^{-1}(y - \mu^{(m)}))\\
+&amp;= \theta^{(m)} + (X^T W^{(m)} X)^{-1} X^T (y - \mu^{(m)})
+\end{align*}
+\]</span></p>
+<p>Remember Newton-Raphson for logistic regression?</p>
+</div>
+<div id="why-irls" class="slide section level2">
+<h1>Why IRLS?</h1>
+<ul class="incremental">
+<li><p>Different from Newton-Raphson if you use a non-canonical link,
+e.g. probit regression instead of logistic regression.</p></li>
+<li><p>Interpretation of Newton-Raphson suggests algorithms for other
+models.</p></li>
+<li><p>If for some reason you are in a programming environment where
+weighted least squares is easy and everything else is unavailable, you
+can use weighted least squares to estimate GLMs.</p></li>
+</ul>
+</div>
+</body>
+</html>
