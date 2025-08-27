@@ -7,7 +7,7 @@ Things marked `- [ ]` are things you should make sure to address as project lead
 Ask the client to describe their project. You can often give them leeway to describe as they see fit, but by the end of the meeting you need to know the answers to two questions: 
 - [ ] What question does the client want answered? 
 - [ ] How were the data generated?
-- [ ] What specifically are you supposed to do?
+- [ ] What parts of the project is the consultant responsible for?
 
 ## Stage 2: Make an analysis plan
 
