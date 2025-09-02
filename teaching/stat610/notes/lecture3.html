@@ -23,8 +23,9 @@
       vertical-align: middle;
     }
     /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
     pre > code.sourceCode { white-space: pre; position: relative; }
-    pre > code.sourceCode > span { line-height: 1.25; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
     pre > code.sourceCode > span:empty { height: 1.2em; }
     .sourceCode { overflow: visible; }
     code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -99,13 +100,6 @@
 <div class="slide titlepage">
   <h1 class="title">Stat 610 Lecture 3: Regular Expressions</h1>
 </div>
-<div id="logistics" class="slide section level2">
-<h1>Logistics</h1>
-<ul class="incremental">
-<li>Lab 1 will happen on Friday, script and data will be posted at
-jfukuyama.github.io/teaching/stat610/assignments.</li>
-</ul>
-</div>
 <div id="regular-expressions" class="slide section level2">
 <h1>Regular expressions</h1>
 <p>Reading: Matloff Chapter 11.2.</p>
@@ -132,8 +126,8 @@ by any number (including zero) of spaces.</p>
 <p>Why do we need them?</p>
 <ul class="incremental">
 <li><p>Parsimony: We can express sets of strings more compactly.
-<br><br> For example: <code>(J.|Julia) Fukuyama</code> represents the
-set containing <code>J. Fukuyama</code> and
+<br><br> For example: <code>(J|Julia) Fukuyama</code> represents the set
+containing <code>J Fukuyama</code> and
 <code>Julia Fukuyama</code></p></li>
 <li><p>Allows us to specify infinite-size sets in finite space. <br><br>
 For example: our <code>, *</code> expression from before.</p></li>
@@ -170,8 +164,8 @@ class="math inline">\(R\)</span> followed by a string in <span
 class="math inline">\(S\)</span>. <br><br> If <span
 class="math inline">\(R = \{good, bad\}\)</span> and <span
 class="math inline">\(S = \{boy, girl\}\)</span>, then <span
-class="math inline">\(RS = \{goodboy, goodgirl, badboy,
-badgirl\}\)</span>.</li>
+class="math inline">\(RS =
+\{goodboy, goodgirl, badboy, badgirl\}\)</span>.</li>
 </ul>
 <div class="incremental">
 <ul class="incremental">
@@ -183,8 +177,8 @@ of <span class="math inline">\(R\)</span> or an element of <span
 class="math inline">\(S\)</span>. This is the same as the set union.
 <br><br> Same example: If <span class="math inline">\(R = \{good,
 bad\}\)</span> and <span class="math inline">\(S = \{boy,
-girl\}\)</span>, then <span class="math inline">\(R|S = \{good, bad,
-boy, girl\}\)</span>.</li>
+girl\}\)</span>, then <span class="math inline">\(R|S =
+\{good, bad, boy, girl\}\)</span>.</li>
 </ul>
 </div>
 <div class="incremental">

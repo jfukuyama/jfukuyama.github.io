@@ -1,7 +1,3 @@
-## Logistics
-
-- Lab 1 will happen on Friday, script and data will be posted at jfukuyama.github.io/teaching/stat610/assignments.
-
 ## Regular expressions
 
 Reading: Matloff Chapter 11.2.
@@ -29,8 +25,8 @@ Why do we need them?
 
 - Parsimony: We can express sets of strings more compactly.
 <br><br>
-For example: `(J.|Julia) Fukuyama` represents the set containing
-`J. Fukuyama` and `Julia Fukuyama`
+For example: `(J|Julia) Fukuyama` represents the set containing
+`J Fukuyama` and `Julia Fukuyama`
 
 - Allows us to specify infinite-size sets in finite space.
 <br><br>
