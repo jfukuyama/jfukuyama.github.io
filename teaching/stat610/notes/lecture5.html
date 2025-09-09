@@ -23,8 +23,9 @@
       vertical-align: middle;
     }
     /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
     pre > code.sourceCode { white-space: pre; position: relative; }
-    pre > code.sourceCode > span { line-height: 1.25; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
     pre > code.sourceCode > span:empty { height: 1.2em; }
     .sourceCode { overflow: visible; }
     code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -105,10 +106,8 @@ functions</h1>
 7.12, 7.13</p></li>
 <li><p>If you want more detail on environments: <em>Advanced R</em> by
 Hadley Wickham has a good <a
-href="http://adv-r.had.co.nz/Environments.html">chapter</a> on them.
-That chapter makes a distinction between a function’s <em>enclosing</em>
-environment and its <em>binding</em> environment, but for the purposes
-of this class we are going to assume those are always the same.</p></li>
+href="https://adv-r.hadley.nz/environments.html">chapter</a> on
+them.</p></li>
 <li><p>More relevant for next time: <em>Clean Code</em> by Robert
 Martin, <a href="https://iucat.iu.edu/iub/16580380">Chapter
 3</a>.</p></li>
@@ -379,13 +378,15 @@ can put them in a list or other type of object.</li>
 <span id="cb36-3"><a href="#cb36-3" tabindex="-1"></a>    <span class="fu">return</span>(t)</span>
 <span id="cb36-4"><a href="#cb36-4" tabindex="-1"></a>}</span>
 <span id="cb36-5"><a href="#cb36-5" tabindex="-1"></a>g</span></code></pre></div>
-<pre><code>## function() {
+<pre><code>## function () 
+## {
 ##     t &lt;- function(x) x^2
 ##     return(t)
 ## }</code></pre>
 <div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" tabindex="-1"></a><span class="fu">g</span>()</span></code></pre></div>
-<pre><code>## function(x) x^2
-## &lt;environment: 0x127433420&gt;</code></pre>
+<pre><code>## function (x) 
+## x^2
+## &lt;environment: 0x13b548f48&gt;</code></pre>
 <div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" tabindex="-1"></a><span class="fu">formals</span>(g)</span></code></pre></div>
 <pre><code>## NULL</code></pre>
 <div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" tabindex="-1"></a><span class="fu">formals</span>(<span class="fu">g</span>())</span></code></pre></div>
@@ -496,7 +497,7 @@ environment</em>.</p>
 <span id="cb54-13"><a href="#cb54-13" tabindex="-1"></a>}</span>
 <span id="cb54-14"><a href="#cb54-14" tabindex="-1"></a><span class="fu">f</span>(<span class="dv">1</span>)</span></code></pre></div>
 <pre><code>## h&#39;s enclosing environment:  
-## &lt;environment: 0x127df38c8&gt;
+## &lt;environment: 0x13902caa8&gt;
 ## parent of h&#39;s enclosing environment: 
 ## &lt;environment: R_GlobalEnv&gt;</code></pre>
 <pre><code>## [1] 104</code></pre>
@@ -525,11 +526,11 @@ environment</em>.</p>
 <pre><code>## h&#39;s enclosing environment: 
 ## &lt;environment: R_GlobalEnv&gt;
 ## parent of h&#39;s enclosing environment: 
-## &lt;environment: package:knitr&gt;
+## &lt;environment: package:stats&gt;
 ## attr(,&quot;name&quot;)
-## [1] &quot;package:knitr&quot;
+## [1] &quot;package:stats&quot;
 ## attr(,&quot;path&quot;)
-## [1] &quot;/Users/jfukuyam/Library/R/arm64/4.4/library/knitr&quot;</code></pre>
+## [1] &quot;/Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/stats&quot;</code></pre>
 <pre><code>## Error in h(): object &#39;d&#39; not found</code></pre>
 </div>
 </div>
