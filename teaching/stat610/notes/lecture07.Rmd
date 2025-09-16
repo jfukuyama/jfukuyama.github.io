@@ -148,40 +148,46 @@ Be careful when using apply on rows of a data frame: apply assumes the argument 
 
 ```{r}
 steak_combinations <- data.frame(
-    temp = c(117, 120, 135, 105),
+    temp = c(90, 120, 135, 105),
     type = c("rare", "med_rare", "med_rare", "rare"))
 
-steak_directions_for_apply <- function(temp_and_type) {
-    temp <- temp_and_type[1]
-    steak_type <- temp_and_type[2]
-    if(steak_type == "rare" & temp > 115) {
-        return("take your steak off!")
-    } else if(steak_type == "med_rare" & temp > 125) {
-        return("take your steak off!")        
-    } 
-    "you can keep cooking"
-}
-## this works, but it really shouldn't
-apply(steak_combinations, 1, steak_directions_for_apply)
-```
-
------
-
-One that _actually_ doesn't work:
-```{r}
 steak_admonishments_for_apply <- function(temp_and_type) {
     temp <- temp_and_type[1]
     steak_type <- temp_and_type[2]
-    if(steak_type == "rare" & temp > 115) {
+    if(steak_type == "rare" && temp > 115) {
         admonishment <- sprintf("Your steak is overcooked by %f degrees!", temp - 115)
         return(admonhishment)
-    } else if(steak_type == "med_rare" & temp > 125) {
+    } else if(steak_type == "med_rare" && temp > 125) {
         admonishment <- sprintf("Your steak is overcooked by %f degrees!", temp - 125)
         return(admonishment)
     }
     "Your steak is not overcooked yet"
 }
 apply(steak_combinations, 1, steak_admonishments_for_apply)
+
+```
+
+-----
+
+This version doesn't work properly but also doesn't throw an error.
+```{r}
+steak_combinations <- data.frame(
+    temp = c(90, 99),
+    type = c("rare", "med_rare"))
+
+steak_directions_for_apply <- function(temp_and_type) {
+    temp <- temp_and_type[1]
+    steak_type <- temp_and_type[2]
+    if(steak_type == "rare" && temp > 115) {
+        return("take your steak off!")
+    } else if(steak_type == "med_rare" && temp > 125) {
+        return("take your steak off!")        
+    } 
+    "you can keep cooking"
+}
+## this doesn't throw an error, but it also doesn't give the right output
+apply(steak_combinations, 1, steak_directions_for_apply)
+
 ```
 
 -----
@@ -305,7 +311,7 @@ In particular, we have counts of police stops for all combinations of
 - crime: The type of crime, four possibilities
 
 ```{r}
-frisk <- read.table("http://www.stat.columbia.edu/~gelman/arm/examples/police/frisk_with_noise.dat",
+frisk <- read.table("frisk_with_noise.dat",
                     skip = 6, header = TRUE)
 head(frisk)
 ```
