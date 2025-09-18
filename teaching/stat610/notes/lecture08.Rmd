@@ -371,6 +371,8 @@ but the syntax is different
 
 The `magrittr` library offers the "pipe" operation, `%>%`.
 
+Base R also has a pipe, `|>`.
+
 In words: "Pipe the output of the last function as input to the next function".
 
 . . .
@@ -389,8 +391,39 @@ For example:
 
 ```{r}
 library(magrittr)
-head(rnorm(10))
-rnorm(10) %>% head()
+x <- rnorm(100)
+head(x)
+x %>% head()
+x |> head()
+```
+
+---
+
+## Some extra things about pipes
+
+- If you want to pipe the LHS to a position other than the first, you can use `.` in `magrittr` and `_` in base R.
+- `.` can be used multiple times, `_` can only be used once, and it has to be a named argument, you can't use it positionally.
+- `|>` requires parentheses on the RHS, but `%>%` doesn't if you don't have any extra arguments you need to pass in.
+
+```{r}
+# the magrittr pipe doesn't require you to have parentheses if you're
+# just piping to the first position and no extra arguments
+x %>% head
+```
+But `|>` does:
+```{r}
+x |> head
+```
+
+Some examples of `.` and `_`:
+```{r}
+"[[:space:]]*and[[:space:]]*" %>% strsplit("cats and dogs", .)
+"[[:space:]]*and[[:space:]]*" |> strsplit("cats and dogs", split = _)
+```
+
+Demonstratting that you need a argument name for `_`:
+```{r}
+"[[:space:]]*and[[:space:]]*" |> strsplit("cats and dogs", _)
 ```
 
 -----

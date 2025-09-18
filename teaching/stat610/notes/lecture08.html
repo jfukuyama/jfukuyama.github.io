@@ -23,8 +23,9 @@
       vertical-align: middle;
     }
     /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
     pre > code.sourceCode { white-space: pre; position: relative; }
-    pre > code.sourceCode > span { line-height: 1.25; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
     pre > code.sourceCode > span:empty { height: 1.2em; }
     .sourceCode { overflow: visible; }
     code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -708,6 +709,7 @@ specify:</p>
 <h1>Sidebar: Pipes</h1>
 <p>The <code>magrittr</code> library offers the “pipe” operation,
 <code>%&gt;%</code>.</p>
+<p>Base R also has a pipe, <code>|&gt;</code>.</p>
 <p>In words: “Pipe the output of the last function as input to the next
 function”.</p>
 <div class="incremental">
@@ -723,11 +725,45 @@ equivalent:</p>
 <div class="incremental">
 <p>For example:</p>
 <div class="sourceCode" id="cb67"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb67-1"><a href="#cb67-1" tabindex="-1"></a><span class="fu">library</span>(magrittr)</span>
-<span id="cb67-2"><a href="#cb67-2" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">rnorm</span>(<span class="dv">10</span>))</span></code></pre></div>
-<pre><code>## [1] -0.3657792 -1.7920564  1.0784473  1.5932574  0.7790087 -0.4319562</code></pre>
-<div class="sourceCode" id="cb69"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb69-1"><a href="#cb69-1" tabindex="-1"></a><span class="fu">rnorm</span>(<span class="dv">10</span>) <span class="sc">%&gt;%</span> <span class="fu">head</span>()</span></code></pre></div>
-<pre><code>## [1]  0.6582923  0.7203166 -2.1491630 -0.1803154 -0.2870917  0.9972917</code></pre>
+<span id="cb67-2"><a href="#cb67-2" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="dv">100</span>)</span>
+<span id="cb67-3"><a href="#cb67-3" tabindex="-1"></a><span class="fu">head</span>(x)</span></code></pre></div>
+<pre><code>## [1] -0.9692971  1.2056152  0.9482468 -0.7620671 -1.6776366 -1.5752369</code></pre>
+<div class="sourceCode" id="cb69"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb69-1"><a href="#cb69-1" tabindex="-1"></a>x <span class="sc">%&gt;%</span> <span class="fu">head</span>()</span></code></pre></div>
+<pre><code>## [1] -0.9692971  1.2056152  0.9482468 -0.7620671 -1.6776366 -1.5752369</code></pre>
+<div class="sourceCode" id="cb71"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb71-1"><a href="#cb71-1" tabindex="-1"></a>x <span class="sc">|&gt;</span> <span class="fu">head</span>()</span></code></pre></div>
+<pre><code>## [1] -0.9692971  1.2056152  0.9482468 -0.7620671 -1.6776366 -1.5752369</code></pre>
 </div>
+</div>
+<div id="some-extra-things-about-pipes" class="slide section level2">
+<h1>Some extra things about pipes</h1>
+<ul class="incremental">
+<li>If you want to pipe the LHS to a position other than the first, you
+can use <code>.</code> in <code>magrittr</code> and <code>_</code> in
+base R.</li>
+<li><code>.</code> can be used multiple times, <code>_</code> can only
+be used once, and it has to be a named argument, you can’t use it
+positionally.</li>
+<li><code>|&gt;</code> requires parentheses on the RHS, but
+<code>%&gt;%</code> doesn’t if you don’t have any extra arguments you
+need to pass in.</li>
+</ul>
+<div class="sourceCode" id="cb73"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb73-1"><a href="#cb73-1" tabindex="-1"></a><span class="co"># the magrittr pipe doesn&#39;t require you to have parentheses if you&#39;re</span></span>
+<span id="cb73-2"><a href="#cb73-2" tabindex="-1"></a><span class="co"># just piping to the first position and no extra arguments</span></span>
+<span id="cb73-3"><a href="#cb73-3" tabindex="-1"></a>x <span class="sc">%&gt;%</span> head</span></code></pre></div>
+<pre><code>## [1] -0.9692971  1.2056152  0.9482468 -0.7620671 -1.6776366 -1.5752369</code></pre>
+<p>But <code>|&gt;</code> does:</p>
+<div class="sourceCode" id="cb75"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb75-1"><a href="#cb75-1" tabindex="-1"></a>x <span class="sc">|&gt;</span> head</span></code></pre></div>
+<pre><code>## Error in head: The pipe operator requires a function call as RHS (&lt;input&gt;:1:6)</code></pre>
+<p>Some examples of <code>.</code> and <code>_</code>:</p>
+<div class="sourceCode" id="cb77"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb77-1"><a href="#cb77-1" tabindex="-1"></a><span class="st">&quot;[[:space:]]*and[[:space:]]*&quot;</span> <span class="sc">%&gt;%</span> <span class="fu">strsplit</span>(<span class="st">&quot;cats and dogs&quot;</span>, .)</span></code></pre></div>
+<pre><code>## [[1]]
+## [1] &quot;cats&quot; &quot;dogs&quot;</code></pre>
+<div class="sourceCode" id="cb79"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb79-1"><a href="#cb79-1" tabindex="-1"></a><span class="st">&quot;[[:space:]]*and[[:space:]]*&quot;</span> <span class="sc">|&gt;</span> <span class="fu">strsplit</span>(<span class="st">&quot;cats and dogs&quot;</span>, <span class="at">split =</span> _)</span></code></pre></div>
+<pre><code>## [[1]]
+## [1] &quot;cats&quot; &quot;dogs&quot;</code></pre>
+<p>Demonstratting that you need a argument name for <code>_</code>:</p>
+<div class="sourceCode" id="cb81"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb81-1"><a href="#cb81-1" tabindex="-1"></a><span class="st">&quot;[[:space:]]*and[[:space:]]*&quot;</span> <span class="sc">|&gt;</span> <span class="fu">strsplit</span>(<span class="st">&quot;cats and dogs&quot;</span>, _)</span></code></pre></div>
+<pre><code>## Error in strsplit(&quot;cats and dogs&quot;, &quot;_&quot;): pipe placeholder can only be used as a named argument (&lt;input&gt;:1:34)</code></pre>
 </div>
 <div class="slide section level2">
 
@@ -752,8 +788,8 @@ here.</p>
 <p>Star wars example again:</p>
 <div class="incremental">
 <p>What is the average height in each world?</p>
-<div class="sourceCode" id="cb72"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb72-1"><a href="#cb72-1" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
-<span id="cb72-2"><a href="#cb72-2" tabindex="-1"></a>starwars <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(homeworld) <span class="sc">%&gt;%</span> <span class="fu">summarise</span>(<span class="at">avg_height =</span> <span class="fu">mean</span>(height))</span></code></pre></div>
+<div class="sourceCode" id="cb84"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb84-1"><a href="#cb84-1" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb84-2"><a href="#cb84-2" tabindex="-1"></a>starwars <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(homeworld) <span class="sc">%&gt;%</span> <span class="fu">summarise</span>(<span class="at">avg_height =</span> <span class="fu">mean</span>(height))</span></code></pre></div>
 <pre><code>## # A tibble: 49 × 2
 ##    homeworld      avg_height
 ##    &lt;chr&gt;               &lt;dbl&gt;
@@ -769,9 +805,9 @@ here.</p>
 ## 10 Corellia             175 
 ## # ℹ 39 more rows</code></pre>
 <p>What fraction of individuals on each world have yellow eyes?</p>
-<div class="sourceCode" id="cb74"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb74-1"><a href="#cb74-1" tabindex="-1"></a>starwars <span class="sc">%&gt;%</span></span>
-<span id="cb74-2"><a href="#cb74-2" tabindex="-1"></a>    <span class="fu">group_by</span>(homeworld) <span class="sc">%&gt;%</span></span>
-<span id="cb74-3"><a href="#cb74-3" tabindex="-1"></a>    <span class="fu">summarise</span>(<span class="at">frac_yellow_eyes =</span> <span class="fu">sum</span>(eye_color <span class="sc">==</span> <span class="st">&quot;yellow&quot;</span>) <span class="sc">/</span> <span class="fu">length</span>(eye_color))</span></code></pre></div>
+<div class="sourceCode" id="cb86"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb86-1"><a href="#cb86-1" tabindex="-1"></a>starwars <span class="sc">%&gt;%</span></span>
+<span id="cb86-2"><a href="#cb86-2" tabindex="-1"></a>    <span class="fu">group_by</span>(homeworld) <span class="sc">%&gt;%</span></span>
+<span id="cb86-3"><a href="#cb86-3" tabindex="-1"></a>    <span class="fu">summarise</span>(<span class="at">frac_yellow_eyes =</span> <span class="fu">sum</span>(eye_color <span class="sc">==</span> <span class="st">&quot;yellow&quot;</span>) <span class="sc">/</span> <span class="fu">length</span>(eye_color))</span></code></pre></div>
 <pre><code>## # A tibble: 49 × 2
 ##    homeworld      frac_yellow_eyes
 ##    &lt;chr&gt;                     &lt;dbl&gt;
