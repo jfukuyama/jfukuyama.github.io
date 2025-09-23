@@ -23,8 +23,9 @@
       vertical-align: middle;
     }
     /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
     pre > code.sourceCode { white-space: pre; position: relative; }
-    pre > code.sourceCode > span { line-height: 1.25; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
     pre > code.sourceCode > span:empty { height: 1.2em; }
     .sourceCode { overflow: visible; }
     code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -99,9 +100,7 @@ class="slide section level2">
 <h1>More on data manipulation, shape changing, merging,
 transformations</h1>
 <p>Reading: Hadley Wickham, <a
-href="http://vita.had.co.nz/papers/tidy-data.pdf">“Tidy Data”</a> and <a
-href="http://had.co.nz/reshape/introduction.pdf">“Reshaping data with
-the reshape package”</a></p>
+href="http://vita.had.co.nz/papers/tidy-data.pdf">“Tidy Data”</a></p>
 <p>Agenda for today:</p>
 <ul class="incremental">
 <li><p>Reshaping/tidy data/wide vs. long format</p></li>
@@ -227,56 +226,44 @@ columns.</p></li>
 <h1>Reshaping</h1>
 <p>The term for transforming these datasets into each other is called
 “reshaping”, and pretty much all reshaping can be done with a
-combination of two operations: melting and casting.</p>
+combination of two operations: <code>pivot_longer</code> and
+<code>pivot_wider</code>.</p>
+<p>These two functions do essentially what their names imply:</p>
 <ul class="incremental">
-<li><p>Melting: Taking a wide dataset and making it long.</p></li>
-<li><p>Casting: Taking a melted dataset and making it wide.</p></li>
+<li><p><code>pivot_longer</code>: Takes a wide dataset and makes it
+long</p></li>
+<li><p><code>pivot_wider</code>: Takes a long dataset and makes it
+wide.</p></li>
 </ul>
-<p>The mneumonic is that you first “melt” the data set and then you
-“cast” it. The “molten” data isn’t usually the final form you want it to
-be in, but it allows you to change it into other shapes easily.</p>
+<p>You usually <code>pivot_longer</code> first to get the data into a
+tidy, long form, and then <code>pivot_wider</code> if you need a
+different layout for analysis or presentation.</p>
 </div>
-<div id="melting-data" class="slide section level2">
-<h1>Melting data</h1>
-<p>The <code>melt</code> function takes data from wide form to long
-form.</p>
-<p>Conceptually, we have two sets of variables:</p>
+<div id="pivoting-longer" class="slide section level2">
+<h1>Pivoting longer</h1>
+<p>The <code>pivot_longer</code> function takes data from wide form to
+long form.</p>
+<p>Syntax: <code>pivot_longer(data, cols)</code> or (usually)
+<code>data |&gt; pivot_longer(cols)</code></p>
 <ul class="incremental">
-<li><p>Identification variables, that describe the observations,
-and</p></li>
-<li><p>Measurement variables, which are the quantities that are measured
-for each observation. If you want to do any aggregation later, it will
-be over the measurement variables.</p></li>
+<li><code>data</code> should be a data frame</li>
+<li><code>cols</code> the columns to pivot into longer form. The values
+corresponding to these columns will all be put into one column in the
+output dataset. Can be a character vector or something more complicated
+that we will describe later.</li>
 </ul>
-<p>To melt a dataset, you need to decide what these are.</p>
-</div>
-<div class="slide section level2">
-
-<p>What does a molten data table look like?</p>
+<p>What does the output look like?</p>
 <ul class="incremental">
-<li><p>Columns (potentially more than one) for id variables.</p></li>
-<li><p>If there is more than one measured variable, one column
-describing the variable measured.</p></li>
-<li><p>One column for the value of the measured variable on the
-corresponding observation.</p></li>
-</ul>
-</div>
-<div id="melting" class="slide section level2">
-<h1>Melting</h1>
-<p>Based on what we said before, we will need to provide data, id
-variables, and measurement variables, but in practice we have two
-distinct situations:</p>
-<ul class="incremental">
-<li><p>Matrix or array input: here we assume that the id variables are
-the dimensions of the matrix or array, and the measurement variables are
-the elements of the matrix or the array. Therefore, we don’t actually
-specify id variables or measurement variables.</p></li>
-<li><p>Data frame input: id variables and measurement variables have to
-be specified.</p></li>
+<li>All the columns not listed in <code>cols</code> remain as identifier
+variables.</li>
+<li>One new column (called <code>name</code> by default) stores the
+former column names (the variable measured).</li>
+<li>Another new column (called <code>value</code> by default) stores the
+corresponding measurement values.</li>
 </ul>
 </div>
-<div id="melting-data-frames" class="slide section level2">
-<h1>Melting data frames</h1>
+<div id="pivoting-longer-examples" class="slide section level2">
+<h1>Pivoting longer examples</h1>
 <p>Let’s see an example. (Actually a very interesting study, can read <a
 href="https://www.researchgate.net/publication/226555631_Frying_Performance_of_No-trans_Low-Linolenic_Acid_Soybean_Oils">here</a>.)</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">head</span>(french_fries)</span></code></pre></div>
@@ -290,421 +277,360 @@ href="https://www.researchgate.net/publication/226555631_Frying_Performance_of_N
 </div>
 <div class="slide section level2">
 
-<p>We want to melt this data frame so that</p>
-<ul class="incremental">
-<li><p><code>id.vars</code> are time, treatment, subject, rep</p></li>
-<li><p><code>measure.vars</code> are the remainder: potato, buttery,
-grassy, rancid, painty</p></li>
-</ul>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">melt</span>(french_fries, <span class="at">id.vars =</span> <span class="fu">c</span>(<span class="st">&quot;time&quot;</span>, <span class="st">&quot;treatment&quot;</span>, <span class="st">&quot;subject&quot;</span>, <span class="st">&quot;rep&quot;</span>),</span>
-<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>     <span class="at">measure.vars =</span> <span class="fu">c</span>(<span class="st">&quot;potato&quot;</span>, <span class="st">&quot;buttery&quot;</span>, <span class="st">&quot;grassy&quot;</span>, <span class="st">&quot;rancid&quot;</span>, <span class="st">&quot;painty&quot;</span>)))</span></code></pre></div>
-<pre><code>##   time treatment subject rep variable value
-## 1    1         1       3   1   potato   2.9
-## 2    1         1       3   2   potato  14.0
-## 3    1         1      10   1   potato  11.0
-## 4    1         1      10   2   potato   9.9
-## 5    1         1      15   1   potato   1.2
-## 6    1         1      15   2   potato   8.8</code></pre>
-</div>
-<div class="slide section level2">
-
-<p>You can specify just one of <code>id.vars</code> and
-<code>measure.vars</code>, in which case the function will assume that
-all the other variables should be in the other class.</p>
-<p>You can also specify the variables by number instead of by name.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">melt</span>(french_fries, <span class="at">id.vars =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>))</span></code></pre></div>
-<pre><code>##   time treatment subject rep variable value
-## 1    1         1       3   1   potato   2.9
-## 2    1         1       3   2   potato  14.0
-## 3    1         1      10   1   potato  11.0
-## 4    1         1      10   2   potato   9.9
-## 5    1         1      15   1   potato   1.2
-## 6    1         1      15   2   potato   8.8</code></pre>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">melt</span>(french_fries, <span class="at">measure.vars =</span> <span class="dv">5</span><span class="sc">:</span><span class="dv">9</span>))</span></code></pre></div>
-<pre><code>##   time treatment subject rep variable value
-## 1    1         1       3   1   potato   2.9
-## 2    1         1       3   2   potato  14.0
-## 3    1         1      10   1   potato  11.0
-## 4    1         1      10   2   potato   9.9
-## 5    1         1      15   1   potato   1.2
-## 6    1         1      15   2   potato   8.8</code></pre>
-</div>
-<div class="slide section level2">
-
-<div class="incremental">
-<p>If you don’t specify either, the function will assume that all the
-factor variables should be id variables and all of the numeric variables
-should be measured variables.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>plyr<span class="sc">::</span><span class="fu">ldply</span>(french_fries, class)</span></code></pre></div>
-<pre><code>##         .id      V1
-## 1      time  factor
-## 2 treatment  factor
-## 3   subject  factor
-## 4       rep numeric
-## 5    potato numeric
-## 6   buttery numeric
-## 7    grassy numeric
-## 8    rancid numeric
-## 9    painty numeric</code></pre>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">melt</span>(french_fries))</span></code></pre></div>
-<pre><code>## Using time, treatment, subject as id variables</code></pre>
-<pre><code>##   time treatment subject variable value
-## 1    1         1       3      rep     1
-## 2    1         1       3      rep     2
-## 3    1         1      10      rep     1
-## 4    1         1      10      rep     2
-## 5    1         1      15      rep     1
-## 6    1         1      15      rep     2</code></pre>
-</div>
+<p>We want to melt this data frame so that the “identification
+variables” are time, treatment, subject, rep and the “measurement
+variables” are the remainder: potato, buttery, grassy, rancid,
+painty.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span></code></pre></div>
+<pre><code>## 
+## Attaching package: &#39;tidyr&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:reshape2&#39;:
+## 
+##     smiths</code></pre>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>french_fries_long <span class="ot">&lt;-</span> french_fries <span class="sc">|&gt;</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">c</span>(<span class="st">&quot;potato&quot;</span>, <span class="st">&quot;buttery&quot;</span>, <span class="st">&quot;grassy&quot;</span>, <span class="st">&quot;rancid&quot;</span>, <span class="st">&quot;painty&quot;</span>))</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="fu">head</span>(french_fries_long)</span></code></pre></div>
+<pre><code>## # A tibble: 6 × 6
+##   time  treatment subject   rep name    value
+##   &lt;fct&gt; &lt;fct&gt;     &lt;fct&gt;   &lt;dbl&gt; &lt;chr&gt;   &lt;dbl&gt;
+## 1 1     1         3           1 potato    2.9
+## 2 1     1         3           1 buttery   0  
+## 3 1     1         3           1 grassy    0  
+## 4 1     1         3           1 rancid    0  
+## 5 1     1         3           1 painty    5.5
+## 6 1     1         3           2 potato   14</code></pre>
+<p>You can also specify columns using the column numbers (not
+recommended) or same syntax that <a
+href="https://dplyr.tidyverse.org/reference/select.html"><code>select</code>
+uses</a> (much more useful). The following are all equivalent:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>french_fries <span class="sc">|&gt;</span></span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>    <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="dv">5</span><span class="sc">:</span><span class="dv">9</span>)</span></code></pre></div>
+<pre><code>## # A tibble: 3,480 × 6
+##    time  treatment subject   rep name    value
+##    &lt;fct&gt; &lt;fct&gt;     &lt;fct&gt;   &lt;dbl&gt; &lt;chr&gt;   &lt;dbl&gt;
+##  1 1     1         3           1 potato    2.9
+##  2 1     1         3           1 buttery   0  
+##  3 1     1         3           1 grassy    0  
+##  4 1     1         3           1 rancid    0  
+##  5 1     1         3           1 painty    5.5
+##  6 1     1         3           2 potato   14  
+##  7 1     1         3           2 buttery   0  
+##  8 1     1         3           2 grassy    0  
+##  9 1     1         3           2 rancid    1.1
+## 10 1     1         3           2 painty    0  
+## # ℹ 3,470 more rows</code></pre>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>french_fries <span class="sc">|&gt;</span></span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>    <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">c</span>(potato, buttery, grassy, rancid, painty))</span></code></pre></div>
+<pre><code>## # A tibble: 3,480 × 6
+##    time  treatment subject   rep name    value
+##    &lt;fct&gt; &lt;fct&gt;     &lt;fct&gt;   &lt;dbl&gt; &lt;chr&gt;   &lt;dbl&gt;
+##  1 1     1         3           1 potato    2.9
+##  2 1     1         3           1 buttery   0  
+##  3 1     1         3           1 grassy    0  
+##  4 1     1         3           1 rancid    0  
+##  5 1     1         3           1 painty    5.5
+##  6 1     1         3           2 potato   14  
+##  7 1     1         3           2 buttery   0  
+##  8 1     1         3           2 grassy    0  
+##  9 1     1         3           2 rancid    1.1
+## 10 1     1         3           2 painty    0  
+## # ℹ 3,470 more rows</code></pre>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a>french_fries <span class="sc">|&gt;</span> <span class="fu">pivot_longer</span>(<span class="at">cols =</span> potato<span class="sc">:</span>painty)</span></code></pre></div>
+<pre><code>## # A tibble: 3,480 × 6
+##    time  treatment subject   rep name    value
+##    &lt;fct&gt; &lt;fct&gt;     &lt;fct&gt;   &lt;dbl&gt; &lt;chr&gt;   &lt;dbl&gt;
+##  1 1     1         3           1 potato    2.9
+##  2 1     1         3           1 buttery   0  
+##  3 1     1         3           1 grassy    0  
+##  4 1     1         3           1 rancid    0  
+##  5 1     1         3           1 painty    5.5
+##  6 1     1         3           2 potato   14  
+##  7 1     1         3           2 buttery   0  
+##  8 1     1         3           2 grassy    0  
+##  9 1     1         3           2 rancid    1.1
+## 10 1     1         3           2 painty    0  
+## # ℹ 3,470 more rows</code></pre>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a>french_fries <span class="sc">|&gt;</span></span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a>    <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="sc">-</span><span class="fu">c</span>(time, treatment, subject, rep))</span></code></pre></div>
+<pre><code>## # A tibble: 3,480 × 6
+##    time  treatment subject   rep name    value
+##    &lt;fct&gt; &lt;fct&gt;     &lt;fct&gt;   &lt;dbl&gt; &lt;chr&gt;   &lt;dbl&gt;
+##  1 1     1         3           1 potato    2.9
+##  2 1     1         3           1 buttery   0  
+##  3 1     1         3           1 grassy    0  
+##  4 1     1         3           1 rancid    0  
+##  5 1     1         3           1 painty    5.5
+##  6 1     1         3           2 potato   14  
+##  7 1     1         3           2 buttery   0  
+##  8 1     1         3           2 grassy    0  
+##  9 1     1         3           2 rancid    1.1
+## 10 1     1         3           2 painty    0  
+## # ℹ 3,470 more rows</code></pre>
 </div>
 <div class="slide section level2">
 
 <p>You can make the output slightly nicer by specifying variable names
-and value names:</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">melt</span>(french_fries, <span class="at">id.vars =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>, <span class="at">variable.name =</span> <span class="st">&quot;flavor&quot;</span>, <span class="at">value.name =</span> <span class="st">&quot;flavor_intensity&quot;</span>))</span></code></pre></div>
-<pre><code>##   time treatment subject rep flavor flavor_intensity
-## 1    1         1       3   1 potato              2.9
-## 2    1         1       3   2 potato             14.0
-## 3    1         1      10   1 potato             11.0
-## 4    1         1      10   2 potato              9.9
-## 5    1         1      15   1 potato              1.2
-## 6    1         1      15   2 potato              8.8</code></pre>
+and value names with <code>names_to</code> and
+<code>values_to</code>:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a>french_fries <span class="sc">|&gt;</span></span>
+<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a>    <span class="fu">pivot_longer</span>(<span class="at">cols =</span> potato<span class="sc">:</span>painty,</span>
+<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a>                 <span class="at">names_to =</span> <span class="st">&quot;flavor&quot;</span>, <span class="at">values_to =</span> <span class="st">&quot;flavor_intensity&quot;</span>)</span></code></pre></div>
+<pre><code>## # A tibble: 3,480 × 6
+##    time  treatment subject   rep flavor  flavor_intensity
+##    &lt;fct&gt; &lt;fct&gt;     &lt;fct&gt;   &lt;dbl&gt; &lt;chr&gt;              &lt;dbl&gt;
+##  1 1     1         3           1 potato               2.9
+##  2 1     1         3           1 buttery              0  
+##  3 1     1         3           1 grassy               0  
+##  4 1     1         3           1 rancid               0  
+##  5 1     1         3           1 painty               5.5
+##  6 1     1         3           2 potato              14  
+##  7 1     1         3           2 buttery              0  
+##  8 1     1         3           2 grassy               0  
+##  9 1     1         3           2 rancid               1.1
+## 10 1     1         3           2 painty               0  
+## # ℹ 3,470 more rows</code></pre>
 </div>
-<div id="melting-arrays" class="slide section level2">
-<h1>Melting arrays</h1>
-<ul class="incremental">
-<li><p>Assume that the id variables are the dimensions of the
-array</p></li>
-<li><p>Assume the measured variable is stored as elements in the
-array.</p></li>
-<li><p>We don’t specify id variables or measurement variables.</p></li>
-</ul>
-<p>Therefore, the syntax is simply <code>melt(array)</code></p>
-</div>
-<div class="slide section level2">
-
-<p>For example:</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a>HairEyeColor</span></code></pre></div>
-<pre><code>## , , Sex = Male
-## 
-##        Eye
-## Hair    Brown Blue Hazel Green
-##   Black    32   11    10     3
-##   Brown    53   50    25    15
-##   Red      10   10     7     7
-##   Blond     3   30     5     8
-## 
-## , , Sex = Female
-## 
-##        Eye
-## Hair    Brown Blue Hazel Green
-##   Black    36    9     5     2
-##   Brown    66   34    29    14
-##   Red      16    7     7     7
-##   Blond     4   64     5     8</code></pre>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a><span class="fu">melt</span>(HairEyeColor)</span></code></pre></div>
-<pre><code>##     Hair   Eye    Sex value
-## 1  Black Brown   Male    32
-## 2  Brown Brown   Male    53
-## 3    Red Brown   Male    10
-## 4  Blond Brown   Male     3
-## 5  Black  Blue   Male    11
-## 6  Brown  Blue   Male    50
-## 7    Red  Blue   Male    10
-## 8  Blond  Blue   Male    30
-## 9  Black Hazel   Male    10
-## 10 Brown Hazel   Male    25
-## 11   Red Hazel   Male     7
-## 12 Blond Hazel   Male     5
-## 13 Black Green   Male     3
-## 14 Brown Green   Male    15
-## 15   Red Green   Male     7
-## 16 Blond Green   Male     8
-## 17 Black Brown Female    36
-## 18 Brown Brown Female    66
-## 19   Red Brown Female    16
-## 20 Blond Brown Female     4
-## 21 Black  Blue Female     9
-## 22 Brown  Blue Female    34
-## 23   Red  Blue Female     7
-## 24 Blond  Blue Female    64
-## 25 Black Hazel Female     5
-## 26 Brown Hazel Female    29
-## 27   Red Hazel Female     7
-## 28 Blond Hazel Female     5
-## 29 Black Green Female     2
-## 30 Brown Green Female    14
-## 31   Red Green Female     7
-## 32 Blond Green Female     8</code></pre>
-</div>
-<div class="slide section level2">
-
-<p>There are a couple of optional arguments for making the output a
-little nicer, like giving a different name to the column in the output
-describing the measured value:</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a><span class="fu">melt</span>(HairEyeColor, <span class="at">value.name =</span> <span class="st">&quot;number&quot;</span>)</span></code></pre></div>
-<pre><code>##     Hair   Eye    Sex number
-## 1  Black Brown   Male     32
-## 2  Brown Brown   Male     53
-## 3    Red Brown   Male     10
-## 4  Blond Brown   Male      3
-## 5  Black  Blue   Male     11
-## 6  Brown  Blue   Male     50
-## 7    Red  Blue   Male     10
-## 8  Blond  Blue   Male     30
-## 9  Black Hazel   Male     10
-## 10 Brown Hazel   Male     25
-## 11   Red Hazel   Male      7
-## 12 Blond Hazel   Male      5
-## 13 Black Green   Male      3
-## 14 Brown Green   Male     15
-## 15   Red Green   Male      7
-## 16 Blond Green   Male      8
-## 17 Black Brown Female     36
-## 18 Brown Brown Female     66
-## 19   Red Brown Female     16
-## 20 Blond Brown Female      4
-## 21 Black  Blue Female      9
-## 22 Brown  Blue Female     34
-## 23   Red  Blue Female      7
-## 24 Blond  Blue Female     64
-## 25 Black Hazel Female      5
-## 26 Brown Hazel Female     29
-## 27   Red Hazel Female      7
-## 28 Blond Hazel Female      5
-## 29 Black Green Female      2
-## 30 Brown Green Female     14
-## 31   Red Green Female      7
-## 32 Blond Green Female      8</code></pre>
-</div>
-<div id="casting" class="slide section level2">
-<h1>Casting</h1>
-<p>reshape2 uses <code>*cast</code>: either <code>dcast</code> or
-<code>acast</code> for data frame or array output, respectively.</p>
+<div id="pivoting-wider" class="slide section level2">
+<h1>Pivoting wider</h1>
 <p>Syntax:
-<code>*cast(data = mdata, formula = row_var_1 + ... + row_var_n ~ col_var_1 + ... + col_var_m, value.var)</code></p>
+<code>pivot_wider(data, id_cols, names_from, values_from, values_fn)</code></p>
+<p>or, usually,</p>
+<p><code>data |&gt; pivot_wider(id_cols, names_from, values_from, values_fn)</code></p>
 <ul class="incremental">
-<li><p><code>mdata</code> should be a molten data set</p></li>
-<li><p>The columns of the output will be all the combinations of
-<code>col_var_1</code>, …, <code>col_var_n</code></p></li>
-<li><p>The rows of the output will be all the combinations of
-<code>row_var_1</code>, …, <code>row_var_n</code></p></li>
-<li><p><code>value.var</code> is the value variable, the values that
-should go in the cells of the output. If you don’t specify it,
-<code>melt</code> will guess.</p></li>
+<li><code>data</code> should be a data frame.</li>
+<li><code>id_cols</code> specifies the variables you want to use to
+define what the rows of the wide data frame should be.</li>
+<li><code>names_from</code> specifies the variables you want to use to
+define what the columns of the wide data frame sholud be.</li>
+<li><code>values_from</code> specifies what the elements of the wide
+data frame should be.</li>
+<li><code>values_fn</code>: only used in some cases, discussed
+later.</li>
 </ul>
 </div>
 <div class="slide section level2">
 
 <p>Example</p>
 <div class="incremental">
-<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" tabindex="-1"></a>ff_m <span class="ot">&lt;-</span> <span class="fu">melt</span>(french_fries, <span class="at">id.vars =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>, <span class="at">variable.name =</span> <span class="st">&quot;flavor&quot;</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb22-2"><a href="#cb22-2" tabindex="-1"></a><span class="fu">head</span>(ff_m)</span></code></pre></div>
-<pre><code>##   time treatment subject rep flavor value
-## 1    1         1       3   1 potato   2.9
-## 2    1         1       3   2 potato  14.0
-## 3    1         1      10   1 potato  11.0
-## 4    1         1      10   2 potato   9.9
-## 5    1         1      15   1 potato   1.2
-## 6    1         1      15   2 potato   8.8</code></pre>
-<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" tabindex="-1"></a>cast_ex_1 <span class="ot">&lt;-</span> <span class="fu">dcast</span>(ff_m, time <span class="sc">+</span> treatment <span class="sc">~</span> subject <span class="sc">+</span> rep <span class="sc">+</span> flavor, <span class="at">value.var =</span> <span class="st">&quot;value&quot;</span>)</span>
-<span id="cb24-2"><a href="#cb24-2" tabindex="-1"></a>cast_ex_1[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>,<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>]</span></code></pre></div>
-<pre><code>##   time treatment 3_1_potato 3_1_buttery 3_1_grassy
-## 1    1         1        2.9         0.0        0.0
-## 2    1         2       13.9         0.0        0.0
-## 3    1         3       14.1         0.0        0.0
-## 4    2         1        9.0         0.3        0.1
-## 5    2         2       14.1         0.9        0.3</code></pre>
-<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" tabindex="-1"></a><span class="do">## check to see if the numbers match</span></span>
-<span id="cb26-2"><a href="#cb26-2" tabindex="-1"></a><span class="fu">subset</span>(ff_m, time <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> subject <span class="sc">==</span> <span class="st">&quot;3&quot;</span> <span class="sc">&amp;</span>  rep <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> flavor <span class="sc">==</span> <span class="st">&quot;potato&quot;</span>)</span></code></pre></div>
-<pre><code>##    time treatment subject rep flavor value
-## 1     1         1       3   1 potato   2.9
-## 25    1         2       3   1 potato  13.9
-## 49    1         3       3   1 potato  14.1</code></pre>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a>french_fries_long <span class="ot">=</span> french_fries <span class="sc">|&gt;</span></span>
+<span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a>    <span class="fu">pivot_longer</span>(<span class="at">cols =</span> potato<span class="sc">:</span>painty,</span>
+<span id="cb18-3"><a href="#cb18-3" tabindex="-1"></a>                 <span class="at">names_to =</span> <span class="st">&quot;flavor&quot;</span>, <span class="at">values_to =</span> <span class="st">&quot;flavor_intensity&quot;</span>)</span>
+<span id="cb18-4"><a href="#cb18-4" tabindex="-1"></a>french_fries_long <span class="sc">|&gt;</span></span>
+<span id="cb18-5"><a href="#cb18-5" tabindex="-1"></a>    <span class="fu">head</span>()</span></code></pre></div>
+<pre><code>## # A tibble: 6 × 6
+##   time  treatment subject   rep flavor  flavor_intensity
+##   &lt;fct&gt; &lt;fct&gt;     &lt;fct&gt;   &lt;dbl&gt; &lt;chr&gt;              &lt;dbl&gt;
+## 1 1     1         3           1 potato               2.9
+## 2 1     1         3           1 buttery              0  
+## 3 1     1         3           1 grassy               0  
+## 4 1     1         3           1 rancid               0  
+## 5 1     1         3           1 painty               5.5
+## 6 1     1         3           2 potato              14</code></pre>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a>french_fries_long <span class="sc">|&gt;</span></span>
+<span id="cb20-2"><a href="#cb20-2" tabindex="-1"></a>    <span class="fu">pivot_wider</span>(<span class="at">id_cols =</span> <span class="fu">c</span>(subject, rep, flavor),</span>
+<span id="cb20-3"><a href="#cb20-3" tabindex="-1"></a>                <span class="at">names_from =</span> <span class="fu">c</span>(time, treatment),</span>
+<span id="cb20-4"><a href="#cb20-4" tabindex="-1"></a>                <span class="at">values_from =</span> flavor_intensity) <span class="sc">|&gt;</span></span>
+<span id="cb20-5"><a href="#cb20-5" tabindex="-1"></a>    <span class="fu">head</span>()</span></code></pre></div>
+<pre><code>## # A tibble: 6 × 33
+##   subject   rep flavor  `1_1` `1_2` `1_3` `2_1` `2_2` `2_3` `3_1` `3_2` `3_3`
+##   &lt;fct&gt;   &lt;dbl&gt; &lt;chr&gt;   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 3           1 potato    2.9  13.9  14.1   9    14.1   6.5  11.8   4     7.3
+## 2 3           1 buttery   0     0     0     0.3   0.9   0.6   0.2   0.1   0.2
+## 3 3           1 grassy    0     0     0     0.1   0.3   0.7   0     0     0  
+## 4 3           1 rancid    0     3.9   1.1   5.8   2.1   0.1   6     9.2   7.1
+## 5 3           1 painty    5.5   0     0     0.3   0     1.4   0     0     0  
+## 6 3           2 potato   14    13.4   9.5   5.5   3.3  13.8   7.8   9.9   7.3
+## # ℹ 21 more variables: `4_1` &lt;dbl&gt;, `4_2` &lt;dbl&gt;, `4_3` &lt;dbl&gt;, `5_1` &lt;dbl&gt;,
+## #   `5_2` &lt;dbl&gt;, `5_3` &lt;dbl&gt;, `6_1` &lt;dbl&gt;, `6_2` &lt;dbl&gt;, `6_3` &lt;dbl&gt;,
+## #   `7_1` &lt;dbl&gt;, `7_2` &lt;dbl&gt;, `7_3` &lt;dbl&gt;, `8_1` &lt;dbl&gt;, `8_2` &lt;dbl&gt;,
+## #   `8_3` &lt;dbl&gt;, `9_1` &lt;dbl&gt;, `9_2` &lt;dbl&gt;, `9_3` &lt;dbl&gt;, `10_1` &lt;dbl&gt;,
+## #   `10_2` &lt;dbl&gt;, `10_3` &lt;dbl&gt;</code></pre>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" tabindex="-1"></a>french_fries_long <span class="sc">|&gt;</span> <span class="fu">subset</span>(time <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> subject <span class="sc">==</span> <span class="st">&quot;3&quot;</span> <span class="sc">&amp;</span> rep <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> flavor <span class="sc">==</span> <span class="st">&quot;potato&quot;</span>)</span></code></pre></div>
+<pre><code>## # A tibble: 3 × 6
+##   time  treatment subject   rep flavor flavor_intensity
+##   &lt;fct&gt; &lt;fct&gt;     &lt;fct&gt;   &lt;dbl&gt; &lt;chr&gt;             &lt;dbl&gt;
+## 1 1     1         3           1 potato              2.9
+## 2 1     2         3           1 potato             13.9
+## 3 1     3         3           1 potato             14.1</code></pre>
 </div>
 </div>
-<div id="aggregation-and-casting" class="slide section level2">
-<h1>Aggregation and casting</h1>
-<p>When you cast data, you often don’t use all of the variables.</p>
+<div class="slide section level2">
+
+<p>If you don’t specify <code>id_cols</code>, <code>pivot_wider</code>
+assumes that everything that is not specified in <code>names_from</code>
+and <code>values_from</code> should be used as <code>id_cols</code>.</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" tabindex="-1"></a>french_fries_long <span class="sc">|&gt;</span></span>
+<span id="cb24-2"><a href="#cb24-2" tabindex="-1"></a>    <span class="fu">pivot_wider</span>(<span class="at">id_cols =</span> <span class="fu">c</span>(subject, rep, flavor),</span>
+<span id="cb24-3"><a href="#cb24-3" tabindex="-1"></a>                <span class="at">names_from =</span> <span class="fu">c</span>(time, treatment),</span>
+<span id="cb24-4"><a href="#cb24-4" tabindex="-1"></a>                <span class="at">values_from =</span> flavor_intensity) <span class="sc">|&gt;</span></span>
+<span id="cb24-5"><a href="#cb24-5" tabindex="-1"></a>    <span class="fu">head</span>()</span></code></pre></div>
+<pre><code>## # A tibble: 6 × 33
+##   subject   rep flavor  `1_1` `1_2` `1_3` `2_1` `2_2` `2_3` `3_1` `3_2` `3_3`
+##   &lt;fct&gt;   &lt;dbl&gt; &lt;chr&gt;   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 3           1 potato    2.9  13.9  14.1   9    14.1   6.5  11.8   4     7.3
+## 2 3           1 buttery   0     0     0     0.3   0.9   0.6   0.2   0.1   0.2
+## 3 3           1 grassy    0     0     0     0.1   0.3   0.7   0     0     0  
+## 4 3           1 rancid    0     3.9   1.1   5.8   2.1   0.1   6     9.2   7.1
+## 5 3           1 painty    5.5   0     0     0.3   0     1.4   0     0     0  
+## 6 3           2 potato   14    13.4   9.5   5.5   3.3  13.8   7.8   9.9   7.3
+## # ℹ 21 more variables: `4_1` &lt;dbl&gt;, `4_2` &lt;dbl&gt;, `4_3` &lt;dbl&gt;, `5_1` &lt;dbl&gt;,
+## #   `5_2` &lt;dbl&gt;, `5_3` &lt;dbl&gt;, `6_1` &lt;dbl&gt;, `6_2` &lt;dbl&gt;, `6_3` &lt;dbl&gt;,
+## #   `7_1` &lt;dbl&gt;, `7_2` &lt;dbl&gt;, `7_3` &lt;dbl&gt;, `8_1` &lt;dbl&gt;, `8_2` &lt;dbl&gt;,
+## #   `8_3` &lt;dbl&gt;, `9_1` &lt;dbl&gt;, `9_2` &lt;dbl&gt;, `9_3` &lt;dbl&gt;, `10_1` &lt;dbl&gt;,
+## #   `10_2` &lt;dbl&gt;, `10_3` &lt;dbl&gt;</code></pre>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" tabindex="-1"></a>french_fries_long <span class="sc">|&gt;</span></span>
+<span id="cb26-2"><a href="#cb26-2" tabindex="-1"></a>    <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> <span class="fu">c</span>(time, treatment),</span>
+<span id="cb26-3"><a href="#cb26-3" tabindex="-1"></a>                <span class="at">values_from =</span> flavor_intensity) <span class="sc">|&gt;</span></span>
+<span id="cb26-4"><a href="#cb26-4" tabindex="-1"></a>    <span class="fu">head</span>()</span></code></pre></div>
+<pre><code>## # A tibble: 6 × 33
+##   subject   rep flavor  `1_1` `1_2` `1_3` `2_1` `2_2` `2_3` `3_1` `3_2` `3_3`
+##   &lt;fct&gt;   &lt;dbl&gt; &lt;chr&gt;   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 3           1 potato    2.9  13.9  14.1   9    14.1   6.5  11.8   4     7.3
+## 2 3           1 buttery   0     0     0     0.3   0.9   0.6   0.2   0.1   0.2
+## 3 3           1 grassy    0     0     0     0.1   0.3   0.7   0     0     0  
+## 4 3           1 rancid    0     3.9   1.1   5.8   2.1   0.1   6     9.2   7.1
+## 5 3           1 painty    5.5   0     0     0.3   0     1.4   0     0     0  
+## 6 3           2 potato   14    13.4   9.5   5.5   3.3  13.8   7.8   9.9   7.3
+## # ℹ 21 more variables: `4_1` &lt;dbl&gt;, `4_2` &lt;dbl&gt;, `4_3` &lt;dbl&gt;, `5_1` &lt;dbl&gt;,
+## #   `5_2` &lt;dbl&gt;, `5_3` &lt;dbl&gt;, `6_1` &lt;dbl&gt;, `6_2` &lt;dbl&gt;, `6_3` &lt;dbl&gt;,
+## #   `7_1` &lt;dbl&gt;, `7_2` &lt;dbl&gt;, `7_3` &lt;dbl&gt;, `8_1` &lt;dbl&gt;, `8_2` &lt;dbl&gt;,
+## #   `8_3` &lt;dbl&gt;, `9_1` &lt;dbl&gt;, `9_2` &lt;dbl&gt;, `9_3` &lt;dbl&gt;, `10_1` &lt;dbl&gt;,
+## #   `10_2` &lt;dbl&gt;, `10_3` &lt;dbl&gt;</code></pre>
+</div>
+<div id="aggregation" class="slide section level2">
+<h1>Aggregation</h1>
+<p>When you pivot wider, you don’t necessarily use all of the
+variables.</p>
 <p>This means that each element of the cast table will correspond to
 more than one measurement, and so they need to be aggregated in some
 way.</p>
 <div class="incremental">
-<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" tabindex="-1"></a><span class="fu">head</span>(ff_m)</span></code></pre></div>
-<pre><code>##   time treatment subject rep flavor value
-## 1    1         1       3   1 potato   2.9
-## 2    1         1       3   2 potato  14.0
-## 3    1         1      10   1 potato  11.0
-## 4    1         1      10   2 potato   9.9
-## 5    1         1      15   1 potato   1.2
-## 6    1         1      15   2 potato   8.8</code></pre>
-<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" tabindex="-1"></a><span class="fu">dcast</span>(ff_m, time <span class="sc">~</span> flavor, <span class="at">value.var =</span> <span class="st">&quot;value&quot;</span>)</span></code></pre></div>
-<pre><code>## Aggregation function missing: defaulting to length</code></pre>
-<pre><code>##    time potato buttery grassy rancid painty
-## 1     1     72      72     72     72     72
-## 2     2     72      72     72     72     72
-## 3     3     72      72     72     72     72
-## 4     4     72      72     72     72     72
-## 5     5     71      71     71     71     71
-## 6     6     72      72     72     72     72
-## 7     7     72      71     72     72     72
-## 8     8     72      70     72     72     71
-## 9     9     60      60     60     60     60
-## 10   10     60      60     60     60     60</code></pre>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" tabindex="-1"></a><span class="fu">head</span>(french_fries_long)</span></code></pre></div>
+<pre><code>## # A tibble: 6 × 6
+##   time  treatment subject   rep flavor  flavor_intensity
+##   &lt;fct&gt; &lt;fct&gt;     &lt;fct&gt;   &lt;dbl&gt; &lt;chr&gt;              &lt;dbl&gt;
+## 1 1     1         3           1 potato               2.9
+## 2 1     1         3           1 buttery              0  
+## 3 1     1         3           1 grassy               0  
+## 4 1     1         3           1 rancid               0  
+## 5 1     1         3           1 painty               5.5
+## 6 1     1         3           2 potato              14</code></pre>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" tabindex="-1"></a>french_fries_long <span class="sc">|&gt;</span></span>
+<span id="cb30-2"><a href="#cb30-2" tabindex="-1"></a>    <span class="fu">pivot_wider</span>(<span class="at">id_cols =</span> time,</span>
+<span id="cb30-3"><a href="#cb30-3" tabindex="-1"></a>                <span class="at">names_from =</span> flavor,</span>
+<span id="cb30-4"><a href="#cb30-4" tabindex="-1"></a>                <span class="at">values_from =</span> flavor_intensity)</span></code></pre></div>
+<pre><code>## Warning: Values from `flavor_intensity` are not uniquely identified; output will contain list-cols.
+## • Use `values_fn = list` to suppress this warning.
+## • Use `values_fn = {summary_fun}` to summarise duplicates.
+## • Use the following dplyr code to identify duplicates.
+##   {data} |&gt;
+##   dplyr::summarise(n = dplyr::n(), .by = c(time, flavor)) |&gt;
+##   dplyr::filter(n &gt; 1L)</code></pre>
+<pre><code>## # A tibble: 10 × 6
+##    time  potato     buttery    grassy     rancid     painty    
+##    &lt;fct&gt; &lt;list&gt;     &lt;list&gt;     &lt;list&gt;     &lt;list&gt;     &lt;list&gt;    
+##  1 1     &lt;dbl [72]&gt; &lt;dbl [72]&gt; &lt;dbl [72]&gt; &lt;dbl [72]&gt; &lt;dbl [72]&gt;
+##  2 2     &lt;dbl [72]&gt; &lt;dbl [72]&gt; &lt;dbl [72]&gt; &lt;dbl [72]&gt; &lt;dbl [72]&gt;
+##  3 3     &lt;dbl [72]&gt; &lt;dbl [72]&gt; &lt;dbl [72]&gt; &lt;dbl [72]&gt; &lt;dbl [72]&gt;
+##  4 4     &lt;dbl [72]&gt; &lt;dbl [72]&gt; &lt;dbl [72]&gt; &lt;dbl [72]&gt; &lt;dbl [72]&gt;
+##  5 5     &lt;dbl [72]&gt; &lt;dbl [72]&gt; &lt;dbl [72]&gt; &lt;dbl [72]&gt; &lt;dbl [72]&gt;
+##  6 6     &lt;dbl [72]&gt; &lt;dbl [72]&gt; &lt;dbl [72]&gt; &lt;dbl [72]&gt; &lt;dbl [72]&gt;
+##  7 7     &lt;dbl [72]&gt; &lt;dbl [72]&gt; &lt;dbl [72]&gt; &lt;dbl [72]&gt; &lt;dbl [72]&gt;
+##  8 8     &lt;dbl [72]&gt; &lt;dbl [72]&gt; &lt;dbl [72]&gt; &lt;dbl [72]&gt; &lt;dbl [72]&gt;
+##  9 9     &lt;dbl [60]&gt; &lt;dbl [60]&gt; &lt;dbl [60]&gt; &lt;dbl [60]&gt; &lt;dbl [60]&gt;
+## 10 10    &lt;dbl [60]&gt; &lt;dbl [60]&gt; &lt;dbl [60]&gt; &lt;dbl [60]&gt; &lt;dbl [60]&gt;</code></pre>
 </div>
 </div>
 <div class="slide section level2">
 
-<p>The aggregation function is specified with
-<code>fun.aggregate</code>:</p>
-<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" tabindex="-1"></a><span class="fu">dcast</span>(ff_m, time <span class="sc">~</span> flavor, <span class="at">value.var =</span> <span class="st">&quot;value&quot;</span>, <span class="at">fun.aggregate =</span> mean)</span></code></pre></div>
-<pre><code>##    time   potato  buttery    grassy   rancid   painty
-## 1     1 8.562500 2.236111 0.9416667 2.358333 1.645833
-## 2     2 8.059722 2.722222 1.1819444 2.845833 1.444444
-## 3     3 7.797222 2.102778 0.7500000 3.715278 1.311111
-## 4     4 7.713889 1.801389 0.7416667 3.602778 1.372222
-## 5     5 7.328169 1.642254 0.6352113 3.529577 2.015493
-## 6     6 6.670833 1.752778 0.6736111 4.075000 2.341667
-## 7     7 6.168056 1.369014 0.4208333 3.886111 2.683333
-## 8     8 5.431944 1.182857 0.3805556 4.272222 3.938028
-## 9     9 5.673333 1.586667 0.2766667 4.670000 3.873333
-## 10   10 5.703333 1.765000 0.5566667 6.068333 5.291667</code></pre>
-</div>
-<div class="slide section level2">
-
-<p>A couple of other notes:</p>
-<ul class="incremental">
-<li><p>You can use <code>...</code> to represent all the other variables
-in the formula.</p></li>
-<li><p>The order that you specify the variables in the formula matters
-for the way the output is ordered: the first variables change most
-slowly, and the later ones change more quickly. This is mainly important
-for looking at the data.</p></li>
-<li><p><code>acast</code> will give you array output instead of data
-frame output.</p></li>
-</ul>
-</div>
-<div class="slide section level2">
-
-<p>Example of different orders:</p>
-<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" tabindex="-1"></a><span class="fu">dcast</span>(ff_m, time <span class="sc">+</span> treatment <span class="sc">~</span> flavor, <span class="at">fun.aggregate =</span> mean)</span></code></pre></div>
-<pre><code>##    time treatment   potato   buttery    grassy   rancid    painty
-## 1     1         1 7.925000 1.7958333 0.9041667 2.758333 2.1500000
-## 2     1         2 8.775000 2.4916667 0.9958333 1.716667 0.8083333
-## 3     1         3 8.987500 2.4208333 0.9250000 2.600000 1.9791667
-## 4     2         1 7.591667 2.5250000 1.0041667 3.900000 1.9750000
-## 5     2         2 8.537500 3.1250000 0.9500000 2.141667 0.6625000
-## 6     2         3 8.050000 2.5166667 1.5916667 2.495833 1.6958333
-## 7     3         1 7.770833 2.2958333 0.8166667 4.650000 1.1166667
-## 8     3         2 7.637500 2.0791667 0.7250000 2.895833 1.5625000
-## 9     3         3 7.983333 1.9333333 0.7083333 3.600000 1.2541667
-## 10    4         1 8.404167 1.9791667 1.0250000 2.079167 0.4666667
-## 11    4         2 8.204167 1.6083333 0.6416667 3.512500 1.8583333
-## 12    4         3 6.533333 1.8166667 0.5583333 5.216667 1.7916667
-## 13    5         1 7.741667 1.3666667 0.7708333 4.279167 3.0083333
-## 14    5         2 6.933333 1.8583333 0.5833333 3.641667 0.7375000
-## 15    5         3 7.308696 1.7043478 0.5478261 2.630435 2.3130435
-## 16    6         1 6.079167 1.8250000 0.4666667 4.337500 2.5541667
-## 17    6         2 7.016667 2.0541667 0.9208333 3.841667 2.7500000
-## 18    6         3 6.916667 1.3791667 0.6333333 4.045833 1.7208333
-## 19    7         1 6.283333 1.2416667 0.1625000 3.204167 2.1958333
-## 20    7         2 5.729167 1.3565217 0.5500000 3.837500 3.0416667
-## 21    7         3 6.491667 1.5083333 0.5500000 4.616667 2.8125000
-## 22    8         1 5.175000 0.9869565 0.6333333 5.387500 4.5875000
-## 23    8         2 5.641667 1.5826087 0.3958333 3.825000 3.8652174
-## 24    8         3 5.479167 0.9875000 0.1125000 3.604167 3.3583333
-## 25    9         1 6.070000 1.8300000 0.1350000 3.950000 2.9050000
-## 26    9         2 5.470000 1.6650000 0.0800000 5.240000 4.0450000
-## 27    9         3 5.480000 1.2650000 0.6150000 4.820000 4.6700000
-## 28   10         1 5.465000 1.9600000 0.4550000 6.495000 5.4000000
-## 29   10         2 5.580000 1.7950000 0.6950000 6.310000 6.1700000
-## 30   10         3 6.065000 1.5400000 0.5200000 5.400000 4.3050000</code></pre>
-<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" tabindex="-1"></a><span class="fu">dcast</span>(ff_m, treatment <span class="sc">+</span> time <span class="sc">~</span> flavor, <span class="at">fun.aggregate =</span> mean)</span></code></pre></div>
-<pre><code>##    treatment time   potato   buttery    grassy   rancid    painty
-## 1          1    1 7.925000 1.7958333 0.9041667 2.758333 2.1500000
-## 2          1    2 7.591667 2.5250000 1.0041667 3.900000 1.9750000
-## 3          1    3 7.770833 2.2958333 0.8166667 4.650000 1.1166667
-## 4          1    4 8.404167 1.9791667 1.0250000 2.079167 0.4666667
-## 5          1    5 7.741667 1.3666667 0.7708333 4.279167 3.0083333
-## 6          1    6 6.079167 1.8250000 0.4666667 4.337500 2.5541667
-## 7          1    7 6.283333 1.2416667 0.1625000 3.204167 2.1958333
-## 8          1    8 5.175000 0.9869565 0.6333333 5.387500 4.5875000
-## 9          1    9 6.070000 1.8300000 0.1350000 3.950000 2.9050000
-## 10         1   10 5.465000 1.9600000 0.4550000 6.495000 5.4000000
-## 11         2    1 8.775000 2.4916667 0.9958333 1.716667 0.8083333
-## 12         2    2 8.537500 3.1250000 0.9500000 2.141667 0.6625000
-## 13         2    3 7.637500 2.0791667 0.7250000 2.895833 1.5625000
-## 14         2    4 8.204167 1.6083333 0.6416667 3.512500 1.8583333
-## 15         2    5 6.933333 1.8583333 0.5833333 3.641667 0.7375000
-## 16         2    6 7.016667 2.0541667 0.9208333 3.841667 2.7500000
-## 17         2    7 5.729167 1.3565217 0.5500000 3.837500 3.0416667
-## 18         2    8 5.641667 1.5826087 0.3958333 3.825000 3.8652174
-## 19         2    9 5.470000 1.6650000 0.0800000 5.240000 4.0450000
-## 20         2   10 5.580000 1.7950000 0.6950000 6.310000 6.1700000
-## 21         3    1 8.987500 2.4208333 0.9250000 2.600000 1.9791667
-## 22         3    2 8.050000 2.5166667 1.5916667 2.495833 1.6958333
-## 23         3    3 7.983333 1.9333333 0.7083333 3.600000 1.2541667
-## 24         3    4 6.533333 1.8166667 0.5583333 5.216667 1.7916667
-## 25         3    5 7.308696 1.7043478 0.5478261 2.630435 2.3130435
-## 26         3    6 6.916667 1.3791667 0.6333333 4.045833 1.7208333
-## 27         3    7 6.491667 1.5083333 0.5500000 4.616667 2.8125000
-## 28         3    8 5.479167 0.9875000 0.1125000 3.604167 3.3583333
-## 29         3    9 5.480000 1.2650000 0.6150000 4.820000 4.6700000
-## 30         3   10 6.065000 1.5400000 0.5200000 5.400000 4.3050000</code></pre>
-</div>
-<div class="slide section level2">
-
-<p>Example of <code>acast</code>. id variables are row names.</p>
-<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" tabindex="-1"></a><span class="fu">acast</span>(ff_m, time <span class="sc">~</span> flavor, <span class="at">fun.aggregate =</span> mean)</span></code></pre></div>
-<pre><code>##      potato  buttery    grassy   rancid   painty
-## 1  8.562500 2.236111 0.9416667 2.358333 1.645833
-## 2  8.059722 2.722222 1.1819444 2.845833 1.444444
-## 3  7.797222 2.102778 0.7500000 3.715278 1.311111
-## 4  7.713889 1.801389 0.7416667 3.602778 1.372222
-## 5  7.328169 1.642254 0.6352113 3.529577 2.015493
-## 6  6.670833 1.752778 0.6736111 4.075000 2.341667
-## 7  6.168056 1.369014 0.4208333 3.886111 2.683333
-## 8  5.431944 1.182857 0.3805556 4.272222 3.938028
-## 9  5.673333 1.586667 0.2766667 4.670000 3.873333
-## 10 5.703333 1.765000 0.5566667 6.068333 5.291667</code></pre>
-<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" tabindex="-1"></a><span class="fu">acast</span>(ff_m, time <span class="sc">+</span> treatment <span class="sc">~</span> flavor, <span class="at">fun.aggregate =</span> mean)</span></code></pre></div>
-<pre><code>##        potato   buttery    grassy   rancid    painty
-## 1_1  7.925000 1.7958333 0.9041667 2.758333 2.1500000
-## 1_2  8.775000 2.4916667 0.9958333 1.716667 0.8083333
-## 1_3  8.987500 2.4208333 0.9250000 2.600000 1.9791667
-## 2_1  7.591667 2.5250000 1.0041667 3.900000 1.9750000
-## 2_2  8.537500 3.1250000 0.9500000 2.141667 0.6625000
-## 2_3  8.050000 2.5166667 1.5916667 2.495833 1.6958333
-## 3_1  7.770833 2.2958333 0.8166667 4.650000 1.1166667
-## 3_2  7.637500 2.0791667 0.7250000 2.895833 1.5625000
-## 3_3  7.983333 1.9333333 0.7083333 3.600000 1.2541667
-## 4_1  8.404167 1.9791667 1.0250000 2.079167 0.4666667
-## 4_2  8.204167 1.6083333 0.6416667 3.512500 1.8583333
-## 4_3  6.533333 1.8166667 0.5583333 5.216667 1.7916667
-## 5_1  7.741667 1.3666667 0.7708333 4.279167 3.0083333
-## 5_2  6.933333 1.8583333 0.5833333 3.641667 0.7375000
-## 5_3  7.308696 1.7043478 0.5478261 2.630435 2.3130435
-## 6_1  6.079167 1.8250000 0.4666667 4.337500 2.5541667
-## 6_2  7.016667 2.0541667 0.9208333 3.841667 2.7500000
-## 6_3  6.916667 1.3791667 0.6333333 4.045833 1.7208333
-## 7_1  6.283333 1.2416667 0.1625000 3.204167 2.1958333
-## 7_2  5.729167 1.3565217 0.5500000 3.837500 3.0416667
-## 7_3  6.491667 1.5083333 0.5500000 4.616667 2.8125000
-## 8_1  5.175000 0.9869565 0.6333333 5.387500 4.5875000
-## 8_2  5.641667 1.5826087 0.3958333 3.825000 3.8652174
-## 8_3  5.479167 0.9875000 0.1125000 3.604167 3.3583333
-## 9_1  6.070000 1.8300000 0.1350000 3.950000 2.9050000
-## 9_2  5.470000 1.6650000 0.0800000 5.240000 4.0450000
-## 9_3  5.480000 1.2650000 0.6150000 4.820000 4.6700000
-## 10_1 5.465000 1.9600000 0.4550000 6.495000 5.4000000
-## 10_2 5.580000 1.7950000 0.6950000 6.310000 6.1700000
-## 10_3 6.065000 1.5400000 0.5200000 5.400000 4.3050000</code></pre>
+<p>You can use the <code>values_fn</code> argument to
+<code>pivot_wider</code> to define how to aggregate values.</p>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" tabindex="-1"></a>french_fries_long <span class="sc">|&gt;</span></span>
+<span id="cb33-2"><a href="#cb33-2" tabindex="-1"></a>    <span class="fu">pivot_wider</span>(<span class="at">id_cols =</span> time,</span>
+<span id="cb33-3"><a href="#cb33-3" tabindex="-1"></a>                <span class="at">names_from =</span> flavor,</span>
+<span id="cb33-4"><a href="#cb33-4" tabindex="-1"></a>                <span class="at">values_from =</span> flavor_intensity,</span>
+<span id="cb33-5"><a href="#cb33-5" tabindex="-1"></a>                <span class="at">values_fn =</span> mean)</span></code></pre></div>
+<pre><code>## # A tibble: 10 × 6
+##    time  potato buttery grassy rancid painty
+##    &lt;fct&gt;  &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;
+##  1 1       8.56    2.24  0.942   2.36   1.65
+##  2 2       8.06    2.72  1.18    2.85   1.44
+##  3 3       7.80    2.10  0.75    3.72   1.31
+##  4 4       7.71    1.80  0.742   3.60   1.37
+##  5 5      NA      NA    NA      NA     NA   
+##  6 6       6.67    1.75  0.674   4.08   2.34
+##  7 7       6.17   NA     0.421   3.89   2.68
+##  8 8       5.43   NA     0.381   4.27  NA   
+##  9 9       5.67    1.59  0.277   4.67   3.87
+## 10 10      5.70    1.76  0.557   6.07   5.29</code></pre>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" tabindex="-1"></a>french_fries_long <span class="sc">|&gt;</span></span>
+<span id="cb35-2"><a href="#cb35-2" tabindex="-1"></a>    <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> flavor,</span>
+<span id="cb35-3"><a href="#cb35-3" tabindex="-1"></a>                <span class="at">id_cols =</span> time,</span>
+<span id="cb35-4"><a href="#cb35-4" tabindex="-1"></a>                <span class="at">values_from =</span> flavor_intensity,</span>
+<span id="cb35-5"><a href="#cb35-5" tabindex="-1"></a>                <span class="at">values_fn =</span> <span class="cf">function</span>(x) <span class="fu">mean</span>(x))</span></code></pre></div>
+<pre><code>## # A tibble: 10 × 6
+##    time  potato buttery grassy rancid painty
+##    &lt;fct&gt;  &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;
+##  1 1       8.56    2.24  0.942   2.36   1.65
+##  2 2       8.06    2.72  1.18    2.85   1.44
+##  3 3       7.80    2.10  0.75    3.72   1.31
+##  4 4       7.71    1.80  0.742   3.60   1.37
+##  5 5      NA      NA    NA      NA     NA   
+##  6 6       6.67    1.75  0.674   4.08   2.34
+##  7 7       6.17   NA     0.421   3.89   2.68
+##  8 8       5.43   NA     0.381   4.27  NA   
+##  9 9       5.67    1.59  0.277   4.67   3.87
+## 10 10      5.70    1.76  0.557   6.07   5.29</code></pre>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" tabindex="-1"></a>french_fries_long <span class="sc">|&gt;</span></span>
+<span id="cb37-2"><a href="#cb37-2" tabindex="-1"></a>    <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> flavor,</span>
+<span id="cb37-3"><a href="#cb37-3" tabindex="-1"></a>                <span class="at">id_cols =</span> time,</span>
+<span id="cb37-4"><a href="#cb37-4" tabindex="-1"></a>                <span class="at">values_from =</span> flavor_intensity,</span>
+<span id="cb37-5"><a href="#cb37-5" tabindex="-1"></a>                <span class="at">values_fn =</span> <span class="cf">function</span>(x) <span class="fu">mean</span>(x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span></code></pre></div>
+<pre><code>## # A tibble: 10 × 6
+##    time  potato buttery grassy rancid painty
+##    &lt;fct&gt;  &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;
+##  1 1       8.56    2.24  0.942   2.36   1.65
+##  2 2       8.06    2.72  1.18    2.85   1.44
+##  3 3       7.80    2.10  0.75    3.72   1.31
+##  4 4       7.71    1.80  0.742   3.60   1.37
+##  5 5       7.33    1.64  0.635   3.53   2.02
+##  6 6       6.67    1.75  0.674   4.08   2.34
+##  7 7       6.17    1.37  0.421   3.89   2.68
+##  8 8       5.43    1.18  0.381   4.27   3.94
+##  9 9       5.67    1.59  0.277   4.67   3.87
+## 10 10      5.70    1.76  0.557   6.07   5.29</code></pre>
+<p>The <code>tidyverse</code> functions also have shortcut notation for
+defining anonymous functions. See <a
+href="https://adv-r.hadley.nz/functionals.html?q=lambda%20function#purrr-shortcuts">here</a>
+for details. It works best for functions that have one or two arguments,
+which are referred to as <code>.x</code> (first/only argument) and
+<code>.y</code> (second argument in a two-argument function).</p>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" tabindex="-1"></a><span class="do">## &quot;shortcut&quot; version</span></span>
+<span id="cb39-2"><a href="#cb39-2" tabindex="-1"></a>french_fries_long <span class="sc">|&gt;</span></span>
+<span id="cb39-3"><a href="#cb39-3" tabindex="-1"></a>    <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> flavor,</span>
+<span id="cb39-4"><a href="#cb39-4" tabindex="-1"></a>                <span class="at">id_cols =</span> time,</span>
+<span id="cb39-5"><a href="#cb39-5" tabindex="-1"></a>                <span class="at">values_from =</span> flavor_intensity,</span>
+<span id="cb39-6"><a href="#cb39-6" tabindex="-1"></a>                <span class="at">values_fn =</span> <span class="sc">~</span><span class="fu">mean</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span></code></pre></div>
+<pre><code>## # A tibble: 10 × 6
+##    time  potato buttery grassy rancid painty
+##    &lt;fct&gt;  &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;
+##  1 1       8.56    2.24  0.942   2.36   1.65
+##  2 2       8.06    2.72  1.18    2.85   1.44
+##  3 3       7.80    2.10  0.75    3.72   1.31
+##  4 4       7.71    1.80  0.742   3.60   1.37
+##  5 5       7.33    1.64  0.635   3.53   2.02
+##  6 6       6.67    1.75  0.674   4.08   2.34
+##  7 7       6.17    1.37  0.421   3.89   2.68
+##  8 8       5.43    1.18  0.381   4.27   3.94
+##  9 9       5.67    1.59  0.277   4.67   3.87
+## 10 10      5.70    1.76  0.557   6.07   5.29</code></pre>
 </div>
 <div id="merging" class="slide section level2">
 <h1>Merging</h1>
 <p>Final topic: What if you have data from two different places and you
 need to put them together?</p>
-<p>Basic syntax: <code>merge(x, y, by.x, by.y)</code></p>
+<p>Base R syntax: <code>merge(x, y, by.x, by.y)</code></p>
 <ul class="incremental">
 <li><p><code>x</code> and <code>y</code> are the two datasets you want
 to merge.</p></li>
@@ -713,20 +639,30 @@ on.</p></li>
 <li><p><code>by.y</code> is the column of <code>y</code> to merge
 on.</p></li>
 </ul>
+<p>dpylr syntax:
+<code>*_join(x, y, by = c("x_col" = "y_col"))</code></p>
+<ul class="incremental">
+<li><p><code>*_join</code> can be any of <code>left_join</code>,
+<code>right_join</code>, <code>inner_join</code>, <code>full_join</code>
+for different types of merges.</p></li>
+<li><p><code>by</code> argument is a character vector specifying the
+columns to join on.</p></li>
+<li><p>Defaults to matching all columns with the same name.</p></li>
+</ul>
 </div>
 <div class="slide section level2">
 
 <p>Example:</p>
-<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" tabindex="-1"></a>cities <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="cb43-2"><a href="#cb43-2" tabindex="-1"></a>    <span class="at">city=</span><span class="fu">c</span>(<span class="st">&#39;New York&#39;</span>,<span class="st">&#39;Boston&#39;</span>,<span class="st">&#39;Juneau&#39;</span>,</span>
-<span id="cb43-3"><a href="#cb43-3" tabindex="-1"></a>           <span class="st">&#39;Anchorage&#39;</span>,<span class="st">&#39;San Diego&#39;</span>,</span>
-<span id="cb43-4"><a href="#cb43-4" tabindex="-1"></a>           <span class="st">&#39;Philadelphia&#39;</span>,<span class="st">&#39;Los Angeles&#39;</span>,</span>
-<span id="cb43-5"><a href="#cb43-5" tabindex="-1"></a>           <span class="st">&#39;Fairbanks&#39;</span>,<span class="st">&#39;Ann Arbor&#39;</span>,<span class="st">&#39;Seattle&#39;</span>),</span>
-<span id="cb43-6"><a href="#cb43-6" tabindex="-1"></a>    <span class="at">state.abb=</span><span class="fu">c</span>(<span class="st">&#39;NY&#39;</span>,<span class="st">&#39;MA&#39;</span>,<span class="st">&#39;AK&#39;</span>,<span class="st">&#39;AK&#39;</span>,<span class="st">&#39;CA&#39;</span>,</span>
-<span id="cb43-7"><a href="#cb43-7" tabindex="-1"></a>                <span class="st">&#39;PA&#39;</span>,<span class="st">&#39;CA&#39;</span>,<span class="st">&#39;AK&#39;</span>,<span class="st">&#39;MI&#39;</span>,<span class="st">&#39;WA&#39;</span>))</span>
-<span id="cb43-8"><a href="#cb43-8" tabindex="-1"></a></span>
-<span id="cb43-9"><a href="#cb43-9" tabindex="-1"></a>states <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(state.name, state.abb)</span>
-<span id="cb43-10"><a href="#cb43-10" tabindex="-1"></a>cities</span></code></pre></div>
+<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" tabindex="-1"></a>cities <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb41-2"><a href="#cb41-2" tabindex="-1"></a>    <span class="at">city=</span><span class="fu">c</span>(<span class="st">&#39;New York&#39;</span>,<span class="st">&#39;Boston&#39;</span>,<span class="st">&#39;Juneau&#39;</span>,</span>
+<span id="cb41-3"><a href="#cb41-3" tabindex="-1"></a>           <span class="st">&#39;Anchorage&#39;</span>,<span class="st">&#39;San Diego&#39;</span>,</span>
+<span id="cb41-4"><a href="#cb41-4" tabindex="-1"></a>           <span class="st">&#39;Philadelphia&#39;</span>,<span class="st">&#39;Los Angeles&#39;</span>,</span>
+<span id="cb41-5"><a href="#cb41-5" tabindex="-1"></a>           <span class="st">&#39;Fairbanks&#39;</span>,<span class="st">&#39;Ann Arbor&#39;</span>,<span class="st">&#39;Seattle&#39;</span>),</span>
+<span id="cb41-6"><a href="#cb41-6" tabindex="-1"></a>    <span class="at">state.abb=</span><span class="fu">c</span>(<span class="st">&#39;NY&#39;</span>,<span class="st">&#39;MA&#39;</span>,<span class="st">&#39;AK&#39;</span>,<span class="st">&#39;AK&#39;</span>,<span class="st">&#39;CA&#39;</span>,</span>
+<span id="cb41-7"><a href="#cb41-7" tabindex="-1"></a>                <span class="st">&#39;PA&#39;</span>,<span class="st">&#39;CA&#39;</span>,<span class="st">&#39;AK&#39;</span>,<span class="st">&#39;MI&#39;</span>,<span class="st">&#39;WA&#39;</span>))</span>
+<span id="cb41-8"><a href="#cb41-8" tabindex="-1"></a></span>
+<span id="cb41-9"><a href="#cb41-9" tabindex="-1"></a>states <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(state.name, state.abb)</span>
+<span id="cb41-10"><a href="#cb41-10" tabindex="-1"></a>cities</span></code></pre></div>
 <pre><code>##            city state.abb
 ## 1      New York        NY
 ## 2        Boston        MA
@@ -738,7 +674,7 @@ on.</p></li>
 ## 8     Fairbanks        AK
 ## 9     Ann Arbor        MI
 ## 10      Seattle        WA</code></pre>
-<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" tabindex="-1"></a><span class="fu">head</span>(states)</span></code></pre></div>
+<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" tabindex="-1"></a><span class="fu">head</span>(states)</span></code></pre></div>
 <pre><code>##   state.name state.abb
 ## 1    Alabama        AL
 ## 2     Alaska        AK
@@ -748,7 +684,17 @@ on.</p></li>
 ## 6   Colorado        CO</code></pre>
 <p>We want to add the state name to the cities data frame, and we can
 use merge.</p>
-<div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" tabindex="-1"></a><span class="fu">merge</span>(states, cities, <span class="at">by.x =</span> <span class="st">&quot;state.abb&quot;</span>, <span class="at">by.y =</span> <span class="st">&quot;state.abb&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span></code></pre></div>
+<pre><code>## 
+## Attaching package: &#39;dplyr&#39;</code></pre>
+<pre><code>## The following objects are masked from &#39;package:stats&#39;:
+## 
+##     filter, lag</code></pre>
+<pre><code>## The following objects are masked from &#39;package:base&#39;:
+## 
+##     intersect, setdiff, setequal, union</code></pre>
+<div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" tabindex="-1"></a><span class="do">## base R</span></span>
+<span id="cb49-2"><a href="#cb49-2" tabindex="-1"></a><span class="fu">merge</span>(states, cities, <span class="at">by.x =</span> <span class="st">&quot;state.abb&quot;</span>, <span class="at">by.y =</span> <span class="st">&quot;state.abb&quot;</span>)</span></code></pre></div>
 <pre><code>##    state.abb    state.name         city
 ## 1         AK        Alaska       Juneau
 ## 2         AK        Alaska    Anchorage
@@ -760,6 +706,19 @@ use merge.</p>
 ## 8         NY      New York     New York
 ## 9         PA  Pennsylvania Philadelphia
 ## 10        WA    Washington      Seattle</code></pre>
+<div class="sourceCode" id="cb51"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" tabindex="-1"></a><span class="do">## dplyr</span></span>
+<span id="cb51-2"><a href="#cb51-2" tabindex="-1"></a><span class="fu">inner_join</span>(states, cities, <span class="at">by =</span> <span class="st">&quot;state.abb&quot;</span>)</span></code></pre></div>
+<pre><code>##       state.name state.abb         city
+## 1         Alaska        AK       Juneau
+## 2         Alaska        AK    Anchorage
+## 3         Alaska        AK    Fairbanks
+## 4     California        CA    San Diego
+## 5     California        CA  Los Angeles
+## 6  Massachusetts        MA       Boston
+## 7       Michigan        MI    Ann Arbor
+## 8       New York        NY     New York
+## 9   Pennsylvania        PA Philadelphia
+## 10    Washington        WA      Seattle</code></pre>
 </div>
 <div class="slide section level2">
 
@@ -767,26 +726,28 @@ use merge.</p>
 merge took place because the two datasets have different sets of values
 for <code>state.abb</code>.</p>
 <ul class="incremental">
-<li>Default: the output dataset only has rows for which we had values in
-both data frames.</li>
+<li><p>In base R, the default is an inner join (you get one row for each
+value of the merging variable that was seen in both <code>x</code> and
+<code>y</code>)</p></li>
+<li><p>Modify with <code>all</code>, <code>all.x</code>,
+<code>all.y</code>:</p></li>
+<li><p><code>all = TRUE</code> is a full outer join (you get one row for
+values of the merging variable that were seen in either <code>x</code>
+or <code>y</code>)</p></li>
+<li><p><code>all.x = TRUE</code> is a left join (you get one row for
+each value of the merging variable that was seen in
+<code>x</code>)</p></li>
+<li><p><code>all.y = TRUE</code> is a right join (you get one row for
+each value of the merging variable that was seen in
+<code>y</code>)</p></li>
+<li><p>In dplyr, you use <code>inner_join</code>,
+<code>outer_join</code>, <code>left_join</code>,
+<code>right_join</code></p></li>
 </ul>
-<div class="incremental">
-<p>Can modify with <code>all</code>, <code>all.x</code>, or
-<code>all.y</code></p>
-<ul class="incremental">
-<li><p><code>all = TRUE</code> means that you get one row for values of
-the merging variable that were seen in either <code>x</code> or
-<code>y</code></p></li>
-<li><p><code>all.x = TRUE</code> means you get one row for each value of
-the merging variable that was seen in <code>x</code></p></li>
-<li><p><code>all.y = TRUE</code> means you get one row for each value of
-the merging variable that was seen in <code>y</code>.</p></li>
-</ul>
-</div>
 </div>
 <div class="slide section level2">
 
-<div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" tabindex="-1"></a><span class="fu">merge</span>(states, cities, <span class="at">all.x =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb53"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" tabindex="-1"></a><span class="fu">merge</span>(states, cities, <span class="at">all.x =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
 <pre><code>##    state.abb     state.name         city
 ## 1         AK         Alaska       Juneau
 ## 2         AK         Alaska    Anchorage
@@ -841,6 +802,195 @@ the merging variable that was seen in <code>y</code>.</p></li>
 ## 51        WI      Wisconsin         &lt;NA&gt;
 ## 52        WV  West Virginia         &lt;NA&gt;
 ## 53        WY        Wyoming         &lt;NA&gt;</code></pre>
+<div class="sourceCode" id="cb55"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" tabindex="-1"></a><span class="fu">left_join</span>(states, cities, <span class="at">by =</span> <span class="st">&quot;state.abb&quot;</span>)</span></code></pre></div>
+<pre><code>##        state.name state.abb         city
+## 1         Alabama        AL         &lt;NA&gt;
+## 2          Alaska        AK       Juneau
+## 3          Alaska        AK    Anchorage
+## 4          Alaska        AK    Fairbanks
+## 5         Arizona        AZ         &lt;NA&gt;
+## 6        Arkansas        AR         &lt;NA&gt;
+## 7      California        CA    San Diego
+## 8      California        CA  Los Angeles
+## 9        Colorado        CO         &lt;NA&gt;
+## 10    Connecticut        CT         &lt;NA&gt;
+## 11       Delaware        DE         &lt;NA&gt;
+## 12        Florida        FL         &lt;NA&gt;
+## 13        Georgia        GA         &lt;NA&gt;
+## 14         Hawaii        HI         &lt;NA&gt;
+## 15          Idaho        ID         &lt;NA&gt;
+## 16       Illinois        IL         &lt;NA&gt;
+## 17        Indiana        IN         &lt;NA&gt;
+## 18           Iowa        IA         &lt;NA&gt;
+## 19         Kansas        KS         &lt;NA&gt;
+## 20       Kentucky        KY         &lt;NA&gt;
+## 21      Louisiana        LA         &lt;NA&gt;
+## 22          Maine        ME         &lt;NA&gt;
+## 23       Maryland        MD         &lt;NA&gt;
+## 24  Massachusetts        MA       Boston
+## 25       Michigan        MI    Ann Arbor
+## 26      Minnesota        MN         &lt;NA&gt;
+## 27    Mississippi        MS         &lt;NA&gt;
+## 28       Missouri        MO         &lt;NA&gt;
+## 29        Montana        MT         &lt;NA&gt;
+## 30       Nebraska        NE         &lt;NA&gt;
+## 31         Nevada        NV         &lt;NA&gt;
+## 32  New Hampshire        NH         &lt;NA&gt;
+## 33     New Jersey        NJ         &lt;NA&gt;
+## 34     New Mexico        NM         &lt;NA&gt;
+## 35       New York        NY     New York
+## 36 North Carolina        NC         &lt;NA&gt;
+## 37   North Dakota        ND         &lt;NA&gt;
+## 38           Ohio        OH         &lt;NA&gt;
+## 39       Oklahoma        OK         &lt;NA&gt;
+## 40         Oregon        OR         &lt;NA&gt;
+## 41   Pennsylvania        PA Philadelphia
+## 42   Rhode Island        RI         &lt;NA&gt;
+## 43 South Carolina        SC         &lt;NA&gt;
+## 44   South Dakota        SD         &lt;NA&gt;
+## 45      Tennessee        TN         &lt;NA&gt;
+## 46          Texas        TX         &lt;NA&gt;
+## 47           Utah        UT         &lt;NA&gt;
+## 48        Vermont        VT         &lt;NA&gt;
+## 49       Virginia        VA         &lt;NA&gt;
+## 50     Washington        WA      Seattle
+## 51  West Virginia        WV         &lt;NA&gt;
+## 52      Wisconsin        WI         &lt;NA&gt;
+## 53        Wyoming        WY         &lt;NA&gt;</code></pre>
+<div class="sourceCode" id="cb57"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" tabindex="-1"></a><span class="fu">merge</span>(states, cities, <span class="at">all.y =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<pre><code>##    state.abb    state.name         city
+## 1         AK        Alaska       Juneau
+## 2         AK        Alaska    Anchorage
+## 3         AK        Alaska    Fairbanks
+## 4         CA    California    San Diego
+## 5         CA    California  Los Angeles
+## 6         MA Massachusetts       Boston
+## 7         MI      Michigan    Ann Arbor
+## 8         NY      New York     New York
+## 9         PA  Pennsylvania Philadelphia
+## 10        WA    Washington      Seattle</code></pre>
+<div class="sourceCode" id="cb59"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" tabindex="-1"></a><span class="fu">right_join</span>(states, cities, <span class="at">by =</span> <span class="st">&quot;state.abb&quot;</span>)</span></code></pre></div>
+<pre><code>##       state.name state.abb         city
+## 1         Alaska        AK       Juneau
+## 2         Alaska        AK    Anchorage
+## 3         Alaska        AK    Fairbanks
+## 4     California        CA    San Diego
+## 5     California        CA  Los Angeles
+## 6  Massachusetts        MA       Boston
+## 7       Michigan        MI    Ann Arbor
+## 8       New York        NY     New York
+## 9   Pennsylvania        PA Philadelphia
+## 10    Washington        WA      Seattle</code></pre>
+<div class="sourceCode" id="cb61"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" tabindex="-1"></a><span class="fu">merge</span>(states, cities, <span class="at">all =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<pre><code>##    state.abb     state.name         city
+## 1         AK         Alaska       Juneau
+## 2         AK         Alaska    Anchorage
+## 3         AK         Alaska    Fairbanks
+## 4         AL        Alabama         &lt;NA&gt;
+## 5         AR       Arkansas         &lt;NA&gt;
+## 6         AZ        Arizona         &lt;NA&gt;
+## 7         CA     California    San Diego
+## 8         CA     California  Los Angeles
+## 9         CO       Colorado         &lt;NA&gt;
+## 10        CT    Connecticut         &lt;NA&gt;
+## 11        DE       Delaware         &lt;NA&gt;
+## 12        FL        Florida         &lt;NA&gt;
+## 13        GA        Georgia         &lt;NA&gt;
+## 14        HI         Hawaii         &lt;NA&gt;
+## 15        IA           Iowa         &lt;NA&gt;
+## 16        ID          Idaho         &lt;NA&gt;
+## 17        IL       Illinois         &lt;NA&gt;
+## 18        IN        Indiana         &lt;NA&gt;
+## 19        KS         Kansas         &lt;NA&gt;
+## 20        KY       Kentucky         &lt;NA&gt;
+## 21        LA      Louisiana         &lt;NA&gt;
+## 22        MA  Massachusetts       Boston
+## 23        MD       Maryland         &lt;NA&gt;
+## 24        ME          Maine         &lt;NA&gt;
+## 25        MI       Michigan    Ann Arbor
+## 26        MN      Minnesota         &lt;NA&gt;
+## 27        MO       Missouri         &lt;NA&gt;
+## 28        MS    Mississippi         &lt;NA&gt;
+## 29        MT        Montana         &lt;NA&gt;
+## 30        NC North Carolina         &lt;NA&gt;
+## 31        ND   North Dakota         &lt;NA&gt;
+## 32        NE       Nebraska         &lt;NA&gt;
+## 33        NH  New Hampshire         &lt;NA&gt;
+## 34        NJ     New Jersey         &lt;NA&gt;
+## 35        NM     New Mexico         &lt;NA&gt;
+## 36        NV         Nevada         &lt;NA&gt;
+## 37        NY       New York     New York
+## 38        OH           Ohio         &lt;NA&gt;
+## 39        OK       Oklahoma         &lt;NA&gt;
+## 40        OR         Oregon         &lt;NA&gt;
+## 41        PA   Pennsylvania Philadelphia
+## 42        RI   Rhode Island         &lt;NA&gt;
+## 43        SC South Carolina         &lt;NA&gt;
+## 44        SD   South Dakota         &lt;NA&gt;
+## 45        TN      Tennessee         &lt;NA&gt;
+## 46        TX          Texas         &lt;NA&gt;
+## 47        UT           Utah         &lt;NA&gt;
+## 48        VA       Virginia         &lt;NA&gt;
+## 49        VT        Vermont         &lt;NA&gt;
+## 50        WA     Washington      Seattle
+## 51        WI      Wisconsin         &lt;NA&gt;
+## 52        WV  West Virginia         &lt;NA&gt;
+## 53        WY        Wyoming         &lt;NA&gt;</code></pre>
+<div class="sourceCode" id="cb63"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1" tabindex="-1"></a><span class="fu">full_join</span>(states, cities, <span class="at">by =</span> <span class="st">&quot;state.abb&quot;</span>)</span></code></pre></div>
+<pre><code>##        state.name state.abb         city
+## 1         Alabama        AL         &lt;NA&gt;
+## 2          Alaska        AK       Juneau
+## 3          Alaska        AK    Anchorage
+## 4          Alaska        AK    Fairbanks
+## 5         Arizona        AZ         &lt;NA&gt;
+## 6        Arkansas        AR         &lt;NA&gt;
+## 7      California        CA    San Diego
+## 8      California        CA  Los Angeles
+## 9        Colorado        CO         &lt;NA&gt;
+## 10    Connecticut        CT         &lt;NA&gt;
+## 11       Delaware        DE         &lt;NA&gt;
+## 12        Florida        FL         &lt;NA&gt;
+## 13        Georgia        GA         &lt;NA&gt;
+## 14         Hawaii        HI         &lt;NA&gt;
+## 15          Idaho        ID         &lt;NA&gt;
+## 16       Illinois        IL         &lt;NA&gt;
+## 17        Indiana        IN         &lt;NA&gt;
+## 18           Iowa        IA         &lt;NA&gt;
+## 19         Kansas        KS         &lt;NA&gt;
+## 20       Kentucky        KY         &lt;NA&gt;
+## 21      Louisiana        LA         &lt;NA&gt;
+## 22          Maine        ME         &lt;NA&gt;
+## 23       Maryland        MD         &lt;NA&gt;
+## 24  Massachusetts        MA       Boston
+## 25       Michigan        MI    Ann Arbor
+## 26      Minnesota        MN         &lt;NA&gt;
+## 27    Mississippi        MS         &lt;NA&gt;
+## 28       Missouri        MO         &lt;NA&gt;
+## 29        Montana        MT         &lt;NA&gt;
+## 30       Nebraska        NE         &lt;NA&gt;
+## 31         Nevada        NV         &lt;NA&gt;
+## 32  New Hampshire        NH         &lt;NA&gt;
+## 33     New Jersey        NJ         &lt;NA&gt;
+## 34     New Mexico        NM         &lt;NA&gt;
+## 35       New York        NY     New York
+## 36 North Carolina        NC         &lt;NA&gt;
+## 37   North Dakota        ND         &lt;NA&gt;
+## 38           Ohio        OH         &lt;NA&gt;
+## 39       Oklahoma        OK         &lt;NA&gt;
+## 40         Oregon        OR         &lt;NA&gt;
+## 41   Pennsylvania        PA Philadelphia
+## 42   Rhode Island        RI         &lt;NA&gt;
+## 43 South Carolina        SC         &lt;NA&gt;
+## 44   South Dakota        SD         &lt;NA&gt;
+## 45      Tennessee        TN         &lt;NA&gt;
+## 46          Texas        TX         &lt;NA&gt;
+## 47           Utah        UT         &lt;NA&gt;
+## 48        Vermont        VT         &lt;NA&gt;
+## 49       Virginia        VA         &lt;NA&gt;
+## 50     Washington        WA      Seattle
+## 51  West Virginia        WV         &lt;NA&gt;
+## 52      Wisconsin        WI         &lt;NA&gt;
+## 53        Wyoming        WY         &lt;NA&gt;</code></pre>
 </div>
 <div class="slide section level2">
 
@@ -857,23 +1007,53 @@ variables.</p></li>
 to be the same in both <code>x</code> and <code>y</code>.</p></li>
 </ul>
 </div>
-<div id="some-final-notes" class="slide section level2">
-<h1>Some final notes</h1>
-<p>Merging, melting/casting, and split/apply/combine from last week are
-useful enough that there are multiple implementations.</p>
-<p>You can use other implementations, but you shouldn’t try to re-make
-them from scratch.</p>
-<p>Some other options are:</p>
-<ul class="incremental">
-<li><p><code>join</code> in <code>plyr</code> does the same thing as
-<code>merge</code></p></li>
-<li><p><code>gather</code> and <code>spread</code>, and more recently
-<code>pivot_longer</code> and <code>pivot_wider</code> in the
-<code>tidyr</code> package do roughly the same thing as
-<code>cast</code> and <code>melt</code>.</p></li>
-<li><p>There are multiple iterations of reshape, <code>reshape2</code>
-was a redesign of <code>reshape</code>.</p></li>
-</ul>
+<div class="slide section level2">
+
+<div class="sourceCode" id="cb65"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" tabindex="-1"></a>cities <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb65-2"><a href="#cb65-2" tabindex="-1"></a>  <span class="at">city =</span> <span class="fu">c</span>(<span class="st">&quot;New York&quot;</span>, <span class="st">&quot;Boston&quot;</span>, <span class="st">&quot;Juneau&quot;</span>, <span class="st">&quot;Anchorage&quot;</span>, <span class="st">&quot;San Diego&quot;</span>),</span>
+<span id="cb65-3"><a href="#cb65-3" tabindex="-1"></a>  <span class="at">state.abb =</span> <span class="fu">c</span>(<span class="st">&quot;NY&quot;</span>, <span class="st">&quot;MA&quot;</span>, <span class="st">&quot;AK&quot;</span>, <span class="st">&quot;AK&quot;</span>, <span class="st">&quot;CA&quot;</span>),</span>
+<span id="cb65-4"><a href="#cb65-4" tabindex="-1"></a>  <span class="at">year =</span> <span class="fu">c</span>(<span class="dv">2020</span>, <span class="dv">2020</span>, <span class="dv">2021</span>, <span class="dv">2021</span>, <span class="dv">2020</span>)</span>
+<span id="cb65-5"><a href="#cb65-5" tabindex="-1"></a>)</span>
+<span id="cb65-6"><a href="#cb65-6" tabindex="-1"></a></span>
+<span id="cb65-7"><a href="#cb65-7" tabindex="-1"></a></span>
+<span id="cb65-8"><a href="#cb65-8" tabindex="-1"></a>population <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb65-9"><a href="#cb65-9" tabindex="-1"></a>  <span class="at">abb =</span> <span class="fu">c</span>(<span class="st">&quot;NY&quot;</span>, <span class="st">&quot;MA&quot;</span>, <span class="st">&quot;AK&quot;</span>, <span class="st">&quot;AK&quot;</span>, <span class="st">&quot;CA&quot;</span>),</span>
+<span id="cb65-10"><a href="#cb65-10" tabindex="-1"></a>  <span class="at">year =</span> <span class="fu">c</span>(<span class="dv">2020</span>, <span class="dv">2020</span>, <span class="dv">2021</span>, <span class="dv">2020</span>, <span class="dv">2020</span>),</span>
+<span id="cb65-11"><a href="#cb65-11" tabindex="-1"></a>  <span class="at">pop_million =</span> <span class="fu">c</span>(<span class="fl">19.3</span>, <span class="fl">6.9</span>, <span class="fl">0.7</span>, <span class="fl">0.73</span>, <span class="fl">39.5</span>)</span>
+<span id="cb65-12"><a href="#cb65-12" tabindex="-1"></a>)</span>
+<span id="cb65-13"><a href="#cb65-13" tabindex="-1"></a></span>
+<span id="cb65-14"><a href="#cb65-14" tabindex="-1"></a>cities</span></code></pre></div>
+<pre><code>##        city state.abb year
+## 1  New York        NY 2020
+## 2    Boston        MA 2020
+## 3    Juneau        AK 2021
+## 4 Anchorage        AK 2021
+## 5 San Diego        CA 2020</code></pre>
+<div class="sourceCode" id="cb67"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb67-1"><a href="#cb67-1" tabindex="-1"></a>population</span></code></pre></div>
+<pre><code>##   abb year pop_million
+## 1  NY 2020       19.30
+## 2  MA 2020        6.90
+## 3  AK 2021        0.70
+## 4  AK 2020        0.73
+## 5  CA 2020       39.50</code></pre>
+<p>Notice that <code>cities</code> and <code>population</code> have
+different names for the column giving the state abbreviation.</p>
+<p>Below we see an example of merging on two columns in base R and in
+dplyr when the column names are not the same in the two datasets.</p>
+<div class="sourceCode" id="cb69"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb69-1"><a href="#cb69-1" tabindex="-1"></a><span class="fu">merge</span>(cities, population, <span class="at">by.x =</span> <span class="fu">c</span>(<span class="st">&quot;state.abb&quot;</span>, <span class="st">&quot;year&quot;</span>), <span class="at">by.y =</span> <span class="fu">c</span>(<span class="st">&quot;abb&quot;</span>, <span class="st">&quot;year&quot;</span>))</span></code></pre></div>
+<pre><code>##   state.abb year      city pop_million
+## 1        AK 2021    Juneau         0.7
+## 2        AK 2021 Anchorage         0.7
+## 3        CA 2020 San Diego        39.5
+## 4        MA 2020    Boston         6.9
+## 5        NY 2020  New York        19.3</code></pre>
+<div class="sourceCode" id="cb71"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb71-1"><a href="#cb71-1" tabindex="-1"></a><span class="fu">inner_join</span>(cities, population, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;state.abb&quot;</span> <span class="ot">=</span> <span class="st">&quot;abb&quot;</span>, <span class="st">&quot;year&quot;</span> <span class="ot">=</span> <span class="st">&quot;year&quot;</span>))</span></code></pre></div>
+<pre><code>##        city state.abb year pop_million
+## 1  New York        NY 2020        19.3
+## 2    Boston        MA 2020         6.9
+## 3    Juneau        AK 2021         0.7
+## 4 Anchorage        AK 2021         0.7
+## 5 San Diego        CA 2020        39.5</code></pre>
 </div>
 </body>
 </html>

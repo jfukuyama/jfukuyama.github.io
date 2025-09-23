@@ -1,8 +1,7 @@
 ## More on data manipulation, shape changing, merging, transformations
 
 Reading: Hadley Wickham,
-["Tidy Data"](http://vita.had.co.nz/papers/tidy-data.pdf) and
-["Reshaping data with the reshape package"](http://had.co.nz/reshape/introduction.pdf)
+["Tidy Data"](http://vita.had.co.nz/papers/tidy-data.pdf)
 
 Agenda for today:
 
@@ -142,56 +141,34 @@ Hard:
 
 The term for transforming these datasets into each other is called
 "reshaping", and pretty much all reshaping can be done with a
-combination of two operations: melting and casting.
+combination of two operations: `pivot_longer` and `pivot_wider`.
 
-- Melting: Taking a wide dataset and making it long.
+These two functions do essentially what their names imply:
 
-- Casting: Taking a melted dataset and making it wide.
+- `pivot_longer`: Takes a wide dataset and makes it long
 
-The mneumonic is that you first "melt" the data set and then you
-"cast" it. The "molten" data isn't usually the final form you want it
-to be in, but it allows you to change it into other shapes easily.
+- `pivot_wider`: Takes a long dataset and makes it wide.
 
-## Melting data
+You usually `pivot_longer` first to get the data into a tidy, long form, and then `pivot_wider` if you need a different layout for analysis or presentation.
 
-The `melt` function takes data from wide form to long form.
+## Pivoting longer
 
-Conceptually, we have two sets of variables:
+The `pivot_longer` function takes data from wide form to long form.
 
-- Identification variables, that describe the observations, and
+Syntax: `pivot_longer(data, cols)` or (usually) `data |> pivot_longer(cols)`
 
-- Measurement variables, which are the quantities that are measured for each observation. If you want to do any aggregation later, it will be over the measurement variables.
+- `data` should be a data frame
+- `cols` the columns to pivot into longer form. The values corresponding to these columns will all be put into one column in the output dataset. Can be a character vector or something more complicated that we will describe later.
 
-To melt a dataset, you need to decide what these are.
+What does the output look like?
 
------
-
-What does a molten data table look like?
-
-- Columns (potentially more than one) for id variables.
-
-- If there is more than one measured variable, one column describing
-the variable measured.
-
-- One column for the value of the measured variable on the corresponding
-observation.
+- All the columns not listed in `cols` remain as identifier variables.
+- One new column (called `name` by default) stores the former column names (the variable measured).
+- Another new column (called `value` by default) stores the corresponding measurement values.
 
 
-## Melting
 
-Based on what we said before, we will need to provide data, id
-variables, and measurement variables, but in practice we have two
-distinct situations:
-
-- Matrix or array input: here we assume that the id variables are the
-dimensions of the matrix or array, and the measurement variables are
-the elements of the matrix or the array. Therefore, we don't actually
-specify id variables or measurement variables.
-
-- Data frame input: id variables and measurement variables have to be specified.
-
-
-## Melting data frames
+## Pivoting longer examples
 
 Let's see an example. (Actually a very interesting study, can read [here](https://www.researchgate.net/publication/226555631_Frying_Performance_of_No-trans_Low-Linolenic_Acid_Soybean_Oils).)
 
@@ -201,102 +178,54 @@ head(french_fries)
 
 -----
 
-We want to melt this data frame so that 
-
-- `id.vars` are time, treatment, subject, rep
-
-- `measure.vars` are the remainder: potato, buttery, grassy, rancid, painty
+We want to melt this data frame so that the "identification variables" are time, treatment, subject, rep and the "measurement variables" are the remainder: potato, buttery, grassy, rancid, painty.
 
 ```{r}
-head(melt(french_fries, id.vars = c("time", "treatment", "subject", "rep"),
-     measure.vars = c("potato", "buttery", "grassy", "rancid", "painty")))
+library(tidyr)
+
+french_fries_long <- french_fries |>
+  pivot_longer(cols = c("potato", "buttery", "grassy", "rancid", "painty"))
+
+head(french_fries_long)
 ```
 
------
-
-You can specify just one of `id.vars` and `measure.vars`, in which
-case the function will assume that all the other variables should be
-in the other class.
-
-You can also specify the variables by number instead of by name.
-
+You can also specify columns using the column numbers (not recommended) or same syntax that [`select` uses](https://dplyr.tidyverse.org/reference/select.html) (much more useful).
+The following are all equivalent:
 ```{r}
-head(melt(french_fries, id.vars = 1:4))
-head(melt(french_fries, measure.vars = 5:9))
-```
-
------
-
-. . .
-
-If you don't specify either, the function will assume that all the
-factor variables should be id variables and all of the numeric
-variables should be measured variables.
-
-```{r}
-plyr::ldply(french_fries, class)
-head(melt(french_fries))
+french_fries |>
+    pivot_longer(cols = 5:9)
+french_fries |>
+    pivot_longer(cols = c(potato, buttery, grassy, rancid, painty))
+french_fries |> pivot_longer(cols = potato:painty)
+french_fries |>
+    pivot_longer(cols = -c(time, treatment, subject, rep))
 ```
 
 -----
 
 You can make the output slightly nicer by specifying variable names
-and value names:
+and value names with `names_to` and `values_to`:
 
 ```{r}
-head(melt(french_fries, id.vars = 1:4, variable.name = "flavor", value.name = "flavor_intensity"))
+french_fries |>
+    pivot_longer(cols = potato:painty,
+                 names_to = "flavor", values_to = "flavor_intensity")
 ```
 
------
+## Pivoting wider
 
 
-## Melting arrays
+Syntax: `pivot_wider(data, id_cols, names_from, values_from, values_fn)`
 
-- Assume that the id variables are the dimensions of the array
+or, usually,
 
-- Assume the measured variable is stored as elements in the array.
+`data |> pivot_wider(id_cols, names_from, values_from, values_fn)`
 
-- We don't specify id variables or measurement variables.
-
-Therefore, the syntax is simply `melt(array)`
-
------
-
-For example:
-
-```{r}
-HairEyeColor
-melt(HairEyeColor)
-```
-
------
-
-There are a couple of optional arguments for making the output a
-little nicer, like giving a different name to the column in the output
-describing the measured value:
-
-```{r}
-melt(HairEyeColor, value.name = "number")
-```
-
-
-
-## Casting
-
-reshape2 uses `*cast`: either `dcast` or `acast` for data frame or
-array output, respectively.
-
-Syntax: `*cast(data = mdata, formula = row_var_1 + ... + row_var_n ~ col_var_1 + ... +
-col_var_m, value.var)`
-
-- `mdata` should be a molten data set
-
-- The columns of the output will be all the combinations of `col_var_1`, ..., `col_var_n`
-
-- The rows of the output will be all the combinations of `row_var_1`, ..., `row_var_n`
-
-- `value.var` is the value variable, the values that should go in the cells of the output. If you don't specify it, `melt` will guess.
-
+- `data` should be a data frame.
+- `id_cols` specifies the variables you want to use to define what the rows of the wide data frame should be.
+- `names_from` specifies the variables you want to use to define what the columns of the wide data frame sholud be.
+- `values_from` specifies what the elements of the wide data frame should be.
+- `values_fn`: only used in some cases, discussed later.
 
 -----
 
@@ -305,17 +234,39 @@ Example
 . . .
 
 ```{r}
-ff_m <- melt(french_fries, id.vars = 1:4, variable.name = "flavor", na.rm = TRUE)
-head(ff_m)
-cast_ex_1 <- dcast(ff_m, time + treatment ~ subject + rep + flavor, value.var = "value")
-cast_ex_1[1:5,1:5]
-## check to see if the numbers match
-subset(ff_m, time == 1 & subject == "3" &  rep == 1 & flavor == "potato")
+french_fries_long = french_fries |>
+    pivot_longer(cols = potato:painty,
+                 names_to = "flavor", values_to = "flavor_intensity")
+french_fries_long |>
+    head()
+french_fries_long |>
+    pivot_wider(id_cols = c(subject, rep, flavor),
+                names_from = c(time, treatment),
+                values_from = flavor_intensity) |>
+    head()
+french_fries_long |> subset(time == 1 & subject == "3" & rep == 1 & flavor == "potato")
 ```
 
-## Aggregation and casting
 
-When you cast data, you often don't use all of the variables.
+----
+
+If you don't specify `id_cols`, `pivot_wider` assumes that everything that is not specified in `names_from` and `values_from` should be used as `id_cols`.
+
+```{r}
+french_fries_long |>
+    pivot_wider(id_cols = c(subject, rep, flavor),
+                names_from = c(time, treatment),
+                values_from = flavor_intensity) |>
+    head()
+french_fries_long |>
+    pivot_wider(names_from = c(time, treatment),
+                values_from = flavor_intensity) |>
+    head()
+```
+
+## Aggregation
+
+When you pivot wider, you don't necessarily use all of the variables.
 
 This means that each element of the cast table will correspond to more
 than one measurement, and so they need to be aggregated in some way.
@@ -323,52 +274,59 @@ than one measurement, and so they need to be aggregated in some way.
 . . .
 
 ```{r}
-head(ff_m)
-dcast(ff_m, time ~ flavor, value.var = "value")
+head(french_fries_long)
+
+french_fries_long |>
+    pivot_wider(id_cols = time,
+                names_from = flavor,
+                values_from = flavor_intensity)
+
 ```
 
 -----
 
-The aggregation function is specified with `fun.aggregate`:
-
+You can use the `values_fn` argument to `pivot_wider` to define how to aggregate values.
 ```{r}
-dcast(ff_m, time ~ flavor, value.var = "value", fun.aggregate = mean)
+
+french_fries_long |>
+    pivot_wider(id_cols = time,
+                names_from = flavor,
+                values_from = flavor_intensity,
+                values_fn = mean)
+
+french_fries_long |>
+    pivot_wider(names_from = flavor,
+                id_cols = time,
+                values_from = flavor_intensity,
+                values_fn = function(x) mean(x))
+
+french_fries_long |>
+    pivot_wider(names_from = flavor,
+                id_cols = time,
+                values_from = flavor_intensity,
+                values_fn = function(x) mean(x, na.rm = TRUE))
 ```
 
------
-
-A couple of other notes:
-
-- You can use `...` to represent all the other variables in the formula.
-
-- The order that you specify the variables in the formula matters for the way the output is ordered: the first variables change most slowly, and the later ones change more quickly. This is mainly important for looking at the data.
-
-- `acast` will give you array output instead of data frame output.
-
------
-
-Example of different orders:
-
+The `tidyverse` functions also have shortcut notation for defining anonymous functions.
+See [here](https://adv-r.hadley.nz/functionals.html?q=lambda%20function#purrr-shortcuts) for details.
+It works best for functions that have one or two arguments, which are referred to as `.x` (first/only argument) and `.y` (second argument in a two-argument function).
 ```{r}
-dcast(ff_m, time + treatment ~ flavor, fun.aggregate = mean)
-dcast(ff_m, treatment + time ~ flavor, fun.aggregate = mean)
+## "shortcut" version
+french_fries_long |>
+    pivot_wider(names_from = flavor,
+                id_cols = time,
+                values_from = flavor_intensity,
+                values_fn = ~mean(.x, na.rm = TRUE))
 ```
 
------
 
-Example of `acast`. id variables are row names.
-
-```{r}
-acast(ff_m, time ~ flavor, fun.aggregate = mean)
-acast(ff_m, time + treatment ~ flavor, fun.aggregate = mean)
-```
 
 ## Merging 
 
 Final topic: What if you have data from two different places and you
 need to put them together?
 
-Basic syntax: `merge(x, y, by.x, by.y)`
+Base R syntax: `merge(x, y, by.x, by.y)`
 
 - `x` and `y` are the two datasets you want to merge.
 
@@ -376,6 +334,13 @@ Basic syntax: `merge(x, y, by.x, by.y)`
 
 - `by.y` is the column of `y` to merge on.
 
+dpylr syntax: `*_join(x, y, by = c("x_col" = "y_col"))`
+
+- `*_join` can be any of `left_join`, `right_join`, `inner_join`, `full_join` for different types of merges.
+
+- `by` argument is a character vector specifying the columns to join on.
+
+- Defaults to matching all columns with the same name.
 
 -----
 
@@ -398,8 +363,14 @@ head(states)
 
 We want to add the state name to the cities data frame, and we can use merge.
 
+
+
 ```{r}
+library(dplyr)
+## base R
 merge(states, cities, by.x = "state.abb", by.y = "state.abb")
+## dplyr
+inner_join(states, cities, by = "state.abb")
 ```
 
 -----
@@ -408,26 +379,32 @@ Notice in the last example that there was some ambiguity in how the
 merge took place because the two datasets have different sets of
 values for `state.abb`.
 
-- Default: the output dataset only has rows for which we had
-values in both data frames.
+- In base R, the default is an inner join (you get one row for each value of the merging variable that was seen in both `x` and `y`)
 
-. . .
+- Modify with `all`, `all.x`, `all.y`:
 
-Can modify with `all`, `all.x`, or `all.y`
+- `all = TRUE` is a full outer join (you get one row for values of the merging
+variable that were seen in either `x` or `y`)
 
-- `all = TRUE` means that you get one row for values of the merging
-variable that were seen in either `x` or `y`
+- `all.x = TRUE` is a left join (you get one row for each value of the merging
+variable that was seen in `x`)
 
-- `all.x = TRUE` means you get one row for each value of the merging
-variable that was seen in `x`
+- `all.y = TRUE` is a right join (you get one row for each value of the merging
+variable that was seen in `y`)
 
-- `all.y = TRUE` means you get one row for each value of the merging
-variable that was seen in `y`.
+- In dplyr, you use `inner_join`, `outer_join`, `left_join`, `right_join`
 
 -----
 
 ```{r}
 merge(states, cities, all.x = TRUE)
+left_join(states, cities, by = "state.abb")
+
+merge(states, cities, all.y = TRUE)
+right_join(states, cities, by = "state.abb")
+
+merge(states, cities, all = TRUE)
+full_join(states, cities, by = "state.abb")
 ```
 -----
 
@@ -443,17 +420,30 @@ on the entire set of specified variables.
 - Can use `by` instead of `by.x` and `by.y`, in which case the name of
 the column to merge on has to be the same in both `x` and `y`.
 
+---
 
-## Some final notes
+```{r}
+cities <- data.frame(
+  city = c("New York", "Boston", "Juneau", "Anchorage", "San Diego"),
+  state.abb = c("NY", "MA", "AK", "AK", "CA"),
+  year = c(2020, 2020, 2021, 2021, 2020)
+)
 
-Merging, melting/casting, and split/apply/combine from last week are useful enough that there are multiple implementations.
 
-You can use other implementations, but you shouldn't try to re-make them from scratch.
+population <- data.frame(
+  abb = c("NY", "MA", "AK", "AK", "CA"),
+  year = c(2020, 2020, 2021, 2020, 2020),
+  pop_million = c(19.3, 6.9, 0.7, 0.73, 39.5)
+)
 
-Some other options are:
+cities
+population
+```
 
-- `join` in `plyr` does the same thing as `merge`
+Notice that `cities` and `population` have different names for the column giving the state abbreviation.
 
-- `gather` and `spread`, and more recently `pivot_longer` and `pivot_wider` in the `tidyr` package do roughly the same thing as `cast` and `melt`.
-
-- There are multiple iterations of reshape, `reshape2` was a redesign of `reshape`.
+Below we see an example of merging on two columns in base R and in dplyr when the column names are not the same in the two datasets.
+```{r}
+merge(cities, population, by.x = c("state.abb", "year"), by.y = c("abb", "year"))
+inner_join(cities, population, by = c("state.abb" = "abb", "year" = "year"))
+```
