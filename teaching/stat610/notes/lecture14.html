@@ -449,8 +449,8 @@ available to you with names
 </ul>
 <ul>
 <li>Also by default, when you clone a repository, git will automatically
-create a branch <code>master</code> that tracks
-<code>origin/master</code>.</li>
+create a branch <code>main</code> that tracks
+<code>origin/main</code>.</li>
 </ul>
 <ul>
 <li>If you want to track other remote branches, you can use
@@ -473,8 +473,10 @@ that tracks <code>&lt;remote&gt;/&lt;branch-name&gt;</code>.</li>
 <p>Method 1: Explicitly naming the local and remote branches</p>
 <ul>
 <li><code>git push &lt;local-branch-name&gt;:&lt;remote-branch-name&gt;</code>
-will push the commits in <code>&lt;local-branch-name&gt;</code>to
-<code>&lt;remote&gt;/&lt;remote-branch-name&gt;</code></li>
+will push all the commits that are ancestors of
+<code>&lt;local-branch-name&gt;</code> to the remote and will set
+<code>&lt;remote&gt;/&lt;remote-branch-name&gt;</code> to point to the
+commit that <code>&lt;local-branch-name&gt;</code> points to.</li>
 </ul>
 <ul>
 <li>Take my local branch <code>&lt;local-branch-name&gt;</code> and make
@@ -516,29 +518,6 @@ where <code>&lt;tracking-branch&gt;</code> is the branch that you are
 currently on, and <code>&lt;remote&gt;/&lt;upstream&gt;</code> is the
 upstream branch that your <code>&lt;tracking-branch&gt;</code>
 tracks.</p>
-</div>
-<div id="back-to-the-example" class="slide section level1">
-<h1>Back to the example</h1>
-<pre><code>$ git remote show origin
-* remote origin
-  URL: https://github.com/my-org/complex-project
-  Fetch URL: https://github.com/my-org/complex-project
-  Push  URL: https://github.com/my-org/complex-project
-  HEAD branch: master
-  Remote branches:
-    master                           tracked
-    dev-branch                       tracked
-    markdown-strip                   tracked
-    issue-43                         new (next fetch will store in remotes/origin)
-    issue-45                         new (next fetch will store in remotes/origin)
-    refs/remotes/origin/issue-11     stale (use &#39;git remote prune&#39; to remove)
-  Local branches configured for &#39;git pull&#39;:
-    dev-branch merges with remote dev-branch
-    master     merges with remote master
-  Local refs configured for &#39;git push&#39;:
-    dev-branch                     pushes to dev-branch                     (up to date)
-    markdown-strip                 pushes to markdown-strip                 (up to date)
-    master                         pushes to master                         (up to date)</code></pre>
 </div>
 <div id="using-github" class="slide section level1">
 <h1>Using GitHub</h1>
