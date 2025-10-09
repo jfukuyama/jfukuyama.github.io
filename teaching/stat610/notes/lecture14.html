@@ -75,13 +75,15 @@ branch but it doesn’t here.)</li>
 <li><p>You want to incorporate changes made in two different
 branches</p></li>
 </ul>
-<div class="incremental">
+<p><img src="basic-branching-4.png" /></p>
+</div>
+<div class="slide section level1">
+
 <p>Solutions:</p>
 <ul class="incremental">
 <li><p>Merge: Make a new commit with two parents</p></li>
 <li><p>Rebase: Applies changes from one branch onto another</p></li>
 </ul>
-</div>
 </div>
 <div id="fast-forward-merge" class="slide section level1">
 <h1>Fast-forward merge</h1>
@@ -538,6 +540,85 @@ tracks.</p>
     markdown-strip                 pushes to markdown-strip                 (up to date)
     master                         pushes to master                         (up to date)</code></pre>
 </div>
+<div id="using-github" class="slide section level1">
+<h1>Using GitHub</h1>
+<p>GitHub is a site that hosts git repositories. There are two main
+collaboration workflows:</p>
+<ol class="incremental" style="list-style-type: decimal">
+<li>You have push access (you are a collaborator on the project):</li>
+</ol>
+<ul class="incremental">
+<li>You can push changes directly to the repository.</li>
+<li>Your new commits can either be pushed directly to main (although
+some groups discourage this), or you can make a new branch, push that
+branch, and open a pull request.</li>
+</ul>
+<ol class="incremental" start="2" style="list-style-type: decimal">
+<li>You do not have push access (public/open source project)</li>
+</ol>
+<ul class="incremental">
+<li>You “fork” the repository (create your own copy under your
+account).</li>
+<li>Make changes in your fork.</li>
+<li>Open a Pull Request (PR) to ask the maintainers to review and merge
+your changes into the main repo.</li>
+</ul>
+</div>
+<div id="note-clone-vs.-fork" class="slide section level1">
+<h1>Note: Clone vs. Fork</h1>
+<p>Notice that cloning and forking are different:</p>
+<table>
+<colgroup>
+<col width="18%" />
+<col width="34%" />
+<col width="47%" />
+</colgroup>
+<thead>
+<tr>
+<th align="left">Action</th>
+<th align="left">Happens where</th>
+<th align="left">You get write access?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">Clone</td>
+<td align="left">On your local machine</td>
+<td align="left">Only if you <em>already</em> have permission</td>
+</tr>
+<tr>
+<td align="left">Fork</td>
+<td align="left">On GitHub</td>
+<td align="left">Yes, to your own copy</td>
+</tr>
+</tbody>
+</table>
+<p>Normally, if you want to work on a public repository that you don’t
+have push access to, you would</p>
+<ol class="incremental" style="list-style-type: decimal">
+<li>Fork the repository (now you have a copy of the repo associated with
+your account that you have push access to)</li>
+<li>Clone the repository onto your local machine (now you have a copy of
+the repo on your computer).</li>
+<li>Make a new branch in your local repository, make changes, commit
+those changes, and push the branch to the forked version of the
+repo.</li>
+<li>Open a pull request so that the maintainers of the public repository
+can review and incorporate your changes.</li>
+</ol>
+</div>
+<div id="pull-requests-pr" class="slide section level1">
+<h1>Pull requests (PR)</h1>
+<p>A Pull Request is a request for someone else to pull your branch.
+GitHub adds:</p>
+<ul class="incremental">
+<li>diff view</li>
+<li>comments</li>
+<li>approvals</li>
+<li>merge button</li>
+</ul>
+<p>Even collaborators use PRs to get code review.</p>
+</div>
 <div id="summing-up" class="slide section level1">
 <h1>Summing up</h1>
 <ul class="incremental">
@@ -547,6 +628,10 @@ branches.</p></li>
 remote.</p></li>
 <li><p>Defaults for pushing and pulling sometimes make things
 confusing.</p></li>
+<li><p>GitHub adds collaboration tools (permissions, PRs, issues,
+reviews) on top of Git.</p></li>
+<li><p>Fork + PR workflow makes it possible to contribute even without
+push access.</p></li>
 </ul>
 </div>
 </body>

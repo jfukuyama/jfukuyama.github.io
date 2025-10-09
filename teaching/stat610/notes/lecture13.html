@@ -247,6 +247,16 @@ want.</li>
 <li>There is nothing special about the <code>master</code> branch.</li>
 </ul>
 </div>
+<div id="how-to-make-a-branch" class="slide section level1">
+<h1>How to make a branch</h1>
+<p>To make a new branch:</p>
+<pre><code>git branch &lt;new-branch-name&gt;</code></pre>
+<p>This just creates the new branch, if you want to check it out (make
+it so HEAD points to the new branch), you need to run</p>
+<pre><code>git checkout &lt;new-branch-name&gt;</code></pre>
+<p>Now, if you make new commits, <new-branch-name> will point to the new
+commits you made.</p>
+</div>
 <div id="head" class="slide section level1">
 <h1>HEAD</h1>
 <p>Problem: if you’re making changes (= adding commits), you probably
