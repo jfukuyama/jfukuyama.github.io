@@ -489,7 +489,7 @@ accept–reject method: instead of generating an entire length-<span class="math
 constraints, we enforce the constraint incrementally, which is much more
 efficient for long walks.</p>
 <pre class="r"><code>#&#39; Proposes the next step given the current position.
-#&#39; Returns a single increment (+1 or -1) and checks the interval constraint.
+#&#39; Returns a random next position that satisfies the interval constraint.
 propose_next_step &lt;- function(current, low = -1, hi = 5) {
     # TODO: simulate y = +1 or -1
     # TODO: check if current + y is within [low, hi]
