@@ -514,17 +514,20 @@ simulate_conditional_walks &lt;- function(n, T, low = -1, hi = 5) {
     }
     return(walks)
 }</code></pre>
-<p>Check on your walks by plotting them:</p>
-<pre class="r"><code>walks &lt;- simulate_conditional_walks(n = 10, T = 50, low = -1, hi = 5)
-plot(walks[,1], ylim = c(-1, 5), type = &#39;l&#39;)
-for(i in 2:10) {
-    points(walks[,i], type = &#39;l&#39;)
+<p>Check on your walks by plotting them, and check how long it takes
+<code>accept_reject_for_conditional_walk</code> and
+<code>simulate_conditional_walk</code> to run for the same parameters
+using <code>bench::mark</code> or <code>microbenchmark</code>.</p>
+<pre class="r"><code>walks &lt;- simulate_conditional_walks(n = 20, T = 50, low = -1, hi = 5)
+par(mfrow = c(4,5))
+for(i in 1:20) {
+    plot(walks[,i], type = &#39;l&#39;, ylim = c(-1, 5))
 }</code></pre>
 </div>
 <div id="what-to-turn-in" class="section level2">
 <h2>What to turn in</h2>
 <p>Rmd/html documents showing your functions and samples from your
-simulators.</p>
+simulators, and your checks.</p>
 </div>
 </div>
 
