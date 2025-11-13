@@ -378,8 +378,8 @@ P(x_1,...,x_T) = P(x_1) P(x_2 | x_1) ... P(x_T | x_{T-1}) = P(x_1)
 and 0 otherwise.</p>
 <p>It is easy to simulate this sort of a random walk, we just simulate T
 random variables <span class="math inline">\(y_1,...,y_T\)</span>, each
-of which takes value -1 w.p. 1/2 and takes value 1 w.p. 1/2, and let x_t
-= sum_{i=1}^t y_i.</p>
+of which takes value -1 w.p. 1/2 and takes value 1 w.p. 1/2, and let
+<span class="math inline">\(x_t = \sum_{i=1}^t y_i\)</span>.</p>
 <p>It is trickier to sample from the conditional distribution, given
 that the walk stays in the interval.</p>
 <p>One thing we could try is standard accept-reject. Let <span class="math inline">\(Z\)</span> be the probability that the random walk
@@ -417,14 +417,14 @@ simulate_walk &lt;- function(T) {
 check_walk_in_interval &lt;- function(walk, low = -1, hi = 5) {
     
 }
-#&#39; Implements accept-reject for sampling from the conditional distribution of the random walks: we sample random walks, check whether they satisfy the constraints, then accept the ones that fall in the interval
-accept_reject_for_conditional_walk &lt;- function(T, low, hi, n_proposals = 100) {
-    proposed_walks &lt;- matrix(NA, ncol = n_proposals, nrow = T)
-    for(i in 1:n_proposals) {
-        proposed_walks[,i] &lt;- simulate_walk(T)
+#&#39; Implements accept-reject for sampling from the conditional distribution of the random walks: we sample random walks until we get one that satisfies the conditions
+accept_reject_for_conditional_walk &lt;- function(T, low, hi) {
+    while(TRUE) {
+        proposed_walk &lt;- simulate_walk(T)
+        if(check_walk_in_interval(proposed_walk)) {
+            return(proposed_walk)
+        }
     }
-    accepted_walks &lt;- apply(proposed_walks, 2, check_walk_in_interval)
-    return(proposed_walks[,accepted_walks,drop = FALSE])
 }</code></pre>
 </div>
 <div id="part-2" class="section level2">
