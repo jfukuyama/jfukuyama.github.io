@@ -400,8 +400,8 @@ state: once everyone has recovered, the chain stays at <span class="math inline"
 <span class="math inline">\(\beta\)</span> and <span class="math inline">\(\gamma\)</span>, and simulates one step in the
 Markov chain.</li>
 </ol>
-<pre class="r"><code>## current_state should be a list with elements S, I, and R.  beta and
-## gamma should be model parameters
+<pre class="r"><code>## current_state should be a list with elements S, I, and R.  parameters
+## should be a list containing beta and gamma, the model parameters
 take_one_step &lt;- function(current_state, parameters) {
 
 }</code></pre>
@@ -414,10 +414,11 @@ you computed.</p>
 state (for example, <span class="math inline">\((99, 1, 0)\)</span>) and
 should record the state of the chain across all the steps.</li>
 </ol>
-<pre class="r"><code>## starting_state should be a list with elements S, I, and R.  beta
-## and gamme should be model parameters. n_steps should be the number
-## of steps to take. It will probably be easiest to deal with if the
-## output is a list of vectors, one for S, one for I, and one for R.
+<pre class="r"><code>## starting_state should be a list with elements S, I, and R.
+## parameters should be a list containing beta and gamma, the model
+## parameters. n_steps should be the number of steps to take. It will
+## probably be easiest to deal with if the output is a list of
+## vectors, one for S, one for I, and one for R.
 simulate_sir &lt;- function(starting_state, parameters n_steps) {
     
 }</code></pre>
