@@ -402,7 +402,7 @@ Markov chain.</li>
 </ol>
 <pre class="r"><code>## current_state should be a list with elements S, I, and R.  beta and
 ## gamma should be model parameters
-take_one_step &lt;- function(current_state, beta, gamma) {
+take_one_step &lt;- function(current_state, parameters) {
 
 }</code></pre>
 <p>That is, your function will compute the probabilities in (<span class="math inline">\(\ref{eq:pi}\)</span>-<span class="math inline">\(\ref{eq:pab}\)</span>), and will return either
@@ -418,7 +418,7 @@ should record the state of the chain across all the steps.</li>
 ## and gamme should be model parameters. n_steps should be the number
 ## of steps to take. It will probably be easiest to deal with if the
 ## output is a list of vectors, one for S, one for I, and one for R.
-simulate_sir &lt;- function(starting_state, beta, gamma, n_steps) {
+simulate_sir &lt;- function(starting_state, parameters n_steps) {
     
 }</code></pre>
 <ol start="3" style="list-style-type: decimal">
