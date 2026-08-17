@@ -4,7 +4,7 @@
 ```{r setup, echo = FALSE, message = FALSE}
 library(knitr)
 opts_chunk$set(fig.cap="", fig.width = 5, fig.height = 3, dpi=175, fig.path="lecture-13-fig/", warning = FALSE)
-load("../../datasets/lattice.RData")
+load(here::here("teaching", "datasets", "lattice.RData"))
 library(magrittr)
 library(tidyverse)
 library(ggplot2)
@@ -80,7 +80,7 @@ Let's start out just plotting the explanatory variables to see where we have mea
 
 ```{r}
 library(viridis)
-load("../../datasets/lattice.RData")
+load(here::here("teaching", "datasets", "lattice.RData"))
 summary(galaxy)
 ggplot(galaxy, aes(x = east.west, y = north.south)) + geom_point(alpha=.5) + coord_fixed()
 ```

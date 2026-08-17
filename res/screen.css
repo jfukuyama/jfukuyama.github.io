@@ -42,9 +42,14 @@ body {
 div.breaker { clear:both; }
 .template { display:none; }
 
-p, ul, ol, pre, blockquote, hr, object { margin: 1em 0; }
+p, pre, blockquote, hr, object { margin: 1em 0; }
 pre, tt {
   font-family: inherit;
+}
+
+ul, ol {
+  font-family: inherit;
+  list-style-position: inside;
 }
 
 code {

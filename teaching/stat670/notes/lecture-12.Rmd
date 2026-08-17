@@ -4,7 +4,7 @@
 ```{r setup, echo = FALSE, message = FALSE}
 library(knitr)
 opts_chunk$set(fig.cap="", fig.width = 5, fig.height = 3, dpi=175, fig.path="lecture-12-fig/", warning = FALSE)
-load("../../datasets/lattice.RData")
+load(here::here("teaching", "datasets", "lattice.RData"))
 library(magrittr)
 library(tidyverse)
 library(ggplot2)

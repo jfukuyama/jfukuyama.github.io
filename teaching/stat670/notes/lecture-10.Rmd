@@ -20,7 +20,7 @@ library(ggplot2)
 library(broom)
 library(viridis)
 library(MASS)
-load("../../datasets/lattice.RData")
+load(here::here("teaching", "datasets", "lattice.RData"))
 ggplot(dating, aes(x = carbon, y = thorium - carbon)) +
     geom_point()
 ```

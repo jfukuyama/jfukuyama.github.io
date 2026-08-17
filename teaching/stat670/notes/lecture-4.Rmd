@@ -392,7 +392,7 @@ library(ggplot2)
 We'll also use an R workspace prepared by Cleveland to use in conjunction with the book. Among other things, this contains the data sets used in the book.
 
 ```{r}
-load("lattice.RData")
+load(here::here("teaching", "datasets", "lattice.RData"))
 ```
 
 

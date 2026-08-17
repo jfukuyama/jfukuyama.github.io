@@ -295,7 +295,7 @@ When will LOESS be helpful?
 The data set `dating` (in `lattice.RData`) contains paired observations giving the estimated ages of 19 coral samples in thousands of years using both carbon dating (the traditional method) and thorium dating (a modern and purportedly more accurate method.) What’s the difference between these two methods?
 
 ```{r}
-load("../../datasets/lattice.RData")
+load(here::here("teaching", "datasets", "lattice.RData"))
 ggplot(dating, aes(x = carbon, y = thorium - carbon)) +
     geom_point()
 ```

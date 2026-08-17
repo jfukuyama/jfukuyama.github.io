@@ -223,7 +223,7 @@ We are interested in how empty space depends on the number of randomly generated
 
 Let's start off by loading and looking at the data.
 ```{r}
-load("lattice.RData")
+load(here::here("teaching", "datasets", "lattice.RData"))
 head(bin.packing)
 table(bin.packing$number.runs)
 summary(bin.packing$empty.space)
