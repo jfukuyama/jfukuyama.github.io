@@ -1,0 +1,415 @@
+```{r, echo = FALSE, message = FALSE}
+## I'm loading packages and generating the observed data
+library(tidyverse)
+library(fishmethods)
+simulate_experiment_heterogeneous <- function(
+    N_pop,
+    n_marked = 60,
+    n_recaptured = 40,
+    prop_easy = 0.50,
+    easy_multiplier = 5
+) {
+
+    # Fish are represented internally by numbers 1,...,N_pop
+    tag_id <- rep(NA_integer_, N_pop)
+
+    # Give each fish a fixed capture weight
+    capture_weight <- rep(1, N_pop)
+
+    n_easy <- round(prop_easy * N_pop)
+    easy_fish <- sample(1:N_pop, n_easy)
+
+    capture_weight[easy_fish] <- easy_multiplier
+
+    # First visit: catch n_marked fish,
+    # with easier-to-catch fish more likely to be sampled
+    first_catch <- sample(
+        1:N_pop,
+        size = n_marked,
+        replace = FALSE,
+        prob = capture_weight
+    )
+
+    # Give them tag IDs 1,...,n_marked
+    tag_id[first_catch] <- 1:n_marked
+    next_tag_id <- n_marked + 1
+
+    capture_history <- data.frame(
+        week = 0,
+        tag_id = 1:n_marked,
+        already_tagged = FALSE
+    )
+
+    for (week in 1:3) {
+
+        # Catch n_recaptured fish this week
+        caught <- sample(
+            1:N_pop,
+            size = n_recaptured,
+            replace = FALSE,
+            prob = capture_weight
+        )
+
+        # Which ones already have tags?
+        was_tagged <- !is.na(tag_id[caught])
+
+        # Give new tag IDs to previously untagged fish
+        new_fish <- caught[!was_tagged]
+
+        if (length(new_fish) > 0) {
+            new_ids <- next_tag_id:(next_tag_id + length(new_fish) - 1)
+            tag_id[new_fish] <- new_ids
+            next_tag_id <- next_tag_id + length(new_fish)
+        }
+
+        # Record the IDs each fish has after being processed
+        capture_history <- rbind(
+            capture_history,
+            data.frame(
+                week = week,
+                tag_id = tag_id[caught],
+                already_tagged = was_tagged
+            )
+        )
+    }
+
+    capture_history
+}
+set.seed(0)
+observed_data <- simulate_experiment_heterogeneous(N_pop = 200, prop_easy = .15, easy_multiplier = 15)
+```
+
+
+
+# Overview
+
+Today:
+
+- A capture--recapture problem
+- Fitting a model "by eye" with simulation
+- Where we are going this semester
+
+# Estimating a population size
+
+Suppose you are a fisheries manager responsible for trout in a small lake.
+
+In order to set limits on how many can be caught, you need to know:
+
+> How many trout are living in this lake?
+
+You cannot do a census, but you can [catch fish, mark them, and look for them in a new sample later](https://outdoor.wildlifeillinois.org/articles/tag-those-fish). (Don't click on the link if you're squeamish, pictures of tagged fish.)
+
+# Marking
+
+You begin by catching 60 trout.
+
+You give each one a small numbered tag and release them back into the lake.
+
+
+# Recapturing and marking
+
+Once a week for three weeks you return to the lake.
+
+Each time, you catch 40 trout.
+
+For every fish you catch:
+
+- If it already has a tag, you record its ID.
+- If it does not have a tag, you give it a new tag.
+
+Then you release all 40 fish back into the lake (the number of marked fish in the lake increases over time).
+
+
+# How should we estimate the number of fish?
+
+Suppose that we don't really know any math or statistics, but we do have a computer and know how to use it.
+
+We have some observed data, for instance, something like:
+
+| Week | Number caught that had already been tagged |
+|---:|---:|
+| 1 | 8 |
+| 2 | 15 |
+| 3 | 21 |
+
+and we want to know which population sizes could plausibly have produced it.
+
+
+How might we proceed?
+
+# Simulate fake datasets
+
+For any proposed population size $N$, we can simulate:
+
+1. catching and tagging 60 fish,
+2. returning a week later and catching 40,
+3. marking the new fish,
+4. repeating for three weeks.
+
+Values of $N$ that tend to give simulated data that look like the real data are plausible candidates, while values of $N$ that tend to give simulated data that don't look like the real data are implausible candidates.
+
+# The simulator
+
+We might simulate the experiment something like this:
+
+
+```{r}
+simulate_experiment <- function(N_pop, n_marked = 60, n_recaptured = 40) {
+    # fish are represented internally by numbers 1,...,N_pop
+    tag_id <- rep(NA_integer_, N_pop)
+    # first visit: catch n_marked fish
+    first_catch <- sample(1:N_pop, n_marked)
+    # give them tag IDs 1,...,n_marked
+    tag_id[first_catch] <- 1:n_marked
+    next_tag_id <- n_marked + 1
+    capture_history <- data.frame(
+        week = 0,
+        tag_id = 1:n_marked,
+        already_tagged = FALSE
+    )
+    for (week in 1:3) {
+        # catch n_recaptured fish this week
+        caught <- sample(1:N_pop, n_recaptured)
+        # which ones already have tags?
+        was_tagged <- !is.na(tag_id[caught])
+        # give new tag IDs to previously untagged fish
+        new_fish <- caught[!was_tagged]
+        if (length(new_fish) > 0) {
+            new_ids <- next_tag_id:(next_tag_id + length(new_fish) - 1)
+            tag_id[new_fish] <- new_ids
+            next_tag_id <- next_tag_id + length(new_fish)
+        }
+        # record the IDs each fish has after being processed
+        capture_history <- rbind(
+            capture_history,
+            data.frame(
+                week = week,
+                tag_id = tag_id[caught],
+                already_tagged = was_tagged
+            )
+        )
+    }
+    return(capture_history)
+}
+
+```
+
+For example:
+```{r}
+fish_data <- simulate_experiment(N_pop = 200)
+fish_data |> head()
+```
+
+And we can summarise how many marked fish were captured each week.
+```{r}
+fish_data <- simulate_experiment(N_pop = 200)
+## how many recaptures we get each week
+fish_data |> group_by(week) |> summarise(sum(already_tagged))
+```
+
+Run it again and you'll get something a little different.
+
+# Let's see whether this works
+
+I generated an observed dataset (`observed_data`).
+A summary, showing the number of captured fish which had already been marked each week, is below.
+
+```{r}
+# the observed_data object was generated at the top of the script in a code block that I don't show on the slides
+# number recaught each week
+observed_data |> group_by(week) |> summarise(sum(already_tagged))
+```
+
+Let's use the simulator to decide what value of `N` we think generated them.
+
+
+
+# What did we actually do while we were experimenting?
+
+- Look for simulations whose average was close to the observed average?
+- Look at all three numbers at once?
+- Try to reproduce the observed values exactly?
+- Run many simulations at each value of `N`?
+- Mostly change `N` until things "looked about right"?
+
+# Compare to a standard estimator
+
+You don't have to know about this estimator, it's not going to be important for the class.
+
+It is moment-based and apparently fairly standard in this domain.
+
+```{r}
+schnabel_from_fish_data <- function(fish_data) {
+    weeks <- sort(unique(fish_data$week))
+    catch <- fish_data |> group_by(week) |> summarise(catch = n()) |> pull(catch)
+    recaps <- fish_data |> group_by(week) |> summarise(recaps = sum(already_tagged)) |> pull(recaps)
+    newmarks <- catch - recaps
+    fishmethods::schnabel(
+        catch = catch,
+        recaps = recaps,
+        newmarks = newmarks
+    )
+}
+schnabel_from_fish_data(observed_data)
+```
+
+# So did we get the right answer?
+
+Look at the data more carefully.
+
+```{r}
+# in a simulated dataset, how many fish are caught once, twice, three times, etc?
+simulate_experiment(N_pop = 125)$tag_id |> table() |> table()
+# in the observed data, how many fish are caught once, twice, three times, four times?
+observed_data$tag_id |> table() |> table()
+```
+
+```{r, echo = FALSE, fig.cap = "Number of fish caught 1, 2, 3, 4 times in simulated (black) and observed (red) datasets."}
+capture_frequency_simulations <- function(N_pop, n_reps = 500, n_marked = 60, n_recaptured = 40) {
+    map_dfr(1:n_reps, function(rep) {
+        fish_data <- simulate_experiment(
+            N_pop = N_pop,
+            n_marked = n_marked,
+            n_recaptured = n_recaptured
+        )
+        # number of times each observed fish was caught
+        fish_data |>
+            count(tag_id, name = "times_caught") |>
+            # number of fish caught 1, 2, 3, or 4 times
+            count(times_caught, name = "n_fish") |>
+            # make sure all four possibilities are present,
+            # even if no fish was caught that many times
+            complete(
+                times_caught = 1:4,
+                fill = list(n_fish = 0)
+            ) |>
+            mutate(
+                replicate = rep
+            )
+    })
+}
+
+sim_data <- capture_frequency_simulations(
+    N_pop = 113,
+    n_reps = 1000
+)
+
+observed_capture_frequency <- observed_data |>
+    count(tag_id, name = "times_caught") |>
+    count(times_caught, name = "n_fish") |>
+    complete(
+        times_caught = 1:4,
+        fill = list(n_fish = 0)
+    ) |>
+    mutate(
+        replicate = NA_integer_,
+        source = "observed"
+    )
+sim_data <- sim_data |>
+    mutate(source = "simulated")
+ggplot(sim_data) +
+		 geom_line(aes(x = times_caught, y = n_fish, group = replicate), alpha = .1) +
+geom_line(aes(x = times_caught, y = n_fish), color = "red", data  = observed_capture_frequency)
+```
+
+---
+
+# What's going on?
+
+I actually simulated from a model with 200 individuals where 15% of the population is easy to catch and the remainder is hard to catch.
+
+Code is in the un-displayed code block at the top of the Rmd file.
+
+
+---
+
+# What did we just do?
+
+We had
+
+- some observed data,
+- a computer model that could generate fake data for any proposed $N$,
+- and a parameter we wanted to learn about.
+
+Without knowing much statistics, we were able to get a reasonable estimate of $N$ and a reasonable quantification of the associated uncertainty.
+
+The basic idea was:
+
+> Parameter values are plausible if they generate data that look like the data we observed.
+
+This idea gets us a long way.
+
+---
+
+
+# Can we get a computer to do the same thing?
+
+What we did by eye was something like
+
+$$
+\text{try }N
+\longrightarrow
+\text{simulate data}
+\longrightarrow
+\text{compare to observed data}
+\longrightarrow
+\text{try another }N.
+$$
+
+Could we specify this procedure precisely enough that a computer could do it?
+
+If we can, then we can also ask statistical questions about the procedure:
+
+- Does it recover the right parameter?
+- How variable is the estimate?
+- When does it fail?
+
+To do so, we will need to pin down exactly what we are comparing, how close various aspects of the data need to be, and so on.
+
+# If we can train a computer to estimate parameters, can we then quantify uncertainty in those estimates?
+
+A single estimate like $\hat N = 113$ does not tell us how much the data actually tell us about $N$.
+
+We would also like to know:
+
+> Which other values of $N$ are reasonably compatible with the data?
+
+We will look into how simulation can give us
+
+- standard errors
+- confidence intervals
+- distributions over plausible parameter values
+
+
+# Can we diagnose whether the model is any good?
+
+The fish example showed that we can match some aspects of the data and still get a poor estimate due to model mis-specification.
+
+We will use simulation to diagnose model quality.
+
+
+# Where are we going?
+
+**Generative models**  
+Defining generative models, forward simulation, prior predictive checks
+
+↓
+
+**Make fitting-by-eye systematic**  
+Simulated method of moments, indirect inference + associated uncertainty quantification, simulation-based optimization
+
+↓
+
+**Bayesian version of simulation-based inference**
+Conditioning as rejection sampling, approximate Bayesian computation
+
+↓
+
+**Non-parametric generative models and their uses**
+Bootstrap, permutation tests
+
+↓
+
+**Try to be more efficient**
+Importance sampling, ABC-SMC, synthetic likelihood, simulated likelihood,  
+neural posterior/density estimation, neural ratio estimation
