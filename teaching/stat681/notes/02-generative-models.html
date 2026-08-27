@@ -1,0 +1,1827 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>generative-model-notation-notes</title>
+  <style>
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js"
+  type="text/javascript"></script>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<h1 id="reading-probability-models-as-simulation-instructions">Reading
+probability models as simulation instructions</h1>
+<p>In this course, you will need to be able to read and write
+probability models in a particular mathematical language. We will
+interpret that language in terms of simulation. The fundamental issue is
+that there are many different ways you could simulate random values, and
+we need a consistent way of describing the sorts of values a simulator
+should give. We are going to use the language of probability to do
+this.</p>
+<h2 id="random-variables">Random variables</h2>
+<p>We think of a simulator as a procedure that produces a random output.
+In general, we will be simulating datasets in pieces that are assembled
+in a way that either corresponds to a scientific model or which we
+otherwise think will be useful. We therefore need a way to refer to
+these pieces in the abstract, without referring to the result of any
+particular run.</p>
+<p>A piece of a simulator that produces a real number as output will
+correspond to a random variable, which we will denote by a capital
+letter, for example <span class="math inline">\(Y\)</span>. We can think
+of a random variable <span class="math inline">\(Y\)</span> as a
+placeholder for the value produced by that step before we have actually
+run the simulator. When we do run the simulator and get a particular
+value, we denote that realized value by the corresponding lowercase
+letter, e.g. <span class="math inline">\(y\)</span>. So we often see
+equalities that look like <span class="math inline">\(Y = y\)</span>,
+which just means that the piece of the simulator corresponding to the
+random variable <span class="math inline">\(Y\)</span> actually produced
+the value <span class="math inline">\(y\)</span>.</p>
+<h2 id="probability-laws">Probability laws</h2>
+<p>The next issue is describing what sorts of values the simulator
+actually generates and how frequently it generates them. If <span
+class="math inline">\(Y\)</span> is random variable, then the way we
+define what fraction of the time the outcome of <span
+class="math inline">\(Y\)</span> should fall in various sets is given by
+a <strong>probability law</strong>.</p>
+<p>For example, the law tells us the probability that <span
+class="math inline">\(Y\)</span> falls in an interval:</p>
+<p><span class="math display">\[
+\Pr(a&lt;Y\le b).
+\]</span></p>
+<p>It does this for every pair of real numbers <span
+class="math inline">\(a&lt;b\)</span>. Thus, if we know the law of <span
+class="math inline">\(Y\)</span>, it tells us things like:</p>
+<p><span class="math display">\[
+\Pr(0&lt;Y\le 1), \qquad
+\Pr(-2&lt;Y\le 3), \qquad
+\Pr(Y&gt;10).
+\]</span></p>
+<p>The description above leaves out a lot of technical details. For
+instance, for a probability law to be useful, the probabilities assigned
+to various sets must fit together in a coherent way. If you take
+probability theory, you will learn that it is not actually possible to
+create a probability law that will assign coherent probabilities to all
+possible sets. The construction of coherent probability laws is
+interesting mathematically, but in this course, we will usually be
+assuming that someone else has already defined a probability law for us
+that we can use, and so we don’t need to worry too much about it.</p>
+<p>It does turn out that a law that gives coherent probabilities to all
+intervals is enough to determine the probability of any reasonable set
+of real numbers that we will encounter. We will therefore use the
+following as our working description:</p>
+<blockquote>
+<p>A probability law for a real-valued quantity specifies the
+probability that the quantity falls in each interval.</p>
+</blockquote>
+<p>The notation we use to indicate that <span
+class="math inline">\(Y\)</span> follows the probability law <span
+class="math inline">\(P\)</span> is <span class="math display">\[
+Y \sim P,
+\]</span> which we read as “<span class="math inline">\(Y\)</span> is
+distributed according to <span class="math inline">\(P\)</span>.”</p>
+<p>Thus, if we say that we have a simulator or a piece of a simulator
+corresponding to a random variable <span
+class="math inline">\(Y\)</span> that follows a probability law <span
+class="math inline">\(P\)</span>, what we mean is that the probability
+that the simulator/piece of the simulator generates a value that falls
+in any interval <span class="math inline">\((a,b]\)</span> is given by
+<span class="math inline">\(P((a,b])\)</span>.</p>
+<h2 id="probability-laws-for-finite-or-countable-sets">Probability laws
+for finite or countable sets</h2>
+<p>Probability laws are much more intuitive for random variables that
+take either a finite or countably infinite number of values, so we
+briefly describe them here. Suppose that <span
+class="math inline">\(Y\)</span> can take values only in a finite or
+countable set, such as</p>
+<p><span class="math display">\[
+\{0,1\}, \qquad \{0,1,2,\ldots\}, \qquad \text{or} \qquad
+\{1,2,\ldots,K\}.
+\]</span></p>
+<p>In this case, specifying the law is equivalent to specifying the
+probability of every individual possible outcome. If the possible values
+are <span class="math inline">\(y_1,y_2,\ldots\)</span>, write</p>
+<p><span class="math display">\[
+p_j=\Pr(Y=y_j).
+\]</span></p>
+<p>These probabilities must satisfy</p>
+<p><span class="math display">\[
+p_j\ge 0
+\qquad\text{and}\qquad
+\sum_j p_j=1.
+\]</span></p>
+<p>Once the individual probabilities are known, the probability of any
+set of possible outcomes is found by adding:</p>
+<p><span class="math display">\[
+\Pr(Y\in A)=\sum_{j:y_j\in A}p_j.
+\]</span></p>
+<p>For example, suppose <span class="math inline">\(Y\)</span> takes
+values <span class="math inline">\(0\)</span>, <span
+class="math inline">\(1\)</span>, and <span
+class="math inline">\(2\)</span>, with</p>
+<p><span class="math display">\[
+\Pr(Y=0)=0.2, \qquad
+\Pr(Y=1)=0.5, \qquad
+\Pr(Y=2)=0.3.
+\]</span></p>
+<p>Then</p>
+<p><span class="math display">\[
+\Pr(0&lt;Y\le 2)
+=\Pr(Y=1)+\Pr(Y=2)
+=0.8.
+\]</span></p>
+<p>Thus, the point probabilities determine all the interval
+probabilities. For a discrete distribution, it is therefore usually
+simpler to describe the law using those individual probabilities rather
+than all of its interval probabilities. This will come up a bit later
+when we describe probability mass functions, but for now we are still
+just assuming that someone else has written down a valid law that we can
+use.</p>
+<h2 id="putting-random-variables-together">Putting random variables
+together</h2>
+<p>So far, we have used a random variable such as <span
+class="math inline">\(Y\)</span> to represent one real-valued piece of a
+simulator. A dataset will usually contain many values, however, and
+those values may be related to one another. To describe a simulator for
+an entire dataset, we need notation that specifies both the probability
+behavior of the individual pieces and how those pieces are related.</p>
+<p>Suppose, for example, that a simulator produces two values,
+represented by the random variables <span
+class="math inline">\(Y_1\)</span> and <span
+class="math inline">\(Y_2\)</span>. We can collect them into a single
+random vector (which we usually denote by a bold-face uppercase
+letter),</p>
+<p><span class="math display">\[
+\mathbf{Y}=(Y_1,Y_2).
+\]</span></p>
+<p>A run of the simulator produces a particular pair of values,</p>
+<p><span class="math display">\[
+\mathbf{y}=(y_1,y_2).
+\]</span></p>
+<p>Just as a single random variable has a probability law, the random
+vector <span class="math inline">\(\mathbf{Y}\)</span> has a
+<strong>joint probability law</strong>.</p>
+<h2 id="joint-probability-laws">Joint probability laws</h2>
+<p>The joint law of <span class="math inline">\(Y_1\)</span> and <span
+class="math inline">\(Y_2\)</span> describes how the two values vary
+together. For example, it tells us probabilities such as</p>
+<p><span class="math display">\[
+\Pr(a_1&lt;Y_1\le b_1,\;a_2&lt;Y_2\le b_2).
+\]</span></p>
+<p>This is the probability that the first output falls in <span
+class="math inline">\((a_1,b_1]\)</span> and, in the same run of the
+simulator, the second output falls in <span
+class="math inline">\((a_2,b_2]\)</span>.</p>
+<p>Knowing these probabilities for all pairs of intervals is enough to
+determine the joint law of two real-valued random variables. We can
+write</p>
+<p><span class="math display">\[
+(Y_1,Y_2)\sim P
+\]</span></p>
+<p>to indicate that the pair has joint law (P). More generally, a
+dataset represented by</p>
+<p><span class="math display">\[
+\mathbf{Y}=(Y_1,\ldots,Y_n)
+\]</span></p>
+<p>has a joint law that specifies probabilities for simultaneous
+statements about all <span class="math inline">\(n\)</span> of its
+components.</p>
+<p>The law of one component considered by itself is called its
+<strong>marginal law</strong>. For example, the joint law of <span
+class="math inline">\((Y_1,Y_2)\)</span> determines the marginal laws of
+<span class="math inline">\(Y_1\)</span> and <span
+class="math inline">\(Y_2\)</span>. However, the reverse is not true:
+knowing the two marginal laws does not generally determine the joint
+law.</p>
+<p>For example, suppose that <span class="math inline">\(Y_1\)</span>
+and <span class="math inline">\(Y_2\)</span> both take values in <span
+class="math inline">\(\{0,1\}\)</span>, with</p>
+<p><span class="math display">\[
+\Pr(Y_1=1)=\Pr(Y_2=1)=\frac12.
+\]</span></p>
+<p>One possible joint law assigns equal probability to all four possible
+pairs:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\Pr(Y_1=0,Y_2=0)&amp;=\frac14, &amp;
+\Pr(Y_1=0,Y_2=1)&amp;=\frac14,\\
+\Pr(Y_1=1,Y_2=0)&amp;=\frac14, &amp;
+\Pr(Y_1=1,Y_2=1)&amp;=\frac14.
+\end{aligned}
+\]</span></p>
+<p>Another possible joint law is</p>
+<p><span class="math display">\[
+\Pr(Y_1=0,Y_2=0)=\frac12,
+\qquad
+\Pr(Y_1=1,Y_2=1)=\frac12,
+\]</span></p>
+<p>with the other two pairs having probability zero. Under this law,
+<span class="math inline">\(Y_1\)</span> and <span
+class="math inline">\(Y_2\)</span> are always equal.</p>
+<p>Both joint laws give</p>
+<p><span class="math display">\[
+\Pr(Y_1=1)=\Pr(Y_2=1)=\frac12,
+\]</span></p>
+<p>but they describe very different simulators. Specifying the law of
+every component separately therefore does not specify the law of the
+complete dataset. We must also say how the components are related.</p>
+<p>In principle, we could do this by writing down the full joint law
+directly. For a large dataset, however, this quickly becomes unwieldy. A
+collection of <span class="math inline">\(n\)</span> binary random
+variables alone has <span class="math inline">\(2^n\)</span> possible
+joint outcomes. Probability models therefore usually specify joint laws
+using simpler building blocks. Two particularly important building
+blocks are independence and conditional distributions.</p>
+<h2 id="independent-random-variables">Independent random variables</h2>
+<p>The simplest way to assemble several random variables is to generate
+them independently. Informally, this means that each part of the
+simulator is run without using the values produced by the other
+parts.</p>
+<p>Random variables <span class="math inline">\(Y_1,\ldots,Y_n\)</span>
+are <strong>independent</strong> if probabilities of simultaneous events
+can be obtained by multiplying their separate probabilities. That
+is,</p>
+<p><span class="math display">\[
+\Pr(Y_1\in A_1,\ldots,Y_n\in A_n)
+=
+\prod_{i=1}^n \Pr(Y_i\in A_i)
+\]</span></p>
+<p>for every collection of appropriate sets <span
+class="math inline">\(A_1,\ldots,A_n\)</span>.</p>
+<p>For example, if <span class="math inline">\(Y_1\)</span> and <span
+class="math inline">\(Y_2\)</span> are independent and</p>
+<p><span class="math display">\[
+\Pr(Y_1=1)=\Pr(Y_2=1)=\frac12,
+\]</span></p>
+<p>then</p>
+<p><span class="math display">\[
+\Pr(Y_1=1,Y_2=1)
+=
+\Pr(Y_1=1)\Pr(Y_2=1)
+=
+\frac14.
+\]</span></p>
+<p>Thus, independence combines the separate laws into a particular joint
+law.</p>
+<p>If <span class="math inline">\(Y_1,\ldots,Y_n\)</span> are
+independent and all follow the same probability law <span
+class="math inline">\(P\)</span>, we write</p>
+<p><span class="math display">\[
+Y_1,\ldots,Y_n\overset{\mathrm{iid}}{\sim}P.
+\]</span></p>
+<p>The abbreviation “iid” means <strong>independent and identically
+distributed</strong>. As a simulation instruction, this says:</p>
+<blockquote>
+<p>Run the same simulator <span class="math inline">\(n\)</span> times
+independently, and call the resulting outputs <span
+class="math inline">\(Y_1,\ldots,Y_n\)</span>.</p>
+</blockquote>
+<p>The two parts of the statement do different jobs. “Identically
+distributed” says that every run follows the same law <span
+class="math inline">\(P\)</span>. “Independent” says how the different
+runs are related. It is possible for random variables to have the same
+distribution without being independent, as in the example where <span
+class="math inline">\(Y_1=Y_2\)</span> on every run.</p>
+<h2 id="conditional-probability-laws">Conditional probability laws</h2>
+<p>Independence is useful when you want the pieces of the simulator to
+not affect one another. In many models, however, a value generated at
+one step changes what should happen at a later step. We describe this
+using a <strong>conditional probability law</strong>.</p>
+<p>Suppose that we first generate <span
+class="math inline">\(Y_1\)</span>, and then generate <span
+class="math inline">\(Y_2\)</span> using a law that depends on the value
+produced for <span class="math inline">\(Y_1\)</span>. We can write the
+simulation instructions as</p>
+<p><span class="math display">\[
+Y_1\sim P_1,
+\]</span></p>
+<p>followed by</p>
+<p><span class="math display">\[
+Y_2\mid Y_1=y_1
+\sim
+P_2(\mathord{\cdot}\mid y_1).
+\]</span></p>
+<p>The second line is read as “conditional on <span
+class="math inline">\(Y_1=y_1\)</span>, <span
+class="math inline">\(Y_2\)</span> follows the law <span
+class="math inline">\(P_2(\mathord{\cdot}\mid y_1)\)</span>.” The dot
+marks the place where the possible values of <span
+class="math inline">\(Y_2\)</span> would go.</p>
+<p>These two lines describe the following simulation procedure:</p>
+<ol type="1">
+<li>Generate a value <span class="math inline">\(y_1\)</span> from <span
+class="math inline">\(P_1\)</span>.</li>
+<li>Use the generated value <span class="math inline">\(y_1\)</span> to
+determine the appropriate law <span
+class="math inline">\(P_2(\mathord{\cdot}\mid y_1)\)</span>.</li>
+<li>Generate <span class="math inline">\(y_2\)</span> from that
+conditional law.</li>
+</ol>
+<p>For a discrete example, suppose that <span
+class="math inline">\(Y_1,Y_2\in\{0,1\}\)</span> and</p>
+<p><span class="math display">\[
+\Pr(Y_1=1)=0.5.
+\]</span></p>
+<p>After generating <span class="math inline">\(Y_1\)</span>, suppose we
+generate <span class="math inline">\(Y_2\)</span> according to</p>
+<p><span class="math display">\[
+\Pr(Y_2=1\mid Y_1=0)=0.2
+\]</span></p>
+<p>and</p>
+<p><span class="math display">\[
+\Pr(Y_2=1\mid Y_1=1)=0.8.
+\]</span></p>
+<p>The probability of generating <span
+class="math inline">\(Y_1=0\)</span> and then <span
+class="math inline">\(Y_2=1\)</span> is</p>
+<p><span class="math display">\[
+\begin{aligned}
+\Pr(Y_1=0,Y_2=1)
+&amp;=
+\Pr(Y_1=0)
+\Pr(Y_2=1\mid Y_1=0)\\
+&amp;=
+0.5(0.2)\\
+&amp;=
+0.1.
+\end{aligned}
+\]</span></p>
+<p>Similarly,</p>
+<p><span class="math display">\[
+\Pr(Y_1=1,Y_2=1)
+=
+0.5(0.8)
+=
+0.4.
+\]</span></p>
+<p>The marginal law for the second output is obtained by considering
+both ways in which <span class="math inline">\(Y_2=1\)</span> can
+occur:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\Pr(Y_2=1)
+&amp;=
+\Pr(Y_1=0,Y_2=1)
++
+\Pr(Y_1=1,Y_2=1)\\
+&amp;=
+0.1+0.4\\
+&amp;=
+0.5.
+\end{aligned}
+\]</span></p>
+<p>Thus, both <span class="math inline">\(Y_1\)</span> and <span
+class="math inline">\(Y_2\)</span> have marginal probability <span
+class="math inline">\(0.5\)</span> of equaling 1, but they are not
+independent. Once we know the value of <span
+class="math inline">\(Y_1\)</span>, our probability for <span
+class="math inline">\(Y_2\)</span> changes.</p>
+<p>Conditional laws let us construct much larger simulators in stages.
+For example, we might specify</p>
+<p><span class="math display">\[
+Y_1\sim P_1,
+\]</span></p>
+<p><span class="math display">\[
+Y_2\mid Y_1=y_1
+\sim P_2(\mathord{\cdot}\mid y_1),
+\]</span></p>
+<p>and then</p>
+<p><span class="math display">\[
+Y_3\mid Y_1=y_1,Y_2=y_2
+\sim P_3(\mathord{\cdot}\mid y_1,y_2).
+\]</span></p>
+<p>Continuing in this way gives a simulation procedure for the entire
+dataset. These sequential instructions determine a joint law for</p>
+<p><span class="math display">\[
+(Y_1,\ldots,Y_n),
+\]</span></p>
+<p>even if we never write that joint law down directly.</p>
+<p>Independence can be viewed as a special case of conditional
+simulation. If the conditional law of <span
+class="math inline">\(Y_2\)</span> is the same for every possible value
+of <span class="math inline">\(Y_1\)</span>, so that</p>
+<p><span class="math display">\[
+Y_2\mid Y_1=y_1\sim P_2
+\]</span></p>
+<p>regardless of <span class="math inline">\(y_1\)</span>, then learning
+the result of the first step does not change the law used at the second
+step. In that case, <span class="math inline">\(Y_1\)</span> and <span
+class="math inline">\(Y_2\)</span> are independent.</p>
+<p>This gives us two basic ways to assemble a simulator:</p>
+<ul>
+<li>If one component should not depend on the others, generate it
+independently.</li>
+<li>If its behavior should depend on quantities generated earlier,
+specify its conditional law given those quantities.</li>
+</ul>
+<p>In both cases, the complete collection of simulation instructions
+specifies a joint probability law for the resulting dataset.</p>
+<h2 id="probability-models">Probability models</h2>
+<p>We now have the language needed to specify a probability law for an
+entire dataset. We can describe the joint law directly, or we can
+construct it from independent and conditionally distributed pieces.</p>
+<p>A single joint law specifies one particular probability distribution
+for the dataset. In a statistical problem, however, we usually do not
+know exactly which law generated the observed data. Instead, we identify
+a collection of laws that we are willing to consider as reasonable
+possibilities. This collection is called a <strong>probability
+model</strong> or <strong>statistical model</strong>.</p>
+<p>We will often write a probability model as</p>
+<p><span class="math display">\[
+\mathcal{P}
+=
+\{P_\theta:\theta\in\Theta\}.
+\]</span></p>
+<p>Here:</p>
+<ul>
+<li><span class="math inline">\(\mathcal{P}\)</span> is the complete
+collection of candidate probability laws.</li>
+<li><span class="math inline">\(\theta\)</span> is a
+<strong>parameter</strong> that indexes the candidate laws.</li>
+<li><span class="math inline">\(\Theta\)</span> is the <strong>parameter
+space</strong>, containing the possible values of <span
+class="math inline">\(\theta\)</span>.</li>
+<li><span class="math inline">\(P_\theta\)</span> is the probability law
+obtained when the parameter has value <span
+class="math inline">\(\theta\)</span>.</li>
+</ul>
+<p>If <span class="math inline">\(\mathbf{Y}\)</span> is a random
+variable representing the complete dataset, we write</p>
+<p><span class="math display">\[
+\mathbf{Y}\sim P_\theta
+\]</span></p>
+<p>to say that, when the parameter is <span
+class="math inline">\(\theta\)</span>, the we think the dataset has come
+from the joint law <span class="math inline">\(P_\theta\)</span>.</p>
+<p>From the perspective of simulation, each value of <span
+class="math inline">\(\theta\)</span> gives us a different simulator for
+the dataset. We can read</p>
+<p><span class="math display">\[
+\mathbf{Y}\sim P_\theta
+\]</span></p>
+<p>as the instruction:</p>
+<blockquote>
+<p>Set the simulator’s parameter to <span
+class="math inline">\(\theta\)</span>, run the simulator, and call the
+resulting dataset <span class="math inline">\(\mathbf{Y}\)</span>.</p>
+</blockquote>
+<p>As <span class="math inline">\(\theta\)</span> varies over <span
+class="math inline">\(\Theta\)</span>, the behavior of the simulator
+changes. The probability model is the collection of all the probability
+laws that can be produced in this way. As we discussed in the first
+class, the task of estimating <span
+class="math inline">\(\theta\)</span> boils down to the task of finding
+<span class="math inline">\(\theta\)</span> that makes simulated
+datasets look like the real data.</p>
+<h2 id="a-simple-example">A simple example</h2>
+<p>Suppose that a dataset consists of <span
+class="math inline">\(n\)</span> binary observations,</p>
+<p><span class="math display">\[
+\mathbf{Y}=(Y_1,\ldots,Y_n),
+\]</span></p>
+<p>where <span class="math inline">\(Y_i=1\)</span> represents a success
+and <span class="math inline">\(Y_i=0\)</span> represents a failure. One
+possible model is</p>
+<p><span class="math display">\[
+Y_1,\ldots,Y_n
+\overset{\mathrm{iid}}{\sim}
+\operatorname{Bernoulli}(p),
+\qquad
+p\in[0,1].
+\]</span></p>
+<p>The Bernoulli law with parameter <span
+class="math inline">\(p\)</span> is the probability law on <span
+class="math inline">\(\{0,1\}\)</span> defined by</p>
+<p><span class="math display">\[
+\Pr(Y_i=1)=p
+\qquad\text{and}\qquad
+\Pr(Y_i=0)=1-p.
+\]</span></p>
+<p>The model makes several distinct claims:</p>
+<ul>
+<li>Each <span class="math inline">\(Y_i\)</span> is a binary random
+variable.</li>
+<li>Each observation follows the same Bernoulli law.</li>
+<li>The observations are independent.</li>
+<li>The probability of success is the same value <span
+class="math inline">\(p\)</span> for every observation.</li>
+<li>The possible values of <span class="math inline">\(p\)</span> are
+the numbers in the parameter space <span
+class="math inline">\([0,1]\)</span>.</li>
+</ul>
+<p>For any fixed value of <span class="math inline">\(p\)</span>, these
+claims determine a joint law for the complete dataset. For example, if a
+particular binary dataset <span class="math inline">\(\mathbf y\)</span>
+contains <span class="math inline">\(s\)</span> successes and <span
+class="math inline">\(n-s\)</span> failures, independence gives</p>
+<p><span class="math display">\[
+\Pr_p(\mathbf{Y}=\mathbf y)
+=
+p^s(1-p)^{n-s}.
+\]</span></p>
+<p>Changing <span class="math inline">\(p\)</span> changes the joint
+law. A simulator with <span class="math inline">\(p=0.1\)</span> will
+usually produce datasets containing relatively few successes, whereas a
+simulator with <span class="math inline">\(p=0.9\)</span> will usually
+produce datasets containing many successes.</p>
+<p>Thus, this probability model is the collection</p>
+<p><span class="math display">\[
+\mathcal P
+=
+\left\{
+P_p:p\in[0,1]
+\right\},
+\]</span></p>
+<p>where <span class="math inline">\(P_p\)</span> is the joint law of
+<span class="math inline">\(n\)</span> independent Bernoulli
+observations with success probability <span
+class="math inline">\(p\)</span>.</p>
+<h2 id="named-distributions">Named distributions</h2>
+<p>Frequently used probability laws are given names. For example,</p>
+<p><span class="math display">\[
+Y\sim\operatorname{Binomial}(n,p)
+\]</span></p>
+<p>says that <span class="math inline">\(Y\)</span> has a binomial
+distribution. One generative construction of this law is:</p>
+<ol type="1">
+<li>Hold <span class="math inline">\(n\)</span> and <span
+class="math inline">\(p\)</span> fixed.</li>
+<li>Generate <span class="math inline">\(n\)</span> independent
+Bernoulli trials, each with success probability <span
+class="math inline">\(p\)</span>.</li>
+<li>Count the number of successes.</li>
+<li>Return that count as the realized value of <span
+class="math inline">\(Y\)</span>.</li>
+</ol>
+<p>In R or python, one draw can be generated with</p>
+<pre><code>rbinom(1, size = n, prob = p)</code></pre>
+<p>or</p>
+<pre><code>import numpy as np
+np.random.binomial(n,p)</code></pre>
+<p>The R/python functions need not internally simulate all <span
+class="math inline">\(n\)</span> Bernoulli trials. They only need to
+return values with the correct binomial law. Whether the individual
+trials are meaningful parts of the scientific story depends on the
+application.</p>
+<p>Some distributions that we will use are:</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Distribution</th>
+<th>Possible outputs</th>
+<th>Meaning of the parameters</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span
+class="math inline">\(\operatorname{Bernoulli}(p)\)</span></td>
+<td><span class="math inline">\(0\)</span> or <span
+class="math inline">\(1\)</span></td>
+<td>success probability <span class="math inline">\(p\)</span></td>
+</tr>
+<tr class="even">
+<td><span
+class="math inline">\(\operatorname{Binomial}(n,p)\)</span></td>
+<td><span class="math inline">\(0,1,\ldots,n\)</span></td>
+<td>number of trials <span class="math inline">\(n\)</span>, success
+probability <span class="math inline">\(p\)</span></td>
+</tr>
+<tr class="odd">
+<td><span
+class="math inline">\(\operatorname{Poisson}(\lambda)\)</span></td>
+<td><span class="math inline">\(0,1,2,\ldots\)</span></td>
+<td>expected event count <span
+class="math inline">\(\lambda\)</span></td>
+</tr>
+<tr class="even">
+<td><span
+class="math inline">\(\operatorname{Categorical}(\pi)\)</span></td>
+<td><span class="math inline">\(1,\ldots,K\)</span></td>
+<td>category probabilities <span
+class="math inline">\(\pi_1,\ldots,\pi_K\)</span></td>
+</tr>
+<tr class="odd">
+<td><span
+class="math inline">\(\operatorname{Normal}(\mu,\sigma^2)\)</span></td>
+<td>any real number</td>
+<td>center <span class="math inline">\(\mu\)</span>, variance <span
+class="math inline">\(\sigma^2\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>To use a distribution as part of a simulator, you initially need to
+know:</p>
+<ul>
+<li>what values it can generate;</li>
+<li>what its parameters control;</li>
+<li>what substantive random mechanism it might represent;</li>
+<li>how to draw from it.</li>
+</ul>
+<p>Its probability mass function or density will become useful later,
+but it is not required merely to simulate from the distribution.</p>
+<h2 id="common-non-generative-specifications">Common non-generative
+specifications</h2>
+<h3 id="a-mean-model-is-not-a-generative-model">A mean model is not a
+generative model</h3>
+<p><span class="math display">\[
+E(Y_i\mid X_i=x_i)=\beta_0+\beta_1x_i
+\]</span></p>
+<p>specifies the conditional mean but not the variation around it or
+dependence among observations.</p>
+<h3 id="marginal-distributions-are-not-a-joint-model">Marginal
+distributions are not a joint model</h3>
+<p><span class="math display">\[
+Y_i\sim P_\theta
+\]</span></p>
+<p>for every <span class="math inline">\(i\)</span> does not specify
+whether the observations are independent.</p>
+<h3 id="a-process-model-may-not-generate-observed-data">A process model
+may not generate observed data</h3>
+<p>A simulator for infections is incomplete if the dataset contains
+reported cases and reporting is imperfect.</p>
+<h3
+id="circular-conditional-predictions-may-not-define-a-joint-model">Circular
+conditional predictions may not define a joint model</h3>
+<p>Being able to predict each variable from all the others does not
+necessarily provide a coherent way to generate all variables
+together.</p>
+<h2 id="a-compact-notation-guide">A compact notation guide</h2>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Notation</th>
+<th>Simulation interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(Y\sim P\)</span></td>
+<td>generate <span class="math inline">\(Y\)</span> with probability law
+<span class="math inline">\(P\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(Y\sim P_\theta\)</span></td>
+<td>supply <span class="math inline">\(\theta\)</span>, then generate
+<span class="math inline">\(Y\)</span> with law <span
+class="math inline">\(P_\theta\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\((X,Y)\sim P_{X,Y}\)</span></td>
+<td>jointly generate and return the pair <span
+class="math inline">\((X,Y)\)</span></td>
+</tr>
+<tr class="even">
+<td><span
+class="math inline">\(Y_i\overset{\mathrm{ind}}{\sim}P_i\)</span></td>
+<td>run the specified simulators independently and return all the
+outputs</td>
+</tr>
+<tr class="odd">
+<td><span
+class="math inline">\(Y_i\overset{\mathrm{iid}}{\sim}P_\theta\)</span></td>
+<td>generate independent observations with the same distribution</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(Y\mid X=x;\theta\sim P_\theta(\cdot\mid
+x)\)</span></td>
+<td>supply <span class="math inline">\(x\)</span> and <span
+class="math inline">\(\theta\)</span>, then generate <span
+class="math inline">\(Y\)</span> from a distribution depending on <span
+class="math inline">\(X\)</span> and <span
+class="math inline">\(\theta\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(X\sim P_X;\ Y\mid X=x\sim P(\cdot\mid
+x)\)</span></td>
+<td>generate <span class="math inline">\(X\)</span>, then generate <span
+class="math inline">\(Y\)</span> using the realized <span
+class="math inline">\(X\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(Z\sim P_\theta^Z;\ Y\mid Z=z\sim
+P_\theta^Y(\cdot\mid z)\)</span></td>
+<td>generate a latent quantity, then generate the observation</td>
+</tr>
+</tbody>
+</table>
+<h2 id="checklist-for-writing-a-generative-model">Checklist for writing
+a generative model</h2>
+<p>Before treating a model as complete, verify that you can answer all
+of the following:</p>
+<ol type="1">
+<li>What is the type and structure of one complete simulated
+dataset?</li>
+<li>What values can each generated quantity take?</li>
+<li>What parameters must be supplied?</li>
+<li>Which variables are conditioned on rather than generated?</li>
+<li>Are there latent variables or latent states?</li>
+<li>In what order are quantities generated?</li>
+<li>Which quantities are shared across observations, groups, or
+times?</li>
+<li>What independence assumptions are being made?</li>
+<li>How does the scientific process become the recorded data?</li>
+<li>Could you write code that generates a dataset with the same
+structure as the observed dataset?</li>
+</ol>
+<p>The last question is the most important. Probability notation is
+useful because it is a compact language for describing probability laws
+and their relationships. In this course, the notation has not done its
+job until you can translate it into a coherent simulator.</p>
+<h1 id="worked-examples-what-generative-models-can-teach-us">Worked
+examples: what generative models can teach us</h1>
+<p>For each model, we will ask the same questions:</p>
+<ol type="1">
+<li>What is supplied to the simulator?</li>
+<li>What is generated, and in what order?</li>
+<li>Which quantities are parameters, latent variables, and
+observations?</li>
+<li>Which parts of the model carry scientific or substantive
+meaning?</li>
+<li>What important aspects of the real phenomenon does the model
+omit?</li>
+</ol>
+<h2
+id="example-1-linear-regression-corresponds-to-a-generative-model">Example
+1: Linear regression corresponds to a generative model</h2>
+<p>Most statistics students will have encountered linear regression in
+the form</p>
+<p><span class="math display">\[ Y_i=\beta_0+\beta_1x_i+\varepsilon_i,
+\qquad \varepsilon_i\overset{\mathrm{iid}}{\sim}N(0,\sigma^2).
+\]</span></p>
+<p>This is already a complete probability model for the responses
+conditional on the covariate values. It can therefore be read directly
+as a simulation procedure: hold the <span
+class="math inline">\(x_i\)</span>’s fixed, generate independent normal
+errors, and add those errors to the regression line. This familiar
+example shows how standard statistical notation specifies a simulator,
+what roles the different parts of a model play, and why we may model the
+responses conditional on supplied covariates without specifying a
+probability law for the covariates themselves.</p>
+<p>Suppose that <span class="math inline">\(x_1,\ldots,x_n\)</span> are
+supplied covariate values. A simple linear regression model is</p>
+<p><span class="math display">\[
+Y_i\mid x_i;\beta_0,\beta_1,\sigma
+\mathrel{\overset{\mathrm{ind}}{\sim}}
+\operatorname{Normal}(\beta_0+\beta_1x_i,\sigma^2),
+\qquad i=1,\ldots,n.
+\]</span></p>
+<p>An equivalent noise representation is</p>
+<p><span class="math display">\[
+Y_i=\beta_0+\beta_1x_i+\epsilon_i,
+\qquad
+\epsilon_i\mathrel{\overset{\mathrm{iid}}{\sim}}
+\operatorname{Normal}(0,\sigma^2).
+\]</span></p>
+<p>The first representation emphasizes the probability law of each
+response. The second emphasizes a deterministic signal plus random
+deviation. They define the same conditional joint law for <span
+class="math inline">\(Y=(Y_1,\ldots,Y_n)\)</span>.</p>
+<h3 id="what-the-pieces-do">What the pieces do</h3>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Piece</th>
+<th>Role in the simulator</th>
+<th>Substantive or statistical significance</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(x_i\)</span></td>
+<td>Supplied input for observation <span
+class="math inline">\(i\)</span></td>
+<td>The model is conditional on these values; it does not explain how
+they arose.</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\beta_0\)</span></td>
+<td>Shifts the center of every response</td>
+<td>Conditional mean at <span class="math inline">\(x=0\)</span>, if
+that value is meaningful.</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(\beta_1\)</span></td>
+<td>Changes the center with <span
+class="math inline">\(x_i\)</span></td>
+<td>Change in the conditional mean associated with a one-unit change in
+<span class="math inline">\(x\)</span>.</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\sigma\)</span></td>
+<td>Controls the spread around the line</td>
+<td>Typical scale of deviations not explained by the linear mean.</td>
+</tr>
+<tr class="odd">
+<td>Normal law</td>
+<td>Specifies the shape of the deviations</td>
+<td>Adds much more than the claim that the deviations have mean
+zero.</td>
+</tr>
+<tr class="even">
+<td>Independence</td>
+<td>Specifies the joint relationship among responses</td>
+<td>Rules out residual dependence after conditioning on the supplied
+<span class="math inline">\(x_i\)</span>.</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(Y_i\)</span></td>
+<td>Generated and observed quantity</td>
+<td>One response in the simulated dataset.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="simulation-recipe">Simulation recipe</h3>
+<ol type="1">
+<li>Supply <span class="math inline">\(x_1,\ldots,x_n\)</span> and the
+parameter values <span
+class="math inline">\((\beta_0,\beta_1,\sigma)\)</span>.</li>
+<li>Compute <span
+class="math inline">\(\mu_i=\beta_0+\beta_1x_i\)</span> for each
+observation.</li>
+<li>Independently generate <span
+class="math inline">\(Y_i\sim\operatorname{Normal}(\mu_i,\sigma^2)\)</span>.</li>
+<li>Return the vector <span
+class="math inline">\((Y_1,\ldots,Y_n)\)</span>.</li>
+</ol>
+<p>This model is generative for <span class="math inline">\(Y\)</span>
+conditional on the supplied design <span
+class="math inline">\(x\)</span>. If the scientific question also
+concerns how the <span class="math inline">\(X_i\)</span> arise, we need
+to add a model for them:</p>
+<p><span class="math display">\[
+X_i\sim P_X,
+\qquad
+Y_i\mid X_i=x_i\sim
+\operatorname{Normal}(\beta_0+\beta_1x_i,\sigma^2).
+\]</span></p>
+<p>Whether that addition is necessary depends on what one complete
+replicate of the study is supposed to include.</p>
+<h2
+id="example-2-golf-putting-contrasts-an-empirical-model-with-a-mechanistic-model">Example
+2: Golf putting contrasts an empirical model with a mechanistic
+model</h2>
+<p>This is a nice example from the Bayesian Workflow book (Chapter 25).
+We will see here that two models can generate the same kind of observed
+data while making very different commitments about the process that
+produced them. An empirical model may provide a flexible description of
+how success varies with distance. A mechanistic model uses a proposed
+physical explanation to determine the shape of that relationship.
+Mechanistic interpretation can make a model more informative, but it
+also creates additional substantive ways for the model to be wrong.</p>
+<p>Suppose putts are attempted at distances <span
+class="math inline">\(x_1,\ldots,x_J\)</span>. At distance <span
+class="math inline">\(x_j\)</span>, there are <span
+class="math inline">\(n_j\)</span> attempts and the observed count of
+successful putts is <span class="math inline">\(Y_j\)</span>.</p>
+<p>Both models begin with the observation stage</p>
+<p><span class="math display">\[
+Y_j\mid n_j,p_j
+\mathrel{\overset{\mathrm{ind}}{\sim}}
+\operatorname{Binomial}(n_j,p_j),
+\qquad j=1,\ldots,J.
+\]</span></p>
+<p>This says that the distances and numbers of attempts are supplied,
+success has probability <span class="math inline">\(p_j\)</span> at
+distance <span class="math inline">\(x_j\)</span>, and the attempts
+within each distance are treated as independent and exchangeable. The
+remaining question is how to specify <span
+class="math inline">\(p_j\)</span>.</p>
+<h3 id="an-empirical-logistic-model">An empirical logistic model</h3>
+<p>One option is</p>
+<p><span class="math display">\[
+\operatorname{logit}(p_j)=a+bx_j,
+\]</span></p>
+<p>or equivalently</p>
+<p><span class="math display">\[
+p_j=\operatorname{logit}^{-1}(a+bx_j)
+=\frac{1}{1+\exp\{-(a+bx_j)\}},
+\]</span> where <span class="math inline">\(\operatorname{logit}(p) =
+\log\left(\frac{p}{1-p}\right), 0&lt;p&lt;1\)</span> and <span
+class="math inline">\(\operatorname{logit}^{-1}(\eta) =
+\frac{1}{1+\exp(-\eta)}, \eta\in\mathbb{R}.\)</span></p>
+<p>Together with the binomial observation model, this is a complete
+conditional generator for the success counts.</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Piece</th>
+<th>Role</th>
+<th>Significance</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(x_j,n_j\)</span></td>
+<td>Supplied design quantities</td>
+<td>Distance and number of attempted putts.</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(a\)</span></td>
+<td>Controls the height and location of the curve</td>
+<td>Log-odds of success at distance zero; usually an extrapolative
+intercept rather than a direct physical quantity.</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(b\)</span></td>
+<td>Controls how rapidly success changes with distance</td>
+<td>An empirical slope on the log-odds scale.</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(p_j\)</span></td>
+<td>Deterministic intermediate quantity</td>
+<td>Success probability implied by the curve at distance <span
+class="math inline">\(x_j\)</span>.</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(Y_j\)</span></td>
+<td>Generated observation</td>
+<td>Number of successes among <span class="math inline">\(n_j\)</span>
+attempts.</td>
+</tr>
+</tbody>
+</table>
+<p>The model describes a smooth decreasing curve when <span
+class="math inline">\(b&lt;0\)</span>. It does not say why the curve
+should be logistic, nor does it describe the geometry or motor errors
+involved in putting.</p>
+<h3 id="a-mechanistic-angular-error-model">A mechanistic angular-error
+model</h3>
+<p>Let <span class="math inline">\(R\)</span> be the radius of the hole
+and <span class="math inline">\(r\)</span> the radius of the ball. In a
+simplified geometric model, a putt from distance <span
+class="math inline">\(x_j\)</span> succeeds if its angular error is
+small enough that the center of the ball passes within <span
+class="math inline">\(R-r\)</span> of the center line. The angular
+tolerance is</p>
+<p><span class="math display">\[
+\delta(x_j)=\sin^{-1}\left(\frac{R-r}{x_j}\right).
+\]</span></p>
+<p>For putt <span class="math inline">\(\ell\)</span> at distance <span
+class="math inline">\(x_j\)</span>, suppose</p>
+<p><span class="math display">\[
+A_{j\ell}\mid\sigma
+\mathrel{\overset{\mathrm{iid}}{\sim}}
+\operatorname{Normal}(0,\sigma^2),
+\]</span></p>
+<p>and define the success indicator</p>
+<p><span class="math display">\[
+S_{j\ell}=\mathbf{1}\{|A_{j\ell}|&lt;\delta(x_j)\}.
+\]</span></p>
+<p>The recorded count is</p>
+<p><span class="math display">\[
+Y_j=\sum_{\ell=1}^{n_j}S_{j\ell}.
+\]</span></p>
+<p>If we record only the number of successes and do not keep the
+individual angular errors, the same simulator implies</p>
+<p><span class="math display">\[
+Y_j\mid n_j,x_j,\sigma
+\sim
+\operatorname{Binomial}(n_j,p_j),
+\]</span></p>
+<p>where</p>
+<p><span class="math display">\[
+p_j
+=\Pr\{|A_{j\ell}|&lt;\delta(x_j)\},
+\qquad
+A_{j\ell}\sim\operatorname{Normal}(0,\sigma^2).
+\]</span></p>
+<p>We do not yet need a formula for evaluating this probability. The
+simulator can generate each <span
+class="math inline">\(A_{j\ell}\)</span> and check whether it falls
+within the tolerance.</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Piece</th>
+<th>Role</th>
+<th>Significance</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(R-r\)</span></td>
+<td>Fixed geometric clearance</td>
+<td>Determines how far the ball’s center may miss the center line.</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\delta(x_j)\)</span></td>
+<td>Distance-dependent angular tolerance</td>
+<td>Converts the geometry into a success criterion.</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(\sigma\)</span></td>
+<td>Spread of angular errors</td>
+<td>A potentially interpretable measure of directional accuracy.</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(A_{j\ell}\)</span></td>
+<td>Latent variable for one putt</td>
+<td>Unobserved aiming error generated anew on every attempt.</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(S_{j\ell}\)</span></td>
+<td>Deterministic function of geometry and error</td>
+<td>Indicates whether a particular putt succeeds.</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(Y_j\)</span></td>
+<td>Aggregated observation</td>
+<td>What remains after individual attempts are counted.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="what-is-gained-and-what-is-assumed">What is gained and what is
+assumed?</h3>
+<p>The logistic model says that <span
+class="math inline">\((a,b)\)</span> describe the success curve. The
+angular-error model says that the curve arises from geometry plus a
+distance-invariant normal distribution of aiming errors. Its parameter
+<span class="math inline">\(\sigma\)</span> has a clearer physical
+interpretation, and the geometry determines the nonlinear shape of the
+distance effect.</p>
+<p>That interpretation depends on assumptions that may be false. For
+example:</p>
+<ul>
+<li>angular error may change with distance;</li>
+<li>putts may fail because of speed as well as direction;</li>
+<li>the green may not be level;</li>
+<li>golfers may differ from one another;</li>
+<li>repeated attempts may not be independent;</li>
+<li>the simple geometric success boundary may be inaccurate near the
+hole.</li>
+</ul>
+<p>The mechanistic model is not automatically better because it is more
+mechanistic. It is useful when its additional claims are scientifically
+defensible and when it actually fits the data.</p>
+<h2
+id="example-3-a-markov-language-model-shows-how-ordered-conditionals-define-a-joint-law">Example
+3: A Markov language model shows how ordered conditionals define a joint
+law</h2>
+<p>In this example, we see how a set of local conditional rules can
+define a complete joint generator when the rules are arranged in a
+noncircular order. A simple Markov language model also introduces
+autoregressive generation: a newly generated output becomes an input to
+the next simulation step.</p>
+<p>Let the vocabulary contain <span class="math inline">\(K\)</span>
+tokens, including a special end-of-sequence token. Let <span
+class="math inline">\(W_t\)</span> be the token at position <span
+class="math inline">\(t\)</span>. A first-order Markov model is</p>
+<p><span class="math display">\[
+W_1\sim\operatorname{Categorical}(\pi),
+\]</span></p>
+<p><span class="math display">\[
+W_t\mid W_{t-1}=j
+\sim
+\operatorname{Categorical}(A_{j,\cdot}),
+\qquad t=2,3,\ldots.
+\]</span></p>
+<p>Here <span class="math inline">\(\pi\)</span> is a vector of
+initial-token probabilities and <span class="math inline">\(A\)</span>
+is a <span class="math inline">\(K\times K\)</span> transition matrix.
+Its entry</p>
+<p><span class="math display">\[
+A_{jk}=\Pr(W_t=k\mid W_{t-1}=j)
+\]</span></p>
+<p>is the probability of token <span class="math inline">\(k\)</span>
+following token <span class="math inline">\(j\)</span>. Every row of
+<span class="math inline">\(A\)</span> is nonnegative and sums to
+one.</p>
+<p>For a fixed sequence length <span class="math inline">\(T\)</span>,
+the ordered conditional model defines the joint law</p>
+<p><span class="math display">\[
+\Pr(W_{1:T}=w_{1:T})
+=\pi_{w_1}\prod_{t=2}^T A_{w_{t-1},w_t}.
+\]</span></p>
+<p>If the end token is reached with probability one, the same model
+defines a distribution over finite variable-length sequences. Without
+that condition, the law may also assign positive probability to an
+infinite sequence.</p>
+<h3 id="what-the-pieces-do-1">What the pieces do</h3>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Piece</th>
+<th>Role</th>
+<th>Significance</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(\pi\)</span></td>
+<td>Parameter supplied to the simulator</td>
+<td>Controls how sequences begin.</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(A\)</span></td>
+<td>Parameter shared over all positions</td>
+<td>Records local token-to-token transition probabilities.</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(W_t\)</span></td>
+<td>Generated token</td>
+<td>Both an output at step <span class="math inline">\(t\)</span> and an
+input at step <span class="math inline">\(t+1\)</span>.</td>
+</tr>
+<tr class="even">
+<td>Markov assumption</td>
+<td>Conditional-independence claim</td>
+<td>Once <span class="math inline">\(W_{t-1}\)</span> is known, earlier
+tokens do not affect <span class="math inline">\(W_t\)</span>.</td>
+</tr>
+<tr class="odd">
+<td>End token</td>
+<td>Generated stopping event</td>
+<td>Turns the model into a distribution over sequence lengths as well as
+contents.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="simulation-recipe-1">Simulation recipe</h3>
+<ol type="1">
+<li>Generate <span class="math inline">\(W_1\)</span> from <span
+class="math inline">\(\operatorname{Categorical}(\pi)\)</span>.</li>
+<li>If it is the end token, stop.</li>
+<li>Given the current token <span
+class="math inline">\(W_{t-1}=j\)</span>, generate <span
+class="math inline">\(W_t\)</span> from row <span
+class="math inline">\(j\)</span> of <span
+class="math inline">\(A\)</span>.</li>
+<li>Append the new token and repeat.</li>
+</ol>
+<p>This model is plainly unrealistic as a model of language: after
+conditioning on the immediately preceding token, it forgets the entire
+earlier context. Nevertheless, the ordering makes it a coherent
+generator. It also makes clear that <em>joint</em> does not mean
+“generated all at once.” A joint sample can be built sequentially from
+ordered conditional laws.</p>
+<h2
+id="non-example-circular-conditional-predictions-need-not-define-a-generative-model">Non-example:
+Circular conditional predictions need not define a generative model</h2>
+<p>In this example, we see that a conditional prediction for every
+variable is not necessarily a joint probability model. When every
+conditional rule uses quantities that have not yet been generated, there
+may be no coherent starting point. More fundamentally, an arbitrary
+collection of proposed full conditional distributions may be
+mathematically incompatible: there may be no joint law having all of
+them as its conditionals.</p>
+<p>Suppose <span class="math inline">\(Y_{jk}\)</span> indicates whether
+student <span class="math inline">\(j\)</span> answered exam question
+<span class="math inline">\(k\)</span> correctly. Imagine fitting a
+separate model for each question using the student’s answers to all the
+other questions:</p>
+<p><span class="math display">\[
+Y_{jk}\mid Y_{j,-k}
+\sim
+\operatorname{Bernoulli}
+\left[
+\operatorname{logit}^{-1}
+\left\{a_k+b_k s(Y_{j,-k})\right\}
+\right].
+\]</span></p>
+<p>Here:</p>
+<ul>
+<li><span class="math inline">\(Y_{j,-k}\)</span> is the vector of
+student <span class="math inline">\(j\)</span>’s answers excluding
+question <span class="math inline">\(k\)</span>;</li>
+<li><span class="math inline">\(s(Y_{j,-k})\)</span> might be the number
+or proportion of the other questions answered correctly;</li>
+<li><span class="math inline">\(a_k\)</span> describes the difficulty of
+question <span class="math inline">\(k\)</span> in its particular
+predictive regression;</li>
+<li><span class="math inline">\(b_k\)</span> describes how strongly
+performance on the other questions predicts question <span
+class="math inline">\(k\)</span>.</li>
+</ul>
+<p>This can be useful for predicting a missing response when all the
+other responses have been observed. It does not by itself tell us how to
+generate a new student’s complete response vector <span
+class="math inline">\((Y_{j1},\ldots,Y_{jK})\)</span>. To generate the
+first answer, the rule asks for all the other answers; each of those
+rules asks for the first answer in return.</p>
+<p>There are two separate issues:</p>
+<ol type="1">
+<li><strong>No simulation ordering has been supplied.</strong> The
+equations are circular rather than sequential.</li>
+<li><strong>Compatibility is not automatic.</strong> The separately
+chosen coefficients may not correspond to the conditional distributions
+of any joint law.</li>
+</ol>
+<p>One might initialize all the answers arbitrarily and repeatedly
+update one answer at a time. That creates a Markov-chain algorithm, but
+it does not automatically solve the problem. The update order,
+initialization, and number of sweeps are then additional parts of the
+generator. If the chain has a stationary distribution, that distribution
+need not have the proposed regressions as its full conditionals unless
+the compatibility conditions hold.</p>
+<p>Some specially constrained collections of binary conditional models
+do correspond to a joint model, as in an Ising or autologistic model.
+The lesson is not that circular conditional specifications can never be
+repaired. It is that they do not define a joint generator merely because
+a predictive model has been written for every component.</p>
+<h2
+id="example-4-a-topic-model-uses-an-unrealistic-generator-to-define-interpretable-latent-structure">Example
+4: A topic model uses an unrealistic generator to define interpretable
+latent structure</h2>
+<p>Here, we see a generative model that is not supposed to correspond to
+a mechanistic model of how the data were generated, but which can
+nonetheless describe useful structure in the data.</p>
+<p>Suppose a corpus contains documents <span
+class="math inline">\(d=1,\ldots,D\)</span>. Document <span
+class="math inline">\(d\)</span> contains <span
+class="math inline">\(N_d\)</span> word tokens. Let there be <span
+class="math inline">\(K\)</span> topics and a vocabulary of size <span
+class="math inline">\(V\)</span>.</p>
+<p>The Dirichlet distribution used below generates a vector of
+nonnegative values that sum to one. Its parameter <span
+class="math inline">\(\alpha\)</span> controls which kinds of
+topic-proportion vectors are common.</p>
+<p>For each document, generate topic proportions</p>
+<p><span class="math display">\[
+\Theta_d\mid\alpha
+\sim
+\operatorname{Dirichlet}(\alpha).
+\]</span></p>
+<p>For each token position <span
+class="math inline">\(n=1,\ldots,N_d\)</span>, generate a latent topic
+and then a word:</p>
+<p><span class="math display">\[
+Z_{dn}\mid\Theta_d
+\sim
+\operatorname{Categorical}(\Theta_d),
+\]</span></p>
+<p><span class="math display">\[
+W_{dn}\mid Z_{dn}=k;\beta_{1:K}
+\sim
+\operatorname{Categorical}(\beta_k).
+\]</span></p>
+<p>The vector <span
+class="math inline">\(\beta_k=(\beta_{k1},\ldots,\beta_{kV})\)</span>
+gives the word probabilities for topic <span
+class="math inline">\(k\)</span>. Each <span
+class="math inline">\(\beta_k\)</span> is nonnegative and sums to one.
+In this version of the model, <span
+class="math inline">\(\alpha\)</span> and <span
+class="math inline">\(\beta_{1:K}\)</span> are parameters supplied to
+the simulator. A Bayesian version could add another level that generates
+the <span class="math inline">\(\beta_k\)</span> from a prior
+distribution.</p>
+<h3 id="what-the-pieces-do-2">What the pieces do</h3>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Piece</th>
+<th>Role</th>
+<th>Significance</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(N_d\)</span></td>
+<td>Supplied document length</td>
+<td>The model shown is conditional on document lengths.</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\alpha\)</span></td>
+<td>Shared parameter</td>
+<td>Controls how concentrated or diffuse document topic mixtures tend to
+be.</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(\Theta_d\)</span></td>
+<td>Document-level latent variable</td>
+<td>Gives the topic proportions for one document and is generated anew
+for each document.</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\beta_k\)</span></td>
+<td>Shared topic parameter</td>
+<td>Gives the distribution of words associated with topic <span
+class="math inline">\(k\)</span>.</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(Z_{dn}\)</span></td>
+<td>Token-level latent variable</td>
+<td>Selects which topic generates a particular token.</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(W_{dn}\)</span></td>
+<td>Observed categorical variable</td>
+<td>The identity of the word at position <span
+class="math inline">\(n\)</span>.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="simulation-recipe-2">Simulation recipe</h3>
+<ol type="1">
+<li>Supply <span class="math inline">\(\alpha\)</span>, the topic-word
+probability vectors <span class="math inline">\(\beta_{1:K}\)</span>,
+and the document lengths <span
+class="math inline">\(N_1,\ldots,N_D\)</span>.</li>
+<li>For document <span class="math inline">\(d\)</span>, generate <span
+class="math inline">\(\Theta_d\sim\operatorname{Dirichlet}(\alpha)\)</span>.</li>
+<li>For each token, generate <span
+class="math inline">\(Z_{dn}\sim\operatorname{Categorical}(\Theta_d)\)</span>.</li>
+<li>Given <span class="math inline">\(Z_{dn}=k\)</span>, generate <span
+class="math inline">\(W_{dn}\sim\operatorname{Categorical}(\beta_k)\)</span>.</li>
+<li>Return the words; ordinarily the <span
+class="math inline">\(\Theta_d\)</span> and <span
+class="math inline">\(Z_{dn}\)</span> are not observed.</li>
+</ol>
+<p>Conditional on <span class="math inline">\(\Theta_d\)</span>, the
+topic indicators within a document are independent. Conditional on their
+topic indicators, the words are also independent. The model therefore
+treats a document as a bag of words: permuting the word order does not
+change its probability.</p>
+<h3 id="interpretation-and-limitations">Interpretation and
+limitations</h3>
+<p>The topic parameters <span class="math inline">\(\beta_k\)</span> may
+reveal recognizable groups of co-occurring words, and <span
+class="math inline">\(\Theta_d\)</span> may summarize the mixture of
+those groups within a document. Those quantities are closer to potential
+objects of substantive interpretation than the individual weights of a
+neural language model.</p>
+<p>However, the model itself guarantees only that they play particular
+probabilistic roles. It does not guarantee that a topic corresponds to
+one real social, scientific, or semantic concept. Topics may split a
+single concept, combine several concepts, reflect writing style rather
+than subject matter, or change across model specifications. Topic labels
+are interchangeable without further constraints, and the fitted
+decomposition can be unstable or weakly identified.</p>
+<p>The topic model illustrates a useful middle ground: a generator can
+be knowingly unrealistic at the level of complete text while still being
+valuable because its latent structure targets a useful
+simplification.</p>
+<h2
+id="example-5-a-hidden-markov-model-separates-persistent-latent-states-from-observations">Example
+5: A hidden Markov model separates persistent latent states from
+observations</h2>
+<p>In this example, we introduce “latent states,” which are quantities
+generated within each simulated dataset but not directly observed. A
+parameter is ordinarily held fixed while a dataset is generated. Both
+can be unknown when we analyze observed data; the distinction is their
+role in the generative procedure, not simply whether we know them.</p>
+<p>As an example, suppose an animal moves through a landscape. At time
+<span class="math inline">\(t\)</span>, let <span
+class="math inline">\(Z_t\)</span> denote an unobserved behavioral state
+such as resting, foraging, or traveling. Let <span
+class="math inline">\(Y_t\)</span> contain measured features of
+movement, such as step length and turning angle.</p>
+<p>A hidden Markov model can be written as</p>
+<p><span class="math display">\[
+Z_1\mid\pi
+\sim
+\operatorname{Categorical}(\pi),
+\]</span></p>
+<p><span class="math display">\[
+Z_t\mid Z_{t-1}=j;A
+\sim
+\operatorname{Categorical}(A_{j,\cdot}),
+\qquad t=2,\ldots,T,
+\]</span></p>
+<p><span class="math display">\[
+Y_t\mid Z_t=k;\phi_{1:K}
+\sim
+F_k(\phi_k),
+\qquad t=1,\ldots,T.
+\]</span></p>
+<p>The notation <span class="math inline">\(F_k(\phi_k)\)</span> stands
+for the observation distribution associated with state <span
+class="math inline">\(k\)</span>. For animal movement, one might use a
+Gamma distribution for step length and a circular distribution for
+turning angle, with state-specific parameters collected in <span
+class="math inline">\(\phi_k\)</span>.</p>
+<h3 id="what-the-pieces-do-3">What the pieces do</h3>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Piece</th>
+<th>Role</th>
+<th>Significance</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(\pi\)</span></td>
+<td>Initial-state parameter</td>
+<td>Gives the probabilities of the possible state at the beginning of a
+trajectory.</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(A\)</span></td>
+<td>Transition parameter</td>
+<td>Row <span class="math inline">\(j\)</span> describes how the next
+state is generated when the current state is <span
+class="math inline">\(j\)</span>. Large diagonal entries produce
+persistent states.</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(\phi_k\)</span></td>
+<td>Observation parameter for state <span
+class="math inline">\(k\)</span></td>
+<td>Describes the movement measurements expected in that state.</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(Z_t\)</span></td>
+<td>Latent state</td>
+<td>Generated anew at each time but linked over time through the Markov
+model.</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(Y_t\)</span></td>
+<td>Observation</td>
+<td>Noisy information about the current state.</td>
+</tr>
+</tbody>
+</table>
+<p>The model makes two central conditional-independence claims:</p>
+<ol type="1">
+<li>Given <span class="math inline">\(Z_{t-1}\)</span>, the next state
+<span class="math inline">\(Z_t\)</span> does not depend on earlier
+states.</li>
+<li>Given <span class="math inline">\(Z_t\)</span>, the observation
+<span class="math inline">\(Y_t\)</span> does not depend on the other
+states or observations.</li>
+</ol>
+<p>These claims are what allow the joint law to factor as</p>
+<p><span class="math display">\[
+P(z_{1:T},y_{1:T})
+=P(z_1)
+\prod_{t=2}^T P(z_t\mid z_{t-1})
+\prod_{t=1}^T P(y_t\mid z_t).
+\]</span></p>
+<h3 id="simulation-recipe-3">Simulation recipe</h3>
+<ol type="1">
+<li>Supply <span class="math inline">\((\pi,A,\phi_{1:K})\)</span> and
+the trajectory length <span class="math inline">\(T\)</span>.</li>
+<li>Generate the initial state <span class="math inline">\(Z_1\)</span>
+from <span class="math inline">\(\pi\)</span>.</li>
+<li>Generate <span class="math inline">\(Y_1\)</span> from the
+observation law associated with <span
+class="math inline">\(Z_1\)</span>.</li>
+<li>For each later time, generate <span
+class="math inline">\(Z_t\)</span> from the row of <span
+class="math inline">\(A\)</span> selected by <span
+class="math inline">\(Z_{t-1}\)</span>.</li>
+<li>Generate <span class="math inline">\(Y_t\)</span> from <span
+class="math inline">\(F_{Z_t}(\phi_{Z_t})\)</span>.</li>
+<li>Return <span class="math inline">\(Y_{1:T}\)</span>; the state path
+<span class="math inline">\(Z_{1:T}\)</span> is ordinarily hidden.</li>
+</ol>
+<p>While simulating one trajectory, <span
+class="math inline">\(A\)</span> and <span
+class="math inline">\(\phi_{1:K}\)</span> are held fixed, whereas <span
+class="math inline">\(Z_{1:T}\)</span> is generated. After observing
+<span class="math inline">\(Y_{1:T}\)</span>, we may be uncertain about
+all of them. We may want to infer the shared transition behavior, the
+observation distributions, and the particular state sequence that
+occurred.</p>
+<p>The state labels themselves are created by the model. Calling a state
+“foraging” is a scientific interpretation, not a consequence of the
+equations. A state may instead capture unmodeled habitat differences,
+measurement artifacts, or several behaviors combined. As in a topic
+model, the labels can be permuted without changing the probability
+law.</p>
+<h2 id="example-6-a-neural-language-model">Example 6: A neural language
+model</h2>
+<p>A neural language model generates text one token at a time. Given a
+prompt <span class="math inline">\(w_{1:m}\)</span>, it specifies</p>
+<p><span class="math display">\[
+W_t\mid W_{&lt;t}=w_{&lt;t}
+\sim
+\operatorname{Categorical}\!\left(\boldsymbol{\pi}_\theta(w_{&lt;t})\right),
+\qquad t=m+1,\ldots,T,
+\]</span></p>
+<p>and therefore</p>
+<p><span class="math display">\[
+P_\theta(w_{m+1:T}\mid w_{1:m})
+=
+\prod_{t=m+1}^T
+P_\theta(w_t\mid w_{&lt;t}).
+\]</span></p>
+<p>The next-token probabilities are constructed by a neural network.
+Schematically,</p>
+<p><span class="math display">\[
+z_s=E_{w_s}+p_s,
+\]</span></p>
+<p><span class="math display">\[
+h_t=\operatorname{Transformer}_\theta(z_1,\ldots,z_{t-1}),
+\]</span></p>
+<p>and</p>
+<p><span class="math display">\[
+\boldsymbol{\pi}_\theta(w_{&lt;t})
+=
+\operatorname{softmax}(W_{\mathrm{out}}h_t+b_{\mathrm{out}}).
+\]</span></p>
+<p>Here <span class="math inline">\(E_{w_s}\)</span> is the learned
+embedding of token <span class="math inline">\(w_s\)</span>, while <span
+class="math inline">\(p_s\)</span> records its position. The transformer
+combines the preceding token representations into a context-dependent
+representation <span class="math inline">\(h_t\)</span>, using a causal
+restriction that prevents it from accessing future tokens. The output
+map and softmax turn this representation into a categorical probability
+law over the next token. Once the context and parameters <span
+class="math inline">\(\theta\)</span> are fixed, these probabilities are
+calculated deterministically; randomness enters when the next token is
+drawn and appended to the context. The parameters <span
+class="math inline">\(\theta\)</span> comprise a large collection of
+learned embeddings and network weights. They are useful because together
+they produce effective conditional distributions, not because individual
+parameters ordinarily have scientific interpretations.</p>
+<h2 id="comparing-the-examples">Comparing the examples</h2>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Example</th>
+<th>Main generated object</th>
+<th>Important latent quantities</th>
+<th>Role of parameters</th>
+<th>Central lesson</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Linear regression</td>
+<td>Response vector conditional on covariates</td>
+<td>Usually none in the elementary form</td>
+<td>Coefficients and noise scale summarize a conditional law</td>
+<td>A mean function is only one part of a generator.</td>
+</tr>
+<tr class="even">
+<td>Golf: logistic</td>
+<td>Success counts by distance</td>
+<td>None after success probabilities are computed</td>
+<td>Empirical curve parameters</td>
+<td>A complete empirical generator need not explain the physical
+mechanism.</td>
+</tr>
+<tr class="odd">
+<td>Golf: angular error</td>
+<td>Individual aiming errors and success counts</td>
+<td>Angular errors for individual putts</td>
+<td>Directional-error scale has mechanistic meaning</td>
+<td>Mechanism supplies structure but creates additional assumptions to
+check.</td>
+</tr>
+<tr class="even">
+<td>Markov language model</td>
+<td>Token sequence</td>
+<td>Generated tokens become later inputs</td>
+<td>Transition probabilities are shared local rules</td>
+<td>Ordered conditionals define a joint law.</td>
+</tr>
+<tr class="odd">
+<td>Exam-response regressions</td>
+<td>One response conditional on all others</td>
+<td>None specified</td>
+<td>Predictive coefficients</td>
+<td>Circular componentwise predictions need not define a joint
+generator.</td>
+</tr>
+<tr class="even">
+<td>Topic model</td>
+<td>Documents as bags of words</td>
+<td>Document mixtures and token topics</td>
+<td>Topics may be substantively interpreted</td>
+<td>An unrealistic generator can define useful latent summaries.</td>
+</tr>
+<tr class="odd">
+<td>Hidden Markov model</td>
+<td>Time series of observations</td>
+<td>Persistent state sequence</td>
+<td>Transition and emission parameters are shared across a
+trajectory</td>
+<td>Parameter versus latent state is a distinction of generative
+role.</td>
+</tr>
+<tr class="even">
+<td>Neural language model</td>
+<td>Token continuation conditional on a prompt</td>
+<td>Internal activations are computed, not ordinarily treated as sampled
+latent states</td>
+<td>Vast collections of instrumental weights</td>
+<td>Generative models need not have individually interpretable
+parameters.</td>
+</tr>
+</tbody>
+</table>
+<p>Across all of these cases, calling a model generative tells us that
+it defines a coherent probability law and a way to simulate the relevant
+data. It does not by itself tell us that the model is realistic, causal,
+scientifically interpretable, identifiable, computationally convenient,
+or appropriate for the question at hand. Those are separate claims that
+require separate arguments and checks.</p>
+</body>
+</html>
