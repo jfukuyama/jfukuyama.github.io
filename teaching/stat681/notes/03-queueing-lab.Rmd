@@ -1,0 +1,251 @@
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+set.seed(681)  # set once, here -- never inside the simulator itself
+```
+
+## A. Background and model
+
+Picture a single service point: one teller, one help desk, one checkout
+lane. Customers arrive one at a time, wait if the server is busy, and are
+served in the order they arrived. We want to know how long customers wait,
+and how that depends on how fast they arrive and how fast they're served.
+
+**Assumptions:**
+
+- One server, first-come-first-served.
+- The system starts **empty** — customer 1 arrives to an idle server.
+- No abandonment (nobody leaves the line early) and no capacity limit
+  (the line can grow arbitrarily long).
+- Interarrival durations and service durations are independent of each
+  other and independent across customers.
+- A fixed number of customers, $n$, arrive; every one is followed all the
+  way through departure.
+
+We are studying a queue that starts empty and runs for a finite number of
+customers — not a queue that has been running forever. Nothing here
+assumes or produces a "steady state."
+
+**Glossary of symbols:**
+
+| Symbol | Meaning | Units |
+|---|---|---|
+| $\lambda$ | arrival rate | customers per unit time |
+| $\mu$ | service rate | customers per unit time |
+| $A_i$ | interarrival duration before customer $i$ | time |
+| $S_i$ | service duration for customer $i$ | time |
+| $T_i^{\text{arr}}$ | arrival time (clock time) of customer $i$ | time |
+| $T_i^{\text{start}}$ | service-start time of customer $i$ | time |
+| $T_i^{\text{dep}}$ | departure time of customer $i$ | time |
+| $W_i$ | waiting time of customer $i$ | time |
+
+**Probabilistic specification:**
+
+$$
+A_i \overset{\text{iid}}\sim \operatorname{Exponential}(\lambda),
+\qquad
+S_i \overset{\text{iid}}\sim \operatorname{Exponential}(\mu),
+\qquad
+i = 1, \ldots, n,
+$$
+
+with all $A_i$ and $S_i$ mutually independent.
+
+**Deterministic recurrence**, turning durations into clock times:
+
+$$
+T_i^{\text{arr}} = \sum_{j \le i} A_j,
+$$
+
+$$
+T_i^{\text{start}} = \max\!\left(T_i^{\text{arr}},\, T_{i-1}^{\text{dep}}\right)
+\qquad \text{(with } T_0^{\text{dep}} = 0\text{)},
+$$
+
+$$
+T_i^{\text{dep}} = T_i^{\text{start}} + S_i,
+\qquad\qquad
+W_i = T_i^{\text{start}} - T_i^{\text{arr}}.
+$$
+
+The $\max(\cdot)$ says: customer $i$'s service can't start before *either*
+they arrive, *or* the server is free from the previous customer — whichever
+comes later.
+
+## B. Provided simulator
+
+`simulate_queue()` draws customer $i$'s durations and computes customer
+$i$'s clock times before moving on to customer $i + 1$ -- one customer at
+a time, in the same order as the probabilistic specification above. This
+is *not* the most efficient way to write this in R (drawing all the
+$A_i$'s and all the $S_i$'s in two vectorized calls up front is faster),
+but it makes the correspondence between the math and the code as direct
+as possible: for each customer, first $A_i$ is drawn, then $S_i$, then
+the clock times are computed from them.
+
+```{r simulator}
+## Generate a complete queue of n customers under the exponential model,
+## one customer at a time: draw A_i, draw S_i, compute customer i's
+## clock times, then move on to customer i + 1.
+simulate_queue <- function(n_customers, lambda, mu) {
+  interarrival_duration <- numeric(n_customers)   # A_i, filled in as we go
+  service_duration      <- numeric(n_customers)   # S_i, filled in as we go
+  arrival_time          <- numeric(n_customers)   # T_i^arr
+  service_start_time    <- numeric(n_customers)   # T_i^start
+  departure_time        <- numeric(n_customers)   # T_i^dep
+
+  for (i in seq_len(n_customers)) {
+    interarrival_duration[i] <- rexp(1, rate = lambda)
+    if (i == 1) {
+      ## Customer 1 arrives to an empty, idle system.
+      arrival_time[i]       <- interarrival_duration[i]
+      service_start_time[i] <- arrival_time[i]
+    } else {
+      arrival_time[i] <- arrival_time[i - 1] + interarrival_duration[i]
+      ## Wait for both this customer's arrival and the previous
+      ## customer's departure -- whichever is later.
+      service_start_time[i] <- max(arrival_time[i], departure_time[i - 1])
+    }
+
+    service_duration[i] <- rexp(1, rate = mu)
+    departure_time[i]   <- service_start_time[i] + service_duration[i]
+  }
+
+  data.frame(
+    customer               = seq_len(n_customers),
+    interarrival_duration  = interarrival_duration,
+    service_duration       = service_duration,
+    arrival_time           = arrival_time,
+    service_start_time     = service_start_time,
+    departure_time         = departure_time,
+    waiting_time           = service_start_time - arrival_time
+  )
+}
+```
+
+This produces the same *distribution* over queues as drawing all of the
+$A_i$'s and $S_i$'s up front in two vectorized calls and then running the
+recurrence over them -- generating the randomness in a different order
+doesn't change the distribution, the same way the two implementations of
+the Bernoulli-sum example in lecture agreed on the distribution of $Y$
+without producing the same realizations draw for draw.
+
+A quick look at one run:
+
+```{r first-look}
+queue1 <- simulate_queue(n_customers = 10, lambda = 1, mu = 1.5)
+queue1
+```
+
+## C. Required exercise 1: Read the simulator
+
+Using the code above (not just the math), answer:
+
+1. Which quantities are **supplied** (fixed by the person calling the
+   function), which are **sampled** (random draws), and which are
+   **calculated** (deterministic functions of other quantities)?
+2. What line of code corresponds to "the system starts empty"?
+3. Why can't `service_start_time[i]` ever be earlier than
+   `departure_time[i - 1]`? Point to the specific line that enforces this.
+4. `interarrival_duration` and `service_duration` are drawn independently.
+   Explain why `waiting_time` is nevertheless **not** independent across
+   customers.
+5. This simulator returns seven columns per customer. If you were
+   recording data from an actual help desk, which of these columns might
+   you realistically be able to observe, and which would likely be
+   unavailable or require special instrumentation?
+
+## D. Required exercise 2: Explore behavior
+
+Waiting time against customer index, for one run:
+
+```{r plot-one-run}
+plot_waiting_times <- function(queue_df, ...) {
+  plot(queue_df$customer, queue_df$waiting_time,
+       type = "b", xlab = "customer index", ylab = "waiting time", ...)
+}
+
+plot_waiting_times(queue1, main = expression(lambda == 1 * "," ~ mu == 1.5))
+```
+
+**Before running anything:** if customers start arriving *more*
+frequently ($\lambda$ increases, $\mu$ fixed), what do you expect to
+happen to waiting times? Write down a prediction.
+
+Now run the simulator at two or three arrival rates, holding $\mu$ fixed,
+and compare:
+
+```{r vary-lambda, eval=FALSE}
+mu_fixed <- 1.5
+n_customers <- 50
+
+queue_low  <- simulate_queue(n_customers, lambda = ___, mu = mu_fixed)
+queue_med  <- simulate_queue(n_customers, lambda = ___, mu = mu_fixed)
+queue_high <- simulate_queue(n_customers, lambda = ___, mu = mu_fixed)
+
+## Plot all three, e.g. with par(mfrow = c(1, 3)) and plot_waiting_times(),
+## or overlay them on one plot with different colors.
+
+## Compare a summary too, e.g.:
+mean(queue_low$waiting_time)
+mean(queue_med$waiting_time)
+mean(queue_high$waiting_time)
+```
+
+Questions to answer once you've run this:
+
+1. What actually happened to waiting times as $\lambda$ increased?
+2. Did your prediction hold up?
+3. Does the *change* in mean waiting time look proportional to the
+   *change* in $\lambda$? (It's fine, and expected, if the answer is no —
+   explain what you see instead.)
+
+## E. Required exercise 3: Repeat a setting
+
+One run of the queue gives you the distribution of waiting times **across
+customers, within that one queue**. That is a different object from the
+distribution of the **mean** waiting time **across many independently
+simulated queues**, run under the same $\lambda, \mu, n$. This exercise
+asks you to look at the second one.
+
+```{r repeat-setting, eval=FALSE}
+n_rep <- 500
+lambda <- ___
+mu <- ___
+n_customers <- ___
+
+many_queues <- replicate(
+  n_rep,
+  simulate_queue(n_customers, lambda, mu),
+  simplify = FALSE
+)
+
+mean_waiting_time <- sapply(many_queues, function(q) mean(q$waiting_time))
+
+hist(mean_waiting_time,
+     main = "Mean waiting time across simulated queues",
+     xlab = "mean waiting time (one queue)")
+```
+
+Compare this histogram with the waiting-time plot from Exercise 2 (one
+queue, waiting time by customer index). In your own words: what is being
+averaged over in each plot, and why are they different quantities?
+
+## F. Optional extensions
+
+These are separate from the required work above — come back to them if
+you have time, not instead of the required exercises.
+
+- **Hit a target.** Holding $\lambda$ fixed, find a service rate $\mu$
+  that keeps the average waiting time (in one run, or averaged across
+  many runs) under some target you choose. There's no closed-form
+  shortcut expected here — search by simulating.
+- **Push the system.** Try $\lambda \ge \mu$ (arrivals as fast as, or
+  faster than, service) and/or a much larger `n_customers`. What happens
+  to waiting times as the run gets longer?
+- **Change the service-time distribution.** Replace the exponential
+  service durations with **constant** durations of the same mean (i.e.,
+  `rep(1 / mu, n_customers)` instead of `rexp(n_customers, rate = mu)`),
+  keeping $\lambda$ and the mean service time the same. Do waiting times
+  change? This asks whether the *average* arrival and service rates alone
+  determine performance, or whether the *shape* of the service-time
+  distribution matters too.
