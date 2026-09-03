@@ -1,0 +1,435 @@
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+theme_set(theme_bw())
+set.seed(681)  # set once, here -- never inside a simulator function
+```
+
+Everything run in class today lives in this file (R) and its Python
+counterpart. No separate lab this time.
+
+# Section 1: Wrapping up the queueing lab
+
+Same simulator as lecture 3, one customer at a time.
+
+```{r queue-simulator}
+simulate_queue <- function(n_customers, lambda, mu) {
+  interarrival_duration <- numeric(n_customers)
+  service_duration      <- numeric(n_customers)
+  arrival_time          <- numeric(n_customers)
+  service_start_time    <- numeric(n_customers)
+  departure_time        <- numeric(n_customers)
+
+  for (i in seq_len(n_customers)) {
+    interarrival_duration[i] <- rexp(1, rate = lambda)
+    if (i == 1) {
+      arrival_time[i]       <- interarrival_duration[i]
+      service_start_time[i] <- arrival_time[i]
+    } else {
+      arrival_time[i] <- arrival_time[i - 1] + interarrival_duration[i]
+      service_start_time[i] <- max(arrival_time[i], departure_time[i - 1])
+    }
+    service_duration[i] <- rexp(1, rate = mu)
+    departure_time[i]   <- service_start_time[i] + service_duration[i]
+  }
+
+  service_start_time - arrival_time  # waiting times
+}
+```
+
+Hold `mu` fixed and let `lambda` creep up toward it -- the system gets
+more utilized (higher traffic intensity $\rho = \lambda/\mu$):
+
+```{r queue-blowup}
+mu_fixed <- 1
+lambda_seq <- seq(0.5, 0.95, by = 0.05)
+
+mean_wait_at <- function(lambda, mu, n_customers = 1000, B = 100) {
+  mean(replicate(B, mean(simulate_queue(n_customers, lambda, mu))))
+}
+
+mean_waits <- sapply(lambda_seq, mean_wait_at, mu = mu_fixed)
+
+queue_df <- data.frame(lambda = lambda_seq, mean_wait = mean_waits)
+ggplot(queue_df, aes(x = lambda, y = mean_wait)) +
+  geom_line() +
+  geom_point() +
+  labs(x = expression(lambda), y = "mean waiting time",
+       title = expression(paste("Mean wait vs. ", lambda, " (", mu, " = 1 fixed)"))) +
+  theme_bw()
+```
+
+Nothing here estimates a parameter -- forward simulation alone already
+told us something practically important: the system looks fine right up
+until it doesn't, and the blowup is highly nonlinear. The same kind of
+payoff shows up in epidemic thresholds, extinction probabilities in
+population models, and staffing/capacity planning. Sometimes the
+question really is just: *if the world worked this way, what would
+happen?*
+
+
+# Section 2: The SIR model, as another forward simulator
+
+We didn't get to this last time. Three compartments:
+
+$$
+S \longrightarrow I \longrightarrow R
+$$
+
+Susceptible, Infected/infectious, Recovered/removed. Discrete time
+steps, population size $N=S_t+I_t+R_t$ fixed, two binomial draws per
+step:
+
+$$
+\Delta I_t \mid S_t, I_t \sim \operatorname{Binomial}\!\Big(S_t, 1-(1-\beta/N)^{I_t}\Big),
+\qquad
+\Delta R_t \mid I_t \sim \operatorname{Binomial}(I_t, \gamma),
+$$
+$$
+S_{t+1} = S_t - \Delta I_t, \quad I_{t+1} = I_t + \Delta I_t - \Delta R_t, \quad R_{t+1} = R_t + \Delta R_t.
+$$
+
+$\beta$ is the transmission parameter, $\gamma$ the recovery parameter.
+$R_0=\beta/\gamma$ is the basic reproduction number -- roughly, how many
+new infections one infectious person generates while population immunity
+is still negligible.
+
+```{r sir-simulator}
+simulate_sir <- function(n_steps, beta, gamma, S0, I0, R0) {
+  N <- S0 + I0 + R0
+  S <- integer(n_steps + 1); I <- integer(n_steps + 1); R <- integer(n_steps + 1)
+  S[1] <- S0; I[1] <- I0; R[1] <- R0
+  for (t in seq_len(n_steps)) {
+    p_infect <- 1 - (1 - beta / N)^I[t]
+    delta_I <- rbinom(1, S[t], p_infect)
+    delta_R <- rbinom(1, I[t], gamma)
+    S[t + 1] <- S[t] - delta_I
+    I[t + 1] <- I[t] + delta_I - delta_R
+    R[t + 1] <- R[t] + delta_R
+  }
+  data.frame(time = 0:n_steps, S = S, I = I, R = R)
+}
+```
+
+## One simulated epidemic
+
+```{r sir-single-run}
+N <- 1000
+I0 <- 20
+gamma_known <- 0.15
+n_steps <- 200
+
+R0_illustrative <- 1.5
+beta_illustrative <- R0_illustrative * gamma_known
+
+sim1 <- simulate_sir(n_steps, beta_illustrative, gamma_known, N - I0, I0, 0)
+
+sim1_long <- data.frame(
+  time = rep(sim1$time, 3),
+  count = c(sim1$S, sim1$I, sim1$R),
+  compartment = factor(rep(c("S", "I", "R"), each = nrow(sim1)), levels = c("S", "I", "R"))
+)
+
+ggplot(sim1_long, aes(x = time, y = count, color = compartment)) +
+  geom_line(linewidth = 1) +
+  scale_color_manual(values = c(S = "steelblue", I = "firebrick", R = "darkgreen")) +
+  labs(title = "One simulated epidemic (R0 = 1.5)", color = NULL) +
+  theme_bw()
+```
+
+Is this *the* prediction of the model at $R_0=1.5$? Not exactly -- it's
+one possible realization of what a stochastic model predicts:
+$Y^{\text{sim}} \sim p(\cdot \mid \theta)$.
+
+## Different parameters, different behavior
+
+Two different $(\beta,\gamma)$ pairs:
+
+```{r sir-two-parameter-trajectories}
+sim_low  <- simulate_sir(n_steps, 0.225, gamma_known, N - I0, I0, 0)   # R0 = 1.5
+sim_high <- simulate_sir(n_steps, 0.9,   gamma_known, N - I0, I0, 0)   # R0 = 6
+
+compare_df <- data.frame(
+  time = c(sim_low$time, sim_high$time),
+  I = c(sim_low$I, sim_high$I),
+  scenario = rep(c("beta=0.225, gamma=0.15 (R0=1.5)", "beta=0.9, gamma=0.15 (R0=6)"),
+                  each = nrow(sim_low))
+)
+
+ggplot(compare_df, aes(x = time, y = I)) +
+  geom_line(color = "firebrick") +
+  facet_wrap(~ scenario, scales = "free_y") +
+  labs(y = "I(t)") +
+  theme_bw()
+```
+
+Change the parameters and the whole trajectory changes shape -- size,
+timing, speed. That's promising for fitting later. But eyeballing whole
+trajectories doesn't scale to real data. We need a few numbers that
+track these changes systematically.
+
+## How do we measure "looks like"?
+
+We want to find parameters that make simulated data resemble observed
+data. How do we measure resemblance? For today, a first idea: hand-pick
+summary statistics that seem to vary with the parameters.
+
+Two candidates for today: **final epidemic size** (how many people were
+ever infected) and **early growth rate** (slope of $\log I(t)$ over the
+first few steps). Generically, $s(Y)$.
+
+```{r sir-summary-fn}
+window <- 8  # early-growth-rate fitting window
+
+sir_summary_once <- function(R0) {
+  beta <- R0 * gamma_known
+  sim <- simulate_sir(n_steps, beta, gamma_known, N - I0, I0, 0)
+  cum_infected <- N - sim$S
+  final_size <- tail(cum_infected, 1)
+  I_early <- sim$I[1:(window + 1)]
+  t_early <- sim$time[1:(window + 1)]
+  growth_rate <- unname(coef(lm(log(pmax(I_early, 1)) ~ t_early))[2])
+  c(final_size = final_size, growth_rate = growth_rate)
+}
+```
+
+If the simulated dataset is random, its summary is random too.
+
+## From two parameters to one
+
+For the systematic check that follows, fix $\gamma$ (say, known from
+clinical data on infectious duration) and vary only $R_0=\beta/\gamma$.
+One unknown parameter instead of two -- simpler to explore now, and
+simpler to fit later.
+
+Does a candidate summary actually help distinguish different values of
+$R_0$? Look at its distribution across a range of $R_0$'s.
+
+```{r sir-across-r0-setup}
+R0_display <- c(2, 3, 4, 5, 6, 7, 8)
+set.seed(13)
+growth_by_r0 <- sapply(R0_display, function(r) replicate(150, sir_summary_once(r)["growth_rate"]))
+set.seed(13)
+final_by_r0  <- sapply(R0_display, function(r) replicate(150, sir_summary_once(r)["final_size"]))
+```
+
+## A useful summary: early growth rate
+
+```{r sir-growth-boxplot}
+growth_df <- data.frame(R0 = rep(R0_display, each = 150), growth_rate = as.vector(growth_by_r0))
+
+ggplot(growth_df, aes(x = factor(R0), y = growth_rate)) +
+  geom_boxplot() +
+  labs(x = expression(R[0]), y = "early growth rate",
+       title = "Growth rate: centers move, little overlap") +
+  theme_bw()
+```
+
+## A weaker summary: final epidemic size
+
+```{r sir-final-boxplot}
+final_df <- data.frame(R0 = rep(R0_display, each = 150), final_size = as.vector(final_by_r0))
+
+ggplot(final_df, aes(x = factor(R0), y = final_size)) +
+  geom_boxplot() +
+  labs(x = expression(R[0]), y = "final size",
+       title = "Final size: centers move, then flatten and overlap") +
+  theme_bw()
+```
+
+If you observed one epidemic, which statistic would tell you more about
+$R_0$? Growth rate keeps separating across the whole range; final size
+stops moving once most of the population is going to be infected either
+way.
+
+# Section 3: Turn the simulator around
+
+We now have a good sense of how this simulator behaves -- which
+summaries move, which don't. Time to use that to fit parameters to real
+data.
+
+Forward: $R_0 \to$ simulate epidemic $\to s(Y)$. Now reverse it:
+$s(Y_{\text{obs}}) \to$ what $R_0$ could have produced this?
+
+The algorithm you'd invent yourself:
+
+1. choose a candidate $R_0$;
+2. simulate many epidemics;
+3. compute the same summary for each;
+4. average the simulated summaries;
+5. compare with the observed summary;
+6. try another $R_0$.
+
+Which candidate makes the simulated summaries look most like the
+observed one?
+
+
+# Section 4: Formalize SMM
+
+$$
+s_{\text{obs}} = s(Y_{\text{obs}}), \qquad
+\hat m_B(\theta) = \frac1B\sum_{b=1}^B s(Y_\theta^{(b)}) \approx E_\theta[s(Y)].
+$$
+
+For one summary:
+$$
+Q(\theta) = \big[s_{\text{obs}} - \hat m_B(\theta)\big]^2,
+\qquad
+\hat\theta = \arg\min_\theta Q(\theta).
+$$
+
+## Objective-function plot: growth rate alone
+
+```{r sir-objective-one-summary}
+R0_true <- 6.0
+R0_grid <- seq(4.0, 8.0, by = 0.1)
+set.seed(4)
+model_grid <- t(sapply(R0_grid, function(r) rowMeans(replicate(300, sir_summary_once(r)))))
+colnames(model_grid) <- c("final_size", "growth_rate")
+
+set.seed(5)
+obs_illustrative <- sir_summary_once(R0_true)
+
+Q_growth_only <- (model_grid[, "growth_rate"] - obs_illustrative["growth_rate"])^2
+obj_df <- data.frame(R0 = R0_grid, Q = Q_growth_only)
+R0_hat <- R0_grid[which.min(Q_growth_only)]
+
+ggplot(obj_df, aes(x = R0, y = Q)) +
+  geom_line() +
+  geom_vline(aes(xintercept = R0_true, color = "true R0"), linetype = "dashed") +
+  geom_vline(aes(xintercept = R0_hat, color = "estimated R0")) +
+  scale_color_manual(name = NULL, values = c("true R0" = "blue", "estimated R0" = "red")) +
+  labs(x = expression(R[0]), y = "Q(R0)", title = "Objective function, growth rate alone") +
+  theme_bw()
+```
+
+**Simulated Method of Moments**: adjust parameters until simulated
+summaries match observed summaries. "Moment" here just means a chosen
+numerical summary of the data, not the classical statistical
+method-of-moments machinery.
+
+
+# Section 5: What if we use more than one summary?
+
+$$
+s(Y) = \begin{pmatrix}s_1(Y) \\ s_2(Y)\end{pmatrix},
+\qquad
+g(\theta) = s_{\text{obs}} - \hat m_B(\theta).
+$$
+
+How should two discrepancies become one number?
+
+## First attempt: add squared discrepancies
+
+$$
+Q(\theta) = g_1(\theta)^2 + g_2(\theta)^2.
+$$
+
+This looks natural. It is not generally a good idea.
+
+To do better we need an estimate of $\operatorname{Cov}(g(\theta))$. As a
+shortcut today, we estimate it using simulations at the true $R_0$ (in
+practice you don't know $R_0$ in advance: fit once with rough weighting,
+estimate this near that estimate, then refit).
+
+```{r sir-omega-estimate}
+B_omega <- 500
+set.seed(3)
+at_true <- replicate(B_omega, sir_summary_once(R0_true))
+Omega <- cov(t(at_true))
+```
+
+## Four ways to combine (or not combine) the two summaries
+
+```{r sir-four-objectives-setup}
+Omega_inv <- solve(Omega)
+
+fit_once <- function(seed) {
+  set.seed(seed)
+  obs <- sir_summary_once(R0_true)  # one fresh "observed" epidemic
+  g <- sweep(model_grid, 2, obs, "-")
+
+  Q_strong     <- g[, "growth_rate"]^2
+  Q_weak       <- g[, "final_size"]^2
+  Q_unweighted <- rowSums(g^2)
+  Q_weighted   <- apply(g, 1, function(row) as.numeric(t(row) %*% Omega_inv %*% row))
+
+  c(strong     = R0_grid[which.min(Q_strong)],
+    weak       = R0_grid[which.min(Q_weak)],
+    unweighted = R0_grid[which.min(Q_unweighted)],
+    weighted   = R0_grid[which.min(Q_weighted)])
+}
+```
+
+## Discrepancies should be judged relative to ordinary variability
+
+A discrepancy of 10 is huge if the statistic normally varies by 1, and
+trivial if it normally varies by 100. For independent summaries:
+
+$$
+Q(\theta) = \frac{g_1(\theta)^2}{\sigma_1^2} + \frac{g_2(\theta)^2}{\sigma_2^2}.
+$$
+
+More generally, with possibly correlated summaries, use the full
+covariance matrix:
+
+$$
+Q_W(\theta) = g(\theta)^\top W g(\theta), \qquad W \approx \operatorname{Cov}(g)^{-1}.
+$$
+
+```{r sir-omega-display}
+Omega        # diagonal: variability of each summary; off-diagonal: correlation
+```
+
+Diagonal terms handle differences in variability; off-diagonal terms
+account for correlation between summaries -- final size and growth rate
+are not independent.
+
+Weighting does **not** make every summary equally informative. It puts
+discrepancies on an appropriate stochastic scale; how much a summary
+then contributes still depends on how strongly its mean responds to the
+parameter (the derivative) -- a property weighting can't manufacture.
+
+## Does it actually help? (100 repeated fits, one fresh epidemic each)
+
+```{r sir-repeated-study}
+fits <- t(sapply(1:100, fit_once))
+
+summarize <- function(x) c(bias = mean(x) - R0_true, rmse = sqrt(mean((x - R0_true)^2)))
+round(t(apply(fits, 2, summarize)), 3)
+```
+
+Read this in order:
+
+- **Weak alone** (final size) does clearly worse than **strong alone**
+  (growth rate) -- matches the information calculation.
+- **Unweighted** performs *identically* to weak alone: final size's raw
+  scale (hundreds of people) so overwhelms growth rate's (fractions of a
+  unit) that growth rate might as well not be in the objective at all.
+- **Weighted** ($\hat\Omega^{-1}$) recovers the lost information -- it
+  matches or beats even the best single summary.
+
+A weak/noisy summary can hurt if combined carelessly; weighting keeps it
+from having inappropriate influence.
+
+
+# Section 6: The limits of weighting
+
+But weighting is not enough on its own. What if a summary contains
+almost no information about the parameter? What if two summaries contain
+essentially the same information? What if our summaries miss an
+important feature of the data entirely? No weighting matrix can rescue a
+bad set of summaries.
+
+$$
+\boxed{
+\theta \to \text{simulate many datasets} \to \text{calculate summaries} \to \text{estimate expected summaries}
+}
+$$
+$$
+\boxed{
+\text{choose } \theta \text{ so simulated summaries resemble observed summaries}
+}
+$$
+
+SMM turns a forward simulator into a parameter-estimation method.
