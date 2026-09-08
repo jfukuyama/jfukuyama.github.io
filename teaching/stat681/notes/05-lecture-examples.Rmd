@@ -1,0 +1,391 @@
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+theme_set(theme_bw())
+set.seed(681)  # set once, here -- never inside a simulator function
+```
+
+Everything run in class today lives in this file (R) and its Python
+counterpart. The hands-on lab (Parts A and B) is in a separate file,
+`05-identifiability-lab.Rmd`.
+
+# Section 1: The Normal distribution
+
+## Fixed $\sigma$, varying $\mu$
+
+```{r normal-vary-mu}
+n_draws <- 4000
+mus <- c(-2, 0, 2)
+sigma_fixed <- 1
+
+df_mu <- do.call(rbind, lapply(mus, function(m) {
+  data.frame(mu = factor(m), value = rnorm(n_draws, mean = m, sd = sigma_fixed))
+}))
+
+ggplot(df_mu, aes(x = value)) +
+  geom_histogram(bins = 40, fill = "steelblue", color = "white") +
+  facet_wrap(~ mu, nrow = 1, labeller = label_bquote(mu == .(as.character(mu)))) +
+  coord_cartesian(xlim = c(-6, 6)) +
+  labs(x = "y", y = "count", title = "Fixed sigma = 1, varying mu") +
+  theme_bw()
+```
+
+## Fixed $\mu$, varying $\sigma$
+
+```{r normal-vary-sigma}
+sigmas <- c(0.5, 1, 2)
+mu_fixed <- 0
+
+df_sigma <- do.call(rbind, lapply(sigmas, function(s) {
+  data.frame(sigma = factor(s), value = rnorm(n_draws, mean = mu_fixed, sd = s))
+}))
+
+ggplot(df_sigma, aes(x = value)) +
+  geom_histogram(bins = 40, fill = "darkorange3", color = "white") +
+  facet_wrap(~ sigma, nrow = 1, labeller = label_bquote(sigma == .(as.character(sigma)))) +
+  coord_cartesian(xlim = c(-6, 6)) +
+  labs(x = "y", y = "count", title = "Fixed mu = 0, varying sigma") +
+  theme_bw()
+```
+
+## The location-scale construction
+
+```{r location-scale}
+z <- rnorm(n_draws)  # Z ~ N(0,1)
+mu <- 3
+sigma <- 2
+y <- mu + sigma * z  # Y ~ N(mu, sigma^2)
+
+c(mean_z = mean(z), sd_z = sd(z), mean_y = mean(y), sd_y = sd(y))
+```
+
+`mu` shifts the standard normal draws; `sigma` stretches them. This is
+literally what `rnorm(n, mean = mu, sd = sigma)` does internally.
+
+# Section 4: Building the identification surfaces
+
+We want to compare three choices of a second summary alongside the
+sample mean: the median, the 60th percentile, and the 75th percentile.
+For a clean picture, we use the *population* (expected) values of these
+summaries, computed analytically, rather than simulated averages --
+finite-simulation noise can produce a spurious minimum in $\sigma$ (a
+good lesson for later, but one we don't want distracting from today's
+point).
+
+For $Y\sim N(\mu,\sigma^2)$:
+
+$$
+E(Y) = \mu, \qquad q_p = \mu + \sigma z_p, \qquad z_p = \Phi^{-1}(p).
+$$
+
+```{r population-summary-map}
+m_mean  <- function(mu, sigma) mu
+m_quant <- function(mu, sigma, p) mu + sigma * qnorm(p)
+
+## z_p for our three choices
+c(z_50 = qnorm(0.50), z_60 = qnorm(0.60), z_75 = qnorm(0.75))
+```
+
+## An observed dataset
+
+```{r observed-data}
+mu0 <- 5
+sigma0 <- 2
+n_obs <- 50
+y_obs <- rnorm(n_obs, mean = mu0, sd = sigma0)
+
+obs_mean   <- mean(y_obs)
+obs_median <- median(y_obs)
+obs_p60    <- as.numeric(quantile(y_obs, 0.60, type = 7))
+obs_p75    <- as.numeric(quantile(y_obs, 0.75, type = 7))
+
+c(mean = obs_mean, median = obs_median, p60 = obs_p60, p75 = obs_p75)
+```
+
+## The three objective surfaces
+
+```{r objective-surfaces}
+mu_grid    <- seq(0, 10, length.out = 220)
+sigma_grid <- seq(0.1, 6, length.out = 220)
+grid <- expand.grid(mu = mu_grid, sigma = sigma_grid)
+
+make_objective <- function(p2, obs2, label) {
+  grid$Q <- (obs_mean - m_mean(grid$mu, grid$sigma))^2 +
+    (obs2 - m_quant(grid$mu, grid$sigma, p2))^2
+  grid$label <- label
+  grid
+}
+
+grid_median <- make_objective(0.5,  obs_median, "mean + median  (nonidentified)")
+grid_p60    <- make_objective(0.60, obs_p60,    "mean + 60th pct.  (weakly identified)")
+grid_p75    <- make_objective(0.75, obs_p75,    "mean + 75th pct.  (identified)")
+
+all_grid <- rbind(grid_median, grid_p60, grid_p75)
+all_grid$label <- factor(all_grid$label, levels = c(
+  "mean + median  (nonidentified)",
+  "mean + 60th pct.  (weakly identified)",
+  "mean + 75th pct.  (identified)"
+))
+
+ggplot(all_grid, aes(x = mu, y = sigma, z = Q)) +
+  geom_raster(aes(fill = Q)) +
+  geom_contour(color = "white", alpha = 0.5, bins = 15) +
+  facet_wrap(~ label, nrow = 1) +
+  scale_fill_viridis_c(trans = "sqrt", name = "Q(mu,sigma)") +
+  labs(x = expression(mu), y = expression(sigma)) +
+  coord_cartesian(expand = FALSE) +
+  theme_bw()
+```
+
+The left panel is a perfectly vertical valley: $Q$ genuinely does not
+depend on $\sigma$ once $\mu$ is right. The middle panel's valley is
+visibly curved, but still much less sharply localized than the right
+panel's genuine minimum.
+
+This all worked because we happen to know $m(\mu,\sigma)$ for the
+Normal exactly: the population $p$-quantile is $\mu + \sigma z_p$, so
+sliding $p$ from $0.5$ to $0.60$ to $0.75$ is really just sliding $z_p$
+from $0$ up to $0.67$ -- one number, directly controlling how tight the
+valley is. That closed form is special to the Normal. For the SIR model
+below, there is no such formula for $m(\beta,\gamma)$; simulation is the
+only way to see the corresponding geometry.
+
+# Section 5: Transfer to the SIR model
+
+```{r sir-simulator}
+simulate_sir <- function(n_steps, beta, gamma, S0, I0, R0) {
+  N <- S0 + I0 + R0
+  S <- integer(n_steps + 1); I <- integer(n_steps + 1); R <- integer(n_steps + 1)
+  S[1] <- S0; I[1] <- I0; R[1] <- R0
+  for (t in seq_len(n_steps)) {
+    p_infect <- 1 - (1 - beta / N)^I[t]
+    delta_I <- rbinom(1, S[t], p_infect)
+    delta_R <- rbinom(1, I[t], gamma)
+    S[t + 1] <- S[t] - delta_I
+    I[t + 1] <- I[t] + delta_I - delta_R
+    R[t + 1] <- R[t] + delta_R
+  }
+  list(S = S, I = I, R = R)
+}
+
+N <- 1000
+I0 <- 20
+n_steps <- 450
+window <- 8
+
+sir_summary_once <- function(beta, gamma) {
+  sim <- simulate_sir(n_steps, beta, gamma, N - I0, I0, 0)
+  final_size <- N - tail(sim$S, 1)
+  I_early <- sim$I[1:(window + 1)]
+  t_early <- 0:window
+  growth_rate <- unname(coef(lm(log(pmax(I_early, 1)) ~ t_early))[2])
+  c(final_size = final_size, growth_rate = growth_rate)
+}
+
+sir_summary_avg <- function(beta, gamma, B) {
+  rowMeans(replicate(B, sir_summary_once(beta, gamma)))
+}
+```
+
+## Checking the "same $R_0$" and "same $\beta-\gamma$" claims
+
+```{r sir-sanity-check}
+B_check <- 300
+same_R0_a <- sir_summary_avg(0.30, 0.10, B_check)  # R0 = 3, beta-gamma = 0.20
+same_R0_b <- sir_summary_avg(0.60, 0.20, B_check)  # R0 = 3, beta-gamma = 0.40
+same_diff <- sir_summary_avg(0.40, 0.20, B_check)  # R0 = 2, beta-gamma = 0.20
+
+rbind(
+  "(0.30, 0.10), R0=3"        = same_R0_a,
+  "(0.60, 0.20), R0=3"        = same_R0_b,
+  "(0.40, 0.20), R0=2, same beta-gamma as row 1" = same_diff
+)
+```
+
+Rows 1 and 2 share $R_0=3$: their final sizes are nearly identical, but
+their growth rates are quite different. Rows 1 and 3 share
+$\beta-\gamma=0.20$: their growth rates are close, but their final
+sizes are quite different. That's the whole phenomenon, in six numbers,
+before we ever look at a picture.
+
+## The grid computation
+
+This takes about a minute -- 256 grid points, each averaged over 120
+simulated epidemics.
+
+```{r sir-grid, cache=TRUE}
+beta_grid  <- seq(0.10, 1.00, length.out = 16)
+gamma_grid <- seq(0.05, 0.50, length.out = 16)
+sir_grid <- expand.grid(beta = beta_grid, gamma = gamma_grid)
+
+B_grid <- 120
+res <- t(mapply(function(b, g) sir_summary_avg(b, g, B_grid),
+                 sir_grid$beta, sir_grid$gamma))
+sir_grid$final_size  <- res[, "final_size"]
+sir_grid$growth_rate <- res[, "growth_rate"]
+```
+
+## The final-size surface
+
+```{r sir-final-size-plot}
+R0_lines <- data.frame(R0 = c(1, 2, 4, 6, 8))
+
+ggplot(sir_grid, aes(x = beta, y = gamma, z = final_size)) +
+  geom_raster(aes(fill = final_size)) +
+  geom_contour(color = "white", alpha = 0.6, bins = 12) +
+  geom_abline(data = R0_lines, aes(slope = 1 / R0, intercept = 0),
+              color = "red", linetype = "dashed") +
+  scale_fill_viridis_c(name = "final size") +
+  coord_cartesian(xlim = range(beta_grid), ylim = range(gamma_grid), expand = FALSE) +
+  labs(x = expression(beta), y = expression(gamma),
+       title = "Final size depends mainly on R0 = beta / gamma") +
+  theme_bw()
+```
+
+## The growth-rate surface
+
+```{r sir-growth-rate-plot}
+diff_lines <- data.frame(d = c(0.1, 0.3, 0.5, 0.7, 0.9))
+
+ggplot(sir_grid, aes(x = beta, y = gamma, z = growth_rate)) +
+  geom_raster(aes(fill = growth_rate)) +
+  geom_contour(color = "white", alpha = 0.6, bins = 12) +
+  geom_abline(data = diff_lines, aes(slope = 1, intercept = -d),
+              color = "red", linetype = "dashed") +
+  scale_fill_viridis_c(name = "growth rate") +
+  coord_cartesian(xlim = range(beta_grid), ylim = range(gamma_grid), expand = FALSE) +
+  labs(x = expression(beta), y = expression(gamma),
+       title = "Early growth rate depends mainly on beta - gamma") +
+  theme_bw()
+```
+
+The white contours in the two plots run in different directions: the
+first tracks the red $R_0=$ const lines, the second tracks the red
+$\beta-\gamma=$ const lines. This is what $m(\beta,\gamma)$ itself looks
+like -- not yet an SMM objective built from one fixed observed dataset.
+Let's build that now, the same way we built the Normal objective
+surfaces earlier: pick one fixed "observed" epidemic, and compare it to
+the grid we just simulated.
+
+## Building the actual objective surface
+
+```{r sir-observed-epidemic}
+beta0 <- 0.30; gamma0 <- 0.10  # the true parameters, not used below except to draw obs
+set.seed(99)
+obs <- sir_summary_once(beta0, gamma0)
+obs_final_size  <- obs["final_size"]
+obs_growth_rate <- obs["growth_rate"]
+obs
+```
+
+```{r sir-observed-variability}
+set.seed(100)
+B_var <- 300
+reps <- replicate(B_var, sir_summary_once(beta0, gamma0))
+var_final  <- var(reps["final_size", ])
+var_growth <- var(reps["growth_rate", ])
+c(var_final = var_final, var_growth = var_growth)
+```
+
+```{r sir-objective-surfaces}
+sir_grid$Q_final  <- (obs_final_size  - sir_grid$final_size)^2
+sir_grid$Q_growth <- (obs_growth_rate - sir_grid$growth_rate)^2
+sir_grid$Q_naive  <- sir_grid$Q_final + sir_grid$Q_growth
+sir_grid$Q_std    <- sir_grid$Q_final / var_final + sir_grid$Q_growth / var_growth
+
+plot_Q <- function(Q, title, k = 100) {
+  ## Clip the color scale to (min(Q), k * min(Q)): what matters for judging
+  ## identifiability is how much of the grid is *close to the best value
+  ## found*, not the full raw range of Q -- and final size's raw range is
+  ## many orders of magnitude larger than growth rate's, which would
+  ## otherwise swamp any comparison.
+  Qmin <- min(Q)
+  ggplot(sir_grid, aes(x = beta, y = gamma, z = Q)) +
+    geom_raster(aes(fill = Q)) +
+    geom_contour(color = "white", alpha = 0.5, bins = 12) +
+    geom_point(data = data.frame(beta = beta0, gamma = gamma0), inherit.aes = FALSE,
+               aes(x = beta, y = gamma),
+               shape = 4, size = 3, stroke = 1.3, color = "red") +
+    scale_fill_viridis_c(name = "Q", limits = c(Qmin, k * Qmin), oob = scales::squish) +
+    coord_cartesian(expand = FALSE) +
+    labs(x = expression(beta), y = expression(gamma), title = title) +
+    theme_bw()
+}
+
+plot_Q(sir_grid$Q_final,  "final size alone")
+plot_Q(sir_grid$Q_growth, "growth rate alone")
+plot_Q(sir_grid$Q_naive,  "both, unweighted")
+plot_Q(sir_grid$Q_std,    "both, standardized")
+```
+
+```{r sir-argmins}
+argmin_beta_gamma <- function(Q) sir_grid[which.min(Q), c("beta", "gamma")]
+cat("true: beta =", beta0, " gamma =", gamma0, "\n")
+rbind(
+  final_alone  = argmin_beta_gamma(sir_grid$Q_final),
+  growth_alone = argmin_beta_gamma(sir_grid$Q_growth),
+  naive        = argmin_beta_gamma(sir_grid$Q_naive),
+  standardized = argmin_beta_gamma(sir_grid$Q_std)
+)
+```
+
+Each panel's color scale is clipped to (min $Q$, 100$\times$ min $Q$):
+what matters for judging identifiability is how much of the grid is
+*close to the best value found*, not $Q$'s full raw range -- and final
+size's raw range is many orders of magnitude larger than growth rate's,
+which would otherwise swamp any comparison. The red $\times$ marks the
+true $(\beta,\gamma)$ on every panel.
+
+With that fixed, the two ridges are visible right where the earlier
+$m(\beta,\gamma)$ surfaces said they'd be: final size's near-minimum
+band runs the length of the $R_0=3$ diagonal, growth rate's runs along
+a *different* diagonal ($\beta-\gamma=$ const). Both bands do pass
+through the true point -- that's reassuring, and it has to be true,
+since the true parameters really do produce a small residual on each
+summary alone. But neither band is any *darker* at the true point than
+anywhere else along it: final size doesn't distinguish the true
+$(\beta,\gamma)$ from any other point sharing its $R_0$, and growth
+rate doesn't distinguish it from any other point sharing its
+$\beta-\gamma$. Naive (unweighted) combination lands right on top of
+final-size-alone, exactly like "first attempt: add squared
+discrepancies" did in Lecture 4. Standardizing is the one panel whose
+minimum is genuinely a *point*, not a stretch of a line -- the darkest
+cell sits right at the true parameters, and $Q$ climbs as you move away
+in either direction along the diagonal. That's the real signature of
+identifiability: not "this region is colorful," but "the color changes
+as you leave the truth."
+
+Standardizing doesn't fully erase the pull toward final size, though,
+and there's a real reason why: dividing by $\text{var}(\text{final
+size})$ corrects for how much final size *jitters* at the true
+parameters, but not for how *steep* its mean is there. A small step
+away from the truth moves final size's expected value by several
+standard deviations; the same step barely moves growth rate's.
+Standardizing by variance alone assumes the two summaries are on
+equally sensitive footing near the truth -- here they aren't, so final
+size still carries extra weight even after rescaling. Fixing that
+properly means weighting by sensitivity as well as noise, which is
+exactly the kind of thing a full efficient GMM weighting matrix (not
+just a diagonal one) is built to do.
+
+# Section 6: The exponential distribution
+
+```{r exponential-vary-lambda}
+lambdas <- c(0.5, 1, 2)
+
+df_lambda <- do.call(rbind, lapply(lambdas, function(l) {
+  data.frame(lambda = factor(l), value = rexp(n_draws, rate = l))
+}))
+
+ggplot(df_lambda, aes(x = value)) +
+  geom_histogram(bins = 40, boundary = 0, fill = "seagreen4", color = "white") +
+  facet_wrap(~ lambda, nrow = 1, labeller = label_bquote(lambda == .(as.character(lambda)))) +
+  coord_cartesian(xlim = c(0, 8)) +
+  labs(x = "y", y = "count", title = "Standard exponential (lambda = 1) and varying lambda") +
+  theme_bw()
+```
+
+$\lambda = 1$ is the *standard* exponential. Larger $\lambda$ concentrates
+more mass near zero -- events happen more often, so waits are shorter,
+on average $1/\lambda$. Smaller $\lambda$ spreads the distribution out
+further to the right.
