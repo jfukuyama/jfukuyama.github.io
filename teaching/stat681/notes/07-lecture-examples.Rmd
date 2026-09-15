@@ -1,0 +1,279 @@
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+theme_set(theme_bw())
+```
+
+Code behind today's slides.
+
+# Sampling distribution of the coin-flip estimator
+
+Estimate the probability $p$ that a coin lands heads based on ten coin
+flips, using the proportion of heads as the estimator,
+$\hat p=h(Y)=\text{number of heads}/10$.
+
+## The sampling distribution
+
+Suppose the true value is $p=0.6$. Simulate the entire experiment (flip
+the coin 10 times, calculate $\hat p$, save it) many times.
+
+```{r coin-sampling-distribution}
+p_true <- 0.6
+n1 <- 10
+B <- 3000
+
+set.seed(101)
+phat_n10 <- replicate(B, mean(rbinom(n1, 1, p_true)))
+
+ggplot(data.frame(phat = phat_n10), aes(x = phat)) +
+  geom_histogram(binwidth = 1 / n1, boundary = 0, fill = "steelblue", color = "white") +
+  geom_vline(xintercept = p_true, color = "firebrick", linetype = "dashed") +
+  labs(x = expression(hat(p)), y = "count",
+       title = "Sampling distribution of p-hat, n = 10, 3000 experiments")
+```
+
+This histogram contains 3,000 estimates, not 3,000 individual coin flips.
+
+## A different experiment, a different sampling distribution
+
+For a dataset of $n$ coin flips, the estimator is $\hat p_n = \frac1n\sum_{i=1}^n Y_i$.
+Changing $n$ gives a different estimator, with its own sampling
+distribution.
+
+```{r coin-by-sample-size}
+sizes <- c(10, 50, 200)
+set.seed(102)
+by_size <- do.call(rbind, lapply(sizes, function(n) {
+  phat <- replicate(B, mean(rbinom(n, 1, p_true)))
+  data.frame(phat = phat, n = n)
+}))
+by_size$n <- factor(paste0("n = ", by_size$n), levels = paste0("n = ", sizes))
+
+ggplot(by_size, aes(x = phat)) +
+  geom_histogram(bins = 40, fill = "steelblue", color = "white") +
+  geom_vline(xintercept = p_true, color = "firebrick", linetype = "dashed") +
+  facet_wrap(~n, scales = "free_y") +
+  labs(x = expression(hat(p)), y = "count",
+       title = "Sampling distribution of p-hat at three sample sizes (true p = 0.6)")
+```
+
+Experiments with more data produce sampling distributions that are more
+tightly concentrated around the true value.
+
+# Bootstrapping the coin flip
+
+With real data, $\theta_0$ is unknown; the parametric bootstrap replaces
+it with the fitted $\hat\theta$. Take the dataset `H H H H T H H T H H`
+(8 heads out of 10, so $\hat p=0.8$) as the observed data, and follow the
+bootstrap algorithm:
+
+1. Fit: $\hat p=h(Y_{\text{obs}})=0.8$.
+2. Simulate $B=3000$ new datasets of 10 flips from $\operatorname{Bernoulli}(0.8)$.
+3. Refit $\hat p^{*(b)}$ on each.
+4. Look at the distribution of the $\hat p^{*(b)}$'s.
+
+```{r coin-bootstrap}
+dataset3 <- c(1, 1, 1, 1, 0, 1, 1, 0, 1, 1)
+phat_obs <- mean(dataset3)
+phat_obs
+
+set.seed(103)
+phat_boot <- replicate(B, mean(rbinom(n1, 1, phat_obs)))
+
+se_boot <- sd(phat_boot)
+ci_boot <- quantile(phat_boot, c(0.025, 0.975))
+c(estimate = phat_obs, se = se_boot, ci_boot)
+```
+
+```{r coin-bootstrap-plot}
+ggplot(data.frame(phat = phat_boot), aes(x = phat)) +
+  geom_histogram(binwidth = 1 / n1, boundary = 0, fill = "steelblue", color = "white") +
+  geom_vline(xintercept = phat_obs, color = "firebrick", linetype = "dashed") +
+  labs(x = expression(hat(p)^"*"), y = "count",
+       title = "Bootstrap distribution of p-hat, repeat at the fitted p-hat = 0.8")
+```
+
+# Full simulation-based SMM: the Normal location-scale model
+
+$Y_i\sim N(\mu,\sigma^2)$, $\theta=(\mu,\sigma)$, fit using the
+identifiable summary pair $s(Y)=(\bar Y,\hat q_{.75}(Y))$. SMM is not the
+sensible way to fit a Normal model; we use it because we understand it
+well enough to check whether the bootstrap is doing what we intend. True
+values (known here only for pedagogical reasons): $\mu_0=5$, $\sigma_0=2$,
+$n=40$.
+
+## The estimator we will use
+
+For a candidate $\theta=(\mu,\sigma)$, simulate $R$ datasets of size
+$n=40$ and estimate the expected summaries,
+$\hat m_R(\theta)=\frac1R\sum_{r=1}^R s(Y_\theta^{(r)})$. Then minimize
+$Q_Y(\theta)=[s(Y)-\hat m_R(\theta)]^\top W[s(Y)-\hat m_R(\theta)]$. The
+estimator is the complete numerical procedure
+$h(Y)=\arg\min_{\mu,\sigma}Q_Y(\mu,\sigma)$, found with a numerical
+optimizer -- not the model's closed-form solution.
+
+```{r normal-smm-estimator}
+mu0 <- 5
+sigma0 <- 2
+n <- 40
+R_inner <- 2000
+B_outer <- 3000
+W <- diag(2)
+
+set.seed(2024)
+Z_bank <- matrix(rnorm(R_inner * n), nrow = R_inner, ncol = n)
+rowMeanZ <- rowMeans(Z_bank)
+
+make_mhat <- function(p) {
+  rowQZ <- apply(Z_bank, 1, quantile, probs = p, names = FALSE)
+  mbar <- mean(rowMeanZ)
+  qbar <- mean(rowQZ)
+  # Y_theta^(r) = mu + sigma * Z^(r), simulated once via Z_bank and reused
+  # for every candidate theta the optimizer tries.
+  function(mu, sigma) c(mu + sigma * mbar, mu + sigma * qbar)
+}
+
+fit_smm_full <- function(y, p, mhat_fun, W = diag(2), start = NULL) {
+  s_obs <- c(mean(y), quantile(y, p, names = FALSE))
+  Qfun <- function(theta) {
+    g <- s_obs - mhat_fun(theta[1], theta[2])
+    as.numeric(t(g) %*% W %*% g)
+  }
+  if (is.null(start)) start <- c(mean(y), max(sd(y), 0.1))
+  opt <- optim(start, Qfun, method = "L-BFGS-B",
+               lower = c(-Inf, 0.05), upper = c(Inf, Inf))
+  c(mu = opt$par[1], sigma = opt$par[2])
+}
+
+mhat_75 <- make_mhat(0.75)
+```
+
+## Step 0: The oracle sampling distribution (not part of the bootstrap)
+
+Only possible because this is a teaching simulation and we know
+$\theta_0=(\mu_0,\sigma_0)=(5,2)$. Repeat the complete experiment many
+times: simulate a dataset at $\theta_0$, fit it, record the estimate.
+
+```{r normal-oracle}
+set.seed(41)
+oracle_fits <- t(sapply(seq_len(B_outer), function(a) {
+  y <- rnorm(n, mu0, sigma0)
+  fit_smm_full(y, 0.75, mhat_75, W)
+}))
+```
+
+## Step 1: Fit one observed dataset
+
+```{r normal-observed-fit}
+set.seed(42)
+y_observed <- rnorm(n, mu0, sigma0)
+theta_hat <- fit_smm_full(y_observed, 0.75, mhat_75, W)
+theta_hat
+```
+
+## Step 2: Construct the bootstrap distribution
+
+Simulate new datasets from the fitted model, refit each with exactly the
+same procedure, and record the estimate.
+
+```{r normal-bootstrap}
+set.seed(43)
+boot_fits <- t(sapply(seq_len(B_outer), function(b) {
+  y <- rnorm(n, theta_hat["mu"], theta_hat["sigma"])
+  fit_smm_full(y, 0.75, mhat_75, W)
+}))
+```
+
+## Comparing the oracle and bootstrap distributions
+
+```{r normal-compare-plot}
+oracle_df <- data.frame(mu_hat = oracle_fits[, "mu"], sigma_hat = oracle_fits[, "sigma"],
+                         source = "Oracle (repeat at true theta0)")
+boot_df <- data.frame(mu_hat = boot_fits[, "mu"], sigma_hat = boot_fits[, "sigma"],
+                       source = "Bootstrap (repeat at fitted theta-hat)")
+cloud_df <- rbind(oracle_df, boot_df)
+
+ggplot(cloud_df, aes(x = mu_hat, y = sigma_hat)) +
+  geom_point(alpha = 0.12, color = "steelblue", size = 0.8) +
+  facet_wrap(~source) +
+  coord_equal() +
+  labs(x = expression(hat(mu)), y = expression(hat(sigma)),
+       title = "Two sampling distributions of the same SMM estimator")
+```
+
+## What we calculate from the bootstrap fits
+
+```{r normal-summary-table}
+se_mu_oracle <- sd(oracle_fits[, "mu"]); se_sigma_oracle <- sd(oracle_fits[, "sigma"])
+bias_mu_oracle <- mean(oracle_fits[, "mu"]) - mu0
+bias_sigma_oracle <- mean(oracle_fits[, "sigma"]) - sigma0
+
+se_mu_boot <- sd(boot_fits[, "mu"]); se_sigma_boot <- sd(boot_fits[, "sigma"])
+bias_mu_boot <- mean(boot_fits[, "mu"]) - theta_hat["mu"]
+bias_sigma_boot <- mean(boot_fits[, "sigma"]) - theta_hat["sigma"]
+
+data.frame(
+  quantity = c("SE(mu)", "SE(sigma)", "bias(mu)", "bias(sigma)"),
+  oracle_check = c(se_mu_oracle, se_sigma_oracle, bias_mu_oracle, bias_sigma_oracle),
+  bootstrap_estimate = c(se_mu_boot, se_sigma_boot, bias_mu_boot, bias_sigma_boot)
+)
+
+quantile(boot_fits[, "mu"], c(0.025, 0.975))
+quantile(boot_fits[, "sigma"], c(0.025, 0.975))
+```
+
+The oracle column is available only because we created the data
+ourselves. In practice we would have only the bootstrap column.
+
+## The summary choice still matters
+
+Change only the matched quantile, from $s_{.75}(Y)=(\bar Y,\hat q_{.75}(Y))$
+to $s_{.55}(Y)=(\bar Y,\hat q_{.55}(Y))$, and for each choice repeat the
+same procedure: simulate the summaries at candidate parameter values,
+minimize the SMM objective, repeat the entire fit across many datasets.
+
+```{r normal-quantile-choice}
+p_pair <- c(0.75, 0.55)
+set.seed(51)
+fits_by_p <- lapply(p_pair, function(p) {
+  mhat_p <- make_mhat(p)
+  t(sapply(seq_len(B_outer), function(a) {
+    y <- rnorm(n, mu0, sigma0)
+    fit_smm_full(y, p, mhat_p, W)
+  }))
+})
+names(fits_by_p) <- as.character(p_pair)
+
+sd_by_p <- sapply(fits_by_p, function(f) sd(f[, "sigma"]))
+sd_by_p
+```
+
+```{r normal-quantile-choice-plot}
+plot_df <- do.call(rbind, lapply(seq_along(p_pair), function(i) {
+  data.frame(sigma_hat = fits_by_p[[i]][, "sigma"],
+             p = sprintf("p = %.2f", p_pair[i]))
+}))
+
+ggplot(plot_df, aes(x = sigma_hat)) +
+  geom_histogram(bins = 50, fill = "steelblue", color = "white") +
+  geom_vline(xintercept = sigma0, color = "firebrick", linetype = "dashed") +
+  facet_wrap(~p, ncol = 1, scales = "free_y") +
+  labs(x = expression(hat(sigma)), y = "count",
+       title = "Sampling distribution of sigma-hat, by matched quantile")
+```
+
+Both summary pairs are identifiable, but the 55th percentile changes
+very little as $\sigma$ changes, relative to its sampling variability:
+the objective is much flatter in the $\sigma$ direction, estimates of
+$\sigma$ vary much more across datasets, optimization becomes less
+stable, and constrained estimates may accumulate at the boundary of the
+parameter space (here, `optim()`'s lower bound $\sigma\geq 0.05$).
+
+# What we saw
+
+Repeated simulation and fitting at the known truth produced the oracle
+sampling distribution; repeated simulation and fitting at the fitted
+value produced the parametric bootstrap distribution; comparing the two
+showed what the bootstrap is trying to approximate. Changing the
+summaries changed the sampling distribution, even though the generative
+model and sample size stayed the same.

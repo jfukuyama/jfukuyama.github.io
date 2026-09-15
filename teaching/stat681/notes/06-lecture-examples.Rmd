@@ -1,0 +1,416 @@
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+theme_set(theme_bw())
+set.seed(2026)  # set once, here -- never inside a simulator function
+```
+
+Code behind today's slides. There is no separate lab file for this
+lecture.
+
+# Section 1: Why not keep adding summaries?
+
+## A worked example: adding a third summary
+
+Recall estimating $(\beta,\gamma)$ in the SIR model. Using final size
+and early growth rate gives an ok estimate of both. What if we add a
+third summary, $I_2$, the raw case count on day 2?
+
+```{r sir-third-summary-setup}
+simulate_sir <- function(n_steps, beta, gamma, S0, I0, R0) {
+  N <- S0 + I0 + R0
+  S <- integer(n_steps + 1); I <- integer(n_steps + 1); R <- integer(n_steps + 1)
+  S[1] <- S0; I[1] <- I0; R[1] <- R0
+  for (t in seq_len(n_steps)) {
+    p_infect <- 1 - (1 - beta / N)^I[t]
+    delta_I <- rbinom(1, S[t], p_infect)
+    delta_R <- rbinom(1, I[t], gamma)
+    S[t + 1] <- S[t] - delta_I
+    I[t + 1] <- I[t] + delta_I - delta_R
+    R[t + 1] <- R[t] + delta_R
+  }
+  list(S = S, I = I, R = R)
+}
+N_sir <- 1000; I0_sir <- 20; n_steps_sir <- 60; window_sir <- 8; day2 <- 2
+beta0 <- 0.30; gamma0 <- 0.10
+
+summary_once <- function(beta, gamma) {
+  sim <- simulate_sir(n_steps_sir, beta, gamma, N_sir - I0_sir, I0_sir, 0)
+  final_size <- N_sir - tail(sim$S, 1)
+  I_early <- sim$I[1:(window_sir + 1)]
+  t_early <- 0:window_sir
+  growth_rate <- unname(coef(lm(log(pmax(I_early, 1)) ~ t_early))[2])
+  c(final_size = final_size, growth_rate = growth_rate, day2 = sim$I[day2 + 1])
+}
+```
+
+## Is $I_2$ informative, redundant, or weak?
+
+```{r sir-third-summary-diagnose, cache=TRUE}
+reps_truth <- t(replicate(500, summary_once(beta0, gamma0)))
+cor(reps_truth)          # I_2's correlation with the other two
+apply(reps_truth, 2, sd)
+
+# sensitivity: finite-difference approximation to d E[s]/d beta, evaluated
+# at beta0 -- a 10% bump in beta, divided by the size of that bump (not
+# just the raw shift in the summary's mean)
+m0 <- colMeans(reps_truth)
+delta_beta <- 0.1 * beta0
+m1 <- colMeans(t(replicate(500, summary_once(beta0 + delta_beta, gamma0))))
+sensitivity <- (m1 - m0) / delta_beta
+sensitivity / apply(reps_truth, 2, sd)   # sensitivity-to-noise ratio
+```
+
+$I_2$ is not simply redundant with either of the other two summaries,
+and its sensitivity-to-noise ratio is lower than growth rate's.
+
+## Including $I_2$ degrades performance
+
+Build a $(\beta,\gamma)$ grid, estimate $\hat\Omega^{-1}$ from a modest
+simulation budget ($B=10$), and compare RMSE using 2 summaries vs. 3.
+
+```{r sir-third-summary-grid, cache=TRUE}
+beta_grid <- seq(0.15, 0.55, length.out = 17)
+gamma_grid <- seq(0.05, 0.20, length.out = 17)
+grid <- expand.grid(beta = beta_grid, gamma = gamma_grid)
+B_grid <- 80
+summary_avg <- function(beta, gamma, B) rowMeans(replicate(B, summary_once(beta, gamma)))
+res <- t(mapply(function(b, g) summary_avg(b, g, B_grid), grid$beta, grid$gamma))
+grid$final_size <- res[, "final_size"]; grid$growth_rate <- res[, "growth_rate"]; grid$day2 <- res[, "day2"]
+
+estimate_bg <- function(obs, grid, Winv, mode) {
+  if (mode == "two") {
+    g <- cbind(obs["final_size"] - grid$final_size, obs["growth_rate"] - grid$growth_rate)
+  } else {
+    g <- cbind(obs["final_size"] - grid$final_size, obs["growth_rate"] - grid$growth_rate,
+               obs["day2"] - grid$day2)
+  }
+  Q <- rowSums((g %*% Winv) * g)
+  idx <- which.min(Q)
+  c(beta = grid$beta[idx], gamma = grid$gamma[idx])
+}
+
+run_comparison <- function(B_omega, n_outer = 15, n_reps = 50) {
+  rmse2 <- numeric(n_outer); rmse3 <- numeric(n_outer)
+  for (o in seq_len(n_outer)) {
+    reps <- t(replicate(B_omega, summary_once(beta0, gamma0)))
+    Winv2 <- solve(cov(reps[, c("final_size", "growth_rate")]))
+    Winv3 <- solve(cov(reps))
+    err2 <- matrix(NA, n_reps, 2); err3 <- matrix(NA, n_reps, 2)
+    for (i in seq_len(n_reps)) {
+      obs <- summary_once(beta0, gamma0)
+      e2 <- estimate_bg(obs, grid, Winv2, "two")
+      e3 <- estimate_bg(obs, grid, Winv3, "three")
+      err2[i, ] <- c(e2["beta"] - beta0, e2["gamma"] - gamma0)
+      err3[i, ] <- c(e3["beta"] - beta0, e3["gamma"] - gamma0)
+    }
+    rmse2[o] <- sqrt(mean(rowSums(err2^2)))
+    rmse3[o] <- sqrt(mean(rowSums(err3^2)))
+  }
+  list(rmse2 = rmse2, rmse3 = rmse3)
+}
+
+result_small_B <- run_comparison(B_omega = 10)
+cat("mean RMSE, 2 summaries:", round(mean(result_small_B$rmse2), 4), "\n")
+cat("mean RMSE, 3 summaries:", round(mean(result_small_B$rmse3), 4), "\n")
+cat("fraction of trials where 3 summaries is worse:",
+    mean(result_small_B$rmse3 > result_small_B$rmse2), "\n")
+```
+
+A genuinely valid, weak-but-not-redundant summary made the estimate
+worse on average, and worse in most individual trials -- even though we
+used the textbook-correct weighting rule, not $W=I$.
+
+# Section 2: MMD as histogram distance
+
+Running example for this section and the next: many independent
+households, each starting with one index case. The recorded datum per
+household is the total number infected, including the index case -- an
+outcome in $\{1,\ldots,K\}$.
+
+```{r household-sim}
+household_sir <- function(n_steps, beta, gamma, S0, I0, R0) {
+  N <- S0 + I0 + R0
+  S <- integer(n_steps + 1); I <- integer(n_steps + 1); R <- integer(n_steps + 1)
+  S[1] <- S0; I[1] <- I0; R[1] <- R0
+  for (t in seq_len(n_steps)) {
+    p_infect <- 1 - (1 - beta / N)^I[t]
+    delta_I <- rbinom(1, S[t], p_infect)
+    delta_R <- rbinom(1, I[t], gamma)
+    S[t + 1] <- S[t] - delta_I
+    I[t + 1] <- I[t] + delta_I - delta_R
+    R[t + 1] <- R[t] + delta_R
+  }
+  list(S = S, I = I, R = R)
+}
+total_infected <- function(K, beta, gamma, n_steps = 60) {
+  sim <- household_sir(n_steps, beta, gamma, K - 1, 1, 0)
+  K - tail(sim$S, 1)
+}
+
+K <- 8
+gamma0 <- 0.3
+beta_obs  <- 2.5 * gamma0   # "observed": R0 = 2.5
+beta_cand <- 1.5 * gamma0   # a candidate theta: R0 = 1.5
+```
+
+## Comparing observed and simulated data using histograms
+
+```{r discrete-example}
+n_obs <- 300
+obs_counts <- replicate(n_obs, total_infected(K, beta_obs, gamma0))
+sim_counts <- replicate(n_obs, total_infected(K, beta_cand, gamma0))
+p_hat <- sapply(1:K, function(j) mean(obs_counts == j))
+q_hat <- sapply(1:K, function(j) mean(sim_counts == j))
+p_hat
+q_hat
+sum((p_hat - q_hat)^2)  # d^2 -- the simplest histogram distance
+```
+
+For comparison, two independent draws of 300 households at the same
+$\theta$ as "observed" give a much smaller $d^2$ -- pure sampling noise:
+
+```{r discrete-example-noise-floor}
+sim_counts_same_theta <- replicate(n_obs, total_infected(K, beta_obs, gamma0))
+q_hat_same <- sapply(1:K, function(j) mean(sim_counts_same_theta == j))
+sum((p_hat - q_hat_same)^2)
+```
+
+```{r discrete-figure}
+df_pq <- data.frame(
+  category = factor(rep(1:K, 2)),
+  prob = c(p_hat, q_hat),
+  which = rep(c("observed  (p-hat)", "candidate theta  (q-hat)"), each = K)
+)
+ggplot(df_pq, aes(x = category, y = prob, fill = which)) +
+  geom_col(position = position_dodge(width = 0.7), width = 0.6) +
+  labs(title = "Total infected per household (1-8 possible)", fill = NULL)
+```
+
+## Checking the general MMD definition against the histogram case
+
+The general empirical definition of MMD, for any kernel $k$ and samples
+$x_1,\ldots,x_n\sim P$, $y_1,\ldots,y_m\sim Q$:
+$\widehat{\operatorname{MMD}}^2 = \frac{1}{n^2}\sum_{i,i'}k(x_i,x_{i'}) + \frac{1}{m^2}\sum_{j,j'}k(y_j,y_{j'}) - \frac{2}{nm}\sum_{i,j}k(x_i,y_j)$.
+For the equality kernel, this reduces algebraically to $\sum_j(\hat p_j-\hat q_j)^2$:
+
+```{r general-definition-check}
+Kxx_avg <- mean(outer(obs_counts, obs_counts, `==`))
+Kyy_avg <- mean(outer(sim_counts, sim_counts, `==`))
+Kxy_avg <- mean(outer(obs_counts, sim_counts, `==`))
+general_form <- Kxx_avg + Kyy_avg - 2 * Kxy_avg
+direct_form  <- sum((p_hat - q_hat)^2)
+c(general = general_form, direct = direct_form)
+```
+
+```{r equality-kernel-check}
+outcomes <- 1:K
+K_equality <- outer(outcomes, outcomes, function(a, b) as.numeric(a == b))
+K_equality
+
+as.numeric(t(p_hat - q_hat) %*% K_equality %*% (p_hat - q_hat))  # matches sum((p-q)^2) above
+```
+
+## SMM on the category frequencies
+
+Define one summary per possible value of $X$ -- its sample proportion,
+$s_j(X_1,\ldots,X_n) = \frac1n\sum_i \mathbf 1\{X_i=j\} = \hat p_j$ for
+$j=1,\ldots,8$ -- and run ordinary SMM with this eight-dimensional
+summary vector and $W=I$:
+
+```{r smm-w-identity}
+g_theta <- p_hat - q_hat
+W_identity <- diag(length(g_theta))
+Q_smm <- as.numeric(t(g_theta) %*% W_identity %*% g_theta)  # W = I
+Q_smm
+sum((p_hat - q_hat)^2)  # identical to the discrete MMD objective above
+```
+
+$Q(\theta) = g(\theta)^\top W g(\theta)$ with $W=I$ is exactly MMD
+between observed and simulated data.
+
+# Section 3: Smooth kernels
+
+Same total-infected support, 1 through 8 -- these are ordered counts, so
+a household with 2 people infected should plausibly count as more
+similar to one with 3 than to one with 8. We use the Gaussian kernel as
+the less-stringent alternative to the equality kernel.
+
+```{r kernel-matrices}
+K_eq <- outer(outcomes, outcomes, function(a, b) as.numeric(a == b))
+h_k <- 1.5
+K_smooth <- outer(outcomes, outcomes, function(a, b) exp(-(a - b)^2 / (2 * h_k^2)))
+
+mat_to_df <- function(Km, label) {
+  df <- expand.grid(x = outcomes, y = outcomes)
+  df$k <- as.vector(Km)
+  df$label <- label
+  df
+}
+df_k <- rbind(mat_to_df(K_eq, "equality kernel"),
+              mat_to_df(K_smooth, paste0("smooth kernel (h=", h_k, ")")))
+
+ggplot(df_k, aes(x = x, y = y, fill = k)) +
+  geom_raster() +
+  facet_wrap(~label) +
+  scale_fill_viridis_c(limits = c(0, 1)) +
+  coord_equal(expand = FALSE)
+```
+
+The same formula, a richer kernel: for a finite set of outcomes, any
+kernel can be written as a similarity matrix $K$, and
+$\operatorname{MMD}^2(P,Q) = (\mathbf p - \mathbf q)^\top K (\mathbf p - \mathbf q)$.
+With $K=I$ (the equality kernel), this collapses back to
+$\sum_j(p_j-q_j)^2$; with a smooth $K$, a mismatch that moves mass to a
+neighboring category is weighted differently than one that moves it far
+away.
+
+```{r kernel-quadratic-form}
+K_smooth_quad <- outer(outcomes, outcomes, function(a, b) exp(-(a - b)^2 / (2 * 1^2)))
+as.numeric(t(p_hat - q_hat) %*% K_smooth_quad %*% (p_hat - q_hat))
+```
+
+# Section 5: A distribution mean and variance can't distinguish
+
+```{r shape-family}
+simulate_shape <- function(n, a) {
+  S <- sample(c(-1, 1), n, replace = TRUE)
+  eps <- rnorm(n, 0, sqrt(1 - a^2))
+  a * S + eps
+}
+
+# confirm mean/variance invariance
+for (a in c(0, 0.3, 0.6, 0.9)) {
+  y <- simulate_shape(200000, a)
+  cat("a =", a, " mean =", round(mean(y), 3), " var =", round(var(y), 3), "\n")
+}
+```
+
+```{r shape-histograms}
+a_show <- c(0, 0.3, 0.6, 0.9)
+df_shape <- do.call(rbind, lapply(a_show, function(a) {
+  data.frame(a = factor(paste0("a = ", a)), value = simulate_shape(4000, a))
+}))
+ggplot(df_shape, aes(x = value)) +
+  geom_histogram(bins = 50, fill = "slateblue4", color = "white", boundary = 0) +
+  facet_wrap(~a, nrow = 1) +
+  coord_cartesian(xlim = c(-3, 3)) +
+  labs(title = "Same mean (0) and variance (1), increasingly separated shape")
+```
+
+## Two different methods for inferring $a$
+
+`a0` is the (unknown, to the estimator) true value; both objectives are
+built from one fixed observed sample and then evaluated by simulating at
+each candidate `a`.
+
+```{r mmd-function}
+mmd2_gaussian <- function(x, y, h) {
+  Kxx <- exp(-outer(x, x, "-")^2 / (2 * h^2))
+  Kyy <- exp(-outer(y, y, "-")^2 / (2 * h^2))
+  Kxy <- exp(-outer(x, y, "-")^2 / (2 * h^2))
+  mean(Kxx) + mean(Kyy) - 2 * mean(Kxy)
+}
+```
+
+```{r shape-objectives, cache=TRUE}
+n_shape <- 500
+a0 <- 0.7
+x_obs <- simulate_shape(n_shape, a0)
+a_grid <- seq(0, 0.95, by = 0.025)
+B_rep <- 30
+h_good <- 0.3
+
+mmd_vals <- sapply(a_grid, function(a) {
+  mean(sapply(1:B_rep, function(b) mmd2_gaussian(x_obs, simulate_shape(n_shape, a), h_good)))
+})
+obs_mean <- mean(x_obs); obs_var <- var(x_obs)
+smm_vals <- sapply(a_grid, function(a) {
+  mean(sapply(1:B_rep, function(b) {
+    y <- simulate_shape(n_shape, a)
+    (obs_mean - mean(y))^2 + (obs_var - var(y))^2
+  }))
+})
+
+a_grid[which.min(mmd_vals)]  # should recover a0 = 0.7
+a_grid[which.min(smm_vals)]  # should look essentially arbitrary
+```
+
+```{r shape-objectives-figure}
+df_obj <- rbind(
+  data.frame(a = a_grid, Q = smm_vals / max(smm_vals), method = "SMM: mean + variance"),
+  data.frame(a = a_grid, Q = mmd_vals / max(mmd_vals), method = "MMD (Gaussian kernel)")
+)
+ggplot(df_obj, aes(x = a, y = Q, color = method)) +
+  geom_line(linewidth = 1) + geom_point(size = 1.3) +
+  geom_vline(xintercept = a0, linetype = "dashed", color = "gray40") +
+  labs(title = "Only MMD localizes the true shape parameter",
+       subtitle = paste0("dashed line: true a = ", a0),
+       x = "candidate a", y = "objective (rescaled to own max)", color = NULL) +
+  theme(legend.position = "bottom")
+```
+
+## So have we completely solved the problem?
+
+The MMD curve above used one particular bandwidth. What happens at
+other values of $h$?
+
+```{r bandwidth-comparison, cache=TRUE}
+h_values <- c(0.03, 0.3, 3)
+mmd_by_h <- do.call(rbind, lapply(h_values, function(h) {
+  vals <- sapply(a_grid, function(a) {
+    mean(sapply(1:B_rep, function(b) mmd2_gaussian(x_obs, simulate_shape(n_shape, a), h)))
+  })
+  data.frame(a = a_grid, mmd = vals, h = factor(paste0("h = ", h), levels = paste0("h = ", h_values)))
+}))
+
+ggplot(mmd_by_h, aes(x = a, y = mmd)) +
+  geom_line(color = "steelblue4", linewidth = 1) +
+  geom_point(size = 1.1, color = "steelblue4") +
+  geom_vline(xintercept = a0, linetype = "dashed", color = "gray40") +
+  facet_wrap(~h, scales = "free_y", nrow = 1) +
+  labs(title = "Bandwidth controls what MMD can see", x = "candidate a", y = "MMD^2")
+```
+
+Too small ($h=0.03$): only nearly-identical pairs register as similar at
+all -- the true signal is there but noisier. Good ($h=0.3$): a more
+convincing minimum. Too large ($h=3$): the kernel treats every pair of
+points as almost equally similar, which washes out the signal.
+
+# Section 7: Indirect inference with an SIR auxiliary model
+
+Reuse the SIR simulator from Lectures 4-5. The auxiliary model is a
+quadratic fit to $\log(I_t+1)$ over the first 20 steps -- level, growth,
+curvature, in three numbers.
+
+```{r sir-simulator}
+N_pop <- 1000; I0 <- 20; gamma0 <- 0.10; window <- 20
+
+aux_fit <- function(I_traj) {
+  te <- 0:window
+  y <- log(pmax(I_traj[1:(window + 1)], 1))
+  unname(coef(lm(y ~ te + I(te^2))))
+}
+
+sim_example <- simulate_sir(window, 5 * gamma0, gamma0, N_pop - I0, I0, 0)
+aux_fit(sim_example$I)
+```
+
+```{r aux-fit-figure}
+te <- 0:window
+y <- log(pmax(sim_example$I[1:(window + 1)], 1))
+fit <- lm(y ~ te + I(te^2))
+df_fit <- data.frame(t = te, log_I = y, fitted = fitted(fit))
+
+ggplot(df_fit, aes(x = t)) +
+  geom_point(aes(y = log_I)) +
+  geom_line(aes(y = fitted), color = "firebrick", linewidth = 1) +
+  labs(title = "Auxiliary model fit to one simulated epidemic",
+       x = "t", y = "log(I_t + 1)")
+```
+
+$(\hat\alpha_0,\hat\alpha_1,\hat\alpha_2)$ would then be used as
+summaries for this particular simulation -- fit the auxiliary model to
+the one observed epidemic, average its fitted coefficients over many
+simulated epidemics at each candidate $(\beta,\gamma)$, and move
+$(\beta,\gamma)$ until that average resembles the observed fit.
