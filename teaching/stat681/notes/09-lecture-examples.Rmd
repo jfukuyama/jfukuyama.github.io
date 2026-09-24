@@ -1,0 +1,398 @@
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+theme_set(theme_bw())
+```
+
+Code behind the lecture 9 slides.
+
+```{r B}
+B <- 2000
+```
+
+# Section 1: A Normal location-scale model
+
+We are measuring one quantity 500 times: some quality of a manufacturing
+process, say the location of a pre-drilled hole in a piece of Ikea furniture.
+Most of the time the hole is in the right place, but a small minority of the
+time the machine messes up and you see a much wider spread.
+
+```{r normal-data}
+mu_true    <- 100
+sigma_good <- 1
+sigma_bad  <- 10
+p_bad      <- 0.01
+n_norm     <- 500
+
+set.seed(11)
+bad_reading <- rbinom(n_norm, 1, p_bad)
+y_obs <- rnorm(n_norm, mu_true, ifelse(bad_reading == 1, sigma_bad, sigma_good))
+
+sum(bad_reading)          # how many bad readings were drawn
+```
+
+## The observed measurements
+
+```{r normal-observed-hist, fig.height=3.2}
+ggplot(data.frame(y = y_obs), aes(x = y)) +
+    geom_histogram(bins = 60, fill = "firebrick", colour = "white") +
+    labs(x = "measurement", y = "count")
+```
+
+Almost all of the readings sit in a tight band. A handful are far away.
+
+## The fitted model
+
+Suppose we fit the model somehow and obtain $\hat\mu$ and $\hat\sigma$. It
+does not matter for what follows how we got them.
+
+```{r normal-fit}
+mu_hat    <- mean(y_obs)
+sigma_hat <- sqrt(mean((y_obs - mu_hat)^2))   # MLE, divides by n
+c(mu_hat = mu_hat, sigma_hat = sigma_hat)
+```
+
+## Simulate and compare
+
+```{r normal-hist, fig.height=3.2}
+set.seed(12)
+y_rep_one <- rnorm(n_norm, mu_hat, sigma_hat)
+
+cmp <- rbind(data.frame(y = y_obs,     which = "observed"),
+             data.frame(y = y_rep_one, which = "one simulation"))
+
+ggplot(cmp, aes(x = y)) +
+    geom_histogram(bins = 60, fill = "grey45", colour = "white") +
+    facet_wrap(~ which, nrow = 1) +
+    labs(x = "measurement", y = "count")
+```
+
+Two things are wrong at once: the simulated bulk is too wide, and the simulated
+data never produce a reading anywhere near the far ones.
+
+## Another way to see this: Q-Q plot
+
+Sort both datasets. Plot the $k$-th smallest simulated value against the $k$-th
+smallest observed value, for every $k$. The dashed line is where simulated
+$=$ observed.
+
+```{r normal-qq, fig.height=3.5}
+qq_df <- data.frame(observed = sort(y_obs), simulated = sort(y_rep_one))
+
+ggplot(qq_df, aes(x = observed, y = simulated)) +
+    geom_abline(slope = 1, intercept = 0, colour = "steelblue",
+                linetype = "dashed", linewidth = 1) +
+    geom_point(alpha = 0.6, size = 1.6) +
+    labs(x = "observed quantiles", y = "simulated quantiles")
+```
+
+## Is that just one unlucky simulation?
+
+```{r normal-qq-many, fig.height=3.5}
+set.seed(13)
+qq_many <- do.call(rbind, lapply(1:50, function(b)
+    data.frame(observed = sort(y_obs),
+               simulated = sort(rnorm(n_norm, mu_hat, sigma_hat)),
+               run = b)))
+
+ggplot(qq_many, aes(x = observed, y = simulated)) +
+    geom_abline(slope = 1, intercept = 0, colour = "steelblue",
+                linetype = "dashed", linewidth = 1) +
+    geom_line(aes(group = run), colour = "black", alpha = 0.15, linewidth = 0.4) +
+    labs(x = "observed quantiles", y = "simulated quantiles")
+```
+
+## A one-number summary
+
+How far from the middle is the most extreme reading?
+
+$$
+T(Y)=\max_i\left|Y_i-\operatorname{median}(Y)\right|.
+$$
+
+## The check in code
+
+```{r normal-check}
+outlier_distance <- function(y) max(abs(y - median(y)))
+
+T_obs_tail <- outlier_distance(y_obs)
+
+set.seed(2)
+T_rep_tail <- replicate(B, outlier_distance(rnorm(n_norm, mu_hat, sigma_hat)))
+
+c(observed   = T_obs_tail,
+  rep_median = median(T_rep_tail),
+  p_value    = (1 + sum(T_rep_tail >= T_obs_tail)) / (B + 1))
+```
+
+```{r normal-check-plot, fig.height=3.2}
+ggplot(data.frame(T = T_rep_tail), aes(x = T)) +
+    geom_histogram(bins = 40, fill = "grey75", colour = "white") +
+    geom_vline(xintercept = T_obs_tail, colour = "firebrick", linewidth = 1.2) +
+    labs(x = "max |y - median|", y = "replicate datasets")
+```
+
+The observed value is far outside anything the fitted model produces.
+
+## What did this check tell us?
+
+The failure is not evidence that $\mu$ or $\sigma$ was estimated imprecisely.
+Changing $\mu$ moves the distribution and changing $\sigma$ stretches it.
+Neither lets a Normal model produce a tight bulk *and* an occasional reading
+thirteen units away from the middle.
+
+# Section 2: Linear regression
+
+## Reaction velocity and substrate concentration
+
+The `Puromycin` data in R record reaction velocity at several substrate
+concentrations. We use one treatment group and start with a linear model.
+
+```{r puro-fit}
+puro <- subset(Puromycin, state == "treated")
+fit  <- lm(rate ~ conc, data = puro)
+summary(fit)$coefficients
+```
+
+## The observed data
+
+```{r puro-plot, fig.height=3.2}
+ggplot(puro, aes(x = conc, y = rate)) +
+    geom_point(colour = "firebrick", size = 2.8) +
+    labs(x = "substrate concentration (ppm)", y = "reaction velocity")
+```
+
+Velocity rises with concentration, steeply at first and then much less so.
+
+## What experiment should we imitate?
+
+The concentrations were part of the experimental design, so we hold them fixed.
+Each replicate draws new responses at exactly the observed `conc` values.
+
+```{r puro-replicate}
+mu_fitted <- fitted(fit)
+sigma_lm  <- summary(fit)$sigma
+
+simulate_response <- function() rnorm(nrow(puro), mu_fitted, sigma_lm)
+```
+
+## Simulate and compare
+
+```{r puro-overlay, fig.height=3.4}
+set.seed(31)
+ovl <- rbind(
+    data.frame(conc = puro$conc, rate = puro$rate,           which = "observed"),
+    data.frame(conc = puro$conc, rate = simulate_response(), which = "one simulation")
+)
+
+ggplot(ovl, aes(x = conc, y = rate, colour = which, shape = which)) +
+    geom_point(size = 2.8) +
+    scale_colour_manual(values = c("observed" = "firebrick",
+                                    "one simulation" = "grey35")) +
+    labs(x = "substrate concentration (ppm)", y = "reaction velocity",
+         colour = NULL, shape = NULL)
+```
+
+## Many simulations at once
+
+```{r puro-violin, fig.height=3.6}
+set.seed(32)
+n_sim <- 500
+sim_long <- data.frame(
+    conc = rep(puro$conc, n_sim),
+    rate = as.vector(replicate(n_sim, simulate_response()))
+)
+
+ggplot(sim_long, aes(x = conc, y = rate)) +
+    geom_violin(aes(group = conc), width = 0.035,
+                fill = "grey80", colour = "grey45") +
+    geom_point(data = puro, colour = "firebrick", size = 2.8) +
+    labs(x = "substrate concentration (ppm)", y = "reaction velocity")
+```
+
+Each grey shape is the distribution of simulated velocities at that
+concentration.
+
+## Averaging the runs at each concentration
+
+```{r puro-violin-mean, fig.height=3.6}
+obs_mean <- data.frame(
+    conc = as.numeric(names(tapply(puro$rate, puro$conc, mean))),
+    rate = as.numeric(tapply(puro$rate, puro$conc, mean))
+)
+
+set.seed(33)
+sim_mean <- do.call(rbind, lapply(seq_len(n_sim), function(b) {
+    y <- simulate_response()
+    data.frame(conc = as.numeric(names(tapply(y, puro$conc, mean))),
+               rate = as.numeric(tapply(y, puro$conc, mean)))
+}))
+
+ggplot(sim_mean, aes(x = conc, y = rate)) +
+    geom_violin(aes(group = conc), width = 0.035,
+                fill = "grey80", colour = "grey45") +
+    geom_point(data = obs_mean, colour = "firebrick", size = 2.8) +
+    labs(x = "substrate concentration (ppm)", y = "mean reaction velocity")
+```
+
+Each concentration was run twice and averaged, and the red dots are the average
+of the observed data at each concentration.
+
+## One potential discrepancy
+
+Every concentration was run exactly twice, and so we can measure the amount of
+noise using the absolute difference between the two observations at a given
+concentration.
+
+$$
+T(Y)=\sum_{\text{concentrations }c}\left|Y_{c,1}-Y_{c,2}\right|.
+$$
+
+## The pairs check in code
+
+```{r puro-pairs}
+pair_spread <- function(y) sum(abs(tapply(y, puro$conc, diff)))
+
+T_obs_pairs <- pair_spread(puro$rate)
+
+set.seed(4)
+T_rep_pairs <- replicate(B, pair_spread(simulate_response()))
+
+# Lack of fit can only inflate sigma_hat, so this is a lower-tail check.
+c(observed   = T_obs_pairs,
+  rep_median = median(T_rep_pairs),
+  p_value    = (1 + sum(T_rep_pairs <= T_obs_pairs)) / (B + 1))
+```
+
+```{r puro-pairs-plot, fig.height=3.5}
+ggplot(data.frame(T = T_rep_pairs), aes(x = T)) +
+    geom_histogram(bins = 40, fill = "grey75", colour = "white") +
+    geom_vline(xintercept = T_obs_pairs, colour = "firebrick", linewidth = 1.2) +
+    labs(x = "total spread within the replicate pairs", y = "replicate datasets")
+```
+
+## Two different ways to see one failure
+
+The violin plots and this statistic detect the same defect in different ways:
+
+* the violins show the true mean function bending where the line is straight;
+* the pairs show the noise estimate inflated to cover that bend.
+
+```{r puro-pure-error}
+c(sigma_hat_from_line = sigma_lm,
+  pure_error_sd = sqrt(sum(tapply(puro$rate, puro$conc, diff)^2) /
+                       (2 * length(unique(puro$conc)))))
+```
+
+# Section 3: A single-server queue
+
+## We have data and a fitted model
+
+We observe one queue: the arrival times and the waiting times of a long run of
+customers. Suppose we have fitted $\lambda$ and $\mu$ somehow. As before, how
+we fitted them does not matter here.
+
+```{r queue-sim}
+queue_from_durations <- function(interarrival, service) {
+    n <- length(interarrival)
+    arrival   <- cumsum(interarrival)
+    start     <- numeric(n)
+    departure <- numeric(n)
+    for (i in seq_len(n)) {
+        start[i]     <- if (i == 1) arrival[i] else max(arrival[i], departure[i - 1])
+        departure[i] <- start[i] + service[i]
+    }
+    data.frame(customer = seq_len(n), interarrival, service,
+               arrival, start, departure, waiting = start - arrival)
+}
+
+simulate_queue <- function(n_customers, lambda, mu)
+    queue_from_durations(rexp(n_customers, lambda), rexp(n_customers, mu))
+```
+
+```{r queue-data}
+n_cust <- 1000
+lambda_true <- 0.50
+
+set.seed(5)
+slow <- rbinom(n_cust, 1, 0.1)
+service_obs <- ifelse(slow == 1, rexp(n_cust, rate = 1 / 4.6),
+                                 rexp(n_cust, rate = 1 / 0.6))
+interarrival_obs  <- rexp(n_cust, lambda_true)
+queue_obs   <- queue_from_durations(interarrival_obs, service_obs)
+
+lambda_hat <- 1 / mean(interarrival_obs)
+mu_hat_q   <- 1 / mean(service_obs)
+c(lambda_hat = lambda_hat, mu_hat = mu_hat_q, rho = lambda_hat / mu_hat_q)
+```
+
+## The observed waiting times
+
+```{r queue-observed-hist, fig.height=3.2}
+ggplot(data.frame(w = queue_obs$waiting), aes(x = w)) +
+    geom_histogram(bins = 50, fill = "firebrick", colour = "white") +
+    labs(x = "waiting time", y = "customers")
+```
+
+## Simulate and compare
+
+Simulate one complete queue from the fitted model (same number of customers,
+same fitted rates) and put its waiting times beside the observed ones.
+
+```{r queue-hist-compare, fig.height=3.2}
+set.seed(8)
+queue_rep_one <- simulate_queue(n_cust, lambda_hat, mu_hat_q)
+
+qcmp <- rbind(
+    data.frame(w = queue_obs$waiting,     which = "observed"),
+    data.frame(w = queue_rep_one$waiting, which = "one simulation")
+)
+
+ggplot(qcmp, aes(x = w, fill = which)) +
+    geom_histogram(bins = 50, colour = "white") +
+    facet_wrap(~ which, nrow = 1) +
+    scale_fill_manual(values = c("observed" = "firebrick",
+                                  "one simulation" = "grey45")) +
+    guides(fill = "none") +
+    labs(x = "waiting time", y = "customers")
+```
+
+## The queue check in code
+
+```{r queue-wait}
+mean_wait <- function(q) mean(q$waiting)
+
+T_obs_wait <- mean_wait(queue_obs)
+set.seed(7)
+T_rep_wait <- replicate(B, mean_wait(simulate_queue(n_cust, lambda_hat, mu_hat_q)))
+
+c(observed   = T_obs_wait,
+  rep_median = median(T_rep_wait),
+  p_value    = (1 + sum(T_rep_wait >= T_obs_wait)) / (B + 1))
+```
+
+```{r queue-wait-plot, fig.height=3.5}
+ggplot(data.frame(T = T_rep_wait), aes(x = T)) +
+    geom_histogram(bins = 40, fill = "grey75", colour = "white") +
+    geom_vline(xintercept = T_obs_wait, colour = "firebrick", linewidth = 1.2) +
+    labs(x = "mean waiting time", y = "replicate datasets")
+```
+
+## What did this check tell us?
+
+* Mainly that the model is insufficient to explain waiting times.
+* You would need to know a bit more about the model and play around with other
+  possibilities to see how to fix it.
+* In this case, it could be fixed by modifying the service-time distribution
+  (the data were actually generated under a model where arrivals were from an
+  exponential distribution but service times were from a distribution with
+  heavier tails).
+
+# What we saw
+
+* Uncertainty quantification and model checking answer different questions.
+* A generative model makes predictions beyond the quantities used to fit it.
+* We check those predictions by simulating complete datasets and calculating
+  the same features in observed and replicated data.
+* A failed check is most valuable when it points toward a specific weakness in
+  the model and a plausible revision.
