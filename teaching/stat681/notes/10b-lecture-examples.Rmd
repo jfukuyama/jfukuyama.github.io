@@ -1,0 +1,120 @@
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Code behind the lecture 10b slides: rejection sampling for the three examples.
+Each example has a simulator for the unconditional distribution (step 1) and a
+function that repeats it until the outcome is in $E$ (steps 2-4).
+
+# Disease example
+
+Simulate $(D, T)$: disease status, then a test result whose probability depends on $D$.
+
+```{r disease-simulate}
+set.seed(681)
+simulate_DT <- function() {
+  D <- rbinom(1, size = 1,
+              prob = 0.01)
+  p <- ifelse(D == 1,
+              0.90, 0.05)
+  T <- rbinom(1, size = 1,
+              prob = p)
+  return(list(D = D, T = T))
+}
+```
+
+Keep $D$ from the first run with a positive test, $(D,T) \in E = \{(0,1), (1,1)\}$.
+
+```{r disease-reject}
+rejection_sample_DT <-
+  function() {
+    while (TRUE) {
+      DT <- simulate_DT()
+      if (DT$T == 1)
+        return(DT$D)
+    }
+  }
+rejection_sample_DT()
+```
+
+Repeat to estimate $\Pr(D = 1 \mid (D,T) \in E)$; the exact value is $2/13 \approx 0.154$.
+
+```{r disease-estimate}
+draws <- replicate(5000, rejection_sample_DT())
+mean(draws)
+```
+
+# Duration example
+
+Simulate the cessation week $R$ from the table in Example 1.
+
+```{r duration-simulate}
+set.seed(681)
+simulate_R <- function() {
+  probs <- c(0.082, 0.092, 0.099,
+             0.151, 0.175, 0.086,
+             0.110, 0.072, 0.041,
+             0.092)
+  R <- sample(7:16, size = 1,
+              prob = probs)
+  return(R)
+}
+```
+
+Keep $R$ from the first run with $R \in E = \{14, 15, 16\}$.
+
+```{r duration-reject}
+rejection_sample_R <-
+  function() {
+    while (TRUE) {
+      R <- simulate_R()
+      if (R %in% c(14, 15, 16))
+        return(R)
+    }
+  }
+rejection_sample_R()
+```
+
+Repeat to estimate the conditional distribution of $R$; the exact values are
+$0.35$, $0.20$ and $0.45$ for weeks 14, 15 and 16.
+
+```{r duration-estimate}
+draws <- replicate(5000, rejection_sample_R())
+table(draws) / length(draws)
+```
+
+# Series example
+
+Simulate all five games ($1$ means A wins) and the series winner $W$.
+
+```{r series-simulate}
+set.seed(681)
+simulate_series <- function() {
+  X <- rbinom(5, size = 1,
+              prob = 0.5)
+  W <- as.integer(sum(X) >= 3)
+  return(list(X = X, W = W))
+}
+```
+
+Keep $W$ from the first run whose first three games are A, B, A.
+
+```{r series-reject}
+rejection_sample_series <-
+  function() {
+    while (TRUE) {
+      XW <- simulate_series()
+      start <- XW$X[1:3]
+      if (all(start == c(1,0,1)))
+        return(XW$W)
+    }
+  }
+rejection_sample_series()
+```
+
+Repeat to estimate $\Pr(W = 1 \mid \mathbf{X} \in E)$; the exact value is $3/4$.
+
+```{r series-estimate}
+draws <- replicate(5000, rejection_sample_series())
+mean(draws)
+```
