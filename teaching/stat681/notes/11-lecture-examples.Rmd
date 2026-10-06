@@ -1,0 +1,169 @@
+# Three possible coins
+
+Simulate $\theta\in\{1/4,1/2,3/4\}$ and two coin flips.
+
+```{r three-coin-simulator}
+set.seed(681)
+simulate_three_coin <- function(prior_probs = c(1/3, 1/3, 1/3)) {
+  theta <- sample(c(0.25, 0.5, 0.75),
+                  size = 1, prob = prior_probs)
+  X <- rbinom(2, size = 1,
+              prob = theta)
+  return(list(theta = theta, X = X))
+}
+```
+
+Keep only HH, coded as $X=(1,1)$.
+
+```{r three-coin-rejection}
+rejection_sample_three_coin <-
+  function(prior_probs = c(1/3, 1/3, 1/3)) {
+    while (TRUE) {
+      run <- simulate_three_coin(prior_probs)
+      if (all(run$X == c(1, 1)))
+        return(run$theta)
+    }
+  }
+rejection_sample_three_coin()
+```
+
+Estimate the posterior probabilities from accepted draws.
+
+```{r three-coin-posterior}
+draws <- replicate(5000,
+  rejection_sample_three_coin())
+
+# Fraction of accepted draws
+# at each value:
+table(draws) / 5000
+```
+
+Repeat with prior probabilities $(0.6,0.3,0.1)$.
+
+```{r three-coin-new-prior}
+new_prior <- c(0.6, 0.3, 0.1)
+new_draws <- replicate(5000,
+  rejection_sample_three_coin(new_prior))
+table(factor(new_draws,
+  levels = c(0.25, 0.5, 0.75))) / 5000
+```
+
+# Continuous prior for a coin
+
+Simulate $\theta\sim\operatorname{Uniform}(0,1)$ and six flips.
+
+```{r continuous-coin-simulator}
+set.seed(681)
+simulate_continuous_coin <- function() {
+  theta <- runif(1)
+  X <- rbinom(6, size = 1,
+              prob = theta)
+  return(list(theta = theta, X = X))
+}
+```
+
+Keep the exact observed sequence HHTHHT.
+
+```{r continuous-coin-rejection}
+rejection_sample_continuous_coin <-
+  function() {
+    while (TRUE) {
+      run <- simulate_continuous_coin()
+      if (all(run$X == c(1, 1, 0, 1, 1, 0)))
+        return(run$theta)
+    }
+  }
+rejection_sample_continuous_coin()
+```
+
+Estimate the posterior after matching the complete sequence.
+
+```{r continuous-coin-posterior}
+draws <- replicate(2000,
+  rejection_sample_continuous_coin())
+mean(draws)
+hist(draws, breaks = 40,
+     xlim = c(0, 1),
+     xlab = "theta", main = "")
+```
+
+Keep any sequence with four heads instead.
+
+```{r continuous-coin-count}
+rejection_sample_coin_count <-
+  function() {
+    while (TRUE) {
+      run <- simulate_continuous_coin()
+      if (sum(run$X) == 4)
+        return(run$theta)
+    }
+  }
+draws_count <- replicate(2000,
+  rejection_sample_coin_count())
+```
+
+# Dependent rainy days
+
+Simulate six days; each day after the first persists with probability $1/2$ or redraws using $\theta$.
+
+```{r rain-simulator}
+set.seed(681)
+simulate_rain <- function() {
+  theta <- runif(1)
+  X <- integer(6)
+  X[1] <- rbinom(1, size = 1, prob = theta)
+  for (day in 2:6) {
+    if (runif(1) < 0.5) {
+      X[day] <- X[day - 1]                         # weather persists
+    } else {
+      X[day] <- rbinom(1, size = 1, prob = theta)   # new state
+    }
+  }
+  return(list(theta = theta, X = X))
+}
+```
+
+Use one rejection sampler with a condition $E$ on the six-day sequence.
+
+```{r rain-rejection}
+rejection_sample_rain <-
+  function(E) {
+    while (TRUE) {
+      run <- simulate_rain()
+      if (E(run$X))
+        return(run$theta)
+    }
+  }
+```
+
+Match the complete sequences DRRRRD and RDRDRR.
+
+```{r rain-exact-patterns}
+E_DRRRRD <- function(X)
+  all(X == c(0, 1, 1, 1, 1, 0))
+E_RDRDRR <- function(X)
+  all(X == c(1, 0, 1, 0, 1, 1))
+
+rejection_sample_rain(E_RDRDRR)
+```
+
+Compare posterior means for the two complete sequences.
+
+```{r rain-exact-posteriors}
+draws <- function(E)
+  replicate(2000,
+    rejection_sample_rain(E))
+
+mean(draws(E_DRRRRD))
+mean(draws(E_RDRDRR))
+```
+
+Condition on four rainy days, regardless of order.
+
+```{r rain-count-posterior}
+E_count <- function(X)
+  sum(X) == 4
+count_draws <- draws(E_count)
+mean(count_draws)
+```
+

@@ -1,0 +1,273 @@
+# First example: normal location model
+
+$\theta \sim \text{Uniform}[-3,3]$, $X \mid \theta \sim N(\theta, 1)$. Suppose we observe $x_{\text{obs}} = 0.8$.
+
+```{r normal-simulator}
+set.seed(681)
+simulate_normal <- function() {
+  theta <- runif(1, -3, 3)
+  X <- rnorm(1, mean = theta,
+             sd = 1)
+  return(list(theta = theta,
+              X = X))
+}
+```
+
+Try rejection sampling.
+
+```{r normal-rejection}
+rejection_sample_normal <-
+  function(x_obs = 0.8) {
+    while (TRUE) {
+      run <- simulate_normal()
+      if (run$X == x_obs)
+        return(run$theta)
+    }
+  }
+
+X <- replicate(100000,
+  simulate_normal()$X)
+sum(X == 0.8)   # 0
+```
+
+Doesn't work! $P(X = 0.8) = 0$, so `rejection_sample_normal()` never returns. (Don't run it.)
+
+# Approximate Bayesian computation
+
+Keep $\theta^*$ if $d(S(X^*), S(x_{\text{obs}})) < \epsilon$. Take $S(x) = x$ and $d(x,y) = |x - y|$.
+
+```{r abc-normal}
+abc_sample_normal <-
+  function(eps, x_obs = 0.8) {
+    while (TRUE) {
+      run <- simulate_normal()
+      if (abs(run$X - x_obs) < eps)
+        return(run$theta)
+    }
+  }
+```
+
+# What does $\epsilon$ do?
+
+Compare $\epsilon = 1.5$, $0.2$, $0.05$. The orange line is the exact posterior.
+
+```{r tolerance-comparison, fig.width = 10, fig.height = 3.5}
+eps_values <- c(1.5, 0.2, 0.05)
+draws <- lapply(eps_values, function(eps)
+  replicate(2000, abc_sample_normal(eps)))
+
+grid <- seq(-3, 3, length.out = 1001)
+exact <- dnorm(grid, 0.8, 1) / (pnorm(3, 0.8, 1) - pnorm(-3, 0.8, 1))
+
+par(mfrow = c(1, 3))
+for (j in 1:3) {
+  hist(draws[[j]], breaks = seq(-3, 3, by = 0.2), freq = FALSE,
+       ylim = c(0, 0.5), xlab = "theta",
+       main = paste("Tolerance", eps_values[j]))
+  lines(grid, exact, col = "orange", lwd = 2)
+}
+```
+
+Compare the tolerances with Q–Q plots.
+
+```{r tolerance-qq, fig.width = 10, fig.height = 3.5}
+par(mfrow = c(1, 3))
+for (pair in list(c(1, 2), c(1, 3), c(2, 3))) {
+  qqplot(draws[[pair[1]]], draws[[pair[2]]],
+         xlab = paste("epsilon =", eps_values[pair[1]]),
+         ylab = paste("epsilon =", eps_values[pair[2]]))
+  abline(0, 1, lty = 2)
+}
+```
+
+# What if we have twenty measurements?
+
+A direct extension retains a dataset only when every simulated measurement is close to its observed counterpart: $\max_i |X_i-x_{\mathrm{obs},i}|<\epsilon$.
+
+```{r twenty-measurements}
+set.seed(681)
+x_obs <- rnorm(20, 0.8, 1)   # observed data
+X <- rnorm(20, 0.8, 1)       # simulated at theta = 0.8
+
+plot_match <- function(x_obs, X, eps) {
+  near <- abs(X - x_obs) < eps
+  i <- seq_along(x_obs)
+  plot(i, x_obs, pch = 4, ylim = range(x_obs - eps, x_obs + eps, X),
+       xlab = "measurement i", ylab = "value",
+       main = paste(sum(near), "of", length(X), "within", eps))
+  segments(i, x_obs - eps, i, x_obs + eps)
+  points(i, X, pch = 16, col = ifelse(near, "darkgreen", "gray"))
+}
+plot_match(x_obs, X, eps = 0.5)
+```
+
+Each simulated measurement has to land inside its own bar.
+
+# How might we check that the sample mean is sufficient?
+
+We will compare two summaries of the twenty measurements: $S(X)$ = mean of all twenty (sufficient) and $S(X)$ = mean of the first ten (not sufficient).
+
+Row $i$ of `X` is twenty measurements simulated with $\theta_i$. Table rows: $\theta$ above its median; columns: $a^\top X$ above its median.
+
+```{r check-summary}
+set.seed(682)
+n <- 20; N <- 200000
+theta <- runif(N, -3, 3)
+X <- matrix(rnorm(N * n, mean = theta), nrow = N)
+check_summary <- function(S_X, S_x_obs, width = 0.05) {
+  keep <- abs(S_X - S_x_obs) < width   # S(X) near S(x_obs)
+  a <- rnorm(n)                      # random direction
+  proj <- X[keep, ] %*% a            # projection a'X
+  th <- theta[keep]
+  table(th > median(th), proj > median(proj)) / sum(keep)
+}
+
+check_summary(rowMeans(X), mean(x_obs))
+check_summary(rowMeans(X[, 1:10]), mean(x_obs[1:10]))
+```
+
+Four random directions: plot $\theta$ against $a^\top X$ for the kept runs, using the same four directions for both summaries. Orange lines are the medians; the numbers are the fractions of kept runs in each box.
+
+```{r four-directions, fig.width = 12, fig.height = 6}
+A <- matrix(rnorm(n * 4), nrow = n)   # four random directions
+plot_directions <- function(S_X, S_x_obs, A, width = 0.05) {
+  keep <- abs(S_X - S_x_obs) < width
+  th <- theta[keep]
+  for (k in 1:ncol(A)) {
+    proj <- drop(X[keep, ] %*% A[, k])
+    plot(proj, th, pch = 16, cex = 0.3, col = "gray40",
+         xlab = paste0("a'X, direction ", k), ylab = "theta")
+    abline(v = median(proj), h = median(th), col = "orange", lwd = 2)
+    hi_t <- th > median(th); hi_p <- proj > median(proj)
+    legend("topleft", sprintf("%.2f", mean(!hi_p & hi_t)), bty = "n")
+    legend("topright", sprintf("%.2f", mean(hi_p & hi_t)), bty = "n")
+    legend("bottomleft", sprintf("%.2f", mean(!hi_p & !hi_t)), bty = "n")
+    legend("bottomright", sprintf("%.2f", mean(hi_p & !hi_t)), bty = "n")
+  }
+}
+
+par(mfrow = c(2, 4))
+plot_directions(rowMeans(X), mean(x_obs), A)                # top: mean of all 20
+plot_directions(rowMeans(X[, 1:10]), mean(x_obs[1:10]), A)  # bottom: mean of first 10
+```
+
+Top: every box holds 1/4 of the runs, in every direction. Bottom: the boxes are uneven by different amounts in different directions.
+
+Many random directions: correlations between $\theta$ and $a^\top X$ across 200 random directions. Dashed lines mark $\pm 2/\sqrt{\text{number of runs}}$.
+
+```{r many-directions, fig.width = 9, fig.height = 3.5}
+direction_cors <- function(S_X, S_x_obs, width = 0.05, K = 200) {
+  keep <- abs(S_X - S_x_obs) < width
+  A <- matrix(rnorm(n * K), nrow = n)   # K random directions
+  drop(cor(theta[keep], X[keep, ] %*% A))
+}
+summaries <- list("Mean of all 20" = list(rowMeans(X), mean(x_obs)),
+                  "Mean of first 10" = list(rowMeans(X[, 1:10]), mean(x_obs[1:10])))
+
+par(mfrow = c(1, 2))
+for (nm in names(summaries)) {
+  S_X <- summaries[[nm]][[1]]; S_x_obs <- summaries[[nm]][[2]]
+  r <- direction_cors(S_X, S_x_obs)
+  hist(r, breaks = seq(-0.6, 0.6, by = 0.025), main = nm,
+       xlab = "correlation of theta with a'X")
+  abline(v = c(-2, 2) / sqrt(sum(abs(S_X - S_x_obs) < 0.05)), lty = 2)
+}
+```
+
+# A learned summary for the rain model
+
+Candidate features: rainy-day count, weather changes, endpoint weather, and longest rainy run. Use simulations to learn how these features jointly predict $\theta$.
+
+```{r rain-features}
+rain_features <- function(N, days = 6) {
+  theta <- runif(N)
+  X <- matrix(0L, N, days)
+  X[, 1] <- rbinom(N, 1, theta)
+  for (d in 2:days) {
+    redraw <- runif(N) >= 0.5           # otherwise weather persists
+    X[, d] <- X[, d - 1]
+    X[redraw, d] <- rbinom(sum(redraw), 1, theta[redraw])
+  }
+  longest <- current <- integer(N)
+  for (d in 1:days) {
+    current <- ifelse(X[, d] == 1, current + 1L, 0L)
+    longest <- pmax(longest, current)
+  }
+  data.frame(theta, count = rowSums(X),
+             changes = rowSums(X[, -1] != X[, -days]),
+             first = X[, 1], last = X[, days], longest)
+}
+
+set.seed(687)
+train <- rain_features(150000)
+fit <- lm(theta ~ count + changes + first + last + longest, data = train)
+round(coef(fit), 3)
+```
+
+The learned summary $S(X)$ is the fitted prediction. For DRRRRD:
+
+```{r rain-observed}
+obs <- data.frame(count = 4, changes = 2, first = 0, last = 0, longest = 4)
+predict(fit, obs)
+```
+
+The learned summary on held-out simulations.
+
+```{r rain-heldout, fig.width = 5, fig.height = 5}
+set.seed(688)
+heldout <- rain_features(50000)
+pred <- predict(fit, heldout)
+show <- sample(nrow(heldout), 5000)
+plot(pred[show], heldout$theta[show], pch = 16, cex = 0.3,
+     xlim = c(0, 1), ylim = c(0, 1),
+     xlab = "Learned summary / prediction", ylab = "Generating theta")
+abline(0, 1, lty = 2)
+```
+
+# Regression adjustment
+
+Twenty measurements summarized by their mean, with $S(x_{\text{obs}}) = 0.8$ and a wide tolerance of 0.5. The mean of twenty $N(\theta, 1)$ measurements is $N(\theta, 1/20)$, so we simulate it directly.
+
+```{r adjustment-bank}
+set.seed(690)
+N <- 1000000
+theta <- runif(N, -3, 3)
+S_X <- rnorm(N, theta, 1 / sqrt(20))
+
+eps <- 0.5
+keep <- abs(S_X - 0.8) < eps
+theta_kept <- theta[keep]
+d <- S_X[keep] - 0.8                    # d_i = S(X_i) - S(x_obs)
+w <- 1 - (d / eps)^2                    # closer summaries get more weight
+```
+
+Fit $\theta_i=\alpha+\beta\,d_i+e_i$ to the kept draws and use $\theta_i^{\mathrm{adj}}=\widehat\alpha+\widehat e_i = \theta_i - \widehat\beta\, d_i$.
+
+```{r adjustment-fit}
+local_fit <- lm(theta_kept ~ d, weights = w)
+theta_adj <- theta_kept - coef(local_fit)["d"] * d
+```
+
+Compare with tolerance 0.05, unadjusted. The orange curve is the exact posterior.
+
+```{r adjustment-compare, fig.width = 10, fig.height = 3.5}
+theta_narrow <- theta[abs(S_X - 0.8) < 0.05]
+exact <- dnorm(grid, 0.8, 1 / sqrt(20))
+
+par(mfrow = c(1, 3))
+panels <- list("Tolerance 0.5, unadjusted" = list(theta_kept, rep(1, length(theta_kept))),
+               "Tolerance 0.5, adjusted" = list(theta_adj, w),
+               "Tolerance 0.05, unadjusted" = list(theta_narrow, rep(1, length(theta_narrow))))
+for (nm in names(panels)) {
+  v <- panels[[nm]][[1]]; wt <- panels[[nm]][[2]]
+  breaks <- seq(-1, 2.6, by = 0.05)
+  dens <- tapply(wt, cut(v, breaks), sum) / (sum(wt) * 0.05)   # weighted histogram
+  plot(breaks[-1] - 0.025, ifelse(is.na(dens), 0, dens), type = "h", lwd = 4,
+       col = "steelblue", xlim = c(-0.6, 2.2), ylim = c(0, 2),
+       xlab = "theta", ylab = "Density", main = nm)
+  lines(grid, exact, col = "orange", lwd = 2)
+}
+
+wsd <- function(v, wt) sqrt(sum(wt * (v - weighted.mean(v, wt))^2) / sum(wt))
+c(unadjusted = sd(theta_kept), adjusted = wsd(theta_adj, w), narrow = sd(theta_narrow))
+```
