@@ -1,0 +1,342 @@
+# Visualizing categorical random variables: Mosaic plot
+
+Each column represents a category of $X$. Within each column, the boxes represent categories of $Y$.
+
+```{r mosaic-independent, fig.width = 5, fig.height = 4.5}
+# P(X = 1) = 0.3, P(Y = 1) = 0.4, independent: P(X = x, Y = y) = P(X = x) P(Y = y)
+p <- outer(c("0" = 0.7, "1" = 0.3), c("0" = 0.6, "1" = 0.4))
+names(dimnames(p)) <- c("X", "Y")
+p
+mosaicplot(p, color = c("gray80", "steelblue"), main = "Independent X and Y")
+```
+
+# A mosaic showing dependence
+
+Everyone aboard the Titanic, by sex ($X$) and survival ($Y$).
+
+```{r titanic, fig.width = 9, fig.height = 4.5}
+titanic <- apply(Titanic, c("Sex", "Survived"), sum)
+expected <- outer(rowSums(titanic), colSums(titanic)) / sum(titanic)
+dimnames(expected) <- dimnames(titanic)
+titanic
+round(expected)
+
+par(mfrow = c(1, 2))
+mosaicplot(expected, color = c("gray80", "steelblue"),
+           main = "If sex and survival were independent")
+mosaicplot(titanic, color = c("gray80", "steelblue"), main = "Observed")
+```
+
+# A mosaic plot of simulated independent data
+
+We can simulate independent samples to see how much variation to expect.
+
+```{r mosaic-samples, fig.width = 10, fig.height = 3.5}
+set.seed(1401)
+par(mfrow = c(1, 3))
+for (n in c(200, 200, 2000)) {
+  x <- rbinom(n, 1, 0.3)
+  y <- rbinom(n, 1, 0.4)
+  mosaicplot(table(X = x, Y = y), color = c("gray80", "steelblue"),
+             main = paste("n =", n))
+}
+```
+
+# Independence/dependence for continuous variables
+
+Flipper length ($X$) and body mass ($Y$) for 342 penguins near Palmer Station, Antarctica. Shuffled: body masses randomly reassigned among the penguins.
+
+```{r penguins, fig.width = 9, fig.height = 4.5}
+penguins <- read.csv("penguins.csv")
+X <- penguins$flipper_len
+Y <- penguins$body_mass
+set.seed(1403)
+Y_shuffled <- sample(Y)
+
+par(mfrow = c(1, 2))
+plot(X, Y_shuffled, pch = 16, col = "#4682B488",
+     xlab = "Flipper length (mm)", ylab = "Body mass (g)", main = "Shuffled")
+plot(X, Y, pch = 16, col = "#4682B488",
+     xlab = "Flipper length (mm)", ylab = "Body mass (g)", main = "As measured")
+```
+
+# Option 1: Discretize both variables and make a mosaic plot
+
+Divide each axis into intervals $A_1,\ldots,A_4$ and $B_1,\ldots,B_4$ (here, at the sample quartiles).
+
+```{r discretize}
+bin4 <- function(v) cut(v, c(-Inf, quantile(v, c(0.25, 0.5, 0.75)), Inf),
+                        labels = 1:4, right = FALSE)
+tab_shuffled <- table(X = bin4(X), Y = bin4(Y_shuffled))
+tab_measured <- table(X = bin4(X), Y = bin4(Y))
+```
+
+Each box should contain about $1/16$ of them. Let's check.
+
+```{r discretize-check, fig.width = 9, fig.height = 4.5}
+round(tab_shuffled / sum(tab_shuffled), 3)
+round(tab_measured / sum(tab_measured), 3)
+1 / 16
+
+blues <- c("#DCE7F2", "#A9C5E0", "#6A9BC8", "#2F6599")
+par(mfrow = c(1, 2))
+mosaicplot(tab_shuffled, color = blues, main = "Shuffled")
+mosaicplot(tab_measured, color = blues, main = "As measured")
+```
+
+# Option 2: Discretize only one variable and visualize the distribution of the other
+
+Each panel approximates $Y \mid X \in A_i$.
+
+```{r conditional-histograms, fig.width = 12, fig.height = 6}
+breaks <- seq(2500, 6500, by = 250)
+par(mfrow = c(2, 4))
+for (y in list(Y_shuffled, Y)) {
+  for (i in 1:4) {
+    yi <- y[bin4(X) == i]
+    h <- hist(yi, breaks = breaks, plot = FALSE)
+    plot(h$mids, h$counts / length(yi), type = "h", lwd = 8, col = "steelblue",
+         ylim = c(0, 0.4), xlab = "Body mass (g)", ylab = "Proportion",
+         main = paste("Flipper bin", i))
+  }
+}
+```
+
+Top row: shuffled. Bottom row: as measured.
+
+# The same information shown a different way
+
+Each strip (a mirrored histogram) summarizes the distribution of $Y$ in one vertical strip of the scatterplot.
+
+```{r mirrored-histograms, fig.width = 9, fig.height = 4.5}
+# Mirrored histograms of y within each group g, centred at positions `at`.
+# Half-width is proportional to the proportion in each bin, on one scale.
+mirror_hist <- function(y, g, at, breaks, max_width,
+                        col = "steelblue", border = "white") {
+  groups <- sort(unique(g))
+  props <- lapply(groups, function(k)
+    hist(y[g == k], breaks = breaks, plot = FALSE)$counts / sum(g == k))
+  scale <- max_width / max(unlist(props))
+  for (k in seq_along(groups)) {
+    w <- props[[k]] * scale
+    nz <- w > 0                                   # skip empty bins
+    rect(at[k] - w[nz], head(breaks, -1)[nz], at[k] + w[nz], tail(breaks, -1)[nz],
+         col = col, border = border)
+    m <- mean(y[g == groups[k]])
+    segments(at[k] - max_width, m, at[k] + max_width, m, col = "orange", lwd = 2)
+  }
+}
+
+par(mfrow = c(1, 2))
+for (y in list(Y_shuffled, Y)) {
+  plot(NA, xlim = c(0.5, 4.5), ylim = c(2500, 6500), xaxt = "n",
+       xlab = "Flipper length bin", ylab = "Body mass (g)")
+  axis(1, at = 1:4)
+  mirror_hist(y, as.integer(bin4(X)), at = 1:4, breaks = breaks, max_width = 0.45)
+}
+```
+
+# Conditioning on a categorical variable, penguin example
+
+$Z$: species. Conditioning on $Z = \text{Gentoo}$ means throwing away every other row.
+
+```{r gentoo, fig.width = 9, fig.height = 4.5}
+species_col <- c(Adelie = "steelblue", Chinstrap = "darkorange", Gentoo = "seagreen")
+gentoo <- penguins[penguins$species == "Gentoo", ]
+
+par(mfrow = c(1, 2))
+plot(X, Y, pch = 16, col = species_col[penguins$species],
+     xlab = "Flipper length (mm)", ylab = "Body mass (g)", main = "All penguins")
+legend("topleft", names(species_col), pch = 16, col = species_col, bty = "n")
+plot(gentoo$flipper_len, gentoo$body_mass, pch = 16, col = "seagreen",
+     xlim = range(X), ylim = range(Y),
+     xlab = "Flipper length (mm)", ylab = "Body mass (g)", main = "Gentoo only")
+```
+
+# The Gentoo rows, discretized
+
+$X$: flipper length, cut into thirds within the species. $Y$: body mass, cut into thirds within the species.
+
+```{r gentoo-discretized, fig.width = 5, fig.height = 4.5}
+bin3 <- function(v) cut(v, c(-Inf, quantile(v, c(1/3, 2/3)), Inf),
+                        labels = c("Low", "Mid", "High"), right = FALSE)
+tab_gentoo <- table(flipper = bin3(gentoo$flipper_len), mass = bin3(gentoo$body_mass))
+tab_gentoo
+mosaicplot(tab_gentoo, color = c("#C9DCEC", "#6FA0C8", "#2C5C85"), main = "Gentoo")
+```
+
+# Comparing conditional distributions
+
+Each histogram represents $Y\mid X\in A_i,\ Z=\text{Gentoo}$.
+
+```{r gentoo-histograms, fig.width = 10, fig.height = 3.5}
+g <- bin3(gentoo$flipper_len)
+par(mfrow = c(1, 3))
+for (k in levels(g)) {
+  hist(gentoo$body_mass[g == k], breaks = seq(3875, 6375, by = 125),
+       main = paste(k, "flipper length"), xlab = "Body mass (g)")
+}
+```
+
+# Example: Packing and posting a parcel
+
+- $Z$: the parcel's weight.
+- $X$: the time needed to pack it.
+- $Y$: the postage charge.
+
+At a fixed weight, the simulator generates the extra packing time and extra postage charges independently.
+
+```{r parcel-simulator}
+set.seed(1441)
+N <- 100000
+weight <- rgamma(N, shape = 2, scale = 1)                # Z
+packing <- 2 + weight + rexp(N, rate = 2)                # X
+postage <- 3 + 2 * weight + rexp(N, rate = 1)            # Y
+```
+
+# Parcels in a weight range
+
+We'll start with $z_0 = 2$ and $h = 1, .3, .05$.
+
+```{r parcel-ranges, fig.width = 12, fig.height = 4}
+h_values <- c(1, 0.3, 0.05)
+par(mfrow = c(1, 3))
+for (h in h_values) {
+  keep <- abs(weight - 2) < h
+  plot(packing[keep], postage[keep], pch = 16, cex = 0.3, col = "#4682B455",
+       xlim = c(2.8, 9), ylim = c(4.5, 16),
+       xlab = "Packing time (min)", ylab = "Postage ($)",
+       main = sprintf("%.2f < weight < %.2f (n = %d)", 2 - h, 2 + h, sum(keep)))
+}
+```
+
+# Postage within packing-time strips
+
+Color by weight: the strips differ because they hold parcels of different weights.
+
+```{r parcel-strips, fig.width = 12, fig.height = 4}
+par(mfrow = c(1, 3))
+for (h in h_values) {
+  keep <- abs(weight - 2) < h
+  x <- packing[keep]; y <- postage[keep]; z <- weight[keep]
+  edges <- seq(quantile(x, 0.01), quantile(x, 0.99), length.out = 6)
+  strip <- findInterval(x, edges[2:5]) + 1          # five packing-time strips
+  zcol <- hcl.colors(100, "Viridis")[cut(z, 100)]   # color scale spans this range
+  show <- seq_len(min(sum(keep), 3000))
+  plot(x[show], y[show], pch = 16, cex = 0.4, col = zcol[show],
+       xlim = c(2.8, 9), ylim = c(4.5, 16),
+       xlab = "Packing time (min)", ylab = "Postage ($)",
+       main = sprintf("%.2f < weight < %.2f", 2 - h, 2 + h))
+  abline(v = edges[2:5], lty = 2)
+  mirror_hist(y, strip, at = (head(edges, -1) + tail(edges, -1)) / 2,
+              breaks = seq(4, 30, by = 0.4), max_width = 0.45 * diff(edges[1:2]),
+              col = NA, border = "black")
+}
+```
+
+# Example: Ten days of rain
+
+- Day 1 is equally likely to be rainy or dry.
+- Each subsequent day repeats the previous day's weather with probability $\theta$.
+- Otherwise, the weather switches.
+
+```{r rain-simulator}
+simulate_rain <- function(theta, days = 10) {
+  n <- length(theta)
+  X <- matrix(0L, n, days)
+  X[, 1] <- rbinom(n, 1, 0.5)
+  for (t in 2:days) {
+    repeat_day <- runif(n) < theta
+    X[, t] <- ifelse(repeat_day, X[, t - 1], 1L - X[, t - 1])
+  }
+  X
+}
+```
+
+# Simulated weather sequences
+
+Each row is one simulation. Each column is one day.
+
+```{r rain-sequences, fig.width = 10, fig.height = 4}
+set.seed(1450)
+par(mfrow = c(1, 3))
+for (theta in c(0.2, 0.5, 0.9)) {
+  X_seq <- simulate_rain(rep(theta, 20))
+  image(1:10, 1:20, t(X_seq[20:1, ]), col = c("wheat", "steelblue"),
+        xlab = "Day", ylab = "Simulation", main = paste("theta =", theta))
+}
+```
+
+# $X_i$ and $\theta$ are independent
+
+Suppose we plot $\theta$ against $X_1$, then $X_2$, and so on.
+
+```{r rain-days, fig.width = 12, fig.height = 5}
+set.seed(1451)
+N <- 100000
+theta <- runif(N)
+X_rain <- simulate_rain(theta)
+
+par(mfrow = c(2, 5))
+for (t in 1:10) {
+  plot(NA, xlim = c(-0.6, 1.6), ylim = c(0, 1), xaxt = "n",
+       xlab = paste0("X", t), ylab = "theta", main = paste("Day", t))
+  axis(1, at = 0:1)
+  mirror_hist(theta, X_rain[, t], at = 0:1, breaks = seq(0, 1, by = 0.1),
+              max_width = 0.4)
+}
+```
+
+# But the entire vector $\mathbf X$ is not independent of $\theta$
+
+Create a "total rainy days" statistic: $R(\mathbf X)=X_1+\cdots+X_{10}.$
+
+```{r rain-total, fig.width = 10, fig.height = 4.5}
+R <- rowSums(X_rain)
+strip <- findInterval(theta, c(0.2, 0.4, 0.6, 0.8)) + 1   # fifths of theta
+show <- 1:3000
+jitter_R <- R[show] + runif(length(show), -0.3, 0.3)
+
+par(mfrow = c(1, 2))
+plot(theta[show], jitter_R, pch = 16, cex = 0.4, col = "gray50",
+     xlab = "theta", ylab = "Total rainy days")
+plot(theta[show], jitter_R, pch = 16, cex = 0.4, col = "gray80",
+     xlab = "theta", ylab = "Total rainy days")
+abline(v = c(0.2, 0.4, 0.6, 0.8), lty = 2)
+mirror_hist(R, strip, at = seq(0.1, 0.9, by = 0.2),
+            breaks = seq(-0.5, 10.5, by = 1), max_width = 0.09)
+tapply(R, strip, mean)
+tapply(R, strip, sd)
+```
+
+The distribution of the total changes with $\theta$.
+
+# Random projections and numerical checks
+
+1. Draw a direction $a$ and compute $T_a=a^\top\mathbf X$.
+2. Compare the distributions of $T_a$ across values of $Y$.
+3. Repeat for other directions.
+
+For example, discretize $T_a$ and $Y$, then compare joint cell proportions with products of marginal proportions.
+
+```{r random-projections, fig.width = 7, fig.height = 4}
+# Sum over cells of |joint proportion - product of marginal proportions|
+dependence_score <- function(t, y) {
+  t_bin <- if (length(unique(t)) <= 11) factor(t) else
+    cut(t, unique(quantile(t, 0:4 / 4)), include.lowest = TRUE)
+  y_bin <- cut(y, quantile(y, 0:4 / 4), include.lowest = TRUE)
+  p <- table(y_bin, t_bin) / length(t)
+  sum(abs(p - outer(rowSums(p), colSums(p))))
+}
+
+coordinate_scores <- apply(X_rain, 2, dependence_score, y = theta)
+set.seed(1460)
+A <- matrix(rnorm(10 * 50), nrow = 10)     # 50 random directions
+projection_scores <- apply(X_rain %*% A, 2, dependence_score, y = theta)
+
+par(mar = c(4.5, 8, 1, 1))
+stripchart(list("Each day X_t" = coordinate_scores,
+                "Random a'X" = projection_scores,
+                "Total R" = dependence_score(R, theta)),
+           pch = 16, col = "steelblue", xlab = "Dependence score", las = 1)
+```
