@@ -1,0 +1,250 @@
+# 1. Identifiability: insects caught in a trap
+
+We count the insects caught each night. Let $\lambda$ be the expected number of arrivals per night and $q$ the probability of catching each arriving insect.
+
+## The trap simulator
+
+For each night $i$:
+
+$$
+N_i\sim\operatorname{Poisson}(\lambda),
+\qquad Y_i\mid N_i\sim\operatorname{Binomial}(N_i,q).
+$$
+
+We observe the catches $Y_1,\ldots,Y_n$. We do not observe the arrivals $N_i$.
+
+```{r trap-simulator}
+simulate_catches <- function(lambda, q, n) {
+  arrivals <- rpois(n, lambda)            # N_i
+  rbinom(n, size = arrivals, prob = q)    # Y_i given N_i
+}
+
+set.seed(681)
+y_obs_300 <- simulate_catches(lambda = 10, q = 0.4, n = 300)
+y_obs <- y_obs_300[1:30]   # first 30 nights
+sum(y_obs)                 # 124
+```
+
+## Fitting the trap model with ABC
+
+Draw $(\lambda,q)$ from the prior and simulate $n$ nightly catches. Retain the parameter pair if the total simulated catch equals the observed total.
+
+```{r trap-abc, fig.width = 5, fig.height = 5}
+n_prop <- 200000
+lambda <- runif(n_prop, 0, 40)
+q <- runif(n_prop, 0, 1)
+n <- length(y_obs)
+# row i holds n simulated nights at (lambda[i], q[i])
+arrivals <- matrix(rpois(n_prop * n, lambda), nrow = n_prop)
+catches <- matrix(rbinom(n_prop * n, arrivals, q), nrow = n_prop)
+keep <- rowSums(catches) == sum(y_obs)
+post_trap <- cbind(lambda = lambda[keep], q = q[keep])
+plot(post_trap)
+```
+
+This is a ridge with high posterior mass.
+
+## Step 1: Pick points along the ridge
+
+For $\lambda$ near 5 and near 30, take the median $q$ among retained pairs with $\lambda$ within 10%.
+
+```{r ridge-points, fig.width = 5, fig.height = 5}
+# a point on the ridge: the median q among retained pairs
+# whose lambda is within 10% of lambda0
+ridge_point <- function(post, lambda0) {
+  near <- abs(post[, "lambda"] / lambda0 - 1) < 0.1
+  c(lambda = lambda0, q = median(post[near, "q"]))
+}
+pt_a <- ridge_point(post_trap, 5)
+pt_b <- ridge_point(post_trap, 30)
+
+plot(post_trap, col = "gray")
+points(rbind(pt_a, pt_b), pch = 19, cex = 2)
+```
+
+## Step 2: Simulate from each point and compare
+
+Simulate many nights at each point and compare the two distributions of catches directly.
+
+```{r compare-points, fig.width = 10, fig.height = 3.5}
+catch_a <- simulate_catches(pt_a["lambda"], pt_a["q"], n = 100000)
+catch_b <- simulate_catches(pt_b["lambda"], pt_b["q"], n = 100000)
+
+par(mfrow = c(1, 3))
+hist(catch_a, breaks = seq(-0.5, 25.5, 1))
+hist(catch_b, breaks = seq(-0.5, 25.5, 1))
+# overlaid, bins of width 1
+hist(catch_a, breaks = seq(-0.5, 25.5, 1), col = rgb(0, 0, 1, 0.4))
+hist(catch_b, breaks = seq(-0.5, 25.5, 1), col = rgb(0, 1, 0, 0.4), add = TRUE)
+```
+
+The histograms match, up to simulation noise.
+
+# 2. Model checking: weather over several decades
+
+We observe dry and rainy days during the same 30-day calendar period at one location, for 30 years.
+
+## A model for the rain records
+
+Let $X_{ij}=1$ if day $j$ of year $i$ is dry and $X_{ij}=0$ if it rains. Years are independent. Within year $i$:
+
+$$
+X_{i1}\sim\operatorname{Bernoulli}(p),
+\qquad
+X_{ij}\mid X_{i,j-1}\sim\operatorname{Bernoulli}\big(\rho X_{i,j-1}+(1-\rho)p\big).
+$$
+
+```{r rain-model}
+simulate_year <- function(p, rho, n_days = 30) {
+  dry <- numeric(n_days)
+  dry[1] <- rbinom(1, 1, p)
+  for (t in 2:n_days) {
+    if (runif(1) < rho) dry[t] <- dry[t - 1]   # copy yesterday
+    else dry[t] <- rbinom(1, 1, p)             # fresh weather
+  }
+  dry
+}
+
+# one row per year, one column per day
+simulate_weather <- function(p, rho, n_years = 30, n_days = 30) {
+  t(replicate(n_years, simulate_year(p, rho, n_days)))
+}
+```
+
+## The observed records
+
+The observed 30 × 30 matrix: one row per year, one column per day, 1 = dry.
+
+```{r weather-data}
+x_obs <- as.matrix(read.csv("weather-records.csv", header = FALSE))
+dimnames(x_obs) <- NULL
+```
+
+## ABC for the weather records
+
+Summaries: the fraction of all days that are dry, and the fraction of within-year transitions that switch weather. Retain the $(p,\rho)$ with the smallest 1% of standardized distances.
+
+```{r weather-abc}
+# x_obs: the observed 30 x 30 matrix, 1 = dry
+summaries <- function(X) {
+  c(dry = mean(X), switch = mean(X[, -1] != X[, -ncol(X)]))
+}
+s_obs <- summaries(x_obs)
+sim_summaries <- function(p, rho)
+  summaries(simulate_weather(p, rho))
+
+# pilot: the scale of each summary under the prior, then frozen
+pilot <- t(mapply(sim_summaries, runif(2000), runif(2000)))
+scales <- apply(pilot, 2, sd)
+
+B <- 20000
+p <- runif(B)
+rho <- runif(B)
+S <- t(mapply(sim_summaries, p, rho))
+d <- sqrt(colSums(((t(S) - s_obs) / scales)^2))
+keep <- d <= quantile(d, 0.01)   # closest 1%
+post <- cbind(p = p[keep], rho = rho[keep])
+```
+
+## Sampling from the posterior predictive distribution
+
+For $b=1,\ldots,R$: choose a retained pair $(p^{(b)},\rho^{(b)})$, then simulate a fresh dataset $X_{\mathrm{rep}}^{(b)}$ of 30 years from the rain model at that pair.
+
+```{r weather-ppc}
+R <- 4000
+reps <- vector("list", R)
+for (r in 1:R) {
+  i <- sample(nrow(post), 1)   # one pair for the whole dataset
+  reps[[r]] <- simulate_weather(post[i, "p"], post[i, "rho"])
+}
+```
+
+## The slope statistic
+
+$K_i$ is the number of weather switches in year $i$. Our statistic $T(X)$ is the least-squares slope of $K_i$ against year $i$. Does the fitted model commonly generate a trend as strong as the observed one?
+
+```{r slope-statistic, fig.width = 6, fig.height = 4}
+years <- 1:30
+trend_slope <- function(X) {
+  K <- rowSums(X[, -1] != X[, -ncol(X)])   # switches per year
+  coef(lm(K ~ years))[2]
+}
+slopes <- sapply(reps, trend_slope)
+hist(slopes)
+abline(v = trend_slope(x_obs))
+mean(slopes <= trend_slope(x_obs))
+```
+
+## Passing posterior predictive checks does not establish identifiability
+
+Return to the insect trap and its ABC posterior from 30 nights. Simulate fresh 30-night datasets, each at one retained $(\lambda,q)$ pair. Compare features we did not use for fitting:
+
+- the variance of the nightly catches
+- the number of nights with no catch
+
+```{r trap-ppc, fig.width = 9, fig.height = 6}
+# post_trap: retained (lambda, q) pairs from the trap ABC fit
+R <- 4000
+pick <- sample(nrow(post_trap), R, replace = TRUE)
+# one column per replicated 30-night dataset
+reps <- sapply(pick, function(k)
+  simulate_catches(post_trap[k, "lambda"], post_trap[k, "q"], 30))
+rep_var <- apply(reps, 2, var)
+rep_zero <- colSums(reps == 0)
+par(mfrow = c(3, 4))   # observed and 11 replicates
+hist(y_obs)
+for (r in 1:11) hist(reps[, r])
+par(mfrow = c(1, 2))
+hist(rep_var); abline(v = var(y_obs))
+hist(rep_zero); abline(v = sum(y_obs == 0))
+mean(rep_var >= var(y_obs))
+mean(rep_zero >= sum(y_obs == 0))
+```
+
+Does the observed histogram stand out from the replicates?
+
+# 3. How SMM and ABC use summaries
+
+Suppose
+
+$$
+X_1,\ldots,X_n\overset{\mathrm{iid}}{\sim}N(\mu_0,\sigma^2).
+$$
+
+The population mean $\mu_0$ is known. We want to estimate $\sigma^2$. For this comparison, use only the sample mean $\bar X$ as the summary.
+
+## Simulating sample means
+
+```{r sample-means, fig.width = 9, fig.height = 4.5}
+simulate_means <- function(sigma, n_sims, n = 25, mu0 = 0) {
+  X <- matrix(rnorm(n_sims * n, mu0, sigma), nrow = n_sims)
+  rowMeans(X)    # one mean per simulated sample
+}
+sigmas <- seq(0.5, 6, by = 0.5)
+sims <- data.frame(sigma = rep(sigmas, each = 500))
+sims$mean <- unlist(lapply(sigmas, simulate_means, n_sims = 500))
+
+library(ggplot2)
+ggplot(sims, aes(factor(sigma), mean)) +
+  geom_violin(scale = "width") +
+  geom_jitter(width = 0.1, size = 0.3, alpha = 0.3) +
+  stat_summary(fun = mean, geom = "crossbar")   # average
+```
+
+The average of the simulated means stays at $\mu_0$ for every $\sigma$. Their spread grows with $\sigma$.
+
+## ABC using the same sample mean
+
+ABC retains a proposed variance if $|\bar X_{\mathrm{sim}}-\bar x_{\mathrm{obs}}|<\epsilon$. Draw variances from a prior, simulate samples, and retain those whose means match.
+
+```{r variance-abc, fig.width = 6, fig.height = 4}
+B <- 200000
+v <- runif(B, 0.01, 36)    # variance prior
+# row i: a sample of 25 with standard deviation sqrt(v[i])
+X <- matrix(rnorm(B * 25, 0, sqrt(v)), nrow = B)
+xbar <- rowMeans(X)
+kept <- v[abs(xbar - 0.4) < 0.05]
+hist(kept)
+```
+
+The retained distribution reflects how often each variance generates a matching mean, as well as the prior.
