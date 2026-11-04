@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang xml:lang>
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Structured practice for Part A</title>
+  <style>
+html {
+color: #1a1a1a;
+background-color: #fdfdfd;
+}
+body {
+margin: 0 auto;
+max-width: 36em;
+padding-left: 50px;
+padding-right: 50px;
+padding-top: 50px;
+padding-bottom: 50px;
+hyphens: auto;
+overflow-wrap: break-word;
+text-rendering: optimizeLegibility;
+font-kerning: normal;
+}
+@media (max-width: 600px) {
+body {
+font-size: 0.9em;
+padding: 12px;
+}
+h1 {
+font-size: 1.8em;
+}
+}
+@media print {
+html {
+background-color: white;
+}
+body {
+background-color: transparent;
+color: black;
+font-size: 12pt;
+}
+p, h2, h3 {
+orphans: 3;
+widows: 3;
+}
+h2, h3, h4 {
+page-break-after: avoid;
+}
+}
+p {
+margin: 1em 0;
+}
+a {
+color: #1a1a1a;
+}
+a:visited {
+color: #1a1a1a;
+}
+img {
+max-width: 100%;
+}
+svg {
+height: auto;
+max-width: 100%;
+}
+h1, h2, h3, h4, h5, h6 {
+margin-top: 1.4em;
+}
+h5, h6 {
+font-size: 1em;
+font-style: italic;
+}
+h6 {
+font-weight: normal;
+}
+ol, ul {
+padding-left: 1.7em;
+margin-top: 1em;
+}
+li > ol, li > ul {
+margin-top: 0;
+}
+blockquote {
+margin: 1em 0 1em 1.7em;
+padding-left: 1em;
+border-left: 2px solid #e6e6e6;
+color: #606060;
+}
+code {
+font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+font-size: 85%;
+margin: 0;
+hyphens: manual;
+}
+pre {
+margin: 1em 0;
+overflow: auto;
+}
+pre code {
+padding: 0;
+overflow: visible;
+overflow-wrap: normal;
+}
+.sourceCode {
+background-color: transparent;
+overflow: visible;
+}
+hr {
+background-color: #1a1a1a;
+border: none;
+height: 1px;
+margin: 1em 0;
+}
+table {
+margin: 1em 0;
+border-collapse: collapse;
+width: 100%;
+overflow-x: auto;
+display: block;
+font-variant-numeric: lining-nums tabular-nums;
+}
+table caption {
+margin-bottom: 0.75em;
+}
+tbody {
+margin-top: 0.5em;
+border-top: 1px solid #1a1a1a;
+border-bottom: 1px solid #1a1a1a;
+}
+th {
+border-top: 1px solid #1a1a1a;
+padding: 0.25em 0.5em 0.25em 0.5em;
+}
+td {
+padding: 0.125em 0.5em 0.25em 0.5em;
+}
+header {
+margin-bottom: 4em;
+text-align: center;
+}
+#TOC li {
+list-style: none;
+}
+#TOC ul {
+padding-left: 1.3em;
+}
+#TOC > ul {
+padding-left: 0;
+}
+#TOC a:not(:hover) {
+text-decoration: none;
+}
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+
+ul.task-list[class]{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+font-size: inherit;
+width: 0.8em;
+margin: 0 0.8em 0.2em -1.6em;
+vertical-align: middle;
+}
+</style>
+  <!-- Pandoc's default HTML template, except that MathJax is loaded from its
+  CDN instead of being embedded (data-external="1" exempts it from
+  --embed-resources). The polyfill.io and html5shiv scripts are dropped. -->
+  <script data-external="1" type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js"></script>
+</head>
+<body>
+<h1 id="stat-s-481681-structured-practice-for-part-a">STAT-S 481/681:
+Structured practice for Part A</h1>
+<p>These problems practice the skill tested in Part A of the midterm:
+translating a description of a data-generating process into a model
+written with random variables and their distributions or conditional
+distributions. Each problem takes one piece of that skill at a time:
+filling in a partly written model, matching sentences of a story to
+lines of a model, choosing between candidate models, finding errors, and
+going from a model back to a story. Solutions are on a separate
+sheet.</p>
+<p><strong>Notation reminders.</strong></p>
+<ul>
+<li><span class="math inline">\(X\sim\operatorname{Poisson}(\lambda)\)</span> says
+what distribution <span class="math inline">\(X\)</span> has. <span class="math inline">\(Y\mid X\sim\operatorname{Poisson}(X)\)</span> says
+what distribution <span class="math inline">\(Y\)</span> has <em>once
+<span class="math inline">\(X\)</span> is known</em>: <span class="math inline">\(Y\)</span> is generated after <span class="math inline">\(X\)</span>, using its value.</li>
+<li>A deterministic rule is written with an equals sign: for example,
+<span class="math inline">\(X_i = U_i S_i\)</span>.</li>
+<li>A quantity defined differently in different cases can be written
+with a brace, listing each case with its condition: <span class="math display">\[
+X_i=\begin{cases}S_i &amp; \text{if } U_i=1,\\ 0 &amp; \text{if }
+U_i=0.\end{cases}
+\]</span> The conditions should cover every possibility without
+overlapping. A case can also give a distribution rather than a value,
+for example <span class="math display">\[
+X_i\mid U_i=1\sim\operatorname{Poisson}(\lambda),\qquad X_i=0 \ \text{if
+} U_i=0.
+\]</span></li>
+<li>A Bernoulli indicator can choose between two values or two
+distributions. If <span class="math inline">\(Z_i\sim\operatorname{Bernoulli}(p)\)</span>, then
+<span class="math inline">\(X_i = d_{Z_i}\)</span> equals <span class="math inline">\(d_1\)</span> when <span class="math inline">\(Z_i=1\)</span> and <span class="math inline">\(d_0\)</span> when <span class="math inline">\(Z_i=0\)</span>, and <span class="math inline">\(X_i\mid
+Z_i\sim\operatorname{Normal}(\theta_{Z_i},\sigma^2)\)</span> draws <span class="math inline">\(X_i\)</span> from <span class="math inline">\(\operatorname{Normal}(\theta_1,\sigma^2)\)</span>
+when <span class="math inline">\(Z_i=1\)</span> and from <span class="math inline">\(\operatorname{Normal}(\theta_0,\sigma^2)\)</span>
+when <span class="math inline">\(Z_i=0\)</span>.</li>
+<li>An indicator of an event, such as <span class="math inline">\(\mathbb{1}\{T_i&lt;0\}\)</span>, equals 1 when the
+event happens and 0 otherwise. It can be used as an index in the same
+way.</li>
+</ul>
+<h2 id="fill-in-a-partly-written-model">Fill in a partly written
+model</h2>
+<h3 id="s1">S1</h3>
+<p>A factory has two machines that make bolts. Bolts are packed in
+boxes, and every bolt in a box comes from the same machine. An inspector
+takes <span class="math inline">\(m\)</span> boxes and checks <span class="math inline">\(n\)</span> bolts from each one.</p>
+<ul>
+<li>Each box comes from machine 1 with probability 0.7 and from machine
+0 otherwise, independently across boxes.</li>
+<li>A bolt from machine 1 is defective with probability 0.02, and a bolt
+from machine 0 is defective with probability 0.10.</li>
+<li>Given which machine each box came from, bolts are defective
+independently of one another.</li>
+</ul>
+<p>The labels on the boxes do not say which machine they came from. For
+box <span class="math inline">\(j=1,\ldots,m\)</span> and bolt <span class="math inline">\(k=1,\ldots,n\)</span>, let <span class="math inline">\(Z_j\)</span> be 1 if box <span class="math inline">\(j\)</span> came from machine 1 and 0 otherwise,
+and let <span class="math inline">\(D_{jk}\)</span> be 1 if bolt <span class="math inline">\(k\)</span> in box <span class="math inline">\(j\)</span> is defective and 0 otherwise.</p>
+<p><strong>(a)</strong> Fill in the blanks. <span class="math display">\[
+Z_j \sim \underline{\hspace{2.5cm}}\,(\underline{\hspace{1.2cm}}),
+\qquad
+D_{jk}\mid Z_j \sim
+\operatorname{Bernoulli}(\underline{\hspace{1.2cm}}),
+\qquad q_0 = \underline{\hspace{1.2cm}},\quad q_1 =
+\underline{\hspace{1.2cm}}.
+\]</span></p>
+<p><strong>(b)</strong> Which of <span class="math inline">\(Z_j\)</span> and <span class="math inline">\(D_{jk}\)</span> are observed?</p>
+<p><strong>(c)</strong> Is <span class="math inline">\(D_{j1}\)</span>
+independent of <span class="math inline">\(D_{j2}\)</span> (two bolts
+from the same box)? Is it independent of <span class="math inline">\(D_{j1}\)</span> <em>given</em> <span class="math inline">\(Z_j\)</span>? Explain in words.</p>
+<p><strong>(d)</strong> Suppose instead that each box has its own defect
+probability <span class="math inline">\(Q_j\)</span>, drawn from <span class="math inline">\(\operatorname{Uniform}(0, 0.2)\)</span>. Rewrite
+the model.</p>
+<h3 id="s2">S2</h3>
+<p>A fishing boat goes out each day it can. On each day, independently,
+a storm keeps the boat in port with probability <span class="math inline">\(p_{\mathrm{storm}}\)</span>, and the catch is 0.
+Otherwise, the number of fish caught is a Poisson draw with average
+<span class="math inline">\(\lambda\)</span>. Let <span class="math inline">\(W_i=1\)</span> if there is a storm on day <span class="math inline">\(i\)</span> and <span class="math inline">\(W_i=0\)</span> otherwise, and let <span class="math inline">\(K_i\)</span> be the catch on day <span class="math inline">\(i\)</span>, for <span class="math inline">\(i=1,\ldots,n\)</span>.</p>
+<p><strong>(a)</strong> Fill in the blanks. <span class="math display">\[
+W_i\sim\underline{\hspace{2.5cm}}, \qquad
+K_i \mid W_i=0 \sim \underline{\hspace{2.5cm}}, \qquad
+K_i = \underline{\hspace{1.2cm}} \text{ when } W_i=1.
+\]</span></p>
+<p><strong>(b)</strong> The captain’s log records the catch, and records
+every storm day. Which variables are observed? How would your answer
+change if the log recorded only the catch?</p>
+<p><strong>(c)</strong> A classmate suggests the simpler model <span class="math inline">\(K_i\sim\operatorname{Poisson}\big((1-p_{\mathrm{storm}})\lambda\big)\)</span>,
+which has the same average catch. Explain why this is a different model.
+What feature of the data would differ between the two?</p>
+<h3 id="s3">S3</h3>
+<p>A weather station records the wind speed once an hour for <span class="math inline">\(T\)</span> hours.</p>
+<ul>
+<li>The true wind speed in hour <span class="math inline">\(t\)</span>,
+<span class="math inline">\(V_t\)</span>, is drawn independently from a
+<span class="math inline">\(\operatorname{Uniform}(0, 40)\)</span>
+distribution (in km/h).</li>
+<li>In strong wind, the anemometer can jam. If <span class="math inline">\(V_t&gt;25\)</span>, it jams with probability 0.4;
+otherwise, it jams with probability 0.01. Given the wind speeds, jams in
+different hours are independent.</li>
+<li>If the anemometer does not jam, it records the true speed plus
+measurement error, which is <span class="math inline">\(\operatorname{Normal}(0, 1.5^2)\)</span> and
+independent of everything else.</li>
+<li>If it jams, the station records “NA”.</li>
+</ul>
+<p>Let <span class="math inline">\(J_t=1\)</span> if the anemometer jams
+in hour <span class="math inline">\(t\)</span> and <span class="math inline">\(J_t=0\)</span> otherwise, and let <span class="math inline">\(X_t\)</span> be the recorded value.</p>
+<p><strong>(a)</strong> Fill in the blanks. (Here <span class="math inline">\(H_t\)</span> is an indicator of strong wind.)
+<span class="math display">\[
+V_t\sim\underline{\hspace{2.5cm}},\qquad
+H_t=\mathbb{1}\{\underline{\hspace{1.5cm}}\},\qquad
+J_t\mid V_t\sim\operatorname{Bernoulli}(p_{H_t}),\quad
+p_0=\underline{\hspace{1cm}},\ p_1=\underline{\hspace{1cm}},
+\]</span> <span class="math display">\[
+E_t\sim\underline{\hspace{2.5cm}},\qquad
+X_t=\begin{cases}\underline{\hspace{2cm}} &amp; \text{if } J_t=0,\\
+\text{NA} &amp; \text{if } J_t=1.\end{cases}
+\]</span></p>
+<p><strong>(b)</strong> List the random variables you would generate to
+simulate one hour, in an order in which you could generate them.</p>
+<p><strong>(c)</strong> Which variables are observed? Can you tell from
+the data which hours had jams? Can you tell which hours had strong
+wind?</p>
+<p><strong>(d)</strong> If you computed the average of the recorded
+(non-NA) values, would you expect it to be close to the average true
+wind speed, 20 km/h? Explain using the model.</p>
+<h2 id="match-the-story-to-the-model">Match the story to the model</h2>
+<h3 id="s4">S4</h3>
+<p>A website records its number of new sign-ups each day for <span class="math inline">\(n\)</span> days. The story has five sentences:</p>
+<ol type="1">
+<li>On each day, independently, the site is running an advertisement
+with probability 0.3.</li>
+<li>On days with an advertisement, sign-ups are a Poisson draw with
+average 40; on other days, the average is 15.</li>
+<li>Given which days have advertisements, the numbers of sign-ups on
+different days are independent.</li>
+<li>On each day, independently of everything else, the server is up with
+probability 0.95.</li>
+<li>On a day the server is down, no sign-ups are recorded, so the
+recorded count is 0; otherwise, the recorded count is the number of
+sign-ups.</li>
+</ol>
+<p>The candidate model lines are:</p>
+<ul>
+<li><ol type="A">
+<li><span class="math inline">\(U_i \sim
+\operatorname{Bernoulli}(0.95)\)</span></li>
+</ol></li>
+<li><ol start="2" type="A">
+<li><span class="math inline">\(A_i\sim\operatorname{Bernoulli}(0.3)\)</span></li>
+</ol></li>
+<li><ol start="3" type="A">
+<li><span class="math inline">\(X_i = U_i S_i\)</span></li>
+</ol></li>
+<li><ol start="4" type="A">
+<li><span class="math inline">\(S_i\mid A_i
+\sim\operatorname{Poisson}(\lambda_{A_i}),\ \lambda_0=15,\
+\lambda_1=40\)</span></li>
+</ol></li>
+<li><ol start="5" type="A">
+<li><span class="math inline">\(S_i\mid A_i
+\sim\operatorname{Binomial}(40, 0.3)\)</span></li>
+</ol></li>
+<li><ol start="6" type="A">
+<li><span class="math inline">\(S_1,\ldots,S_n\)</span> are
+conditionally independent given <span class="math inline">\(A_1,\ldots,A_n\)</span></li>
+</ol></li>
+</ul>
+<p><strong>(a)</strong> Match each sentence to the model line that
+expresses it. One line does not match any sentence.</p>
+<p><strong>(b)</strong> Say in words what each of <span class="math inline">\(A_i\)</span>, <span class="math inline">\(S_i\)</span>, <span class="math inline">\(U_i\)</span>, and <span class="math inline">\(X_i\)</span> represents.</p>
+<p><strong>(c)</strong> Only the recorded count is in the data. Which
+variables are observed and which are unobserved?</p>
+<p><strong>(d)</strong> Looking at a day with a recorded count of 0, can
+you tell whether the server was down? Why or why not?</p>
+<h3 id="s5">S5</h3>
+<p>A clinic tracks <span class="math inline">\(m\)</span> patients for
+<span class="math inline">\(n\)</span> weeks. Let <span class="math inline">\(Y_{jk}\)</span> be the number of headaches patient
+<span class="math inline">\(j\)</span> reports in week <span class="math inline">\(k\)</span>.</p>
+<ol type="1">
+<li>Different patients have different headache rates.</li>
+<li>A patient’s headache rate does not change from week to week.</li>
+<li>Patient rates are drawn independently from a <span class="math inline">\(\operatorname{Uniform}(0, 5)\)</span>
+distribution.</li>
+<li>Given a patient’s rate, the weekly counts are Poisson.</li>
+<li>Given all the patients’ rates, all the weekly counts are
+independent.</li>
+</ol>
+<p><strong>(a)</strong> Match each sentence to the piece of notation
+that expresses it. Some pieces of notation are used more than once, and
+some are not used.</p>
+<p>Notation:</p>
+<ul>
+<li><ol type="A">
+<li><span class="math inline">\(R_j \sim
+\operatorname{Uniform}(0,5)\)</span>, independently for <span class="math inline">\(j=1,\ldots,m\)</span></li>
+</ol></li>
+<li><ol start="2" type="A">
+<li><span class="math inline">\(R_{jk} \sim
+\operatorname{Uniform}(0,5)\)</span>, independently for every <span class="math inline">\(j\)</span> and <span class="math inline">\(k\)</span></li>
+</ol></li>
+<li><ol start="3" type="A">
+<li><span class="math inline">\(Y_{jk}\mid R_j \sim
+\operatorname{Poisson}(R_j)\)</span></li>
+</ol></li>
+<li><ol start="4" type="A">
+<li><span class="math inline">\(Y_{jk}\mid R_1,\ldots,R_m\)</span> are
+independent across <span class="math inline">\(j\)</span> and <span class="math inline">\(k\)</span></li>
+</ol></li>
+<li><ol start="5" type="A">
+<li><span class="math inline">\(Y_{jk} \sim
+\operatorname{Poisson}(\lambda)\)</span></li>
+</ol></li>
+<li><ol start="6" type="A">
+<li>The rate is indexed by <span class="math inline">\(j\)</span> only,
+not by <span class="math inline">\(k\)</span></li>
+</ol></li>
+</ul>
+<p><strong>(b)</strong> Write the full model in two lines.</p>
+<h2 id="choose-the-matching-model">Choose the matching model</h2>
+<h3 id="s6">S6</h3>
+<p>Each of <span class="math inline">\(m\)</span> students answers <span class="math inline">\(n\)</span> quiz questions. Each student has their
+own probability of answering a question correctly, which is drawn from a
+<span class="math inline">\(\operatorname{Uniform}(0.4, 0.9)\)</span>
+distribution, independently across students. Given these probabilities,
+all answers are independent. Let <span class="math inline">\(Y_{jk}=1\)</span> if student <span class="math inline">\(j\)</span> answers question <span class="math inline">\(k\)</span> correctly.</p>
+<p>Which model matches this story?</p>
+<ul>
+<li><ol type="A">
+<li><span class="math inline">\(Y_{jk}\sim\operatorname{Bernoulli}(0.65)\)</span>,
+independently for all <span class="math inline">\(j\)</span> and <span class="math inline">\(k\)</span>.</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li><span class="math inline">\(P_j\sim\operatorname{Uniform}(0.4,0.9)\)</span>
+independently for each <span class="math inline">\(j\)</span>; <span class="math inline">\(Y_{jk}\mid
+P_j\sim\operatorname{Bernoulli}(P_j)\)</span>.</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li><span class="math inline">\(P_{jk}\sim\operatorname{Uniform}(0.4,0.9)\)</span>
+independently for each <span class="math inline">\(j\)</span> and <span class="math inline">\(k\)</span>; <span class="math inline">\(Y_{jk}\mid
+P_{jk}\sim\operatorname{Bernoulli}(P_{jk})\)</span>.</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li><span class="math inline">\(P\sim\operatorname{Uniform}(0.4,0.9)\)</span>, a
+single draw; <span class="math inline">\(Y_{jk}\mid
+P\sim\operatorname{Bernoulli}(P)\)</span>.</li>
+</ol></li>
+</ul>
+<p><strong>(a)</strong> Choose the matching model.</p>
+<p><strong>(b)</strong> For each of the other three models, describe a
+story that it <em>would</em> match.</p>
+<p><strong>(c)</strong> Models (A) and (C) produce data with exactly the
+same distribution. Why? Which feature of a dataset would let you tell
+the matching model apart from (A)?</p>
+<h3 id="s7">S7</h3>
+<p>A lab measures the concentration of a substance in <span class="math inline">\(n\)</span> blood samples. The true concentration
+<span class="math inline">\(C_i\)</span> of sample <span class="math inline">\(i\)</span> is drawn independently from a <span class="math inline">\(\operatorname{Normal}(\mu, \sigma^2)\)</span>
+distribution. The assay reports the true concentration plus independent
+<span class="math inline">\(\operatorname{Normal}(0, \tau^2)\)</span>
+error. If the assay’s reading is below the detection limit <span class="math inline">\(L\)</span>, the lab records <span class="math inline">\(L/2\)</span> instead of the reading.</p>
+<p>Which model matches? (<span class="math inline">\(E_i\sim\operatorname{Normal}(0,\tau^2)\)</span>
+independently in each option, and <span class="math inline">\(C_i\sim\operatorname{Normal}(\mu,\sigma^2)\)</span>.)</p>
+<ul>
+<li><ol type="A">
+<li><span class="math inline">\(X_i = C_i + E_i\)</span> if <span class="math inline">\(C_i\ge L\)</span>; <span class="math inline">\(X_i
+= L/2\)</span> if <span class="math inline">\(C_i&lt;L\)</span>.</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li><span class="math inline">\(X_i = C_i + E_i\)</span> if <span class="math inline">\(C_i + E_i\ge L\)</span>; <span class="math inline">\(X_i = L/2\)</span> if <span class="math inline">\(C_i + E_i&lt;L\)</span>.</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li><span class="math inline">\(X_i = \max(C_i+E_i,\ L/2)\)</span>.</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li><span class="math inline">\(X_i = C_i + E_i\)</span> if <span class="math inline">\(C_i + E_i\ge L\)</span>; <span class="math inline">\(X_i = L/2 + E_i\)</span> if <span class="math inline">\(C_i + E_i&lt;L\)</span>.</li>
+</ol></li>
+</ul>
+<p><strong>(a)</strong> Choose the matching model, and for each other
+option, say what is wrong with it.</p>
+<p><strong>(b)</strong> Write the matching model using an indicator
+<span class="math inline">\(B_i=\mathbb{1}\{C_i+E_i&lt;L\}\)</span> and
+the “one of two forms” notation.</p>
+<h2 id="find-the-errors">Find the errors</h2>
+<h3 id="s8">S8</h3>
+<p>A beekeeper has <span class="math inline">\(m\)</span> hives. Each
+winter, a hive dies with probability <span class="math inline">\(p_{\mathrm{die}}\)</span>, independently of the
+other hives. In spring, the beekeeper counts the frames of honey in each
+surviving hive; the count is a Poisson draw whose average <span class="math inline">\(\Lambda_j\)</span> is specific to the hive and is
+drawn from a <span class="math inline">\(\operatorname{Uniform}(2,
+10)\)</span> distribution. A dead hive produces no honey. Let <span class="math inline">\(S_j=1\)</span> if hive <span class="math inline">\(j\)</span> survives the winter.</p>
+<p>A student writes: <span class="math display">\[
+S_j\sim\operatorname{Bernoulli}(p_{\mathrm{die}}),\qquad
+\Lambda\sim\operatorname{Uniform}(2,10),\qquad
+H_j\mid S_j, \Lambda \sim \operatorname{Poisson}(\Lambda),
+\]</span> “where <span class="math inline">\(S_j\)</span>, <span class="math inline">\(\Lambda\)</span>, and <span class="math inline">\(H_j\)</span> are all observed.”</p>
+<p>Find the problems with this model (there are at least three), and
+write a corrected version.</p>
+<h3 id="s9">S9</h3>
+<p>A survey asks <span class="math inline">\(n\)</span> people whether
+they have ever cheated on a test. To protect privacy, each person
+secretly flips a fair coin. On heads, they answer the question
+truthfully. On tails, they flip a second fair coin and answer “yes” on
+heads and “no” on tails. Each person has cheated with probability <span class="math inline">\(\pi\)</span>, independently. Let <span class="math inline">\(C_i=1\)</span> if person <span class="math inline">\(i\)</span> has cheated, <span class="math inline">\(F_i=1\)</span> if the first coin is heads, <span class="math inline">\(G_i=1\)</span> if the second coin is heads, and
+<span class="math inline">\(A_i=1\)</span> if the recorded answer is
+“yes”.</p>
+<p>A student writes: <span class="math display">\[
+C_i\sim\operatorname{Bernoulli}(\pi),\quad
+F_i\sim\operatorname{Bernoulli}(0.5),\quad
+G_i\sim\operatorname{Bernoulli}(0.5),\quad
+A_i = F_i C_i + G_i.
+\]</span></p>
+<p><strong>(a)</strong> Check the student’s rule for <span class="math inline">\(A_i\)</span> in each of the four cases (<span class="math inline">\(F_i = 0\)</span> or <span class="math inline">\(1\)</span>, <span class="math inline">\(C_i =
+0\)</span> or <span class="math inline">\(1\)</span>). In which cases is
+it wrong?</p>
+<p><strong>(b)</strong> Write a correct rule for <span class="math inline">\(A_i\)</span>, either as a formula or with the “one
+of two forms” notation.</p>
+<p><strong>(c)</strong> Which variables are observed? What is the
+overall probability that <span class="math inline">\(A_i=1\)</span>, in
+terms of <span class="math inline">\(\pi\)</span>?</p>
+<h2 id="from-a-model-back-to-a-story">From a model back to a story</h2>
+<h3 id="s10">S10</h3>
+<p>Here is a model for data collected at <span class="math inline">\(m\)</span> restaurants, each inspected <span class="math inline">\(n\)</span> times: <span class="math display">\[
+G_j\sim\operatorname{Bernoulli}(0.1),\qquad
+V_{jk}\mid G_j\sim\operatorname{Poisson}(\mu_{G_j}),\quad \mu_0 = 2,\
+\mu_1=12,
+\]</span> with the <span class="math inline">\(G_j\)</span> independent
+and the <span class="math inline">\(V_{jk}\)</span> conditionally
+independent given <span class="math inline">\(G_1,\ldots,G_m\)</span>.
+Only the <span class="math inline">\(V_{jk}\)</span> are recorded.</p>
+<p><strong>(a)</strong> Write a short story (three or four sentences)
+that this model describes, saying what <span class="math inline">\(G_j\)</span> and <span class="math inline">\(V_{jk}\)</span> could represent.</p>
+<p><strong>(b)</strong> Under this model, if a restaurant has many
+violations at its first inspection, would you expect more or fewer
+violations at its second inspection than at a typical restaurant? Which
+part of the model is responsible for this?</p>
+<p><strong>(c)</strong> Change the model so that a restaurant can move
+between the two categories from one inspection to the next. What new
+variables or indices do you need?</p>
+</body>
+</html>

@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang xml:lang>
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>STAT-S 481/681: Structured practice for Part A —
+solutions</title>
+  <style>
+html {
+color: #1a1a1a;
+background-color: #fdfdfd;
+}
+body {
+margin: 0 auto;
+max-width: 36em;
+padding-left: 50px;
+padding-right: 50px;
+padding-top: 50px;
+padding-bottom: 50px;
+hyphens: auto;
+overflow-wrap: break-word;
+text-rendering: optimizeLegibility;
+font-kerning: normal;
+}
+@media (max-width: 600px) {
+body {
+font-size: 0.9em;
+padding: 12px;
+}
+h1 {
+font-size: 1.8em;
+}
+}
+@media print {
+html {
+background-color: white;
+}
+body {
+background-color: transparent;
+color: black;
+font-size: 12pt;
+}
+p, h2, h3 {
+orphans: 3;
+widows: 3;
+}
+h2, h3, h4 {
+page-break-after: avoid;
+}
+}
+p {
+margin: 1em 0;
+}
+a {
+color: #1a1a1a;
+}
+a:visited {
+color: #1a1a1a;
+}
+img {
+max-width: 100%;
+}
+svg {
+height: auto;
+max-width: 100%;
+}
+h1, h2, h3, h4, h5, h6 {
+margin-top: 1.4em;
+}
+h5, h6 {
+font-size: 1em;
+font-style: italic;
+}
+h6 {
+font-weight: normal;
+}
+ol, ul {
+padding-left: 1.7em;
+margin-top: 1em;
+}
+li > ol, li > ul {
+margin-top: 0;
+}
+blockquote {
+margin: 1em 0 1em 1.7em;
+padding-left: 1em;
+border-left: 2px solid #e6e6e6;
+color: #606060;
+}
+code {
+font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+font-size: 85%;
+margin: 0;
+hyphens: manual;
+}
+pre {
+margin: 1em 0;
+overflow: auto;
+}
+pre code {
+padding: 0;
+overflow: visible;
+overflow-wrap: normal;
+}
+.sourceCode {
+background-color: transparent;
+overflow: visible;
+}
+hr {
+background-color: #1a1a1a;
+border: none;
+height: 1px;
+margin: 1em 0;
+}
+table {
+margin: 1em 0;
+border-collapse: collapse;
+width: 100%;
+overflow-x: auto;
+display: block;
+font-variant-numeric: lining-nums tabular-nums;
+}
+table caption {
+margin-bottom: 0.75em;
+}
+tbody {
+margin-top: 0.5em;
+border-top: 1px solid #1a1a1a;
+border-bottom: 1px solid #1a1a1a;
+}
+th {
+border-top: 1px solid #1a1a1a;
+padding: 0.25em 0.5em 0.25em 0.5em;
+}
+td {
+padding: 0.125em 0.5em 0.25em 0.5em;
+}
+header {
+margin-bottom: 4em;
+text-align: center;
+}
+#TOC li {
+list-style: none;
+}
+#TOC ul {
+padding-left: 1.3em;
+}
+#TOC > ul {
+padding-left: 0;
+}
+#TOC a:not(:hover) {
+text-decoration: none;
+}
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+
+ul.task-list[class]{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+font-size: inherit;
+width: 0.8em;
+margin: 0 0.8em 0.2em -1.6em;
+vertical-align: middle;
+}
+</style>
+  <!-- Pandoc's default HTML template, except that MathJax is loaded from its
+  CDN instead of being embedded (data-external="1" exempts it from
+  --embed-resources). The polyfill.io and html5shiv scripts are dropped. -->
+  <script data-external="1" type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js"></script>
+</head>
+<body>
+<h1 id="stat-s-481681-structured-practice-for-part-a-solutions">STAT-S
+481/681: Structured practice for Part A — solutions</h1>
+<p>Other notation is fine as long as it describes the same model. For
+example, writing <span class="math inline">\(D_{jk}\mid
+Z_j=1\sim\operatorname{Bernoulli}(0.02)\)</span> and <span class="math inline">\(D_{jk}\mid
+Z_j=0\sim\operatorname{Bernoulli}(0.10)\)</span> on two lines is
+equivalent to using <span class="math inline">\(q_{Z_j}\)</span>.</p>
+<h3 id="s1">S1</h3>
+<p><strong>(a)</strong> <span class="math display">\[
+Z_j \sim \operatorname{Bernoulli}(0.7), \qquad
+D_{jk}\mid Z_j \sim \operatorname{Bernoulli}(q_{Z_j}),
+\qquad q_0 = 0.10,\quad q_1 = 0.02.
+\]</span> The <span class="math inline">\(Z_j\)</span> are independent,
+and the <span class="math inline">\(D_{jk}\)</span> are independent
+given <span class="math inline">\(Z_1,\ldots,Z_m\)</span>.</p>
+<p><strong>(b)</strong> <span class="math inline">\(D_{jk}\)</span> is
+observed. <span class="math inline">\(Z_j\)</span> is unobserved,
+because the boxes are not labeled.</p>
+<p><strong>(c)</strong> They are not independent: if bolt 1 is
+defective, that makes it more likely the box came from machine 0, which
+makes bolt 2 more likely to be defective too. Given <span class="math inline">\(Z_j\)</span>, they are independent: once you know
+the machine, bolt 1 tells you nothing more about bolt 2. This is the
+same structure as in Question A1 of the midterm.</p>
+<p><strong>(d)</strong> <span class="math display">\[
+Q_j\sim\operatorname{Uniform}(0,0.2)\ \text{independently},\qquad
+D_{jk}\mid Q_j\sim\operatorname{Bernoulli}(Q_j),
+\]</span> with the <span class="math inline">\(D_{jk}\)</span>
+independent given <span class="math inline">\(Q_1,\ldots,Q_m\)</span>.
+<span class="math inline">\(Q_j\)</span> is unobserved.</p>
+<h3 id="s2">S2</h3>
+<p><strong>(a)</strong> <span class="math display">\[
+W_i\sim\operatorname{Bernoulli}(p_{\mathrm{storm}}), \qquad
+K_i \mid W_i=0 \sim \operatorname{Poisson}(\lambda), \qquad
+K_i = 0 \text{ when } W_i=1.
+\]</span> Equivalently, <span class="math inline">\(S_i\sim\operatorname{Poisson}(\lambda)\)</span>
+and <span class="math inline">\(K_i=(1-W_i)S_i\)</span>, where <span class="math inline">\(S_i\)</span> is the catch the boat would have had
+if it went out.</p>
+<p><strong>(b)</strong> If the log records storms, <span class="math inline">\(W_i\)</span> and <span class="math inline">\(K_i\)</span> are both observed. If it records only
+the catch, <span class="math inline">\(W_i\)</span> is unobserved: a
+catch of 0 could come from a storm or from a day at sea with no
+fish.</p>
+<p><strong>(c)</strong> The two models have the same average, but the
+storm model produces more zeros and more spread. Under the storm model,
+<span class="math inline">\(P(K_i=0)=p_{\mathrm{storm}}+(1-p_{\mathrm{storm}})e^{-\lambda}\)</span>,
+which is always at least as large as <span class="math inline">\(e^{-(1-p_{\mathrm{storm}})\lambda}\)</span> and
+much larger when <span class="math inline">\(\lambda\)</span> is large;
+the variance is also larger than the mean, while a Poisson count has
+variance equal to its mean. The fraction of zero-catch days, or the
+variance of the catches, would differ between the two models.</p>
+<h3 id="s3">S3</h3>
+<p><strong>(a)</strong> <span class="math display">\[
+V_t\sim\operatorname{Uniform}(0,40),\qquad
+H_t=\mathbb{1}\{V_t&gt;25\},\qquad
+J_t\mid V_t\sim\operatorname{Bernoulli}(p_{H_t}),\quad p_0=0.01,\
+p_1=0.4,
+\]</span> <span class="math display">\[
+E_t\sim\operatorname{Normal}(0,1.5^2),\qquad
+X_t=\begin{cases}V_t+E_t &amp; \text{if } J_t=0,\\ \text{NA} &amp;
+\text{if } J_t=1.\end{cases}
+\]</span></p>
+<p><strong>(b)</strong> <span class="math inline">\(V_t\)</span> first,
+then <span class="math inline">\(H_t\)</span> (computed from <span class="math inline">\(V_t\)</span>), then <span class="math inline">\(J_t\)</span> (which needs <span class="math inline">\(H_t\)</span>), then <span class="math inline">\(E_t\)</span> (which could be drawn at any point,
+since it does not depend on anything), then <span class="math inline">\(X_t\)</span>.</p>
+<p><strong>(c)</strong> <span class="math inline">\(X_t\)</span> is
+observed. You can tell which hours had jams, since <span class="math inline">\(J_t=1\)</span> exactly when <span class="math inline">\(X_t\)</span> is NA, so <span class="math inline">\(J_t\)</span> is effectively observed. <span class="math inline">\(V_t\)</span>, <span class="math inline">\(H_t\)</span>, and <span class="math inline">\(E_t\)</span> are unobserved. In particular, you
+cannot tell which jammed hours had strong wind; for unjammed hours,
+<span class="math inline">\(X_t\)</span> gives a good but not perfect
+indication, since the error has standard deviation 1.5.</p>
+<p><strong>(d)</strong> No, it would be lower. Hours with strong wind
+are much more likely to jam, so they are underrepresented among the
+recorded values. The missing values are related to the quantity being
+measured. (This is the same issue as in Question A2 of the midterm,
+where failures depended on the temperature.)</p>
+<h3 id="s4">S4</h3>
+<p><strong>(a)</strong> 1 → (B), 2 → (D), 3 → (F), 4 → (A), 5 → (C).
+Line (E) matches no sentence: it does not use <span class="math inline">\(A_i\)</span> at all, and it describes a count out
+of 40 trials.</p>
+<p><strong>(b)</strong> <span class="math inline">\(A_i\)</span>:
+whether there is an advertisement on day <span class="math inline">\(i\)</span>. <span class="math inline">\(S_i\)</span>: the number of people who sign up on
+day <span class="math inline">\(i\)</span>. <span class="math inline">\(U_i\)</span>: whether the server is up on day
+<span class="math inline">\(i\)</span>. <span class="math inline">\(X_i\)</span>: the recorded count.</p>
+<p><strong>(c)</strong> <span class="math inline">\(X_i\)</span> is
+observed; <span class="math inline">\(A_i\)</span>, <span class="math inline">\(S_i\)</span>, and <span class="math inline">\(U_i\)</span> are unobserved. (If the site kept
+records of its advertising, <span class="math inline">\(A_i\)</span>
+would be observed.)</p>
+<p><strong>(d)</strong> Not with certainty, because a Poisson count can
+be 0 even when the server is up. Here, though, <span class="math inline">\(P(S_i=0)\)</span> is at most <span class="math inline">\(e^{-15}\approx 3\times10^{-7}\)</span>, so in
+practice a recorded 0 almost certainly means the server was down. If the
+averages were small, say 1 or 2, a recorded 0 would be ambiguous.</p>
+<h3 id="s5">S5</h3>
+<p><strong>(a)</strong> 1 → (A) (the rate <span class="math inline">\(R_j\)</span> is a random variable with its own
+value for each patient); 2 → (F) (this is what distinguishes (A) from
+(B)); 3 → (A); 4 → (C); 5 → (D). Notation (B) and (E) are not used.</p>
+<p><strong>(b)</strong> <span class="math display">\[
+R_j\sim\operatorname{Uniform}(0,5)\ \text{independently},\qquad
+Y_{jk}\mid R_j\sim\operatorname{Poisson}(R_j),
+\]</span> with the <span class="math inline">\(Y_{jk}\)</span>
+independent given <span class="math inline">\(R_1,\ldots,R_m\)</span>.</p>
+<h3 id="s6">S6</h3>
+<p><strong>(a)</strong> (B).</p>
+<p><strong>(b)</strong></p>
+<ul>
+<li>(A): every student has the same probability of answering correctly,
+0.65.</li>
+<li>(C): the probability of a correct answer is drawn afresh for every
+answer, as if each question had its own random difficulty for each
+student, unrelated to the student’s other answers.</li>
+<li>(D): all students share one probability, which is itself unknown and
+drawn once, for example if the quiz as a whole has a random
+difficulty.</li>
+</ul>
+<p><strong>(c)</strong> In (C), each <span class="math inline">\(Y_{jk}\)</span> has its own independent <span class="math inline">\(P_{jk}\)</span>, so each <span class="math inline">\(Y_{jk}\)</span> is independently 1 with
+probability equal to the average of <span class="math inline">\(P_{jk}\)</span>, which is 0.65. That is exactly
+model (A). The matching model (B) differs because a student’s answers
+share <span class="math inline">\(P_j\)</span>: some students get most
+questions right and others get many wrong. The spread of the students’
+scores (number correct out of <span class="math inline">\(n\)</span>)
+would be larger under (B) than under (A).</p>
+<h3 id="s7">S7</h3>
+<p><strong>(a)</strong> (B).</p>
+<ul>
+<li><ol type="A">
+<li>applies the detection limit to the true concentration rather than to
+the reading. The lab sees the reading, not the true concentration.</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>replaces readings below <span class="math inline">\(L/2\)</span>
+with <span class="math inline">\(L/2\)</span>, but leaves readings
+between <span class="math inline">\(L/2\)</span> and <span class="math inline">\(L\)</span> unchanged; the lab should replace every
+reading below <span class="math inline">\(L\)</span>.</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>adds measurement error to the value <span class="math inline">\(L/2\)</span>, but the lab records exactly <span class="math inline">\(L/2\)</span>.</li>
+</ol></li>
+</ul>
+<p><strong>(b)</strong> <span class="math display">\[
+C_i\sim\operatorname{Normal}(\mu,\sigma^2),\quad
+E_i\sim\operatorname{Normal}(0,\tau^2),\quad
+B_i=\mathbb{1}\{C_i+E_i&lt;L\},\quad X_i = d_{B_i},
+\]</span> where <span class="math inline">\(d_0 = C_i+E_i\)</span> and
+<span class="math inline">\(d_1 = L/2\)</span>. Equivalently, <span class="math inline">\(X_i=(1-B_i)(C_i+E_i)+B_i\,L/2\)</span>.</p>
+<h3 id="s8">S8</h3>
+<p>Problems:</p>
+<ol type="1">
+<li><span class="math inline">\(S_j=1\)</span> means the hive
+<em>survives</em>, so <span class="math inline">\(S_j\sim\operatorname{Bernoulli}(1-p_{\mathrm{die}})\)</span>.</li>
+<li>The average should be specific to the hive: <span class="math inline">\(\Lambda_j\)</span>, drawn independently for each
+hive, not a single <span class="math inline">\(\Lambda\)</span>.</li>
+<li>The count for a dead hive should be 0, but the student’s model gives
+a Poisson count regardless of <span class="math inline">\(S_j\)</span>.</li>
+<li><span class="math inline">\(\Lambda_j\)</span> is not observed; only
+<span class="math inline">\(S_j\)</span> and <span class="math inline">\(H_j\)</span> are. (Arguably <span class="math inline">\(S_j\)</span> is also determined by the data, if a
+dead hive is distinguishable from a live hive with no honey.)</li>
+<li>Minor: <span class="math inline">\(H_j\)</span> is never defined,
+and the independence assumptions are not stated.</li>
+</ol>
+<p>Corrected model, with <span class="math inline">\(H_j\)</span> the
+number of frames of honey in hive <span class="math inline">\(j\)</span>: <span class="math display">\[
+S_j\sim\operatorname{Bernoulli}(1-p_{\mathrm{die}}),\qquad
+\Lambda_j\sim\operatorname{Uniform}(2,10),\qquad
+H_j\mid S_j=1,\Lambda_j\sim\operatorname{Poisson}(\Lambda_j),\qquad
+H_j=0\ \text{if } S_j=0,
+\]</span> independently across hives.</p>
+<h3 id="s9">S9</h3>
+<p><strong>(a)</strong> When <span class="math inline">\(F_i=0\)</span>,
+the rule gives <span class="math inline">\(A_i=G_i\)</span>, which is
+correct. When <span class="math inline">\(F_i=1\)</span>, it gives <span class="math inline">\(A_i=C_i+G_i\)</span>, which is wrong whenever
+<span class="math inline">\(G_i=1\)</span>: the person should answer
+<span class="math inline">\(C_i\)</span>, but the rule adds the
+irrelevant second coin, and when <span class="math inline">\(C_i=1\)</span> and <span class="math inline">\(G_i=1\)</span> it even gives <span class="math inline">\(A_i=2\)</span>.</p>
+<p><strong>(b)</strong> <span class="math inline">\(A_i = F_iC_i +
+(1-F_i)G_i\)</span>, or, with the “one of two forms” notation, <span class="math inline">\(A_i = d_{F_i}\)</span> where <span class="math inline">\(d_1=C_i\)</span> and <span class="math inline">\(d_0=G_i\)</span>.</p>
+<p><strong>(c)</strong> Only <span class="math inline">\(A_i\)</span> is
+observed. <span class="math inline">\(P(A_i=1) = 0.5\,\pi + 0.5\times0.5
+= 0.5\,\pi+0.25\)</span>.</p>
+<h3 id="s10">S10</h3>
+<p><strong>(a)</strong> For example: each restaurant is either a problem
+restaurant (with probability 0.1) or not, and this does not change over
+time. At each inspection, the number of health code violations found is
+a Poisson count, with average 12 for problem restaurants and 2 for
+others. Given which restaurants are problem restaurants, the inspections
+are independent. Whether a restaurant is a problem restaurant is not
+recorded.</p>
+<p><strong>(b)</strong> More. Many violations at the first inspection
+suggest <span class="math inline">\(G_j=1\)</span>, and the same <span class="math inline">\(G_j\)</span> applies at the second inspection. The
+shared <span class="math inline">\(G_j\)</span>, indexed by restaurant
+but not by inspection, is responsible.</p>
+<p><strong>(c)</strong> Give the category an inspection index, <span class="math inline">\(G_{jk}\)</span>, and say how it changes from one
+inspection to the next, for example <span class="math display">\[
+G_{j1}\sim\operatorname{Bernoulli}(0.1),\qquad G_{jk}\mid
+G_{j,k-1}\sim\operatorname{Bernoulli}(s_{G_{j,k-1}}),\qquad V_{jk}\mid
+G_{jk}\sim\operatorname{Poisson}(\mu_{G_{jk}}),
+\]</span> where <span class="math inline">\(s_1\)</span> is the
+probability a problem restaurant stays a problem restaurant and <span class="math inline">\(s_0\)</span> is the probability a good restaurant
+becomes one.</p>
+</body>
+</html>
